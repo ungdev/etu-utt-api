@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+
+  application:
+    build:
+      target: development
+    environment:
+      - DATABASE_URL="postgresql://etuutt:abcdef@localhost:5432/etuutt"
+    volumes:
+      - ./:/usr/src/app
+    command: ["npm", "run", "start:dev"]
+    
+  database:
+    environment:
+      - POSTGRES_USER=etuutt
+      - POSTGRES_PASSWORD=abcdef
+      - POSTGRES_DB=etuutt
