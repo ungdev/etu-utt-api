@@ -9,7 +9,8 @@ services:
       - DATABASE_URL="postgresql://etuutt:abcdef@localhost:5432/etuutt"
     volumes:
       - ./:/usr/src/app
-    command: ["npm", "run", "start:dev"]
+      - /usr/src/app/node_modules
+    command: "npm run start:dev"
     
   database:
     environment:
