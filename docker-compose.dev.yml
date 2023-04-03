@@ -3,15 +3,14 @@ version: '3'
 services:
 
   application:
-    build:
-      target: development
+    image: node:${NODE_VERSION}
     environment:
       - DATABASE_URL="postgresql://etuutt:abcdef@localhost:5432/etuutt"
+    working_dir: /usr/src/app
     volumes:
-      - ./:/usr/src/app
-      - /usr/src/app/node_modules
-    command: "npm run start:dev"
-    
+      - .:/usr/src/app
+    command: sh -c "[ ! -d 'node_modules' ] && npm install ; npm run start:dev"
+
   database:
     environment:
       - POSTGRES_USER=etuutt
