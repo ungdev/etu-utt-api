@@ -2,6 +2,8 @@
 # BUILD FOR PRODUCTION
 ###################
 
+ARG NODE_VERSION
+
 FROM node:${NODE_VERSION} As build
 
 WORKDIR /usr/src/app

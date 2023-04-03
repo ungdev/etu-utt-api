@@ -4,6 +4,8 @@ services:
 
   application:
     build:
+      args:
+        - NODE_VERSION=${NODE_VERSION}
       target: production
     restart: always
 
