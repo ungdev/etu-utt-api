@@ -1,5 +1,10 @@
 # Setup with Docker
 
+Setup environment variables
+```sh
+cp .env.example .env
+```
+
 Start the project
 ```sh
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
@@ -8,6 +13,11 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 To open a terminal inside the container
 ```sh
 docker exec -it etuutt-api /bin/sh
+```
+
+Push database changes
+```sh
+npx prisma db push
 ```
 
 # Services

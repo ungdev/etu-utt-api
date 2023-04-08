@@ -1,0 +1,692 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Asso {
+  id                            String   @id @default(uuid())
+  login                         String   @unique @db.VarChar(50)
+  name                          String   @unique @db.VarChar(100)
+  mail                          String   @unique @db.VarChar(100)
+  phoneNumber                   String?  @db.VarChar(30)
+  website                       String?  @db.VarChar(100)
+  logo                          String?  @db.VarChar(100)
+  createdAt                     DateTime
+  updatedAt                     DateTime
+  deletedAt                     DateTime
+  descriptionShortTranslationId String
+  descriptionTranslationId      String
+
+  descriptionShortTranslation Translation      @relation(name: "descriptionShortTranslation", fields: [descriptionShortTranslationId], references: [id])
+  descriptionTranslation      Translation      @relation(name: "descriptionTranslation", fields: [descriptionTranslationId], references: [id])
+  keywords                    AssoKeyword[]
+  assoMessages                AssoMessage[]
+  events                      Event[]
+  assoMemberships             AssoMembership[]
+  eventPrivacy                EventPrivacy[]
+}
+
+model AssoKeyword {
+  name String @id @db.VarChar(30)
+
+  assos Asso[]
+}
+
+model AssoMembership {
+  id        String   @id @default(uuid())
+  startAt   DateTime
+  endAt     DateTime
+  createdAt DateTime
+  userId    String
+  assoId    String
+
+  user        User                       @relation(fields: [userId], references: [id])
+  asso        Asso                       @relation(fields: [assoId], references: [id])
+  roles       AssoMembershipRole[]
+  permissions AssoMembershipPermission[]
+}
+
+model AssoMembershipPermission {
+  id String @id @default(uuid())
+
+  assoMembership AssoMembership[]
+}
+
+model AssoMembershipRole {
+  id String @id @default(uuid())
+
+  assoMembership AssoMembership[]
+  eventPrivacys  EventPrivacy[]
+}
+
+model AssoMessage {
+  id                 String   @id @default(uuid())
+  date               DateTime
+  sendToMobile       Boolean
+  sendAsDaymail      Boolean
+  createdAt          DateTime
+  assoId             String
+  titleTranslationId String
+  bodyTranslationId  String
+
+  asso             Asso        @relation(fields: [assoId], references: [id])
+  titleTranslation Translation @relation(name: "titleTranslation", fields: [titleTranslationId], references: [id])
+  bodyTranslation  Translation @relation(name: "bodyTranslation", fields: [bodyTranslationId], references: [id])
+}
+
+model Event {
+  id                       String   @id @default(uuid())
+  startAt                  DateTime
+  endAt                    DateTime
+  isAllDay                 Boolean
+  location                 String?  @db.VarChar(255)
+  createdAt                DateTime
+  updatedAt                DateTime
+  deletedAt                DateTime
+  titleTranslationId       String
+  descriptionTranslationId String
+
+  assos        Asso[]
+  categories   EventCategory[]
+  eventAnswers EventAnswer[]
+  eventPrivacy EventPrivacy[]
+}
+
+model EventAnswer {
+  id        String   @id @default(uuid())
+  answer    String   @db.VarChar(20)
+  comment   String?  @db.Text
+  createdAt DateTime
+  updatedAt DateTime
+  deletedAt DateTime
+  eventId   String   @default(uuid())
+  userId    String   @default(uuid())
+
+  event Event @relation(fields: [eventId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+}
+
+model EventCategory {
+  id   String @id @default(uuid())
+  name String @unique @db.VarChar(100)
+
+  events Event[]
+}
+
+model EventPrivacy {
+  id      String @id @default(uuid())
+  eventId String @unique
+
+  event        Event                @relation(fields: [eventId], references: [id])
+  allowedAssos Asso[]
+  allowedRoles AssoMembershipRole[]
+}
+
+model GitHubIssue {
+  id            String   @id @default(uuid())
+  gitHubIssueId Int
+  createdAt     DateTime
+  userId        String
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Semester {
+  code  String   @id @db.Char(3)
+  start DateTime @db.Date
+  end   DateTime @db.Date
+
+  openedUEs             UE[]
+  annals                UEAnnal[]
+  comments              UEComment[]
+  courses               UECourse[]
+  BDEContributionsStart UserBDEContribution[] @relation("startSemester")
+  BDEContributionsEnd   UserBDEContribution[] @relation("endSemester")
+  branches              UserBranche[]
+  UESubscriptions       UserUESubscription[]
+  etuUTTTeams           UserEtuUTTTeam[]
+}
+
+model Translation {
+  id      String  @id @default(uuid())
+  french  String? @db.Text
+  english String? @db.Text
+  spanish String? @db.Text
+  german  String? @db.Text
+  chinese String? @db.Text
+
+  assoDescriptionShort                 Asso[]                        @relation("descriptionShortTranslation")
+  assoDescription                      Asso[]                        @relation("descriptionTranslation")
+  assoMessageTitle                     AssoMessage[]                 @relation("titleTranslation")
+  assoMessageTitleBody                 AssoMessage[]                 @relation("bodyTranslation")
+  annalReportReasonDescriptions        UEAnnalReportReason[]
+  commentReportReasonDescriptions      UECommentReportReason[]
+  starCriterionDescriptions            UEStarCriterion[]
+  brancheDescriptions                  UTTBranche[]
+  filiereDescriptions                  UTTFiliere[]
+  formationDescriptions                UTTFormation[]
+  formationFollowingMethodDescriptions UTTFormationFollowingMethod[]
+}
+
+model UE {
+  id             String   @id @default(uuid())
+  code           String   @db.VarChar(10)
+  name           String   @db.VarChar(255)
+  validationRate Float?
+  createdAt      DateTime
+  updatedAt      DateTime
+  filiereId      String
+
+  usersSubscriptions UserUESubscription[]
+  credits            UECredit[]
+  starVotes          UEStarVote[]
+  openSemester       Semester[]
+  workTime           UEWorkTime?
+  info               UEInfo?
+  annals             UEAnnal[]
+  comments           UEComment[]
+  courses            UECourse[]
+  filiere            UTTFiliere           @relation(fields: [filiereId], references: [code])
+}
+
+model UEAnnal {
+  id            String    @id @default(uuid())
+  filename      String    @db.VarChar(255)
+  validatedById String
+  createdAt     DateTime
+  deletedAt     DateTime?
+  UEId          String
+  senderId      String
+  semesterId    String
+  typeId        String
+
+  UE       UE              @relation(fields: [UEId], references: [id])
+  sender   User            @relation(fields: [senderId], references: [id])
+  semester Semester        @relation(fields: [semesterId], references: [code])
+  reports  UEAnnalReport[]
+}
+
+model UEAnnalReport {
+  id        String   @id @default(uuid())
+  body      String?  @db.Text
+  createdAt DateTime
+  annalId   String
+  userId    String
+  reasonId  String
+
+  annal  UEAnnal             @relation(fields: [annalId], references: [id])
+  user   User                @relation(fields: [userId], references: [id])
+  reason UEAnnalReportReason @relation(fields: [reasonId], references: [name])
+}
+
+model UEAnnalReportReason {
+  name                     String @id @db.VarChar(100)
+  descriptionTranslationId String
+
+  descriptionTranslation Translation     @relation(fields: [descriptionTranslationId], references: [id])
+  reports                UEAnnalReport[]
+}
+
+model UEComment {
+  id          String    @id @default(uuid())
+  body        String    @db.Text
+  isAnonymous Boolean
+  createdAt   DateTime
+  updatedAt   DateTime
+  deletedAt   DateTime?
+  UEId        String
+  authorId    String
+  semesterId  String
+
+  UE       UE                @relation(fields: [UEId], references: [id])
+  author   User              @relation(fields: [authorId], references: [id])
+  semester Semester          @relation(fields: [semesterId], references: [code])
+  answers  UECommentReply[]
+  reports  UECommentReport[]
+}
+
+model UECommentReply {
+  id        String    @id @default(uuid())
+  body      String    @db.Text
+  createdAt DateTime
+  updatedAt DateTime
+  deletedAt DateTime?
+  commentId String
+  authorId  String
+
+  comment UEComment @relation(fields: [commentId], references: [id])
+  author  User      @relation(fields: [authorId], references: [id])
+}
+
+model UECommentReport {
+  id        String   @id @default(uuid())
+  body      String   @db.Text
+  createdAt DateTime
+  commentId String
+  userId    String
+  reasonId  String
+
+  comment UEComment             @relation(fields: [commentId], references: [id])
+  user    User                  @relation(fields: [userId], references: [id])
+  reason  UECommentReportReason @relation(fields: [reasonId], references: [name])
+}
+
+model UECommentReportReason {
+  name                     String @id @db.VarChar(100)
+  descriptionTranslationId String
+
+  descriptionTranslation Translation       @relation(fields: [descriptionTranslationId], references: [id])
+  reports                UECommentReport[]
+}
+
+model UECourse {
+  id         String     @id @default(uuid())
+  day        Day
+  startHour  DateTime   @db.Time
+  endHour    DateTime   @db.Time
+  week       Week
+  type       CourseType
+  room       String     @db.VarChar(50)
+  createdAt  DateTime
+  UEId       String
+  semesterId String
+
+  students            User[]
+  UE                  UE                 @relation(fields: [UEId], references: [id])
+  semester            Semester           @relation(fields: [semesterId], references: [code])
+  courseExchangesFrom UECourseExchange[] @relation(name: "courseFrom")
+  courseExchangesTo   UECourseExchange[] @relation(name: "courseTo")
+}
+
+model UECourseExchange {
+  id             String    @id @default(uuid())
+  stillAvailable Boolean
+  body           String?   @db.Text
+  createdAt      DateTime
+  updatedAt      DateTime
+  deletedAt      DateTime?
+  authorId       String
+  courseFromId   String
+  courseToId     String
+
+  author     User                    @relation(fields: [authorId], references: [id])
+  courseFrom UECourse                @relation(name: "courseFrom", fields: [courseFromId], references: [id])
+  courseTo   UECourse                @relation(name: "courseTo", fields: [courseToId], references: [id])
+  responses  UECourseExchangeReply[]
+}
+
+model UECourseExchangeReply {
+  id         String    @id @default(uuid())
+  body       String    @db.Text
+  createdAt  DateTime
+  updatedAt  DateTime
+  deletedAt  DateTime?
+  authorId   String
+  exchangeId String
+
+  author   User             @relation(fields: [authorId], references: [id])
+  exchange UECourseExchange @relation(fields: [exchangeId], references: [id])
+}
+
+model UECredit {
+  id         String @id @default(uuid())
+  credits    Int    @db.SmallInt
+  UEId       String
+  categoryId String
+
+  UE       UE               @relation(fields: [UEId], references: [id])
+  category UECreditCategory @relation(fields: [categoryId], references: [code])
+}
+
+model UECreditCategory {
+  code String @id @db.VarChar(10)
+  name String @db.VarChar(255)
+
+  credits UECredit[]
+}
+
+model UEInfo {
+  id         String  @id @default(uuid())
+  degree     String? @db.Text
+  minors     String? @db.Text
+  antecedent String? @db.Text
+  languages  String? @db.Text
+  comment    String? @db.Text
+  objectives String? @db.Text
+  programme  String? @db.Text
+  UEId       String  @unique
+
+  UE UE @relation(fields: [UEId], references: [id])
+}
+
+model UEStarCriterion {
+  id                       String @id @default(uuid())
+  name                     String @db.VarChar(255)
+  descriptionTranslationId String
+
+  descriptionTranslation Translation  @relation(fields: [descriptionTranslationId], references: [id])
+  starVotes              UEStarVote[]
+}
+
+model UEStarVote {
+  id          String   @id @default(uuid())
+  value       Int      @db.SmallInt
+  createdAt   DateTime
+  UEId        String
+  criterionId String
+  userId      String
+
+  UE        UE              @relation(fields: [UEId], references: [id])
+  criterion UEStarCriterion @relation(fields: [criterionId], references: [id])
+  user      User            @relation(fields: [userId], references: [id])
+}
+
+model UEWorkTime {
+  id         String @id @default(uuid())
+  cm         Int?
+  td         Int?
+  tp         Int?
+  the        Int?
+  projet     Int?
+  internship Int?
+  UEId       String @unique
+
+  UE UE @relation(fields: [UEId], references: [id])
+}
+
+model User {
+  id        String @id @default(uuid())
+  login     String @unique @db.VarChar(50)
+  studentId Int?
+  firstName String
+  lastName  String
+  roles     Json   @default("[]")
+  RGPDId    String @unique
+
+  timestamps            UserTimestamps?
+  socialNetwork         UserSocialNetwork?
+  bans                  UserBan[]
+  RGPD                  UserRGPD?
+  BDEContributions      UserBDEContribution[]
+  assoMembership        AssoMembership[]
+  branche               UserBranche?
+  formation             UserFormation?
+  preference            UserPreference?
+  infos                 UserInfos?
+  addresses             UserAddress[]
+  mailsPhones           UserMailsPhones?
+  otherAttributes       UserOtherAttributValue[]
+  UEsSubscriptions      UserUESubscription[]
+  UEStarVotes           UEStarVote[]
+  courses               UECourse[]
+  eventAnswers          EventAnswer[]
+  annalsSent            UEAnnal[]
+  annalsReported        UEAnnalReport[]
+  comments              UEComment[]
+  commentReplies        UECommentReply[]
+  commentsReported      UECommentReport[]
+  gitHubIssues          GitHubIssue[]
+  etuUTTTeam            UserEtuUTTTeam[]
+  courseExchanges       UECourseExchange[]
+  courseExchangeReplies UECourseExchangeReply[]
+}
+
+model UserAddress {
+  id         String  @id @default(uuid())
+  street     String? @db.VarChar(255)
+  postalCode String? @db.VarChar(20)
+  city       String? @db.VarChar(255)
+  country    String? @db.VarChar(50)
+  userId     String
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model UserBan {
+  id                 String    @id @default(uuid())
+  readOnlyExpiration DateTime? @db.Date
+  bannedExpiration   DateTime? @db.Date
+  userId             String
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model UserBDEContribution {
+  id              String   @id @default(uuid())
+  start           DateTime @db.Date
+  end             DateTime @db.Date
+  userId          String
+  startSemesterId String
+  endSemesterId   String
+
+  user          User     @relation(fields: [userId], references: [id])
+  startSemester Semester @relation("startSemester", fields: [startSemesterId], references: [code])
+  endSemester   Semester @relation("endSemester", fields: [endSemesterId], references: [code])
+}
+
+model UserBranche {
+  id             String   @id @default(uuid())
+  semesterNumber Int      @db.SmallInt
+  createdAt      DateTime
+  userId         String   @unique
+  brancheId      String
+  filiereId      String
+  semesterId     String
+
+  user     User       @relation(fields: [userId], references: [id])
+  branche  UTTBranche @relation(fields: [brancheId], references: [code])
+  filiere  UTTFiliere @relation(fields: [filiereId], references: [code])
+  semester Semester   @relation(fields: [semesterId], references: [code])
+}
+
+model UserEtuUTTTeam {
+  id     String @id @default(uuid())
+  role   String @db.Text
+  userId String
+
+  user     User       @relation(fields: [userId], references: [id])
+  semester Semester[]
+}
+
+model UserFormation {
+  id                String   @id @default(uuid())
+  createdAt         DateTime
+  userId            String   @unique
+  formationId       String
+  followingMethodId String
+
+  user            User                        @relation(fields: [userId], references: [id])
+  formation       UTTFormation                @relation(fields: [formationId], references: [name])
+  followingMethod UTTFormationFollowingMethod @relation(fields: [followingMethodId], references: [name])
+}
+
+model UserInfos {
+  id          String   @id @default(uuid())
+  sex         Sex
+  nationality String?  @db.VarChar(50)
+  birthday    DateTime @db.Date
+  avatar      String   @db.VarChar(255)
+  nickname    String?  @db.VarChar(50)
+  passions    String?  @db.Text
+  website     String?  @db.VarChar(255)
+  userId      String   @unique
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model UserMailsPhones {
+  id           String  @id @default(uuid())
+  mailUTT      String? @db.VarChar(255)
+  mailPersonal String? @db.VarChar(255)
+  phoneNumber  String? @db.VarChar(100)
+  userId       String  @unique
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model UserOtherAttribut {
+  name String        @id @db.VarChar(100)
+  type AttributeType
+
+  values UserOtherAttributValue[]
+}
+
+model UserOtherAttributValue {
+  id         String @id @default(uuid())
+  value      String @db.Text
+  userId     String
+  attributId String
+
+  user     User              @relation(fields: [userId], references: [id])
+  attribut UserOtherAttribut @relation(fields: [attributId], references: [name])
+}
+
+model UserPreference {
+  id                     String   @id @default(uuid())
+  birthdayDisplayOnlyAge Boolean
+  language               Language
+  wantDaymail            Boolean
+  wantDayNotif           Boolean
+  userId                 String   @unique
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model UserRGPD {
+  id                   String   @id @default(uuid())
+  isKeepingAccount     Boolean?
+  isDeletingEverything Boolean?
+  userId               String   @unique
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model UserSocialNetwork {
+  id             String  @id @default(uuid())
+  facebook       String? @db.VarChar(255)
+  twitter        String? @db.VarChar(255)
+  instagram      String? @db.VarChar(255)
+  linkedin       String? @db.VarChar(255)
+  pseudoDiscord  String? @db.VarChar(255)
+  wantDiscordUTT Boolean
+  userId         String  @unique
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model UserTimestamps {
+  id             String    @id @default(uuid())
+  firstLoginDate DateTime?
+  lastLoginDate  DateTime?
+  createdAt      DateTime
+  updatedAt      DateTime
+  deletedAt      DateTime?
+  userId         String    @unique
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model UserUESubscription {
+  id         String   @id @default(uuid())
+  createdAt  DateTime
+  userId     String
+  UEId       String
+  semesterId String
+
+  user     User     @relation(fields: [userId], references: [id])
+  UE       UE       @relation(fields: [UEId], references: [id])
+  semester Semester @relation(fields: [semesterId], references: [code])
+}
+
+model UTTBranche {
+  code                     String @id @db.VarChar(10)
+  name                     String @db.VarChar(255)
+  exitSalary               Int?
+  employmentRate           Float?
+  CDIRate                  Float?
+  abroadEmploymentRate     Float?
+  descriptionTranslationId String
+
+  descriptionTranslation Translation   @relation(fields: [descriptionTranslationId], references: [id])
+  filieres               UTTFiliere[]
+  userBranches           UserBranche[]
+}
+
+model UTTFiliere {
+  code                     String @id @db.VarChar(10)
+  name                     String @db.VarChar(255)
+  brancheId                String
+  descriptionTranslationId String
+
+  branche                UTTBranche    @relation(fields: [brancheId], references: [code])
+  descriptionTranslation Translation   @relation(fields: [descriptionTranslationId], references: [id])
+  UEs                    UE[]
+  userBranches           UserBranche[]
+}
+
+model UTTFormation {
+  name                     String @id @db.VarChar(100)
+  descriptionTranslationId String
+
+  descriptionTranslation Translation     @relation(fields: [descriptionTranslationId], references: [id])
+  userFormations         UserFormation[]
+}
+
+model UTTFormationFollowingMethod {
+  name                     String @id @db.VarChar(100)
+  descriptionTranslationId String
+
+  descriptionTranslation Translation     @relation(fields: [descriptionTranslationId], references: [id])
+  userFormations         UserFormation[]
+}
+
+enum AttributeType {
+  BOOL
+  INT
+  FLOAT
+  STRING
+  LONGTEXT
+  DATE
+  DATETIME
+}
+
+enum CourseType {
+  CM
+  TD
+  TP
+}
+
+enum Day {
+  Monday
+  Tuesday
+  Wednesday
+  Thursday
+  Friday
+  Saturday
+}
+
+enum Language {
+  FR
+  EN
+  ES
+  DE
+  ZH
+}
+
+enum Sex {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum Week {
+  A
+  B
+}
