@@ -32,8 +32,7 @@ npx prisma db push
 You can now go to [http://localhost:3000](http://localhost:3000) to see the app !
 | Service name | URL | Description |
 | - | - | - |
-| API | [http://localhost:3000](http://localhost:3000) | The API Swagger documentation. You can read the functional documentation and try all endpoints. |
-| Prisma Studio | [http://localhost:5555](http://localhost:5555) | A Prisma UI to see and administrate data inside the database. |
+| API | [http://localhost:3000](http://localhost:3000) | The API home page. You can address all requests to that endpoint. |
 
 ## How to use
 
@@ -82,10 +81,22 @@ yarn prisma generate
 yarn db:push
 ```
 
+Start the project
+
+````sh
+# In developping mode
+yarn start:dev
+# In debug mode
+yarn start:debug
+# In production
+yarn build
+yarn start:prod
+```
+
 # Contribute
 
 To commit
 
 ```sh
 git cz
-```
+````
