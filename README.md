@@ -20,6 +20,25 @@ Push database changes
 npx prisma db push
 ```
 
+# Setup manually
+
+Setup environment variables
+```sh
+cp .env.example .env
+```
+
+Install dependencies
+```sh
+yarn
+```
+
+Setup the database
+
+```sh
+yarn prisma generate
+yarn db:push
+```
+
 # Services
 
 You can now go to [http://localhost:3000](http://localhost:3000) to see the app !
