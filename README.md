@@ -39,6 +39,17 @@ yarn prisma generate
 yarn db:push
 ```
 
+Start the project
+
+```sh
+# In developping mode
+yarn start:dev
+# In debug mode
+yarn start:debug
+# In production
+yarn build
+yarn start:prod
+
 # Services
 
 You can now go to [http://localhost:3000](http://localhost:3000) to see the app !
