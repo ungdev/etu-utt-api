@@ -1,24 +1,20 @@
 # Setup with Docker
 
-Setup environment variables
+Copy environment variables file and fill it with API keys and secrets
 ```sh
 cp .env.example .env
 ```
 
-Start the project
+Start the project (add a `-d` flag to run it in background)
 ```sh
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 ```
 
-To open a terminal inside the container
-```sh
-docker exec -it etuutt-api /bin/sh
-```
-
-Push database changes
-```sh
-npx prisma db push
-```
+Everytime that you up the project, it will do the following things for you in the background :
+- Check and install dependencies (Useful when installing the project for the first time or when switching branches)
+- Apply last changes on the `schema.prisma` to the database
+- Start Prisma Studio
+- Start the NestJS API in dev mode
 
 # Services
 
@@ -26,6 +22,29 @@ You can now go to [http://localhost:3000](http://localhost:3000) to see the app 
 | Service name | URL | Description |
 | - | - | - |
 | API | [http://localhost:3000](http://localhost:3000) | The API home page. You can address all requests to that endpoint. |
+| Prisma Studio | [http://localhost:5555](http://localhost:5555) | A Prisma UI to see and administrate data inside the database. |
+
+# How to use
+
+To open a terminal inside the container
+```sh
+docker exec -it etuutt-api sh
+```
+
+Inside that terminal, you can run any command you want, like this one to acces NestJS CLI
+```sh
+npx nest
+```
+
+To run lint
+```sh
+npm run lint
+```
+
+To run tests
+```sh
+npm run test
+```
 
 # Contribute
 

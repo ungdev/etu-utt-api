@@ -1,22 +1,18 @@
 version: '3.7'
 
 services:
+
   application:
     container_name: etuutt-api
-    build:
-      context: .
     ports:
-      - 3000:3000
+      - "3000:3000"
     depends_on:
       - database
 
   database:
     image: postgres
-    ports:
-      - 5432:5432
     volumes:
       - database-data:/var/lib/postgresql/data
 
 volumes:
   database-data:
-     
