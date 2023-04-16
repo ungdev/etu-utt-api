@@ -4,6 +4,7 @@ services:
 
   application:
     image: node:19-alpine
+    user: node:node
     environment:
       - DATABASE_URL=postgresql://etuutt:abcdef@database/etuutt
     working_dir: /usr/src/app
