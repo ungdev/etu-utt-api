@@ -7,17 +7,25 @@ services:
     user: node:node
     environment:
       - DATABASE_URL=postgresql://etuutt:abcdef@database/etuutt
+      - JWT_SECRET='super-secret'
     working_dir: /usr/src/app
     volumes:
       - .:/usr/src/app
     ports:
       - "5555:5555"
+    # We use db push for now because we don't have any migrations yet, prototyping the database
     command: sh -c "npm install && npx prisma db push && (npx prisma studio &) && npm run start:dev"
     # The following command is used to run migrations instead of db push
-    # We use db push for now because we don't have any migrations yet, prototyping the database
-    #   command: sh -c "npm install && npx prisma migrate dev && (npx prisma studio &) && npm run start:dev"
+    # command: sh -c "npm install && npx prisma migrate dev && (npx prisma studio &) && npm run start:dev"
 
   database:
+    environment:
+      - POSTGRES_USER=etuutt
+      - POSTGRES_PASSWORD=abcdef
+      - POSTGRES_DB=etuutt
+
+  database-test:
+    image: postgres
     environment:
       - POSTGRES_USER=etuutt
       - POSTGRES_PASSWORD=abcdef
