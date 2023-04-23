@@ -17,7 +17,10 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "db:reset": "npx prisma migrate reset --force && prisma migrate deploy",
+    "db:test:reset": "env-cmd -f .env.test --use-shell \"npm run db:reset\"",
+    "pretest:e2e": "npm run db:test:reset",
+    "test:e2e": "env-cmd -f .env.test jest --watchAll --no-cache --config ./test/jest-e2e.json"
   },
   "dependencies": {
     "@nestjs/common": "^9.4.0",
@@ -38,6 +41,7 @@
     "@typescript-eslint/eslint-plugin": "^5.57.1",
     "@typescript-eslint/parser": "^5.57.1",
     "cz-emoji": "^1.3.2-canary.2",
+    "env-cmd": "^10.1.0",
     "eslint": "^8.38.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-prettier": "^4.2.1",
