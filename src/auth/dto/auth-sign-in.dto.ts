@@ -1,8 +1,8 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsAlphanumeric, IsNotEmpty, IsString } from 'class-validator';
 
 export class AuthSignInDto {
-  @IsString()
   @IsNotEmpty()
+  @IsAlphanumeric()
   login: string;
 
   @IsString()
