@@ -23,7 +23,7 @@ Everytime that you `up` the project, it will do the following things for you in 
 You can now go to [http://localhost:3000](http://localhost:3000) to see the app !
 | Service name | URL | Description |
 | - | - | - |
-| API | [http://localhost:3000](http://localhost:3000) | The API home page. You can address all requests to that endpoint. |
+| API | [http://localhost:3000](http://localhost:3000) | The API Swagger documentation. You can read the functional documentation and try all endpoints. |
 | Prisma Studio | [http://localhost:5555](http://localhost:5555) | A Prisma UI to see and administrate data inside the database. |
 
 ## How to use
