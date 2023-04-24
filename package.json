@@ -5,6 +5,9 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
   "scripts": {
     "build": "npx nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -31,6 +34,7 @@
     "rxjs": "^7.8.0"
   },
   "devDependencies": {
+    "@faker-js/faker": "^7.6.0",
     "@nestjs/cli": "^9.3.0",
     "@nestjs/schematics": "^9.1.0",
     "@nestjs/testing": "^9.4.0",
