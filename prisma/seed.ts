@@ -1,12 +1,15 @@
 import { PrismaClient } from '@prisma/client'
-import {fakeUser} from "./faked-models";
+import {ueSeed} from "./modules/ue/ue.seed";
+import {userSeed} from "./modules/user/user.seed";
 
 const prisma = new PrismaClient()
 async function main() {
+    const seedsFunction = [
+        ueSeed, userSeed
+    ]
     console.log("Seeding...")
-    const fakerRounds = 100;
-    for (let i = 0; i < fakerRounds; i++) {
-        await prisma.user.create({ data: fakeUser() });
+    for (let seedFunction of seedsFunction) {
+        await seedFunction()
     }
     console.log("Seeding done.")
 }
