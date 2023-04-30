@@ -399,13 +399,14 @@ model UEWorkTime {
 }
 
 model User {
-  id        String @id @default(uuid())
-  login     String @unique @db.VarChar(50)
+  id        String  @id @default(uuid())
+  login     String  @unique @db.VarChar(50)
+  hash      String
   studentId Int?
   firstName String
   lastName  String
-  roles     Json   @default("[]")
-  RGPDId    String @unique
+  roles     Json    @default("[]")
+  RGPDId    String? @unique
 
   timestamps            UserTimestamps?
   socialNetwork         UserSocialNetwork?
