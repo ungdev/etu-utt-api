@@ -7,7 +7,7 @@ Copy environment variables file and fill it with API keys and secrets.
 cp .env.example .env
 ```
 
-Start the project (add a `-d` flag to run it in background) (It may takes a few minutes on first install because `node_modules` are installed in the background)
+Start the project (add a `-d` flag to run it in background)
 ```sh
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 ```
