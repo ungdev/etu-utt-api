@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client'
-import {fakeUser} from "./models";
+import {fakeUser} from "./factories";
 
 export async function userSeed() {
     const prisma = new PrismaClient()

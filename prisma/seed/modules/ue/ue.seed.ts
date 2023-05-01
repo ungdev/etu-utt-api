@@ -1,9 +1,9 @@
 import { PrismaClient } from '@prisma/client'
-import {fakeUE} from "./models";
+import {fakeUE} from "./factories";
 import {branchesCode, filieresCode, translationsUuids} from "../../const";
-import {fakeUTTFiliere} from "./models/filiere";
-import {fakeUttBranche} from "./models/branche";
-import {fakeTranslation} from "./models/translation";
+import {fakeUTTFiliere} from "./factories/filiere";
+import {fakeUttBranche} from "./factories/branche";
+import {fakeTranslation} from "./factories/translation";
 import {faker} from "@faker-js/faker";
 
 export async function ueSeed() {
