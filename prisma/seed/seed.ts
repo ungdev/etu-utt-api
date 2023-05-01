@@ -4,13 +4,12 @@ import {userSeed} from "./modules/user/user.seed";
 
 const prisma = new PrismaClient()
 async function main() {
-    const seedsFunction = [
-        ueSeed, userSeed
-    ]
+
     console.log("Seeding...")
-    for (let seedFunction of seedsFunction) {
-        await seedFunction()
-    }
+
+    await ueSeed()
+    await userSeed()
+
     console.log("Seeding done.")
 }
 
