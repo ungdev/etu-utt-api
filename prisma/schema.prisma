@@ -18,11 +18,11 @@ model Asso {
   createdAt                     DateTime
   updatedAt                     DateTime
   deletedAt                     DateTime
-  descriptionShortTranslationId String
-  descriptionTranslationId      String
+  descriptionShortTranslationId String   @unique
+  descriptionTranslationId      String   @unique
 
-  descriptionShortTranslation Translation      @relation(name: "descriptionShortTranslation", fields: [descriptionShortTranslationId], references: [id])
-  descriptionTranslation      Translation      @relation(name: "descriptionTranslation", fields: [descriptionTranslationId], references: [id])
+  descriptionShortTranslation Translation      @relation(name: "descriptionShortTranslation", fields: [descriptionShortTranslationId], references: [id], onDelete: Cascade)
+  descriptionTranslation      Translation      @relation(name: "descriptionTranslation", fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
   keywords                    AssoKeyword[]
   assoMessages                AssoMessage[]
   events                      Event[]
@@ -70,12 +70,12 @@ model AssoMessage {
   sendAsDaymail      Boolean
   createdAt          DateTime
   assoId             String
-  titleTranslationId String
-  bodyTranslationId  String
+  titleTranslationId String   @unique
+  bodyTranslationId  String   @unique
 
   asso             Asso        @relation(fields: [assoId], references: [id])
-  titleTranslation Translation @relation(name: "titleTranslation", fields: [titleTranslationId], references: [id])
-  bodyTranslation  Translation @relation(name: "bodyTranslation", fields: [bodyTranslationId], references: [id])
+  titleTranslation Translation @relation(name: "titleTranslation", fields: [titleTranslationId], references: [id], onDelete: Cascade)
+  bodyTranslation  Translation @relation(name: "bodyTranslation", fields: [bodyTranslationId], references: [id], onDelete: Cascade)
 }
 
 model Event {
@@ -87,13 +87,15 @@ model Event {
   createdAt                DateTime
   updatedAt                DateTime
   deletedAt                DateTime
-  titleTranslationId       String
-  descriptionTranslationId String
+  titleTranslationId       String   @unique
+  descriptionTranslationId String   @unique
 
-  assos        Asso[]
-  categories   EventCategory[]
-  eventAnswers EventAnswer[]
-  eventPrivacy EventPrivacy[]
+  titleTranslation       Translation     @relation(name: "titleTranslation", fields: [titleTranslationId], references: [id], onDelete: Cascade)
+  descriptionTranslation Translation     @relation(name: "descriptionTranslation", fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
+  assos                  Asso[]
+  categories             EventCategory[]
+  eventAnswers           EventAnswer[]
+  eventPrivacy           EventPrivacy[]
 }
 
 model EventAnswer {
@@ -152,24 +154,26 @@ model Semester {
 }
 
 model Translation {
-  id      String  @id @default(uuid())
-  french  String? @db.Text
-  english String? @db.Text
-  spanish String? @db.Text
-  german  String? @db.Text
-  chinese String? @db.Text
+  id String  @id @default(uuid())
+  fr String? @db.Text
+  en String? @db.Text
+  es String? @db.Text
+  de String? @db.Text
+  zh String? @db.Text
 
-  assoDescriptionShort                 Asso[]                        @relation("descriptionShortTranslation")
-  assoDescription                      Asso[]                        @relation("descriptionTranslation")
-  assoMessageTitle                     AssoMessage[]                 @relation("titleTranslation")
-  assoMessageTitleBody                 AssoMessage[]                 @relation("bodyTranslation")
-  annalReportReasonDescriptions        UEAnnalReportReason[]
-  commentReportReasonDescriptions      UECommentReportReason[]
-  starCriterionDescriptions            UEStarCriterion[]
-  brancheDescriptions                  UTTBranche[]
-  filiereDescriptions                  UTTFiliere[]
-  formationDescriptions                UTTFormation[]
-  formationFollowingMethodDescriptions UTTFormationFollowingMethod[]
+  assoDescriptionShort                 Asso?                        @relation("descriptionShortTranslation")
+  assoDescription                      Asso?                        @relation("descriptionTranslation")
+  assoMessageTitle                     AssoMessage?                 @relation("titleTranslation")
+  assoMessageTitleBody                 AssoMessage?                 @relation("bodyTranslation")
+  eventDescription                     Event?                       @relation("descriptionTranslation")
+  eventTitle                           Event?                       @relation("titleTranslation")
+  annalReportReasonDescriptions        UEAnnalReportReason?
+  commentReportReasonDescriptions      UECommentReportReason?
+  starCriterionDescriptions            UEStarCriterion?
+  brancheDescriptions                  UTTBranche?
+  filiereDescriptions                  UTTFiliere?
+  formationDescriptions                UTTFormation?
+  formationFollowingMethodDescriptions UTTFormationFollowingMethod?
 }
 
 model UE {
@@ -225,9 +229,9 @@ model UEAnnalReport {
 
 model UEAnnalReportReason {
   name                     String @id @db.VarChar(100)
-  descriptionTranslationId String
+  descriptionTranslationId String @unique
 
-  descriptionTranslation Translation     @relation(fields: [descriptionTranslationId], references: [id])
+  descriptionTranslation Translation     @relation(fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
   reports                UEAnnalReport[]
 }
 
@@ -277,9 +281,9 @@ model UECommentReport {
 
 model UECommentReportReason {
   name                     String @id @db.VarChar(100)
-  descriptionTranslationId String
+  descriptionTranslationId String @unique
 
-  descriptionTranslation Translation       @relation(fields: [descriptionTranslationId], references: [id])
+  descriptionTranslation Translation       @relation(fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
   reports                UECommentReport[]
 }
 
@@ -366,9 +370,9 @@ model UEInfo {
 model UEStarCriterion {
   id                       String @id @default(uuid())
   name                     String @db.VarChar(255)
-  descriptionTranslationId String
+  descriptionTranslationId String @unique
 
-  descriptionTranslation Translation  @relation(fields: [descriptionTranslationId], references: [id])
+  descriptionTranslation Translation  @relation(fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
   starVotes              UEStarVote[]
 }
 
@@ -610,9 +614,9 @@ model UTTBranche {
   employmentRate           Float?
   CDIRate                  Float?
   abroadEmploymentRate     Float?
-  descriptionTranslationId String
+  descriptionTranslationId String @unique
 
-  descriptionTranslation Translation   @relation(fields: [descriptionTranslationId], references: [id])
+  descriptionTranslation Translation   @relation(fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
   filieres               UTTFiliere[]
   userBranches           UserBranche[]
 }
@@ -621,27 +625,27 @@ model UTTFiliere {
   code                     String @id @db.VarChar(10)
   name                     String @db.VarChar(255)
   brancheId                String
-  descriptionTranslationId String
+  descriptionTranslationId String @unique
 
   branche                UTTBranche    @relation(fields: [brancheId], references: [code])
-  descriptionTranslation Translation   @relation(fields: [descriptionTranslationId], references: [id])
+  descriptionTranslation Translation   @relation(fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
   UEs                    UE[]
   userBranches           UserBranche[]
 }
 
 model UTTFormation {
   name                     String @id @db.VarChar(100)
-  descriptionTranslationId String
+  descriptionTranslationId String @unique
 
-  descriptionTranslation Translation     @relation(fields: [descriptionTranslationId], references: [id])
+  descriptionTranslation Translation     @relation(fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
   userFormations         UserFormation[]
 }
 
 model UTTFormationFollowingMethod {
   name                     String @id @db.VarChar(100)
-  descriptionTranslationId String
+  descriptionTranslationId String @unique
 
-  descriptionTranslation Translation     @relation(fields: [descriptionTranslationId], references: [id])
+  descriptionTranslation Translation     @relation(fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
   userFormations         UserFormation[]
 }
 
