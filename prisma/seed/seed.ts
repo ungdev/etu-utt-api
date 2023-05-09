@@ -1,10 +1,13 @@
 import { PrismaClient } from '@prisma/client'
 import {ueSeed} from "./modules/ue/ue.seed";
 import {userSeed} from "./modules/user/user.seed";
+import {faker} from "@faker-js/faker";
 
 const prisma = new PrismaClient()
 async function main() {
 
+    //Set custom seed
+    faker.seed(parseInt(process.env.FAKER_SEED))
     console.log("Seeding...")
 
     await ueSeed()

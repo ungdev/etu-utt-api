@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "prisma": {
-    "seed": "ts-node prisma/seed/seed.ts"
+    "seed": "dotenv -e .env.test -- ts-node prisma/seed/seed.ts"
   },
   "scripts": {
     "build": "npx nest build",
@@ -30,6 +30,7 @@
     "@nestjs/core": "^9.4.0",
     "@nestjs/platform-express": "^9.4.0",
     "@prisma/client": "^4.12.0",
+    "dotenv-cli": "^7.2.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.0"
   },
