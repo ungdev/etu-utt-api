@@ -78,7 +78,7 @@ Setup the database
 
 ```sh
 yarn prisma generate
-yarn db:push
+yarn prisma db push
 ```
 
 Start the project
