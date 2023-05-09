@@ -183,7 +183,6 @@ model UE {
   validationRate Float?
   createdAt      DateTime
   updatedAt      DateTime
-  filiereId      String
 
   usersSubscriptions UserUESubscription[]
   credits            UECredit[]
@@ -194,7 +193,7 @@ model UE {
   annals             UEAnnal[]
   comments           UEComment[]
   courses            UECourse[]
-  filiere            UTTFiliere           @relation(fields: [filiereId], references: [code])
+  filiere            UTTFiliere[]
 }
 
 model UEAnnal {
