@@ -4,7 +4,7 @@
 
 Copy environment variables file and fill it with API keys and secrets.
 ```sh
-cp .env.example .env
+cp .env.dist .env
 ```
 
 Start the project (add a `-d` flag to run it in background)
