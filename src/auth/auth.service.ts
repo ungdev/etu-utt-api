@@ -26,6 +26,9 @@ export class AuthService {
           firstName: dto.firstName,
           lastName: dto.lastName,
           studentId: dto.studentId,
+          infos: {
+            create: { sex: dto.sex, birthday: dto.birthday },
+          },
         },
       });
 
@@ -72,7 +75,7 @@ export class AuthService {
     const secret = this.config.get('JWT_SECRET');
 
     const token = await this.jwt.signAsync(payload, {
-      expiresIn: '15m',
+      expiresIn: this.config.get('JWT_EXPIRES_IN'),
       secret: secret,
     });
     return {

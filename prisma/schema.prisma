@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -513,7 +513,7 @@ model UserInfos {
   sex         Sex
   nationality String?  @db.VarChar(50)
   birthday    DateTime @db.Date
-  avatar      String   @db.VarChar(255)
+  avatar      String   @db.VarChar(255) @default("default.png")
   nickname    String?  @db.VarChar(50)
   passions    String?  @db.Text
   website     String?  @db.VarChar(255)
