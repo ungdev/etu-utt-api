@@ -8,10 +8,10 @@ import { ProfileModule } from './profile/profile.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      // Ok, for some reason it still loads the normal .env file.
-      // I tried to remove the ternary to make it always load the .env.test file.
-      // It loads the .env.test file properly, but overrides it with the normal .env file
-      // envFilePath: process.env.NODE_ENV === 'test' ? '.env' : '.env.test',
+      // Ok, for some reason it still loads the normal .env.dev file.
+      // I tried to remove the ternary to make it always load the .env.dev.test file.
+      // It loads the .env.dev.test file properly, but overrides it with the normal .env.dev file
+      envFilePath: process.env.NODE_ENV === 'test' ? '.env.test' : '.env.dev',
     }),
     PrismaModule,
     AuthModule,
