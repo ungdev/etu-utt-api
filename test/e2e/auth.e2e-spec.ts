@@ -1,16 +1,20 @@
 import * as pactum from 'pactum';
 import { AuthSignInDto, AuthSignUpDto } from '../../src/auth/dto';
+import { INestApplication } from '@nestjs/common';
+import { PrismaService } from '../../src/prisma/prisma.service';
 
-export function AuthE2ESpec() {
+export function AuthE2ESpec(app: () => INestApplication) {
   describe('Auth', () => {
     describe('Signup', () => {
-      const dto: AuthSignUpDto = {
+      const dto = {
         login: 'testLogin',
         password: 'testPassword',
         firstName: 'testFirstName',
         lastName: 'testLastName',
         studentId: 44250,
-      };
+        sex: 'OTHER',
+        birthday: new Date('1999-01-01'),
+      } as AuthSignUpDto;
       it('should return a 400 if login is missing', async () => {
         return pactum
           .spec()
@@ -60,6 +64,37 @@ export function AuthE2ESpec() {
           .withBody({ ...dto, studentId: -1 })
           .expectStatus(400);
       });
+      it('should return a 400 if sex is not provided', async () => {
+        return pactum
+          .spec()
+          .post('/auth/signup')
+          .withBody({ ...dto, sex: undefined })
+          .expectStatus(400);
+      });
+      it('should return a 400 if sex is not one of MALE, FEMALE or OTHER is not provided', async () => {
+        return pactum
+          .spec()
+          .post('/auth/signup')
+          .withBody({ ...dto, sex: 'neither of these' })
+          .expectStatus(400);
+      });
+      it('should return a 400 if birthday is not provided', async () => {
+        return pactum
+          .spec()
+          .post('/auth/signup')
+          .withBody({ ...dto, birthday: undefined })
+          .expectStatus(400);
+      });
+      it('should return a 400 if birthday is not a date', async () => {
+        return pactum
+          .spec()
+          .post('/auth/signup')
+          .withBody({
+            ...dto,
+            birthday: 'My birthday is on the 32nd of February',
+          })
+          .expectStatus(400);
+      });
       it('should return a 400 if no body is provided', async () => {
         return pactum
           .spec()
@@ -68,11 +103,25 @@ export function AuthE2ESpec() {
           .expectStatus(400);
       });
       it('should create a new user', async () => {
-        return pactum
+        await pactum
           .spec()
           .post('/auth/signup')
           .withBody(dto)
           .expectStatus(201);
+        const user = await app()
+          .get(PrismaService)
+          .user.findUnique({
+            where: { login: dto.login },
+            include: { infos: true },
+          });
+        expect(user).toBeDefined();
+        expect(user.login).toEqual(dto.login);
+        expect(user.firstName).toEqual(dto.firstName);
+        expect(user.lastName).toEqual(dto.lastName);
+        expect(user.studentId).toEqual(dto.studentId);
+        expect(user.infos.sex).toEqual(dto.sex);
+        expect(user.infos.birthday).toEqual(dto.birthday);
+        expect(user.id).toMatch(/[a-z0-9-]{36}/);
       });
     });
 
