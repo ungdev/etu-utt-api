@@ -1,4 +1,10 @@
-import { IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import {
+  IsDate,
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+} from 'class-validator';
 import { AuthSignInDto } from './auth-sign-in.dto';
 import { IsPositive } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -22,7 +28,8 @@ export class AuthSignUpDto extends AuthSignInDto {
   @IsNotEmpty()
   sex: Sex;
 
-  @Type(() => Date)
+  @IsDate()
   @IsNotEmpty()
+  @Type(() => Date)
   birthday: Date;
 }

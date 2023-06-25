@@ -6,11 +6,15 @@ import { ProfileModule } from './profile/profile.module';
 
 @Module({
   imports: [
-    AuthModule,
-    PrismaModule,
     ConfigModule.forRoot({
       isGlobal: true,
+      // Ok, for some reason it still loads the normal .env file.
+      // I tried to remove the ternary to make it always load the .env.test file.
+      // It loads the .env.test file properly, but overrides it with the normal .env file
+      // envFilePath: process.env.NODE_ENV === 'test' ? '.env' : '.env.test',
     }),
+    PrismaModule,
+    AuthModule,
     ProfileModule,
   ],
 })
