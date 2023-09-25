@@ -3,7 +3,9 @@ import { AppModule } from '../src/app.module';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { PrismaService } from '../src/prisma/prisma.service';
 import * as pactum from 'pactum';
-import { AuthE2ESpec, ProfileE2ESpec } from './e2e';
+import AuthE2ESpec from './e2e/auth/';
+import ProfileE2ESpec from './e2e/profile';
+import UsersE2ESpec from './e2e/users';
 
 describe('EtuUTT API e2e testing', () => {
   let app: INestApplication;
@@ -30,4 +32,5 @@ describe('EtuUTT API e2e testing', () => {
 
   AuthE2ESpec(() => app);
   ProfileE2ESpec(() => app);
+  UsersE2ESpec(() => app);
 });
