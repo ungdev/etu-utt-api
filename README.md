@@ -24,9 +24,10 @@ Push database changes
 npx prisma db push
 ```
 
-# Services
+## Services
 
 You can now go to [http://localhost:3000](http://localhost:3000) to see the app !
+
 | Service name | URL | Description |
 | - | - | - |
 | API | [http://localhost:3000](http://localhost:3000) | The API home page. You can address all requests to that endpoint. |
@@ -53,7 +54,7 @@ To run end to end tests (e2e) in watch mode.
 npm run test:e2e
 ```
 
-# Setup manually
+## Setup manually
 
 Setup environment variables
 ```sh
@@ -82,7 +83,7 @@ yarn build
 yarn start:prod
 ```
 
-# Contribute
+## Contribute
 
 To commit
 ```sh
