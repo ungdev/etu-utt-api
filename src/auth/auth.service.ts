@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { AuthSignInDto, AuthSignUpDto } from './dto';
 import * as bcrypt from 'bcryptjs';
 import { Prisma } from '@prisma/client';
-import { JsonWebTokenError, JwtService } from '@nestjs/jwt';
+import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()

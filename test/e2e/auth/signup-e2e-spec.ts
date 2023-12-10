@@ -114,7 +114,7 @@ const SignupE2ESpec = suite('Signup', (app) => {
         where: { login: dto.login },
         include: { infos: true },
       });
-    expect(user).toBeDefined();
+    expect(user).not.toBeNull();
     expect(user.login).toEqual(dto.login);
     expect(user.firstName).toEqual(dto.firstName);
     expect(user.lastName).toEqual(dto.lastName);
