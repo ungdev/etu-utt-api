@@ -80,22 +80,21 @@ model AssoMessage {
 
 model Event {
   id                       String   @id @default(uuid())
-  startAt                  DateTime
-  endAt                    DateTime
   isAllDay                 Boolean
-  location                 String?  @db.VarChar(255)
   createdAt                DateTime
   updatedAt                DateTime
   deletedAt                DateTime
   titleTranslationId       String   @unique
   descriptionTranslationId String   @unique
 
-  titleTranslation       Translation     @relation(name: "titleTranslation", fields: [titleTranslationId], references: [id], onDelete: Cascade)
-  descriptionTranslation Translation     @relation(name: "descriptionTranslation", fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
+  titleTranslation       Translation      @relation(name: "titleTranslation", fields: [titleTranslationId], references: [id], onDelete: Cascade)
+  descriptionTranslation Translation      @relation(name: "descriptionTranslation", fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
+  timetableEntries       TimetableEntry[]
   assos                  Asso[]
   categories             EventCategory[]
   eventAnswers           EventAnswer[]
   eventPrivacy           EventPrivacy[]
+  timetableEntryId       String
 }
 
 model EventAnswer {
@@ -151,6 +150,36 @@ model Semester {
   branches              UserBranche[]
   UESubscriptions       UserUESubscription[]
   etuUTTTeams           UserEtuUTTTeam[]
+}
+
+model TimetableGroup {
+  id   String @id @default(uuid())
+  name String
+
+  userTimetableGroups UserTimetableGroup[]
+  TimetableEntry      TimetableEntry[]
+}
+
+model TimetableEntry {
+  id                       String             @id @default(uuid())
+  eventStart               DateTime           @db.DateTime
+  eventEnd                 DateTime           @db.DateTime
+  repeatEvery              Int?               @db.UnsignedInt
+  startHour                DateTime?          @db.Time
+  endHour                  DateTime?          @db.Time
+  createdAt                DateTime?
+  location                 String?
+  type                     TimetableEntryType
+  overrideTimetableEntryId String?
+  eventId                  String?
+  ueCourseId               String?
+  timetableGroupId         String
+
+  overrideTimetableEntry TimetableEntry?  @relation(name: "overrideTimetableEntry", fields: [overrideTimetableEntryId], references: [id])
+  ueCourse               UECourse?        @relation(fields: [ueCourseId], references: [id])
+  event                  Event?           @relation(fields: [eventId], references: [id])
+  timetableGroup         TimetableGroup   @relation(fields: [timetableGroupId], references: [id])
+  overwrittenBy          TimetableEntry[] @relation(name: "overrideTimetableEntry")
 }
 
 model Translation {
@@ -288,12 +317,7 @@ model UECommentReportReason {
 
 model UECourse {
   id         String     @id @default(uuid())
-  day        Day
-  startHour  DateTime   @db.Time
-  endHour    DateTime   @db.Time
-  week       Week
   type       CourseType
-  room       String     @db.VarChar(50)
   createdAt  DateTime
   UEId       String
   semesterId String
@@ -303,6 +327,7 @@ model UECourse {
   semester            Semester           @relation(fields: [semesterId], references: [code])
   courseExchangesFrom UECourseExchange[] @relation(name: "courseFrom")
   courseExchangesTo   UECourseExchange[] @relation(name: "courseTo")
+  timetableEntries    TimetableEntry[]
 }
 
 model UECourseExchange {
@@ -437,6 +462,7 @@ model User {
   etuUTTTeam            UserEtuUTTTeam[]
   courseExchanges       UECourseExchange[]
   courseExchangeReplies UECourseExchangeReply[]
+  UserTimetableGroup    UserTimetableGroup[]
 }
 
 model UserAddress {
@@ -513,7 +539,7 @@ model UserInfos {
   sex         Sex
   nationality String?  @db.VarChar(50)
   birthday    DateTime @db.Date
-  avatar      String   @db.VarChar(255) @default("default.png")
+  avatar      String   @default("default.png") @db.VarChar(255)
   nickname    String?  @db.VarChar(50)
   passions    String?  @db.Text
   website     String?  @db.VarChar(255)
@@ -594,6 +620,16 @@ model UserTimestamps {
   user User @relation(fields: [userId], references: [id])
 }
 
+model UserTimetableGroup {
+  id               String @id @default(uuid())
+  timetableGroupId String
+  userId           String
+  priority         Int
+
+  user           User           @relation(fields: [userId], references: [id])
+  timetableGroup TimetableGroup @relation(fields: [timetableGroupId], references: [id])
+}
+
 model UserUESubscription {
   id         String   @id @default(uuid())
   createdAt  DateTime
@@ -664,15 +700,6 @@ enum CourseType {
   TP
 }
 
-enum Day {
-  Monday
-  Tuesday
-  Wednesday
-  Thursday
-  Friday
-  Saturday
-}
-
 enum Language {
   FR
   EN
@@ -690,4 +717,11 @@ enum Sex {
 enum Week {
   A
   B
+}
+
+enum TimetableEntryType {
+  COURSE
+  ASSO
+  DELETE
+  CUSTOM
 }
