@@ -1,7 +1,7 @@
 import { PrismaService } from '../src/prisma/prisma.service';
 import { INestApplication } from '@nestjs/common';
 import { AuthService } from '../src/auth/auth.service';
-import { AuthSignInDto, AuthSignUpDto } from '../src/auth/dto';
+import { AuthSignUpDto } from '../src/auth/dto';
 
 export function suite(
   name: string,

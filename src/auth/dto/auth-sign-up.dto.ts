@@ -2,9 +2,10 @@ import {
   IsDate,
   IsEnum,
   IsNotEmpty,
-  IsNumber, IsOptional,
-  IsString
-} from "class-validator";
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { AuthSignInDto } from './auth-sign-in.dto';
 import { IsPositive } from 'class-validator';
 import { Type } from 'class-transformer';
