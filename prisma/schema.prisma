@@ -157,7 +157,7 @@ model TimetableGroup {
   name String
 
   userTimetableGroups UserTimetableGroup[]
-  TimetableEntry      TimetableEntry[]
+  timetableEntry      TimetableEntry[]
 }
 
 model TimetableEntry {
@@ -165,8 +165,7 @@ model TimetableEntry {
   eventStart               DateTime           @db.DateTime
   eventEnd                 DateTime           @db.DateTime
   repeatEvery              Int?               @db.UnsignedInt
-  startHour                DateTime?          @db.Time
-  endHour                  DateTime?          @db.Time
+  occurrenceDuration       DateTime?          @db.Time
   createdAt                DateTime?
   location                 String?
   type                     TimetableEntryType

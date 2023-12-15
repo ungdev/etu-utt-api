@@ -9,7 +9,7 @@ import {
 import { JwtGuard } from '../auth/guard';
 import { GetUser } from '../auth/decorator';
 import { PrismaService } from '../prisma/prisma.service';
-import { User } from '../prisma/types';
+import { User } from '../users/interfaces/user.interface';
 import { ProfileUpdateDto } from './dto/profile-update.dto';
 
 @Controller('profile')

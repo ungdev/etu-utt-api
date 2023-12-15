@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { User } from '../prisma/types';
+import { User } from './interfaces/user.interface';
 import { UsersSearchDto } from './dto/users-search.dto';
 
 @Injectable()
