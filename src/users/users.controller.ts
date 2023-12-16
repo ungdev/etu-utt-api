@@ -1,4 +1,4 @@
-import { Controller, Get, NotFoundException, Param, Query, UseGuards } from "@nestjs/common";
+import { Controller, Get, NotFoundException, Param, Query, UseGuards } from '@nestjs/common';
 import { JwtGuard } from '../auth/guard';
 import { UsersSearchDto } from './dto/users-search.dto';
 import UsersService from './users.service';

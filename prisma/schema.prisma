@@ -161,14 +161,14 @@ model TimetableGroup {
 }
 
 model TimetableEntry {
-  id                       String             @id @default(uuid())
-  eventStart               DateTime           @db.DateTime
-  eventEnd                 DateTime           @db.DateTime
-  repeatEvery              Int?               @db.UnsignedInt
-  occurrenceDuration       DateTime?          @db.Time
+  id                       String              @id @default(uuid())
+  eventStart               DateTime            @db.DateTime
+  eventEnd                 DateTime            @db.DateTime
+  repeatEvery              Int?                @db.UnsignedInt
+  occurrenceDuration       Int?                @db.UnsignedInt
+  type                     TimetableEntryType?
   createdAt                DateTime?
   location                 String?
-  type                     TimetableEntryType
   overrideTimetableEntryId String?
   eventId                  String?
   ueCourseId               String?
@@ -461,7 +461,7 @@ model User {
   etuUTTTeam            UserEtuUTTTeam[]
   courseExchanges       UECourseExchange[]
   courseExchangeReplies UECourseExchangeReply[]
-  UserTimetableGroup    UserTimetableGroup[]
+  userTimetableGroup    UserTimetableGroup[]
 }
 
 model UserAddress {
@@ -627,6 +627,8 @@ model UserTimetableGroup {
 
   user           User           @relation(fields: [userId], references: [id])
   timetableGroup TimetableGroup @relation(fields: [timetableGroupId], references: [id])
+
+  @@unique([timetableGroupId, userId])
 }
 
 model UserUESubscription {
