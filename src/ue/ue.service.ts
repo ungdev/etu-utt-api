@@ -17,44 +17,52 @@ export class UEService {
   async searchUEs(query: UESearchDto) {
     return this.prisma.uE.findMany({
       where: {
-        OR: [
-          {
-            code: {
-              contains: query.q,
-            },
-          },
-          {
-            inscriptionCode: {
-              contains: query.q,
-            },
-          },
-          {
-            name: {
-              contains: query.q,
-            },
-          },
-          {
-            info: {
+        ...(query.q
+          ? {
               OR: [
-                { comment: query.q },
-                { objectives: query.q },
-                { programme: query.q },
+                {
+                  code: {
+                    contains: query.q,
+                  },
+                },
+                {
+                  inscriptionCode: {
+                    contains: query.q,
+                  },
+                },
+                {
+                  name: {
+                    contains: query.q,
+                  },
+                },
+                {
+                  info: {
+                    OR: [
+                      { comment: query.q },
+                      { objectives: query.q },
+                      { programme: query.q },
+                    ],
+                  },
+                },
               ],
-            },
-          },
-        ],
-        filiere: {
-          some: {
-            OR: [
-              { code: query.filliere },
-              {
-                branche: {
-                  code: query.filliere,
+            }
+          : {}),
+        ...(query.filiere || query.branch
+          ? {
+              filiere: {
+                some: {
+                  OR: [
+                    { code: query.filiere },
+                    {
+                      branche: {
+                        code: query.branch,
+                      },
+                    },
+                  ],
                 },
               },
-            ],
-          },
-        },
+            }
+          : {}),
         credits: {
           some: {
             category: {
@@ -79,10 +87,47 @@ export class UEService {
         code: true,
         inscriptionCode: true,
         name: true,
-        credits: true,
-        filiere: true,
-        info: true,
-        openSemester: true,
+        credits: {
+          select: {
+            credits: true,
+            category: {
+              select: {
+                code: true,
+                name: true,
+              },
+            },
+          },
+        },
+        filiere: {
+          select: {
+            branche: {
+              select: {
+                code: true,
+                name: true,
+              },
+            },
+            code: true,
+            name: true,
+          },
+        },
+        info: {
+          select: {
+            antecedent: true,
+            comment: true,
+            degree: true,
+            languages: true,
+            minors: true,
+            objectives: true,
+            programme: true,
+          },
+        },
+        openSemester: {
+          select: {
+            code: true,
+            start: true,
+            end: true,
+          },
+        },
       },
     });
   }

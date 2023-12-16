@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   IsNumber,
   IsPositive,
@@ -18,7 +19,7 @@ export class UESearchDto {
 
   @IsString()
   @IsOptional()
-  filliere?: string;
+  filiere?: string;
 
   @IsString()
   @IsOptional()
@@ -30,6 +31,7 @@ export class UESearchDto {
   @IsOptional()
   availableAtSemester?: string;
 
+  @Type(() => Number)
   @IsNumber()
   @IsPositive()
   @IsOptional()

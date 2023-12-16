@@ -6,6 +6,7 @@ import * as pactum from 'pactum';
 import AuthE2ESpec from './e2e/auth/';
 import ProfileE2ESpec from './e2e/profile';
 import UsersE2ESpec from './e2e/users';
+import UEE2ESpec from './e2e/ue';
 
 describe('EtuUTT API e2e testing', () => {
   let app: INestApplication;
@@ -33,4 +34,5 @@ describe('EtuUTT API e2e testing', () => {
   AuthE2ESpec(() => app);
   ProfileE2ESpec(() => app);
   UsersE2ESpec(() => app);
+  UEE2ESpec(() => app);
 });

@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import { IsBoolean, IsOptional, IsString } from 'class-validator';
 
 export class UeCommentUpdateDto {
@@ -5,6 +6,7 @@ export class UeCommentUpdateDto {
   @IsOptional()
   body: string;
 
+  @Type(() => Boolean)
   @IsBoolean()
   @IsOptional()
   isAnonymous: boolean;
