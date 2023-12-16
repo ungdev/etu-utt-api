@@ -1,10 +1,10 @@
 import * as pactum from 'pactum';
 import { PrismaService } from '../../../src/prisma/prisma.service';
-import { suite } from '../../test_utils';
+import { e2eSuite } from '../../test_utils';
 import { AuthSignUpDto } from '../../../src/auth/dto';
 import { AuthService } from '../../../src/auth/auth.service';
 
-const UpdateE2ESpec = suite('Update', (app) => {
+const UpdateE2ESpec = e2eSuite('Update', (app) => {
   const userInfos = {
     login: 'profile',
     password: 'verystrongpwd',

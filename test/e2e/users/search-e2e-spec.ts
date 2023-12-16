@@ -2,7 +2,7 @@ import { AuthSignUpDto } from '../../../src/auth/dto';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { AuthService } from '../../../src/auth/auth.service';
 import * as pactum from 'pactum';
-import { suite } from '../../test_utils';
+import { e2eSuite } from '../../test_utils';
 import { User } from '../../../src/prisma/types';
 
 const includeInfos = { include: { infos: true } };
@@ -16,7 +16,7 @@ function userToBodyUser(user: User) {
   };
 }
 
-const SearchE2ESpec = suite('Search', (app) => {
+const SearchE2ESpec = e2eSuite('Search', (app) => {
   const userInfos = {
     login: 'users',
     password: 'verystrongpwd',

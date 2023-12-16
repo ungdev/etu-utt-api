@@ -11,15 +11,15 @@ export type TimetableEntry = Omit<
  */
 export interface TimetableOccurrence {
   /**
-   * The id of the occurrence type, aka the id of the entry this occurrence is built on
+   * The id of the id of the entry this occurrence is built on
    */
-  id: string;
+  entryId: string;
   /**
    * The index of the occurrence of the entry this occurrence is built on.
    * For example, let's consider an event happening every two days at 8am from September, 1st
    * Then September, 1st would have occurrenceId 0, September, 3rd would have occurrenceId 1, September 5th would have occurrenceId 2, and so on
    */
-  occurrenceId: number;
+  index: number;
   /**
    * The moment this occurrence begins
    */

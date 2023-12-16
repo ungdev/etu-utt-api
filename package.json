@@ -13,14 +13,14 @@
     "start:debug": "npx nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "jest --config ./test/jest-e2e.json",
+    "test": "jest --config test/jest.json -t",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "db:reset": "env-cmd -f .env.dev --use-shell \"npx prisma migrate reset --force && prisma db push\"",
     "db:test:reset": "env-cmd -f .env.test --use-shell \"npx prisma migrate reset --force && prisma db push\"",
     "pretest:e2e": "npm run db:test:reset",
-    "test:e2e": "env-cmd -f .env.test jest --watchAll --no-cache --config ./test/jest-e2e.json"
+    "test:e2e": "env-cmd -f .env.test jest --watchAll --no-cache --config test/e2e/jest-e2e.json"
   },
   "dependencies": {
     "@nestjs/common": "^9.4.3",

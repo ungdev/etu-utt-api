@@ -1,9 +1,9 @@
-import { createUser, suite } from '../../test_utils';
+import { createUser, e2eSuite } from '../../test_utils';
 import * as pactum from 'pactum';
 import { HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 
-const FindE2ESpec = suite('Find', (app) => {
+const FindE2ESpec = e2eSuite('Find', (app) => {
   const user = createUser(app);
   const userToSearch = createUser(app, { login: 'userToSearch', studentId: 2 });
 

@@ -156,29 +156,45 @@ model TimetableGroup {
   id   String @id @default(uuid())
   name String
 
-  userTimetableGroups UserTimetableGroup[]
-  timetableEntry      TimetableEntry[]
+  userTimetableGroups     UserTimetableGroup[]
+  timetableEntries        TimetableEntry[]
+  timetableEntryOverrides TimetableEntryOverride[]
 }
 
 model TimetableEntry {
-  id                       String              @id @default(uuid())
-  eventStart               DateTime            @db.DateTime
-  eventEnd                 DateTime            @db.DateTime
-  repeatEvery              Int?                @db.UnsignedInt
-  occurrenceDuration       Int?                @db.UnsignedInt
-  type                     TimetableEntryType?
-  createdAt                DateTime?
-  location                 String?
+  id                 String             @id @default(uuid())
+  eventStart         DateTime           @db.DateTime
+  occurrencesCount   Int? // The number of occurences, if null, it will be considered infinite
+  repeatEvery        Int?               @db.UnsignedInt // In milliseconds
+  occurrenceDuration Int                @db.UnsignedInt // In milliseconds
+  type               TimetableEntryType
+  location           String
+  eventId            String?
+  ueCourseId         String?
+  timetableGroupId   String
+  createdAt          DateTime           @default(now())
+
+  ueCourse       UECourse?                @relation(fields: [ueCourseId], references: [id])
+  event          Event?                   @relation(fields: [eventId], references: [id])
+  timetableGroup TimetableGroup           @relation(fields: [timetableGroupId], references: [id])
+  overwrittenBy  TimetableEntryOverride[] @relation(name: "overrideTimetableEntry")
+}
+
+model TimetableEntryOverride {
+  id                       String   @id @default(uuid())
+  applyFrom                Int // The index of the first occurence of the event to apply the override to
+  applyUntil               Int // The index of the last occurence of the event to apply the override to
+  repeatEvery              Int      @default(1) @db.UnsignedInt // In number of occurrences of parent entry
+  occurrenceRelativeStart  Int      @default(0) @db.UnsignedInt // How many milliseconds after the default beginning of the event should this override start at ?
+  occurrenceDuration       Int?     @db.UnsignedInt
+  delete                   Boolean  @default(false)
+  location                 String
+  createdAt                DateTime @default(now())
   overrideTimetableEntryId String?
-  eventId                  String?
-  ueCourseId               String?
   timetableGroupId         String
 
-  overrideTimetableEntry TimetableEntry?  @relation(name: "overrideTimetableEntry", fields: [overrideTimetableEntryId], references: [id])
-  ueCourse               UECourse?        @relation(fields: [ueCourseId], references: [id])
-  event                  Event?           @relation(fields: [eventId], references: [id])
-  timetableGroup         TimetableGroup   @relation(fields: [timetableGroupId], references: [id])
-  overwrittenBy          TimetableEntry[] @relation(name: "overrideTimetableEntry")
+  overrideTimetableEntry TimetableEntry? @relation(name: "overrideTimetableEntry", fields: [overrideTimetableEntryId], references: [id])
+  timetableGroup         TimetableGroup  @relation(fields: [timetableGroupId], references: [id])
 }
 
 model Translation {
