@@ -17,8 +17,6 @@ const TimetableServiceUnitSpec = () =>
     let entry: RawTimetableEntry;
     // for user1Group
     let overrideEntry: RawTimetableEntryOverride;
-    // for user1Group
-    let shorterOverrideEntry: RawTimetableEntry;
 
     beforeAll(async () => {
       const module = await Test.createTestingModule({ imports: [AppModule] }).compile();
@@ -81,9 +79,7 @@ const TimetableServiceUnitSpec = () =>
       expect(timetable).toHaveLength(3);
       for (const occurrence of timetable) {
         expect(occurrence.entryId).toEqual(entry.id);
-        expect([3_600_000, 7_200_000, 10_800_000]).toContain(
-          timetable[0].start.getTime() - entry.eventStart.getTime(),
-        );
+        expect([3_600_000, 7_200_000, 10_800_000]).toContain(timetable[0].start.getTime() - entry.eventStart.getTime());
       }
     });
 
@@ -102,7 +98,7 @@ const TimetableServiceUnitSpec = () =>
       expect(timetable).toHaveLength(2);
       timetable = await timetableService.getTimetableOfUserInNextXMs(user2.id, new Date(0), 1);
       expect(timetable).toHaveLength(1);
-      await prisma.timetableEntry.delete({where: otherEntry});
+      await prisma.timetableEntry.delete({ where: otherEntry });
     });
 
     it('should return the primary entry with an override for user1', async () => {
@@ -146,7 +142,7 @@ const TimetableServiceUnitSpec = () =>
           applyUntil: 0,
           location: 'Schtroumpf',
           timetableGroup: { connect: user1Group },
-          overrideTimetableEntry: {connect: entry},
+          overrideTimetableEntry: { connect: entry },
         },
       });
       const timetable = await timetableService.getTimetableOfUserInNextXMs(user1.id, new Date(0), 1);

@@ -32,7 +32,10 @@ export default class TimetableService {
         const repeatEvery = entry.repeatEvery ?? Number.POSITIVE_INFINITY;
         let firstOccurrenceIndex = Math.floor((from.getTime() - entry.eventStart.getTime()) / repeatEvery);
         let firstOccurrenceStart = new Date(entry.eventStart.getTime() + firstOccurrenceIndex * entry.repeatEvery);
-        if (firstOccurrenceIndex < entry.occurrencesCount && firstOccurrenceStart.getTime() + entry.occurrenceDuration >= from.getTime()) {
+        if (
+          firstOccurrenceIndex < entry.occurrencesCount &&
+          firstOccurrenceStart.getTime() + entry.occurrenceDuration >= from.getTime()
+        ) {
           return {
             entry,
             computedData: { repeatEvery, firstOccurrenceIndex, firstOccurrenceStart },
@@ -42,10 +45,11 @@ export default class TimetableService {
         firstOccurrenceIndex++;
         firstOccurrenceStart = new Date(firstOccurrenceStart.getTime() + repeatEvery);
         if (firstOccurrenceIndex < entry.occurrencesCount && firstOccurrenceStart < selectTo) {
-          return {entry, computedData: {repeatEvery, firstOccurrenceIndex, firstOccurrenceStart}};
+          return { entry, computedData: { repeatEvery, firstOccurrenceIndex, firstOccurrenceStart } };
         }
         return null;
-      }).filter((entry) => !!entry);
+      })
+      .filter((entry) => !!entry);
     // Create the occurrences. First, they will only be composed of the primary one.
     // They will then be updated by the non-primary ones
     const occurrences: TimetableOccurrence[] = [];
