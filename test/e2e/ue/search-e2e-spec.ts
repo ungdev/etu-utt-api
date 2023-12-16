@@ -12,6 +12,8 @@ const UEToUEOverView = (
   delete ue.validationRate;
   delete ue.info.id;
   delete ue.info.UEId;
+  delete ue.workTime;
+  delete ue.starVotes;
   return {
     ...ue,
     openSemester: ue.openSemester.map((semester) => ({

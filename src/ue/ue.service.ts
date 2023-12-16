@@ -158,6 +158,7 @@ export class UEService {
         workTime: true,
       },
     });
+    if (!ue) throw new AppException(ERROR_CODE.NO_SUCH_UE, code);
     const starVoteCriteria: {
       [key: string]: {
         createdAt: Date;
@@ -212,20 +213,22 @@ export class UEService {
         category: credit.category.code,
         categoryName: credit.category.name,
       })),
-      starVotes: Object.entries(starVoteCriteria).map(([key, entry]) => {
-        let coefficients = 0;
-        let ponderation = 0;
-        for (const { value, createdAt } of entry) {
-          const dt =
-            (starVoteCriteria[key][0].createdAt.getTime() -
-              createdAt.getTime()) /
-            1000;
-          const dp = Math.exp(-dt / 10e7);
-          ponderation += dp * value;
-          coefficients += dp;
-        }
-        return [key, ponderation / coefficients];
-      }),
+      starVotes: Object.fromEntries(
+        Object.entries(starVoteCriteria).map(([key, entry]) => {
+          let coefficients = 0;
+          let ponderation = 0;
+          for (const { value, createdAt } of entry) {
+            const dt =
+              (starVoteCriteria[key][0].createdAt.getTime() -
+                createdAt.getTime()) /
+              1000;
+            const dp = Math.exp(-dt / 10e7);
+            ponderation += dp * value;
+            coefficients += dp;
+          }
+          return [key, ponderation / coefficients];
+        }),
+      ),
     };
   }
 

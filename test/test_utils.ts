@@ -136,6 +136,8 @@ export async function createUE(
             branche: true,
           },
         },
+        workTime: true,
+        starVotes: true,
       },
     });
 }
