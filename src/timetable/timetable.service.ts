@@ -25,60 +25,85 @@ export default class TimetableService {
       // An event begins in the next X seconds if (now - start) % repeat is less than X
       // We don't compare directly with X, since we also need to take into account the end hour of the occurrence
       // (the occurrence could have started, but not ended, and we would still want to return it)
-      .filter(
-        (entry) =>
-          (from.getTime() - entry.eventStart.getTime()) % (entry.repeatEvery ?? Number.POSITIVE_INFINITY) <
-          millis + entry.occurrenceDuration && from.getTime() < entry.eventStart.getTime() + entry.repeatEvery * (entry.occurrencesCount - 1)
-      )
-      // Sort entries by priority, then by event length
-      .sort((entry1, entry2) => {
-        const priorityDifference =
-          entry1.timetableGroup.userTimetableGroups[0].priority - entry2.timetableGroup.userTimetableGroups[0].priority;
-        if (priorityDifference !== 0) {
-          return priorityDifference;
+      // We first add some useful values to the entries, that will be useful in the filter and later
+      // The filter is actually done in the map : if, from the value we compute, we conclude that this event cannot be returned,
+      // we don't return the entry. The filter method is then really easy
+      .map((entry) => {
+        const repeatEvery = entry.repeatEvery ?? Number.POSITIVE_INFINITY;
+        let firstOccurrenceIndex = Math.floor((from.getTime() - entry.eventStart.getTime()) / repeatEvery);
+        let firstOccurrenceStart = new Date(entry.eventStart.getTime() + firstOccurrenceIndex * entry.repeatEvery);
+        if (firstOccurrenceIndex < entry.occurrencesCount && firstOccurrenceStart.getTime() + entry.occurrenceDuration >= from.getTime()) {
+          return {
+            entry,
+            computedData: { repeatEvery, firstOccurrenceIndex, firstOccurrenceStart },
+          };
         }
-        return (
-          entry1.repeatEvery * (entry1.occurrencesCount - 1) -
-          entry2.repeatEvery * (entry2.occurrencesCount - 1)
-        );
-      });
+        // There still may be a next occurrence that will satisfy the required criteria
+        firstOccurrenceIndex++;
+        firstOccurrenceStart = new Date(firstOccurrenceStart.getTime() + repeatEvery);
+        if (firstOccurrenceIndex < entry.occurrencesCount && firstOccurrenceStart < selectTo) {
+          return {entry, computedData: {repeatEvery, firstOccurrenceIndex, firstOccurrenceStart}};
+        }
+        return null;
+      }).filter((entry) => !!entry);
     // Create the occurrences. First, they will only be composed of the primary one.
     // They will then be updated by the non-primary ones
     const occurrences: TimetableOccurrence[] = [];
+    const entryIds = []; // The original id of the entry of the occurrence of index i will be stored at index i in this array
     for (const entry of entries) {
       // Skip entry if it's not primary
-      const repeatEvery = entry.repeatEvery ?? Number.POSITIVE_INFINITY;
       // Add every occurrence of this entry in the time range given
-      let occurrenceIndex = Math.floor((from.getTime() - entry.eventStart.getTime()) / repeatEvery);
-      let occurrenceStart = new Date(entry.eventStart.getTime() + repeatEvery * occurrenceIndex);
-      while (occurrenceIndex < entry.occurrencesCount && occurrenceStart < selectTo) {
+      let occurrenceIndex = entry.computedData.firstOccurrenceIndex;
+      let occurrenceStart = entry.computedData.firstOccurrenceStart;
+      while (occurrenceIndex < entry.entry.occurrencesCount && occurrenceStart < selectTo) {
         occurrences.push({
-          entryId: entry.id,
+          entryId: entry.entry.id,
           index: occurrenceIndex,
           start: occurrenceStart,
-          end: new Date(occurrenceStart.getTime() + repeatEvery),
-          location: entry.location,
+          end: new Date(occurrenceStart.getTime() + entry.computedData.repeatEvery),
+          location: entry.entry.location,
         });
-        occurrenceStart = new Date(occurrenceStart.getTime() + repeatEvery);
+        entryIds.push(entry.entry.id);
+        occurrenceStart = new Date(occurrenceStart.getTime() + entry.computedData.repeatEvery);
         occurrenceIndex++;
       }
     }
-    const overrides = await this.prisma.timetableEntryOverride.findMany({
-      where: {OR: occurrences.map(e => ({overrideTimetableEntry: {id: e.entryId}, applyFrom: { lte: e.index }, applyUntil: {gte: e.index}})),}
-    });
+    const overrides = (
+      await this.prisma.timetableEntryOverride.findMany({
+        where: {
+          OR: occurrences.map((occurrence) => ({
+            overrideTimetableEntry: { id: occurrence.entryId },
+            applyFrom: { lte: occurrence.index },
+            applyUntil: { gte: occurrence.index },
+          })),
+          timetableGroup: { userTimetableGroups: { some: { userId } } },
+        },
+        include: { timetableGroup: { select: { userTimetableGroups: { where: { userId }, take: 1 } } } },
+      })
+    )
+      // Sort entries by priority, then by event length
+      .sort((override1, override2) => {
+        const priorityDifference =
+          override1.timetableGroup.userTimetableGroups[0].priority -
+          override2.timetableGroup.userTimetableGroups[0].priority;
+        if (priorityDifference !== 0) {
+          return priorityDifference;
+        }
+        return override1.createdAt.getTime() - override2.createdAt.getTime();
+      });
     // Update the newly created occurrences
     for (const override of overrides) {
       // If this is a primary entry, skip it
       if (!override.overrideTimetableEntryId) continue;
-      let occurrencePosition = occurrences.findIndex((e) => e.entryId === override.overrideTimetableEntryId);
+      let occurrencePosition = entryIds.findIndex((e) => e === override.overrideTimetableEntryId);
       do {
         const occurrence = occurrences[occurrencePosition];
-        let occurrenceIndex = occurrence.index - override.applyFrom;
+        const occurrenceIndex = occurrence.index - override.applyFrom;
         if (occurrenceIndex > override.applyUntil) {
           continue;
         }
-        let occurrenceStart = new Date(occurrence.start.getTime() + override.occurrenceRelativeStart);
-        let occurrenceEnd = new Date(occurrenceStart.getTime() + override.occurrenceDuration);
+        const occurrenceStart = new Date(occurrence.start.getTime() + override.occurrenceRelativeStart);
+        const occurrenceEnd = new Date(occurrenceStart.getTime() + override.occurrenceDuration);
         // If the override deletes the occurrence, well, do it.
         // And also decrease occurrenceIndex by one as the next item will have an index one less than before.
         if (override.delete) {
@@ -93,7 +118,10 @@ export default class TimetableService {
             location: override.location ?? occurrence.location,
           };
         }
-      } while (occurrencePosition < occurrences.length - 1 && occurrences[occurrencePosition].entryId === occurrences[++occurrencePosition].entryId);
+      } while (
+        occurrencePosition < occurrences.length - 1 &&
+        entryIds[occurrencePosition].entryId === entryIds[++occurrencePosition].entryId
+      );
     }
     return occurrences;
   }

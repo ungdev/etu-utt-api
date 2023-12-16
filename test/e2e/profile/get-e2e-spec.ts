@@ -44,12 +44,7 @@ const GetE2ESpec = e2eSuite('Get', (app) => {
       passions: null,
       website: null,
     };
-    return pactum
-      .spec()
-      .get('/profile')
-      .withBearerToken(token)
-      .expectStatus(200)
-      .expectBody(expectedBody);
+    return pactum.spec().get('/profile').withBearerToken(token).expectStatus(200).expectBody(expectedBody);
   });
 });
 

@@ -8,18 +8,11 @@ const FindE2ESpec = e2eSuite('Find', (app) => {
   const userToSearch = createUser(app, { login: 'userToSearch', studentId: 2 });
 
   it('should return a 401 as user is not authenticated', () => {
-    return pactum
-      .spec()
-      .get('/users/abcdef')
-      .expectStatus(HttpStatus.UNAUTHORIZED);
+    return pactum.spec().get('/users/abcdef').expectStatus(HttpStatus.UNAUTHORIZED);
   });
 
   it('should return a 404 as user was not found', () => {
-    return pactum
-      .spec()
-      .get('/users/abcdef')
-      .withBearerToken(user.token)
-      .expectStatus(HttpStatus.NOT_FOUND);
+    return pactum.spec().get('/users/abcdef').withBearerToken(user.token).expectStatus(HttpStatus.NOT_FOUND);
   });
 
   it('should successfully find the user', async () => {

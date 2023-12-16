@@ -188,9 +188,9 @@ model TimetableEntryOverride {
   occurrenceRelativeStart  Int      @default(0) @db.UnsignedInt // How many milliseconds after the default beginning of the event should this override start at ?
   occurrenceDuration       Int?     @db.UnsignedInt
   delete                   Boolean  @default(false)
-  location                 String
+  location                 String?
   createdAt                DateTime @default(now())
-  overrideTimetableEntryId String?
+  overrideTimetableEntryId String
   timetableGroupId         String
 
   overrideTimetableEntry TimetableEntry? @relation(name: "overrideTimetableEntry", fields: [overrideTimetableEntryId], references: [id])

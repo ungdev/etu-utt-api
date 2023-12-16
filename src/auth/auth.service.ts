@@ -8,11 +8,7 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private prisma: PrismaService,
-    private jwt: JwtService,
-    private config: ConfigService,
-  ) {}
+  constructor(private prisma: PrismaService, private jwt: JwtService, private config: ConfigService) {}
 
   async signup(dto: AuthSignUpDto) {
     const saltRounds = 10;
@@ -64,10 +60,7 @@ export class AuthService {
     return this.signToken(user.id, user.login);
   }
 
-  async signToken(
-    userId: string,
-    login: string,
-  ): Promise<{ access_token: string }> {
+  async signToken(userId: string, login: string): Promise<{ access_token: string }> {
     const payload = {
       sub: userId,
       login,

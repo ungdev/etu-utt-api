@@ -1,11 +1,4 @@
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  Get,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { JwtGuard } from '../auth/guard';
 import { GetUser } from '../auth/decorator';
 import { PrismaService } from '../prisma/prisma.service';
@@ -36,14 +29,8 @@ export class ProfileController {
   @Post()
   @UseGuards(JwtGuard)
   async updateProfile(@GetUser() user: User, @Body() dto: ProfileUpdateDto) {
-    if (
-      dto.nickname === undefined &&
-      dto.website === undefined &&
-      dto.passions === undefined
-    ) {
-      throw new BadRequestException(
-        'You must provide at least one field to update',
-      );
+    if (dto.nickname === undefined && dto.website === undefined && dto.passions === undefined) {
+      throw new BadRequestException('You must provide at least one field to update');
     }
     await this.prisma.user.update({
       where: { id: user.id },

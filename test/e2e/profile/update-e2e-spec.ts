@@ -28,28 +28,15 @@ const UpdateE2ESpec = e2eSuite('Update', (app) => {
   });
 
   it('should return a 401 if we are not logged in', async () => {
-    return pactum
-      .spec()
-      .post('/profile')
-      .withBody({ website: 'https://etu.utt.fr' })
-      .expectStatus(401);
+    return pactum.spec().post('/profile').withBody({ website: 'https://etu.utt.fr' }).expectStatus(401);
   });
 
   it('should return a 400 if no body is sent', async () => {
-    return pactum
-      .spec()
-      .post('/profile')
-      .withBearerToken(token)
-      .expectStatus(400);
+    return pactum.spec().post('/profile').withBearerToken(token).expectStatus(400);
   });
 
   it('should return a 400 if the body is empty', async () => {
-    return pactum
-      .spec()
-      .post('/profile')
-      .withBearerToken(token)
-      .withBody({})
-      .expectStatus(400);
+    return pactum.spec().post('/profile').withBearerToken(token).withBody({}).expectStatus(400);
   });
 
   it('should return a 400 if "nickname" is not a string', async () => {
@@ -62,21 +49,11 @@ const UpdateE2ESpec = e2eSuite('Update', (app) => {
   });
 
   it('should return a 400 if "passions" is not a string', async () => {
-    return pactum
-      .spec()
-      .post('/profile')
-      .withBearerToken(token)
-      .withBody({ passions: 42 })
-      .expectStatus(400);
+    return pactum.spec().post('/profile').withBearerToken(token).withBody({ passions: 42 }).expectStatus(400);
   });
 
   it('should return a 400 if "website" is not a string', async () => {
-    return pactum
-      .spec()
-      .post('/profile')
-      .withBearerToken(token)
-      .withBody({ website: 42 })
-      .expectStatus(400);
+    return pactum.spec().post('/profile').withBearerToken(token).withBody({ website: 42 }).expectStatus(400);
   });
 
   it('should return a 400 if there is an unknown field', async () => {

@@ -48,11 +48,7 @@ const SignInE2ESpec = e2eSuite('Signin', (app) => {
   });
 
   it('should return a 400 if no body is provided', async () => {
-    return pactum
-      .spec()
-      .post('/auth/signin')
-      .withBody(undefined)
-      .expectStatus(400);
+    return pactum.spec().post('/auth/signin').withBody(undefined).expectStatus(400);
   });
 
   it('should return a token for a valid user', () => {

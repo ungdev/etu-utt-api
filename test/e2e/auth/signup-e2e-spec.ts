@@ -1,7 +1,7 @@
 import { AuthSignUpDto } from '../../../src/auth/dto';
 import * as pactum from 'pactum';
 import { PrismaService } from '../../../src/prisma/prisma.service';
-import { e2eSuite } from "../../test_utils";
+import { e2eSuite } from '../../test_utils';
 
 const SignupE2ESpec = e2eSuite('Signup', (app) => {
   const dto = {
@@ -95,19 +95,10 @@ const SignupE2ESpec = e2eSuite('Signup', (app) => {
       .expectStatus(400);
   });
   it('should return a 400 if no body is provided', async () => {
-    return pactum
-      .spec()
-      .post('/auth/signup')
-      .withBody(undefined)
-      .expectStatus(400);
+    return pactum.spec().post('/auth/signup').withBody(undefined).expectStatus(400);
   });
   it('should create a new user', async () => {
-    await pactum
-      .spec()
-      .post('/auth/signup')
-      .withBody(dto)
-      .expectBodyContains('access_token')
-      .expectStatus(201);
+    await pactum.spec().post('/auth/signup').withBody(dto).expectBodyContains('access_token').expectStatus(201);
     const user = await app()
       .get(PrismaService)
       .user.findUnique({
