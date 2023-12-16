@@ -1,13 +1,13 @@
-import { AuthSignUpDto } from '../../../src/auth/dto';
-import { PrismaService } from '../../../src/prisma/prisma.service';
-import { AuthService } from '../../../src/auth/auth.service';
+import { AuthSignUpDto } from '@/auth/dto';
+import { PrismaService } from '@/prisma/prisma.service';
+import { AuthService } from '@/auth/auth.service';
 import * as pactum from 'pactum';
 import { suite } from '../../test_utils';
-import { User } from '../../../src/prisma/types';
+import { UserBase } from '@/prisma/types';
 
 const includeInfos = { include: { infos: true } };
 
-function userToBodyUser(user: User) {
+function userToBodyUser(user: UserBase) {
   return {
     id: user.id,
     firstName: user.firstName,

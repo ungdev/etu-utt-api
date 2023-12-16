@@ -1,4 +1,4 @@
-import { AuthSignUpDto } from '../../../src/auth/dto';
+import { AuthSignUpDto } from '@/auth/dto';
 import * as pactum from 'pactum';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { suite } from '../../test_utils';

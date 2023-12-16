@@ -1,7 +1,7 @@
-import { AuthSignInDto } from '../../../src/auth/dto';
+import { AuthSignInDto } from '@/auth/dto';
 import * as pactum from 'pactum';
 import { suite } from '../../test_utils';
-import { AuthService } from '../../../src/auth/auth.service';
+import { AuthService } from '@/auth/auth.service';
 
 const SignInE2ESpec = suite('Signin', (app) => {
   const dto = {
@@ -20,6 +20,7 @@ const SignInE2ESpec = suite('Signin', (app) => {
         lastName: 'sebastien',
         password: dto.password,
         birthday: new Date(Date.now()),
+        role: 'STUDENT',
       });
   });
 

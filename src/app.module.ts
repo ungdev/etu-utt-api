@@ -4,6 +4,10 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { ProfileModule } from './profile/profile.module';
 import { UsersModule } from './users/users.module';
+import { APP_GUARD } from '@nestjs/core';
+import { PermissionGuard } from './auth/guard/permission.guard';
+import { UEModule } from './ue/ue.module';
+import { JwtGuard } from './auth/guard';
 
 @Module({
   imports: [
@@ -18,6 +22,17 @@ import { UsersModule } from './users/users.module';
     AuthModule,
     ProfileModule,
     UsersModule,
+    UEModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: PermissionGuard,
+    },
   ],
 })
 export class AppModule {}

@@ -15,8 +15,8 @@ model Asso {
   phoneNumber                   String?  @db.VarChar(30)
   website                       String?  @db.VarChar(100)
   logo                          String?  @db.VarChar(100)
-  createdAt                     DateTime
-  updatedAt                     DateTime
+  createdAt                     DateTime @default(now())
+  updatedAt                     DateTime @updatedAt
   deletedAt                     DateTime
   descriptionShortTranslationId String   @unique
   descriptionTranslationId      String   @unique
@@ -40,7 +40,7 @@ model AssoMembership {
   id        String   @id @default(uuid())
   startAt   DateTime
   endAt     DateTime
-  createdAt DateTime
+  createdAt DateTime @default(now())
   userId    String
   assoId    String
 
@@ -68,7 +68,7 @@ model AssoMessage {
   date               DateTime
   sendToMobile       Boolean
   sendAsDaymail      Boolean
-  createdAt          DateTime
+  createdAt          DateTime @default(now())
   assoId             String
   titleTranslationId String   @unique
   bodyTranslationId  String   @unique
@@ -84,8 +84,8 @@ model Event {
   endAt                    DateTime
   isAllDay                 Boolean
   location                 String?  @db.VarChar(255)
-  createdAt                DateTime
-  updatedAt                DateTime
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
   deletedAt                DateTime
   titleTranslationId       String   @unique
   descriptionTranslationId String   @unique
@@ -102,8 +102,8 @@ model EventAnswer {
   id        String   @id @default(uuid())
   answer    String   @db.VarChar(20)
   comment   String?  @db.Text
-  createdAt DateTime
-  updatedAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   deletedAt DateTime
   eventId   String   @default(uuid())
   userId    String   @default(uuid())
@@ -131,7 +131,7 @@ model EventPrivacy {
 model GitHubIssue {
   id            String   @id @default(uuid())
   gitHubIssueId Int
-  createdAt     DateTime
+  createdAt     DateTime @default(now())
   userId        String
 
   user User @relation(fields: [userId], references: [id])
@@ -177,12 +177,13 @@ model Translation {
 }
 
 model UE {
-  id             String   @id @default(uuid())
-  code           String   @db.VarChar(10)
-  name           String   @db.VarChar(255)
-  validationRate Float?
-  createdAt      DateTime
-  updatedAt      DateTime
+  id              String   @id @default(uuid())
+  code            String   @db.VarChar(10) @unique
+  inscriptionCode String   @db.VarChar(4) @unique
+  name            String   @db.VarChar(255)
+  validationRate  Float?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   usersSubscriptions UserUESubscription[]
   credits            UECredit[]
@@ -200,7 +201,7 @@ model UEAnnal {
   id            String    @id @default(uuid())
   filename      String    @db.VarChar(255)
   validatedById String
-  createdAt     DateTime
+  createdAt     DateTime @default(now())
   deletedAt     DateTime?
   UEId          String
   senderId      String
@@ -216,7 +217,7 @@ model UEAnnal {
 model UEAnnalReport {
   id        String   @id @default(uuid())
   body      String?  @db.Text
-  createdAt DateTime
+  createdAt DateTime @default(now())
   annalId   String
   userId    String
   reasonId  String
@@ -238,8 +239,8 @@ model UEComment {
   id          String    @id @default(uuid())
   body        String    @db.Text
   isAnonymous Boolean
-  createdAt   DateTime
-  updatedAt   DateTime
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime @updatedAt
   deletedAt   DateTime?
   UEId        String
   authorId    String
@@ -250,13 +251,14 @@ model UEComment {
   semester Semester          @relation(fields: [semesterId], references: [code])
   answers  UECommentReply[]
   reports  UECommentReport[]
+  upvotes  UECommentUpvote[]
 }
 
 model UECommentReply {
   id        String    @id @default(uuid())
   body      String    @db.Text
-  createdAt DateTime
-  updatedAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   deletedAt DateTime?
   commentId String
   authorId  String
@@ -268,7 +270,7 @@ model UECommentReply {
 model UECommentReport {
   id        String   @id @default(uuid())
   body      String   @db.Text
-  createdAt DateTime
+  createdAt DateTime @default(now())
   commentId String
   userId    String
   reasonId  String
@@ -286,6 +288,16 @@ model UECommentReportReason {
   reports                UECommentReport[]
 }
 
+model UECommentUpvote {
+  userId String
+  commentId String
+  user User @relation(fields: [userId], references: [id])
+  comment UEComment @relation(fields: [commentId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@id(fields: [userId, commentId])
+}
+
 model UECourse {
   id         String     @id @default(uuid())
   day        Day
@@ -294,7 +306,7 @@ model UECourse {
   week       Week
   type       CourseType
   room       String     @db.VarChar(50)
-  createdAt  DateTime
+  createdAt  DateTime @default(now())
   UEId       String
   semesterId String
 
@@ -309,8 +321,8 @@ model UECourseExchange {
   id             String    @id @default(uuid())
   stillAvailable Boolean
   body           String?   @db.Text
-  createdAt      DateTime
-  updatedAt      DateTime
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
   deletedAt      DateTime?
   authorId       String
   courseFromId   String
@@ -325,8 +337,8 @@ model UECourseExchange {
 model UECourseExchangeReply {
   id         String    @id @default(uuid())
   body       String    @db.Text
-  createdAt  DateTime
-  updatedAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
   deletedAt  DateTime?
   authorId   String
   exchangeId String
@@ -378,7 +390,7 @@ model UEStarCriterion {
 model UEStarVote {
   id          String   @id @default(uuid())
   value       Int      @db.SmallInt
-  createdAt   DateTime
+  createdAt   DateTime @default(now())
   UEId        String
   criterionId String
   userId      String
@@ -386,6 +398,8 @@ model UEStarVote {
   UE        UE              @relation(fields: [UEId], references: [id])
   criterion UEStarCriterion @relation(fields: [criterionId], references: [id])
   user      User            @relation(fields: [userId], references: [id])
+
+  @@unique([UEId, userId, criterionId])
 }
 
 model UEWorkTime {
@@ -401,15 +415,39 @@ model UEWorkTime {
   UE UE @relation(fields: [UEId], references: [id])
 }
 
+enum UserRole {
+  STUDENT
+  TEACHER
+  EMPLOYEE
+}
+
+model UserPermission {
+  id          String                      @id
+  name        String
+  description String?
+  users       UserPermissionAssignement[]
+}
+
+model UserPermissionAssignement {
+  id               String         @id @default(uuid())
+  userPermissionId String
+  userId           String
+  userPermission   UserPermission @relation(fields: [userPermissionId], references: [id])
+  user             User           @relation(fields: [userId], references: [id])
+  assignedAt       DateTime       @default(now())
+  assignedById     String?
+  assignedBy       User?          @relation(fields: [assignedById], references: [id], name: "permissions_assigned", onDelete: SetNull)
+}
+
 model User {
-  id        String  @id @default(uuid())
-  login     String  @unique @db.VarChar(50)
+  id        String   @id @default(uuid())
+  login     String   @unique @db.VarChar(50)
   hash      String
   studentId Int?
   firstName String
   lastName  String
-  roles     Json    @default("[]")
-  RGPDId    String? @unique
+  role      UserRole
+  RGPDId    String?  @unique
 
   timestamps            UserTimestamps?
   socialNetwork         UserSocialNetwork?
@@ -435,8 +473,11 @@ model User {
   commentsReported      UECommentReport[]
   gitHubIssues          GitHubIssue[]
   etuUTTTeam            UserEtuUTTTeam[]
+  permissions           UserPermissionAssignement[]
+  permissionsAssigned   UserPermissionAssignement[] @relation(name: "permissions_assigned")
   courseExchanges       UECourseExchange[]
   courseExchangeReplies UECourseExchangeReply[]
+  commentUpvotes     UECommentUpvote[]
 }
 
 model UserAddress {
@@ -475,7 +516,7 @@ model UserBDEContribution {
 model UserBranche {
   id             String   @id @default(uuid())
   semesterNumber Int      @db.SmallInt
-  createdAt      DateTime
+  createdAt      DateTime @default(now())
   userId         String   @unique
   brancheId      String
   filiereId      String
@@ -498,7 +539,7 @@ model UserEtuUTTTeam {
 
 model UserFormation {
   id                String   @id @default(uuid())
-  createdAt         DateTime
+  createdAt         DateTime @default(now())
   userId            String   @unique
   formationId       String
   followingMethodId String
@@ -513,7 +554,7 @@ model UserInfos {
   sex         Sex
   nationality String?  @db.VarChar(50)
   birthday    DateTime @db.Date
-  avatar      String   @db.VarChar(255) @default("default.png")
+  avatar      String   @default("default.png") @db.VarChar(255)
   nickname    String?  @db.VarChar(50)
   passions    String?  @db.Text
   website     String?  @db.VarChar(255)
@@ -586,8 +627,8 @@ model UserTimestamps {
   id             String    @id @default(uuid())
   firstLoginDate DateTime?
   lastLoginDate  DateTime?
-  createdAt      DateTime
-  updatedAt      DateTime
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
   deletedAt      DateTime?
   userId         String    @unique
 
@@ -596,7 +637,7 @@ model UserTimestamps {
 
 model UserUESubscription {
   id         String   @id @default(uuid())
-  createdAt  DateTime
+  createdAt  DateTime @default(now())
   userId     String
   UEId       String
   semesterId String
