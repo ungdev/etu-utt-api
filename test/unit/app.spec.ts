@@ -1,5 +1,11 @@
 import TimetableServiceUnitSpec from './timetable/timetable.service.spec';
+import { Test, TestingModule } from '@nestjs/testing';
+import { AppModule } from '../../src/app.module';
 
 describe('EtuUTT API unit testing', () => {
-  TimetableServiceUnitSpec();
+  let app: TestingModule;
+  beforeAll(async () => {
+    app = await Test.createTestingModule({ imports: [AppModule] }).compile();
+  });
+  TimetableServiceUnitSpec(() => app);
 });

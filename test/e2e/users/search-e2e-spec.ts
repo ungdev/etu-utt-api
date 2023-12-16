@@ -3,7 +3,7 @@ import { PrismaService } from '../../../src/prisma/prisma.service';
 import { AuthService } from '../../../src/auth/auth.service';
 import * as pactum from 'pactum';
 import { e2eSuite } from '../../test_utils';
-import { User } from '../../../src/prisma/types';
+import { User } from '../../../src/users/interfaces/user.interface';
 
 const includeInfos = { include: { infos: true } };
 
