@@ -1,8 +1,8 @@
 import * as pactum from 'pactum';
 import { suite } from '../../test_utils';
-import { AuthSignUpDto } from '@/auth/dto';
-import { PrismaService } from '@/prisma/prisma.service';
-import { AuthService } from '@/auth/auth.service';
+import { AuthSignUpDto } from '../../../src/auth/dto';
+import { PrismaService } from '../../../src/prisma/prisma.service';
+import { AuthService } from '../../../src/auth/auth.service';
 
 const GetE2ESpec = suite('Get', (app) => {
   const userInfos = {

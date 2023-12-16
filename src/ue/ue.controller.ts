@@ -11,10 +11,10 @@ import {
 } from '@nestjs/common';
 import { UESearchDto } from './dto/ue-search.dto';
 import { UEService } from './ue.service';
-import { GetUser, RequirePermission } from 'src/auth/decorator';
-import { User } from '@/prisma/types';
+import { GetUser, RequirePermission } from '../auth/decorator';
+import { User } from '../prisma/types';
 import { UeCommentPostDto } from './dto/ue-comment-post.dto';
-import { AppException, ERROR_CODE } from 'src/exceptions';
+import { AppException, ERROR_CODE } from '../exceptions';
 import { UERateDto } from './dto/ue-rate.dto';
 import { UeCommentUpdateDto } from './dto/ue-comment-update.dto';
 import { CommentReplyDto } from './dto/ue-comment-reply.dto';

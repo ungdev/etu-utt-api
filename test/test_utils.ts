@@ -1,4 +1,4 @@
-import { PrismaService } from '@/prisma/prisma.service';
+import { PrismaService } from '../src/prisma/prisma.service';
 import { INestApplication } from '@nestjs/common';
 import { AuthService } from '../src/auth/auth.service';
 import { AuthSignUpDto } from '../src/auth/dto';
