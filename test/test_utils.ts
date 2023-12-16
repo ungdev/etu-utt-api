@@ -25,7 +25,7 @@ export function createUser(app: () => INestApplication, { login = 'user', studen
   } as AuthSignUpDto;
   const userWithToken = { ...user, token: '' };
   beforeAll(async () => {
-    userWithToken.token = (await app().get(AuthService).signup(user)).access_token;
+    userWithToken.token = await app().get(AuthService).signup(user);
   });
   return userWithToken;
 }

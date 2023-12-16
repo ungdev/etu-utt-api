@@ -41,7 +41,7 @@ const SearchE2ESpec = e2eSuite('Search', (app) => {
 
   beforeAll(async () => {
     await app().get(PrismaService).cleanDb();
-    token = (await app().get(AuthService).signup(userInfos)).access_token;
+    token = await app().get(AuthService).signup(userInfos);
     await app().get(AuthService).signup(otherUserInfos);
     await app()
       .get(PrismaService)

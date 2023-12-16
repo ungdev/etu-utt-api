@@ -10,7 +10,7 @@ import { ConfigService } from '@nestjs/config';
 export class AuthService {
   constructor(private prisma: PrismaService, private jwt: JwtService, private config: ConfigService) {}
 
-  async signup(dto: AuthSignUpDto) {
+  async signup(dto: AuthSignUpDto): Promise<string> {
     const saltRounds = 10;
     const hash = await bcrypt.hash(dto.password, saltRounds);
 
@@ -39,7 +39,7 @@ export class AuthService {
     }
   }
 
-  async signin(dto: AuthSignInDto) {
+  async signin(dto: AuthSignInDto): Promise<string> {
     // find the user by login, if does not exist, throw exeption
     const user = await this.prisma.user.findUnique({
       where: {
@@ -60,19 +60,25 @@ export class AuthService {
     return this.signToken(user.id, user.login);
   }
 
-  async signToken(userId: string, login: string): Promise<{ access_token: string }> {
+  isTokenValid(token: string): boolean {
+    try {
+      this.jwt.verify(token, { secret: this.config.get('JWT_SECRET') });
+    } catch (e) {
+      return false;
+    }
+    return true;
+  }
+
+  async signToken(userId: string, login: string): Promise<string> {
     const payload = {
       sub: userId,
       login,
     };
     const secret = this.config.get('JWT_SECRET');
 
-    const token = await this.jwt.signAsync(payload, {
+    return this.jwt.signAsync(payload, {
       expiresIn: this.config.get('JWT_EXPIRES_IN'),
       secret: secret,
     });
-    return {
-      access_token: token,
-    };
   }
 }
