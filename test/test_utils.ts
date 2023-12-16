@@ -28,6 +28,7 @@ export function createUser(
     firstName: 'user',
     birthday: new Date(Date.now()),
     password: 'password',
+    role: 'STUDENT',
   } as AuthSignUpDto;
   const userWithToken = { ...user, token: '' };
   beforeAll(async () => {

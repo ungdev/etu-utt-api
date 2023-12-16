@@ -24,6 +24,7 @@ const SearchE2ESpec = suite('Search', (app) => {
     studentId: 69,
     lastName: 'profile',
     firstName: 'profile',
+    role: 'STUDENT',
     birthday: new Date(Date.UTC(2000, 1, 1)),
   } as AuthSignUpDto;
 
@@ -34,6 +35,7 @@ const SearchE2ESpec = suite('Search', (app) => {
     studentId: 70,
     lastName: 'other',
     firstName: 'user',
+    role: 'STUDENT',
     birthday: new Date(Date.UTC(1998, 12, 4)),
   } as AuthSignUpDto;
 

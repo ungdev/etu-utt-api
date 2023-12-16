@@ -36,5 +36,6 @@ export class AuthSignUpDto extends AuthSignInDto {
   birthday: Date;
 
   @IsEnum(UserRole)
+  @IsNotEmpty()
   role: UserRole;
 }

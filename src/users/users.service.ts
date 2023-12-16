@@ -60,6 +60,7 @@ export default class UsersService {
       where: { id: userId },
       include: { infos: true, permissions: true },
     });
+    if (!user) return null;
     const transformedUser: User = { ...user, permissions: undefined };
     transformedUser.permissions = user.permissions.map(
       (permssion) => permssion.userPermissionId,
