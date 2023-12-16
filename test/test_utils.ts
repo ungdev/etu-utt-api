@@ -1,7 +1,7 @@
 import { PrismaService } from '../src/prisma/prisma.service';
 import { INestApplication } from '@nestjs/common';
 import { AuthService } from '../src/auth/auth.service';
-import { AuthSignInDto, AuthSignUpDto } from '../src/auth/dto';
+import { AuthSignUpDto } from '../src/auth/dto';
 
 export function suite(
   name: string,
@@ -31,9 +31,7 @@ export function createUser(
   } as AuthSignUpDto;
   const userWithToken = { ...user, token: '' };
   beforeAll(async () => {
-    userWithToken.token = (
-      await app().get(AuthService).signup(user)
-    ).access_token;
+    userWithToken.token = await app().get(AuthService).signup(user);
   });
   return userWithToken;
 }

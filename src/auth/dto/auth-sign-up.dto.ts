@@ -3,6 +3,7 @@ import {
   IsEnum,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
 } from 'class-validator';
 import { AuthSignInDto } from './auth-sign-in.dto';
@@ -22,6 +23,7 @@ export class AuthSignUpDto extends AuthSignInDto {
   @IsNumber()
   @IsPositive()
   @Type(() => Number)
+  @IsOptional()
   studentId?: number;
 
   @IsEnum(Sex)

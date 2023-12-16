@@ -1,7 +1,7 @@
 import { AuthSignUpDto } from '../../../src/auth/dto';
 import * as pactum from 'pactum';
 import { PrismaService } from '../../../src/prisma/prisma.service';
-import { suite } from "../../test_utils";
+import { suite } from '../../test_utils';
 
 const SignupE2ESpec = suite('Signup', (app) => {
   const dto = {
@@ -114,7 +114,7 @@ const SignupE2ESpec = suite('Signup', (app) => {
         where: { login: dto.login },
         include: { infos: true },
       });
-    expect(user).toBeDefined();
+    expect(user).not.toBeNull();
     expect(user.login).toEqual(dto.login);
     expect(user.firstName).toEqual(dto.firstName);
     expect(user.lastName).toEqual(dto.lastName);

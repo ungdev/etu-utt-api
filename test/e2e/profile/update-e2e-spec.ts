@@ -19,7 +19,7 @@ const UpdateE2ESpec = suite('Update', (app) => {
 
   beforeAll(async () => {
     await app().get(PrismaService).cleanDb();
-    token = (await app().get(AuthService).signup(userInfos)).access_token;
+    token = await app().get(AuthService).signup(userInfos);
     id = (
       await app()
         .get(PrismaService)
