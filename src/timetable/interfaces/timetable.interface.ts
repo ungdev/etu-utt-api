@@ -1,10 +1,3 @@
-import { RawTimetableEntry } from '../../prisma/types';
-
-export type TimetableEntry = Omit<
-  RawTimetableEntry,
-  'overrideTimetableEntryId' | 'eventId' | 'ueCourseId' | 'timetableGroupId'
->;
-
 /**
  * Represents a single occurence in the timetable.
  * The main difference between this and the TimetableEntry is that the TimetableOccurence doesn't contain metadata about this occurrence (override, repeat, ...)
