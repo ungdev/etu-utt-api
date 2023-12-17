@@ -100,7 +100,7 @@ export default class TimetableService {
           entryId: entry.entry.id,
           index: occurrenceIndex,
           start: occurrenceStart,
-          end: new Date(occurrenceStart.getTime() + entry.computedData.repeatEvery),
+          end: new Date(occurrenceStart.getTime() + entry.entry.occurrenceDuration),
           location: entry.entry.location,
         };
         occurrences.push(occurrence);
@@ -187,7 +187,19 @@ export default class TimetableService {
         occurrenceIndex++;
       }
     }
-    // Finally, remove null values (occurrences that have been removed)
-    return occurrences.filter((occurrence) => occurrence !== null);
+    // Finally, remove null values (occurrences that have been removed) and sort by start, end and then entryId
+    return occurrences
+      .filter((occurrence) => occurrence !== null)
+      .sort((occurrence1, occurrence2) => {
+        const startDiff = occurrence1.start.getTime() - occurrence2.end.getTime();
+        if (startDiff !== 0) {
+          return startDiff;
+        }
+        const endDiff = occurrence1.end.getTime() - occurrence2.end.getTime();
+        if (endDiff !== 0) {
+          return endDiff;
+        }
+        return occurrence1.entryId < occurrence2.entryId ? -1 : 1;
+      });
   }
 }
