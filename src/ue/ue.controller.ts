@@ -70,6 +70,16 @@ export class UEController {
     throw new AppException(ERROR_CODE.NOT_COMMENT_AUTHOR);
   }
 
+  @Delete('/comments/:commentId')
+  async DiscardUEComment(
+    @Param('commentId') commentId: string,
+    @GetUser() user: User,
+  ) {
+    if (await this.ueService.isUserCommentAuthor(user, commentId))
+      return this.ueService.deleteComment(commentId, user);
+    throw new AppException(ERROR_CODE.NOT_COMMENT_AUTHOR);
+  }
+
   @Put('/comments/:commentId/upvote')
   async UpvoteUEComment(
     @Param('commentId') commentId: string,

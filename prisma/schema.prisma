@@ -645,6 +645,8 @@ model UserUESubscription {
   user     User     @relation(fields: [userId], references: [id])
   UE       UE       @relation(fields: [UEId], references: [id])
   semester Semester @relation(fields: [semesterId], references: [code])
+
+  @@unique([userId, UEId, semesterId])
 }
 
 model UTTBranche {

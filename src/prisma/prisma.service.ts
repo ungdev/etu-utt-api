@@ -18,13 +18,16 @@ export class PrismaService extends PrismaClient {
     return this.$transaction([
       this.uEInfo.deleteMany(),
       this.uEWorkTime.deleteMany(),
-      this.semester.deleteMany(),
+      this.userUESubscription.deleteMany(),
       this.uTTFiliere.deleteMany(),
       this.uTTBranche.deleteMany(),
       this.translation.deleteMany(),
       this.uECredit.deleteMany(),
       this.uECreditCategory.deleteMany(),
+      this.uECommentReply.deleteMany(),
+      this.uEComment.deleteMany(),
       this.uE.deleteMany(),
+      this.semester.deleteMany(),
       this.userInfos.deleteMany(),
       this.user.deleteMany(),
     ]);

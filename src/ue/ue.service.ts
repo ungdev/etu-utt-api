@@ -30,78 +30,87 @@ import { SelectRate, UERating } from './interfaces/rate.interface';
 export class UEService {
   constructor(readonly prisma: PrismaService, readonly config: ConfigService) {}
 
-  async searchUEs(query: UESearchDto): Promise<UEOverView[]> {
-    return this.prisma.uE.findMany(
-      SelectUEOverview({
-        where: {
-          ...(query.q
-            ? {
+  async searchUEs(query: UESearchDto): Promise<Pagination<UEOverView>> {
+    const where = {
+      ...(query.q
+        ? {
+            OR: [
+              {
+                code: {
+                  contains: query.q,
+                },
+              },
+              {
+                inscriptionCode: {
+                  contains: query.q,
+                },
+              },
+              {
+                name: {
+                  contains: query.q,
+                },
+              },
+              {
+                info: {
+                  OR: [
+                    { comment: query.q },
+                    { objectives: query.q },
+                    { programme: query.q },
+                  ],
+                },
+              },
+            ],
+          }
+        : {}),
+      ...(query.filiere || query.branch
+        ? {
+            filiere: {
+              some: {
                 OR: [
+                  { code: query.filiere },
                   {
-                    code: {
-                      contains: query.q,
-                    },
-                  },
-                  {
-                    inscriptionCode: {
-                      contains: query.q,
-                    },
-                  },
-                  {
-                    name: {
-                      contains: query.q,
-                    },
-                  },
-                  {
-                    info: {
-                      OR: [
-                        { comment: query.q },
-                        { objectives: query.q },
-                        { programme: query.q },
-                      ],
+                    branche: {
+                      code: query.branch,
                     },
                   },
                 ],
-              }
-            : {}),
-          ...(query.filiere || query.branch
-            ? {
-                filiere: {
-                  some: {
-                    OR: [
-                      { code: query.filiere },
-                      {
-                        branche: {
-                          code: query.branch,
-                        },
-                      },
-                    ],
-                  },
-                },
-              }
-            : {}),
-          credits: {
-            some: {
-              category: {
-                code: query.creditType,
               },
             },
-          },
-          openSemester: {
-            some: {
-              code: query.availableAtSemester?.toUpperCase(),
-            },
+          }
+        : {}),
+      credits: {
+        some: {
+          category: {
+            code: query.creditType,
           },
         },
-        take: Number(this.config.get('PAGINATION_PAGE_SIZE')),
-        skip:
-          ((query.page ?? 1) - 1) *
-          Number(this.config.get<number>('PAGINATION_PAGE_SIZE')),
-        orderBy: {
-          code: 'asc',
+      },
+      openSemester: {
+        some: {
+          code: query.availableAtSemester?.toUpperCase(),
         },
-      }),
-    );
+      },
+    };
+    const [items, itemCount] = await this.prisma.$transaction([
+      this.prisma.uE.findMany(
+        SelectUEOverview({
+          where,
+          take: Number(this.config.get('PAGINATION_PAGE_SIZE')),
+          skip:
+            ((query.page ?? 1) - 1) *
+            Number(this.config.get<number>('PAGINATION_PAGE_SIZE')),
+          orderBy: {
+            code: 'asc',
+          },
+        }),
+      ),
+      this.prisma.uE.count({ where }),
+    ]);
+    return {
+      items,
+      itemCount,
+      itemsPerPage: Number(this.config.get('PAGINATION_PAGE_SIZE')),
+    };
   }
 
   async getUE(code: string): Promise<UEDetail> {
@@ -160,33 +169,46 @@ export class UEService {
     user: User,
     dto: GetUECommentsDto,
     bypassAnonymousData = false,
-  ): Promise<UEComment[]> {
-    const comments = (await this.prisma.uEComment.findMany(
-      SelectComment({
-        where: {
-          UE: {
-            inscriptionCode: ueCode,
+  ): Promise<Pagination<UEComment>> {
+    const [comments, commentCount] = (await this.prisma.$transaction([
+      this.prisma.uEComment.findMany(
+        SelectComment({
+          where: {
+            UE: {
+              inscriptionCode: ueCode,
+            },
           },
-        },
-        orderBy: {
-          upvotes: {
-            _count: 'desc',
-          },
-          createdAt: 'desc',
-        },
-        take: Number(this.config.get('PAGINATION_PAGE_SIZE')),
-        skip:
-          ((dto.page ?? 1) - 1) *
-          Number(this.config.get('PAGINATION_PAGE_SIZE')),
+          orderBy: [
+            {
+              upvotes: {
+                _count: 'desc',
+              },
+            },
+            {
+              createdAt: 'desc',
+            },
+          ],
+          take: Number(this.config.get('PAGINATION_PAGE_SIZE')),
+          skip:
+            ((dto.page ?? 1) - 1) *
+            Number(this.config.get('PAGINATION_PAGE_SIZE')),
+        }),
+      ),
+      this.prisma.uEComment.count({
+        where: { UE: { inscriptionCode: ueCode } },
       }),
-    )) as UERawComment[];
+    ])) as [UERawComment[], number];
     for (const comment of comments)
       if (comment.isAnonymous && !bypassAnonymousData) delete comment.author;
-    return comments.map((comment) => ({
-      ...comment,
-      upvotes: comment.upvotes.length,
-      upvoted: comment.upvotes.some((upvote) => upvote.userId == user.id),
-    }));
+    return {
+      items: comments.map((comment) => ({
+        ...comment,
+        upvotes: comment.upvotes.length,
+        upvoted: comment.upvotes.some((upvote) => upvote.userId == user.id),
+      })),
+      itemCount: commentCount,
+      itemsPerPage: Number(this.config.get('PAGINATION_PAGE_SIZE')),
+    };
   }
 
   async isUserCommentAuthor(user: User, commentId: string) {

@@ -5,6 +5,8 @@ import { AuthSignUpDto } from '../src/auth/dto';
 import { SelectCriterion } from '../src/ue/interfaces/criterion.interface';
 import { SelectUEOverview } from '../src/ue/interfaces/ue-overview.interface';
 import { SelectUEDetail } from '../src/ue/interfaces/ue-detail.interface';
+import { UEService } from '../src/ue/ue.service';
+import { User } from 'src/prisma/types';
 
 export function suite(
   name: string,
@@ -32,10 +34,31 @@ export function createUser(
     birthday: new Date(Date.now()),
     password: 'password',
     role: 'STUDENT',
-  } as AuthSignUpDto;
-  const userWithToken = { ...user, token: '' };
+  } as AuthSignUpDto & User;
+  const userWithToken: User & { token: string } = { ...user, token: '' };
   beforeAll(async () => {
     userWithToken.token = await app().get(AuthService).signup(user);
+    const generatedUser = await app()
+      .get(PrismaService)
+      .user.findUnique({
+        where: {
+          login,
+        },
+        include: {
+          infos: true,
+          permissions: {
+            select: {
+              userPermissionId: true,
+            },
+          },
+        },
+      });
+    const permissions = generatedUser.permissions.map(
+      (perm) => perm.userPermissionId,
+    );
+    delete generatedUser.permissions;
+    Object.assign(userWithToken, generatedUser);
+    userWithToken.permissions = permissions;
   });
   return userWithToken;
 }
@@ -147,4 +170,49 @@ export function createCriterion(
         },
       }),
     );
+}
+
+export async function createComment(
+  app: () => INestApplication,
+  onUECode: string,
+  user: User,
+  anonymous = false,
+) {
+  const sub = await app()
+    .get(PrismaService)
+    .userUESubscription.findFirst({
+      where: {
+        UE: {
+          code: onUECode,
+        },
+        userId: user.id,
+      },
+    });
+  if (!sub)
+    await app()
+      .get(PrismaService)
+      .userUESubscription.create({
+        data: {
+          semester: {
+            connectOrCreate: {
+              create: {
+                code: 'A24',
+                start: new Date(),
+                end: new Date(),
+              },
+              where: { code: 'A24' },
+            },
+          },
+          UE: { connect: { code: onUECode } },
+          user: { connect: { id: user.id } },
+        },
+      });
+  return app().get(UEService).createComment(
+    {
+      body: 'TEST',
+      isAnonymous: anonymous,
+    },
+    user,
+    onUECode,
+  );
 }

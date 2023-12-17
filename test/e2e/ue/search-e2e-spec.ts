@@ -60,14 +60,18 @@ const SearchE2ESpec = suite('Search', (app) => {
       .withBearerToken(user.token)
       .get('/ue')
       .expectStatus(HttpStatus.OK)
-      .expectJson(
-        ues
+      .expectJson({
+        items: ues
           .slice(
             0,
             Number(app().get(ConfigService).get('PAGINATION_PAGE_SIZE')),
           )
           .map(UEToUEOverView),
-      );
+        itemCount: ues.length,
+        itemsPerPage: Number(
+          app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE'),
+        ),
+      });
   });
 
   it('should return a list of all ues (within the second page)', () => {
@@ -77,8 +81,8 @@ const SearchE2ESpec = suite('Search', (app) => {
       .get('/ue')
       .withQueryParams('page', 2)
       .expectStatus(HttpStatus.OK)
-      .expectJson(
-        ues
+      .expectJson({
+        items: ues
           .slice(
             Number(app().get(ConfigService).get('PAGINATION_PAGE_SIZE')),
             Math.min(
@@ -87,7 +91,11 @@ const SearchE2ESpec = suite('Search', (app) => {
             ),
           )
           .map(UEToUEOverView),
-      );
+        itemCount: ues.length,
+        itemsPerPage: Number(
+          app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE'),
+        ),
+      });
   });
 
   it('should return a list of ues filtered by semester', () => {
@@ -97,13 +105,19 @@ const SearchE2ESpec = suite('Search', (app) => {
       .get('/ue')
       .withQueryParams('availableAtSemester', 'A24')
       .expectStatus(HttpStatus.OK)
-      .expectJson(
-        ues
+      .expectJson({
+        items: ues
           .filter((ue) =>
             ue.openSemester.some((semester) => semester.code === 'A24'),
           )
           .map(UEToUEOverView),
-      );
+        itemCount: ues.filter((ue) =>
+          ue.openSemester.some((semester) => semester.code === 'A24'),
+        ).length,
+        itemsPerPage: Number(
+          app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE'),
+        ),
+      });
   });
 
   it('should return a list of ues filtered by credit type', () => {
@@ -113,13 +127,19 @@ const SearchE2ESpec = suite('Search', (app) => {
       .get('/ue')
       .withQueryParams('creditType', 'CS')
       .expectStatus(HttpStatus.OK)
-      .expectJson(
-        ues
+      .expectJson({
+        items: ues
           .filter((ue) =>
             ue.credits.some((credit) => credit.category.code === 'CS'),
           )
           .map(UEToUEOverView),
-      );
+        itemCount: ues.filter((ue) =>
+          ue.credits.some((credit) => credit.category.code === 'CS'),
+        ).length,
+        itemsPerPage: Number(
+          app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE'),
+        ),
+      });
   });
 
   it('should return a list of ues filtered by filiere', () => {
@@ -129,11 +149,17 @@ const SearchE2ESpec = suite('Search', (app) => {
       .get('/ue')
       .withQueryParams('filiere', 'T1')
       .expectStatus(HttpStatus.OK)
-      .expectJson(
-        ues
+      .expectJson({
+        items: ues
           .filter((ue) => ue.filiere.some((filiere) => filiere.code === 'T1'))
           .map(UEToUEOverView),
-      );
+        itemCount: ues.filter((ue) =>
+          ue.filiere.some((filiere) => filiere.code === 'T1'),
+        ).length,
+        itemsPerPage: Number(
+          app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE'),
+        ),
+      });
   });
 
   it('should return a list of ues filtered by branch', () => {
@@ -143,13 +169,19 @@ const SearchE2ESpec = suite('Search', (app) => {
       .get('/ue')
       .withQueryParams('branch', 'B1')
       .expectStatus(HttpStatus.OK)
-      .expectJson(
-        ues
+      .expectJson({
+        items: ues
           .filter((ue) =>
             ue.filiere.some((filiere) => filiere.branche.code === 'B1'),
           )
           .map(UEToUEOverView),
-      );
+        itemsPerPage: Number(
+          app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE'),
+        ),
+        itemCount: ues.filter((ue) =>
+          ue.filiere.some((filiere) => filiere.branche.code === 'B1'),
+        ).length,
+      });
   });
 
   it('should return a list of ues filtered by name', () => {
@@ -159,9 +191,15 @@ const SearchE2ESpec = suite('Search', (app) => {
       .get('/ue')
       .withQueryParams('q', 'XX0')
       .expectStatus(HttpStatus.OK)
-      .expectJson(
-        ues.filter((ue) => ue.code.startsWith('XX0')).map(UEToUEOverView),
-      );
+      .expectJson({
+        items: ues
+          .filter((ue) => ue.code.startsWith('XX0'))
+          .map(UEToUEOverView),
+        itemsPerPage: Number(
+          app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE'),
+        ),
+        itemCount: ues.filter((ue) => ue.code.startsWith('XX0')).length,
+      });
   });
 });
 

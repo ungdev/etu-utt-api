@@ -4,7 +4,7 @@ import { HttpStatus } from '@nestjs/common';
 import { ERROR_CODE } from 'src/exceptions';
 import { UEUnComputedDetail } from '../../../src/ue/interfaces/ue-detail.interface';
 
-const UEToUEDetailed = (ue: UEUnComputedDetail) => {
+export const UEToUEDetailed = (ue: UEUnComputedDetail) => {
   const starVoteCriteria: {
     [key: string]: {
       createdAt: Date;
