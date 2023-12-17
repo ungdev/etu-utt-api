@@ -2,39 +2,16 @@ import { createUE, createUser, suite } from '../../test_utils';
 import * as pactum from 'pactum';
 import { HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { UEOverView } from 'src/ue/interfaces/ue-overview.interface';
 
-const UEToUEOverView = (
-  ue: ReturnType<typeof createUE> extends Promise<infer R> ? R : never,
-) => {
-  delete ue.createdAt;
-  delete ue.id;
-  delete ue.updatedAt;
-  delete ue.validationRate;
-  delete ue.info.id;
-  delete ue.info.UEId;
-  delete ue.workTime;
-  delete ue.starVotes;
-  return {
-    ...ue,
-    openSemester: ue.openSemester.map((semester) => ({
-      ...semester,
-      start: semester.start.toISOString(),
-      end: semester.end.toISOString(),
-    })),
-    credits: ue.credits.map((credit) => ({
-      credits: credit.credits,
-      category: credit.category,
-    })),
-    filiere: ue.filiere.map((filiere) => ({
-      code: filiere.code,
-      name: filiere.name,
-      branche: {
-        code: filiere.branche.code,
-        name: filiere.branche.name,
-      },
-    })),
-  };
-};
+const UEToUEOverView = (ue: UEOverView) => ({
+  ...ue,
+  openSemester: ue.openSemester.map((semester) => ({
+    ...semester,
+    start: (<Date>semester.start).toISOString(),
+    end: (<Date>semester.end).toISOString(),
+  })),
+});
 
 const SearchE2ESpec = suite('Search', (app) => {
   const user = createUser(app);
@@ -49,6 +26,7 @@ const SearchE2ESpec = suite('Search', (app) => {
           category: i % 3 == 0 ? 'CS' : 'TM',
           filiere: i % 4 == 0 ? 'T1' : 'T2',
           branch: i % 5 == 0 ? 'B1' : 'B2',
+          forOverview: true,
         }),
       );
   });
@@ -82,7 +60,7 @@ const SearchE2ESpec = suite('Search', (app) => {
       .withBearerToken(user.token)
       .get('/ue')
       .expectStatus(HttpStatus.OK)
-      .expectBody(
+      .expectJson(
         ues
           .slice(
             0,
@@ -99,7 +77,7 @@ const SearchE2ESpec = suite('Search', (app) => {
       .get('/ue')
       .withQueryParams('page', 2)
       .expectStatus(HttpStatus.OK)
-      .expectBody(
+      .expectJson(
         ues
           .slice(
             Number(app().get(ConfigService).get('PAGINATION_PAGE_SIZE')),
@@ -119,7 +97,7 @@ const SearchE2ESpec = suite('Search', (app) => {
       .get('/ue')
       .withQueryParams('availableAtSemester', 'A24')
       .expectStatus(HttpStatus.OK)
-      .expectBody(
+      .expectJson(
         ues
           .filter((ue) =>
             ue.openSemester.some((semester) => semester.code === 'A24'),
@@ -135,7 +113,7 @@ const SearchE2ESpec = suite('Search', (app) => {
       .get('/ue')
       .withQueryParams('creditType', 'CS')
       .expectStatus(HttpStatus.OK)
-      .expectBody(
+      .expectJson(
         ues
           .filter((ue) =>
             ue.credits.some((credit) => credit.category.code === 'CS'),
@@ -151,7 +129,7 @@ const SearchE2ESpec = suite('Search', (app) => {
       .get('/ue')
       .withQueryParams('filiere', 'T1')
       .expectStatus(HttpStatus.OK)
-      .expectBody(
+      .expectJson(
         ues
           .filter((ue) => ue.filiere.some((filiere) => filiere.code === 'T1'))
           .map(UEToUEOverView),
@@ -165,7 +143,7 @@ const SearchE2ESpec = suite('Search', (app) => {
       .get('/ue')
       .withQueryParams('branch', 'B1')
       .expectStatus(HttpStatus.OK)
-      .expectBody(
+      .expectJson(
         ues
           .filter((ue) =>
             ue.filiere.some((filiere) => filiere.branche.code === 'B1'),
@@ -181,7 +159,7 @@ const SearchE2ESpec = suite('Search', (app) => {
       .get('/ue')
       .withQueryParams('q', 'XX0')
       .expectStatus(HttpStatus.OK)
-      .expectBody(
+      .expectJson(
         ues.filter((ue) => ue.code.startsWith('XX0')).map(UEToUEOverView),
       );
   });

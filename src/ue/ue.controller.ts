@@ -54,12 +54,9 @@ export class UEController {
     @GetUser() user: User,
     @Body() body: UeCommentPostDto,
   ) {
-    if (await this.ueService.hasAlreadyDoneThisUE(user, ueCode)) {
-      const comment = await this.ueService.createComment(body, user, ueCode);
-      return {
-        id: comment.id,
-      };
-    } else throw new AppException(ERROR_CODE.NOT_ALREADY_DONE_UE);
+    if (await this.ueService.hasAlreadyDoneThisUE(user, ueCode))
+      return this.ueService.createComment(body, user, ueCode);
+    throw new AppException(ERROR_CODE.NOT_ALREADY_DONE_UE);
   }
 
   @Patch('/comments/:commentId')
@@ -69,8 +66,8 @@ export class UEController {
     @Body() body: UeCommentUpdateDto,
   ) {
     if (await this.ueService.isUserCommentAuthor(user, commentId))
-      await this.ueService.updateComment(body, commentId);
-    else throw new AppException(ERROR_CODE.NOT_COMMENT_AUTHOR);
+      return this.ueService.updateComment(body, commentId, user);
+    throw new AppException(ERROR_CODE.NOT_COMMENT_AUTHOR);
   }
 
   @Put('/comments/:commentId/upvote')
@@ -92,6 +89,27 @@ export class UEController {
     return this.ueService.replyComment(user, commentId, body);
   }
 
+  @Patch('/comments/reply/:replyId')
+  async EditReplyComment(
+    @GetUser() user: User,
+    @Param('replyId') replyId: string,
+    @Body() body: CommentReplyDto,
+  ) {
+    if (this.ueService.isUserCommentReplyAuthor(user, replyId))
+      return this.ueService.editReply(replyId, body);
+    throw new AppException(ERROR_CODE.NOT_REPLY_AUTHOR);
+  }
+
+  @Delete('/comments/reply/:replyId')
+  async DeleteReplyComment(
+    @GetUser() user: User,
+    @Param('replyId') replyId: string,
+  ) {
+    if (this.ueService.isUserCommentReplyAuthor(user, replyId))
+      return this.ueService.deleteReply(replyId);
+    throw new AppException(ERROR_CODE.NOT_REPLY_AUTHOR);
+  }
+
   @Get('/rate/criteria')
   async GetRateCriteria() {
     return this.ueService.getRateCriteria();
@@ -108,9 +126,9 @@ export class UEController {
     @GetUser() user: User,
     @Body() dto: UERateDto,
   ) {
-    if (await this.ueService.hasAlreadyDoneThisUE(user, ueCode)) {
-      await this.ueService.doRateUE(user, ueCode, dto);
-    } else throw new AppException(ERROR_CODE.NOT_ALREADY_DONE_UE);
+    if (await this.ueService.hasAlreadyDoneThisUE(user, ueCode))
+      return this.ueService.doRateUE(user, ueCode, dto);
+    throw new AppException(ERROR_CODE.NOT_ALREADY_DONE_UE);
   }
 
   /*
@@ -121,13 +139,32 @@ export class UEController {
   async UpdateUEComment(
     @Param('commentId') commentId: string,
     @Body() body: UeCommentPostDto,
+    @GetUser() user: User,
   ) {
-    await this.ueService.updateComment(body, commentId);
+    return this.ueService.updateComment(body, commentId, user);
   }
 
   @Delete('/admin/comments/:commentId')
   @RequirePermission(['commentModerator', 'admin'])
-  async DeleteUEComment(@Param('commentId') commentId: string) {
-    await this.ueService.deleteComment(commentId);
+  async DeleteUEComment(
+    @Param('commentId') commentId: string,
+    @GetUser() user: User,
+  ) {
+    return this.ueService.deleteComment(commentId, user);
+  }
+
+  @Patch('/admin/comments/reply/:replyId')
+  @RequirePermission(['commentModerator', 'admin'])
+  async UpdateUECommentReply(
+    @Param('replyId') commentId: string,
+    @Body() body: UeCommentPostDto,
+  ) {
+    return this.ueService.editReply(commentId, body);
+  }
+
+  @Delete('/admin/comments/reply/:replyId')
+  @RequirePermission(['commentModerator', 'admin'])
+  async DeleteUECommentReply(@Param('replyId') replyId: string) {
+    return this.ueService.deleteReply(replyId);
   }
 }

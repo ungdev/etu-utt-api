@@ -2,15 +2,9 @@ import { createUE, createUser, suite } from '../../test_utils';
 import * as pactum from 'pactum';
 import { HttpStatus } from '@nestjs/common';
 import { ERROR_CODE } from 'src/exceptions';
+import { UEUnComputedDetail } from '../../../src/ue/interfaces/ue-detail.interface';
 
-const UEToUEDetailed = (
-  ue: ReturnType<typeof createUE> extends Promise<infer R> ? R : never,
-) => {
-  delete ue.createdAt;
-  delete ue.id;
-  delete ue.updatedAt;
-  delete ue.info.id;
-  delete ue.info.UEId;
+const UEToUEDetailed = (ue: UEUnComputedDetail) => {
   const starVoteCriteria: {
     [key: string]: {
       createdAt: Date;
@@ -20,51 +14,20 @@ const UEToUEDetailed = (
   for (const starVote of ue.starVotes) {
     if (starVote.criterionId in starVoteCriteria)
       starVoteCriteria[starVote.criterionId].push({
-        createdAt: starVote.createdAt,
+        createdAt: starVote.createdAt as Date,
         value: starVote.value,
       });
     else
       starVoteCriteria[starVote.criterionId] = [
         {
-          createdAt: starVote.createdAt,
+          createdAt: starVote.createdAt as Date,
           value: starVote.value,
         },
       ];
   }
   return {
-    code: ue.code,
-    inscriptionCode: ue.inscriptionCode,
-    name: ue.name,
-    validationRate: ue.validationRate,
-    info: {
-      antecedent: ue.info.antecedent,
-      comment: ue.info.comment,
-      degree: ue.info.degree,
-      languages: ue.info.languages,
-      minors: ue.info.minors,
-      objectives: ue.info.objectives,
-      programme: ue.info.programme,
-    },
-    openSemesters: ue.openSemester.map((semester) => semester.code),
-    workTime: {
-      cm: ue.workTime.cm,
-      td: ue.workTime.td,
-      tp: ue.workTime.tp,
-      project: ue.workTime.projet,
-      the: ue.workTime.the,
-      internship: ue.workTime.internship,
-    },
-    filieres: ue.filiere.map((filiere) => ({
-      code: filiere.code,
-      name: filiere.name,
-      branch: filiere.branche.code,
-      branchName: filiere.branche.name,
-    })),
-    credits: ue.credits.map((credit) => ({
-      count: credit.credits,
-      category: credit.category.code,
-      categoryName: credit.category.name,
-    })),
+    ...ue,
+    openSemester: ue.openSemester.map((semester) => semester.code),
     starVotes: Object.fromEntries(
       Object.entries(starVoteCriteria).map(([key, entry]) => {
         let coefficients = 0;
@@ -111,7 +74,7 @@ const GetE2ESpec = suite('Get', (app) => {
       .withBearerToken(user.token)
       .get('/ue/AA01')
       .expectStatus(HttpStatus.NOT_FOUND)
-      .expectBody({
+      .expectJson({
         errorCode: ERROR_CODE.NO_SUCH_UE,
         error: "L'UE AA01 n'existe pas",
       });
@@ -123,7 +86,7 @@ const GetE2ESpec = suite('Get', (app) => {
       .withBearerToken(user.token)
       .get('/ue/XX01')
       .expectStatus(HttpStatus.OK)
-      .expectBody(UEToUEDetailed(ues.find((ue) => ue.code === 'XX01')));
+      .expectJson(UEToUEDetailed(ues.find((ue) => ue.code === 'XX01')));
   });
 });
 
