@@ -1,9 +1,16 @@
 import { Type } from 'class-transformer';
-import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 
 export class UeCommentPostDto {
   @IsNotEmpty()
   @IsString()
+  @MinLength(5)
   body: string;
 
   @Type(() => Boolean)

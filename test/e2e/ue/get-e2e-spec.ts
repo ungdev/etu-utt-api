@@ -76,7 +76,7 @@ const GetE2ESpec = suite('Get', (app) => {
       .expectStatus(HttpStatus.NOT_FOUND)
       .expectJson({
         errorCode: ERROR_CODE.NO_SUCH_UE,
-        error: "L'UE AA01 n'existe pas",
+        error: 'The UE AA01 does not exist',
       });
   });
 

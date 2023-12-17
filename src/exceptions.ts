@@ -8,6 +8,7 @@ export const enum ERROR_CODE {
   NOT_ALREADY_DONE_UE = 4222,
   NOT_REPLY_AUTHOR = 4223,
   NO_SUCH_UE = 4401,
+  NO_SUCH_COMMENT = 4402,
 }
 
 const Errors: {
@@ -41,7 +42,11 @@ const Errors: {
     httpCode: HttpStatus.FORBIDDEN,
   },
   [ERROR_CODE.NO_SUCH_UE]: {
-    message: "L'UE % n'existe pas",
+    message: 'The UE % does not exist',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
+  [ERROR_CODE.NO_SUCH_COMMENT]: {
+    message: 'This comment does not exist',
     httpCode: HttpStatus.NOT_FOUND,
   },
 };

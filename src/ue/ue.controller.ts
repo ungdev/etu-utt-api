@@ -67,6 +67,8 @@ export class UEController {
     @GetUser() user: User,
     @Body() body: UeCommentUpdateDto,
   ) {
+    if (!(await this.ueService.doesCommentExist(commentId)))
+      throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
     if (await this.ueService.isUserCommentAuthor(user, commentId))
       return this.ueService.updateComment(body, commentId, user);
     throw new AppException(ERROR_CODE.NOT_COMMENT_AUTHOR);
@@ -98,6 +100,8 @@ export class UEController {
     @Param('commentId') commentId: string,
     @Body() body: CommentReplyDto,
   ) {
+    if (!(await this.ueService.doesCommentExist(commentId)))
+      throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
     return this.ueService.replyComment(user, commentId, body);
   }
 

@@ -5,6 +5,8 @@ import GetRateCriteria from './get-rate-criteria-e2e-spec';
 import GetCommentsE2ESpec from './get-comment.e2e-spec';
 import GetRateE2ESpec from './get-ue-rate.e2e-spec';
 import PostCommment from './post-comment.e2e-spec';
+import PostCommmentReply from './post-reply.e2e-spec';
+import UpdateComment from './update-comment.e2e-spec';
 
 export default function UEE2ESpec(app: () => INestApplication) {
   describe('UE', () => {
@@ -14,5 +16,7 @@ export default function UEE2ESpec(app: () => INestApplication) {
     GetCommentsE2ESpec(app);
     GetRateE2ESpec(app);
     PostCommment(app);
+    PostCommmentReply(app);
+    UpdateComment(app);
   });
 }

@@ -1,25 +1,25 @@
 import { HttpStatus } from '@nestjs/common';
-import { createUser, suite, createUE, makeUserJoinUE } from '../../test_utils';
+import { createUser, suite, createUE, createComment } from '../../test_utils';
 import * as pactum from 'pactum';
 import { UEUnComputedDetail } from '../../../src/ue/interfaces/ue-detail.interface';
 import { ERROR_CODE } from '../../../src/exceptions';
+import { UEComment } from '../../../src/ue/interfaces/comment.interface';
 
-const PostCommment = suite('Post Comment', (app) => {
+const UpdateComment = suite('Update Comment', (app) => {
   const user = createUser(app);
   const user2 = createUser(app, { login: 'user2' });
-  const user3 = createUser(app, { login: 'user3' });
   let ue: UEUnComputedDetail;
+  let comment1: UEComment;
 
   beforeAll(async () => {
     ue = (await createUE(app)) as UEUnComputedDetail;
-    await makeUserJoinUE(app, user2.id, ue.code);
-    await makeUserJoinUE(app, user3.id, ue.code);
+    comment1 = await createComment(app, ue.code, user);
   });
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum
       .spec()
-      .post('/ue/XX00/comments')
+      .patch(`/ue/comments/${comment1.id}`)
       .withBody({
         body: 'Test comment',
       })
@@ -30,7 +30,7 @@ const PostCommment = suite('Post Comment', (app) => {
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .post('/ue/XX00/comments')
+      .patch(`/ue/comments/${comment1.id}`)
       .withBody({
         body: false,
         isAnonymous: true,
@@ -38,32 +38,58 @@ const PostCommment = suite('Post Comment', (app) => {
       .expectStatus(HttpStatus.BAD_REQUEST);
   });
 
-  it('should return a 403 because user has not done the UE yet', () => {
+  it('should return a 403 because user is not the author', () => {
     return pactum
       .spec()
-      .withBearerToken(user.token)
-      .post('/ue/XX00/comments')
+      .withBearerToken(user2.token)
+      .patch(`/ue/comments/${comment1.id}`)
       .withBody({
         body: 'Cette  UE est troooop bien',
         isAnonymous: true,
       })
       .expectStatus(HttpStatus.FORBIDDEN)
       .expectJson({
-        errorCode: 4222,
-        error: 'You must have done this UE before to perform this action',
+        errorCode: ERROR_CODE.NOT_COMMENT_AUTHOR,
+        error: 'You are not the author of this comment',
       });
   });
 
-  it('should return a post a comment in the UE as anonymous user', () => {
+  it('should return a 400 because body is too short', () => {
     return pactum
       .spec()
-      .withBearerToken(user2.token)
-      .post('/ue/XX00/comments')
+      .withBearerToken(user.token)
+      .patch(`/ue/comments/${comment1.id}`)
+      .withBody({
+        body: 'gg',
+      })
+      .expectStatus(HttpStatus.BAD_REQUEST);
+  });
+
+  it('should return a 404 because comment does not exist', () => {
+    return pactum
+      .spec()
+      .withBearerToken(user.token)
+      .patch(`/ue/comments/${comment1.id.slice(0, 10)}`)
+      .withBody({
+        body: 'heyhey',
+      })
+      .expectStatus(HttpStatus.NOT_FOUND)
+      .expectJson({
+        errorCode: ERROR_CODE.NO_SUCH_COMMENT,
+        error: 'This comment does not exist',
+      });
+  });
+
+  it('should return the updated comment as anonymous user', () => {
+    return pactum
+      .spec()
+      .withBearerToken(user.token)
+      .patch(`/ue/comments/${comment1.id}`)
       .withBody({
         body: 'Cette  UE est troooop bien',
         isAnonymous: true,
       })
-      .expectStatus(HttpStatus.CREATED)
+      .expectStatus(HttpStatus.OK)
       .expectJsonLike({
         id: "typeof $V === 'string'",
         author: {
@@ -84,30 +110,15 @@ const PostCommment = suite('Post Comment', (app) => {
       });
   });
 
-  it('should return a 403 while trying to post another comment', () => {
+  it('should return a post a comment as a logged in user', () => {
     return pactum
       .spec()
-      .withBearerToken(user2.token)
-      .post('/ue/XX00/comments')
+      .withBearerToken(user.token)
+      .patch(`/ue/comments/${comment1.id}`)
       .withBody({
-        body: 'Cette  UE est troooop bien',
+        isAnonymous: false,
       })
-      .expectStatus(HttpStatus.FORBIDDEN)
-      .expectJson({
-        errorCode: ERROR_CODE.FORBIDDEN_ALREADY_COMMENTED,
-        error: 'You have already posted a comment for this UE',
-      });
-  });
-
-  it('should return a post a comment in the UE as a logged in user', () => {
-    return pactum
-      .spec()
-      .withBearerToken(user3.token)
-      .post('/ue/XX00/comments')
-      .withBody({
-        body: 'Cette  UE est troooop bien',
-      })
-      .expectStatus(HttpStatus.CREATED)
+      .expectStatus(HttpStatus.OK)
       .expectJsonLike({
         id: "typeof $V === 'string'",
         author: {
@@ -127,32 +138,6 @@ const PostCommment = suite('Post Comment', (app) => {
         upvoted: false,
       });
   });
-
-  it('should return a 400 because body is too short', () => {
-    return pactum
-      .spec()
-      .withBearerToken(user.token)
-      .post('/ue/XX00/comments')
-      .withBody({
-        body: 'gg',
-      })
-      .expectStatus(HttpStatus.BAD_REQUEST);
-  });
-
-  it('should return a 404 because UE does not exist', () => {
-    return pactum
-      .spec()
-      .withBearerToken(user.token)
-      .post(`/ue/${ue.code.slice(0, 3)}/comments`)
-      .withBody({
-        body: 'heyhey',
-      })
-      .expectStatus(HttpStatus.NOT_FOUND)
-      .expectJson({
-        errorCode: ERROR_CODE.NO_SUCH_UE,
-        error: 'The UE XX0 does not exist',
-      });
-  });
 });
 
-export default PostCommment;
+export default UpdateComment;

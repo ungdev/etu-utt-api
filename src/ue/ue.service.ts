@@ -247,6 +247,8 @@ export class UEService {
   }
 
   async hasAlreadyDoneThisUE(user: User, ueCode: string) {
+    if (!(await this.prisma.uE.findUnique({ where: { code: ueCode } })))
+      throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     return (await this.getLastSemesterDoneByUser(user, ueCode)) != null;
   }
 
@@ -340,6 +342,13 @@ export class UEService {
     return commentUpvote != null;
   }
 
+  async doesCommentExist(commentId: string) {
+    return this.prisma.uEComment.findUnique({
+      where: {
+        id: commentId,
+      },
+    });
+  }
   async replyComment(
     user: User,
     commentId: string,
