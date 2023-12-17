@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { TimetableOccurrence } from './interfaces/timetable.interface';
 import { RawTimetableEntry } from '../prisma/types';
+import { sortArray } from '../utils';
 
 /**
  * Service for everything related to timetables.
@@ -110,29 +111,21 @@ export default class TimetableService {
       }
     }
     // Now, fetch all TimetableEntryOverride linked to one of the TimetableEntry we fetched earlier.
-    const overrides = (
-      await this.prisma.timetableEntryOverride.findMany({
-        where: {
-          OR: occurrences.map((occurrence) => ({
-            overrideTimetableEntry: { id: occurrence.entryId }, // Linked to a TimetableEntry we fetched.
-            applyFrom: { lte: occurrence.index }, // The TimetableOccurrence it is linked to is in the interval of occurrences overwritten.
-            applyUntil: { gte: occurrence.index },
-          })),
-          timetableGroup: { userTimetableGroups: { some: { userId } } }, // The override concerns the user.
-        },
-        include: { timetableGroup: { select: { userTimetableGroups: { where: { userId }, take: 1 } } } },
-      })
-    )
-      // Sort overrides by priority, then by creation date in ascending order.
-      .sort((override1, override2) => {
-        const priorityDifference =
-          override1.timetableGroup.userTimetableGroups[0].priority -
-          override2.timetableGroup.userTimetableGroups[0].priority;
-        if (priorityDifference !== 0) {
-          return priorityDifference;
-        }
-        return override1.createdAt.getTime() - override2.createdAt.getTime();
-      });
+    const overrides = await this.prisma.timetableEntryOverride.findMany({
+      where: {
+        OR: occurrences.map((occurrence) => ({
+          overrideTimetableEntry: { id: occurrence.entryId }, // Linked to a TimetableEntry we fetched.
+          applyFrom: { lte: occurrence.index }, // The TimetableOccurrence it is linked to is in the interval of occurrences overwritten.
+          applyUntil: { gte: occurrence.index },
+        })),
+        timetableGroup: { userTimetableGroups: { some: { userId } } }, // The override concerns the user.
+      },
+      include: { timetableGroup: { select: { userTimetableGroups: { where: { userId }, take: 1 } } } },
+    });
+    // Sort overrides by priority, then by creation date in ascending order.
+    sortArray(overrides, (e) =>
+      e.timetableGroup !== null ? [e.timetableGroup.userTimetableGroups[0].priority, e.createdAt.getTime()] : [],
+    );
     // Update the occurrences.
     for (const override of overrides) {
       // In this part we will mostly use occurrencesNoOverride, because we need to have access to the values before they were overwritten.
@@ -188,18 +181,9 @@ export default class TimetableService {
       }
     }
     // Finally, remove null values (occurrences that have been removed) and sort by start, end and then entryId
-    return occurrences
-      .filter((occurrence) => occurrence !== null)
-      .sort((occurrence1, occurrence2) => {
-        const startDiff = occurrence1.start.getTime() - occurrence2.end.getTime();
-        if (startDiff !== 0) {
-          return startDiff;
-        }
-        const endDiff = occurrence1.end.getTime() - occurrence2.end.getTime();
-        if (endDiff !== 0) {
-          return endDiff;
-        }
-        return occurrence1.entryId < occurrence2.entryId ? -1 : 1;
-      });
+    return sortArray(
+      occurrences.filter((occurrence) => occurrence !== null),
+      (e) => [e.start, e.end, e.entryId],
+    );
   }
 }
