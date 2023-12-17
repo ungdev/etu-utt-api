@@ -417,6 +417,11 @@ export class UEService {
           userId: user.id,
           UEId: UE.id,
         },
+        orderBy: {
+          criterion: {
+            name: 'asc',
+          },
+        },
       }),
     );
   }
