@@ -26,6 +26,15 @@ const GetCommentsE2ESpec = suite('Get Comments', (app) => {
       .expectStatus(HttpStatus.UNAUTHORIZED);
   });
 
+  it('should return a 400 as user uses a wrong page', () => {
+    return pactum
+      .spec()
+      .withBearerToken(user.token)
+      .get(`/ue/${ue.inscriptionCode}/comments`)
+      .withQueryParams('page', -1)
+      .expectStatus(HttpStatus.BAD_REQUEST);
+  });
+
   it('should return the first page of comments', () => {
     return pactum
       .spec()
