@@ -5,6 +5,7 @@ const COMMENT_SELECT_FILTER = {
     id: true,
     author: {
       select: {
+        id: true,
         firstName: true,
         lastName: true,
         studentId: true,
@@ -21,8 +22,10 @@ const COMMENT_SELECT_FILTER = {
     body: true,
     answers: {
       select: {
+        id: true,
         author: {
           select: {
+            id: true,
             firstName: true,
             lastName: true,
             studentId: true,

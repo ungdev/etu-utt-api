@@ -2,15 +2,18 @@ import { Prisma } from '@prisma/client';
 
 const REPLY_SELECT_FILTER = {
   select: {
+    id: true,
     author: {
       select: {
+        id: true,
         lastName: true,
         firstName: true,
+        studentId: true,
       },
     },
     body: true,
-    commentId: true,
     createdAt: true,
+    updatedAt: true,
   },
 } as const;
 

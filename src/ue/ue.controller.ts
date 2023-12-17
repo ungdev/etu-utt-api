@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { UESearchDto } from './dto/ue-search.dto';
 import { UEService } from './ue.service';
-import { GetUser, RequirePermission } from '../auth/decorator';
+import { GetUser } from '../auth/decorator';
 import { User } from '../prisma/types';
 import { UeCommentPostDto } from './dto/ue-comment-post.dto';
 import { AppException, ERROR_CODE } from '../exceptions';
@@ -54,9 +54,11 @@ export class UEController {
     @GetUser() user: User,
     @Body() body: UeCommentPostDto,
   ) {
-    if (await this.ueService.hasAlreadyDoneThisUE(user, ueCode))
-      return this.ueService.createComment(body, user, ueCode);
-    throw new AppException(ERROR_CODE.NOT_ALREADY_DONE_UE);
+    if (!(await this.ueService.hasAlreadyDoneThisUE(user, ueCode)))
+      throw new AppException(ERROR_CODE.NOT_ALREADY_DONE_UE);
+    if (await this.ueService.hasAlreadyPostedAComment(user, ueCode))
+      throw new AppException(ERROR_CODE.FORBIDDEN_ALREADY_COMMENTED);
+    return this.ueService.createComment(body, user, ueCode);
   }
 
   @Patch('/comments/:commentId')
@@ -144,37 +146,37 @@ export class UEController {
   /*
    * ADMIN ROUTES
    */
-  @Patch('/admin/comments/:commentId')
-  @RequirePermission(['commentModerator', 'admin'])
-  async UpdateUEComment(
-    @Param('commentId') commentId: string,
-    @Body() body: UeCommentPostDto,
-    @GetUser() user: User,
-  ) {
-    return this.ueService.updateComment(body, commentId, user);
-  }
+  // @Patch('/admin/comments/:commentId')
+  // @RequirePermission(['commentModerator', 'admin'])
+  // async UpdateUEComment(
+  //   @Param('commentId') commentId: string,
+  //   @Body() body: UeCommentPostDto,
+  //   @GetUser() user: User,
+  // ) {
+  //   return this.ueService.updateComment(body, commentId, user);
+  // }
 
-  @Delete('/admin/comments/:commentId')
-  @RequirePermission(['commentModerator', 'admin'])
-  async DeleteUEComment(
-    @Param('commentId') commentId: string,
-    @GetUser() user: User,
-  ) {
-    return this.ueService.deleteComment(commentId, user);
-  }
+  // @Delete('/admin/comments/:commentId')
+  // @RequirePermission(['commentModerator', 'admin'])
+  // async DeleteUEComment(
+  //   @Param('commentId') commentId: string,
+  //   @GetUser() user: User,
+  // ) {
+  //   return this.ueService.deleteComment(commentId, user);
+  // }
 
-  @Patch('/admin/comments/reply/:replyId')
-  @RequirePermission(['commentModerator', 'admin'])
-  async UpdateUECommentReply(
-    @Param('replyId') commentId: string,
-    @Body() body: UeCommentPostDto,
-  ) {
-    return this.ueService.editReply(commentId, body);
-  }
+  // @Patch('/admin/comments/reply/:replyId')
+  // @RequirePermission(['commentModerator', 'admin'])
+  // async UpdateUECommentReply(
+  //   @Param('replyId') commentId: string,
+  //   @Body() body: UeCommentPostDto,
+  // ) {
+  //   return this.ueService.editReply(commentId, body);
+  // }
 
-  @Delete('/admin/comments/reply/:replyId')
-  @RequirePermission(['commentModerator', 'admin'])
-  async DeleteUECommentReply(@Param('replyId') replyId: string) {
-    return this.ueService.deleteReply(replyId);
-  }
+  // @Delete('/admin/comments/reply/:replyId')
+  // @RequirePermission(['commentModerator', 'admin'])
+  // async DeleteUECommentReply(@Param('replyId') replyId: string) {
+  //   return this.ueService.deleteReply(replyId);
+  // }
 }

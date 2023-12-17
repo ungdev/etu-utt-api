@@ -252,6 +252,8 @@ model UEComment {
   answers  UECommentReply[]
   reports  UECommentReport[]
   upvotes  UECommentUpvote[]
+
+  @@unique([UEId, authorId])
 }
 
 model UECommentReply {

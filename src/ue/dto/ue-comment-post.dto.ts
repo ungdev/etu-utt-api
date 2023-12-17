@@ -9,5 +9,5 @@ export class UeCommentPostDto {
   @Type(() => Boolean)
   @IsBoolean()
   @IsOptional()
-  isAnonymous: boolean;
+  isAnonymous?: boolean;
 }

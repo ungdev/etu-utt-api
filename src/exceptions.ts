@@ -3,6 +3,7 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 export const enum ERROR_CODE {
   FORBIDDEN_NOT_ENOUGH_PERMISSIONS = 3001,
   FORBIDDEN_NOT_LOGGED_IN = 3002,
+  FORBIDDEN_ALREADY_COMMENTED = 3101,
   NOT_COMMENT_AUTHOR = 4221,
   NOT_ALREADY_DONE_UE = 4222,
   NOT_REPLY_AUTHOR = 4223,
@@ -22,6 +23,10 @@ const Errors: {
   [ERROR_CODE.FORBIDDEN_NOT_LOGGED_IN]: {
     message: 'You must be logged in to access this page',
     httpCode: HttpStatus.UNAUTHORIZED,
+  },
+  [ERROR_CODE.FORBIDDEN_ALREADY_COMMENTED]: {
+    message: 'You have already posted a comment for this UE',
+    httpCode: HttpStatus.FORBIDDEN,
   },
   [ERROR_CODE.NOT_COMMENT_AUTHOR]: {
     message: 'You are not the author of this comment',

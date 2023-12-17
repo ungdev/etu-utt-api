@@ -199,7 +199,12 @@ export class UEService {
       }),
     ])) as [UERawComment[], number];
     for (const comment of comments)
-      if (comment.isAnonymous && !bypassAnonymousData) delete comment.author;
+      if (
+        comment.isAnonymous &&
+        !bypassAnonymousData &&
+        comment.author.id !== user.id
+      )
+        delete comment.author;
     return {
       items: comments.map((comment) => ({
         ...comment,
@@ -245,6 +250,24 @@ export class UEService {
     return (await this.getLastSemesterDoneByUser(user, ueCode)) != null;
   }
 
+  async hasAlreadyPostedAComment(user: User, ueCode: string) {
+    const ue = await this.prisma.uE.findUnique({
+      where: {
+        code: ueCode,
+      },
+    });
+    if (!ue) throw new AppException(ERROR_CODE.NO_SUCH_UE);
+    const comment = await this.prisma.uEComment.findUnique({
+      where: {
+        UEId_authorId: {
+          authorId: user.id,
+          UEId: ue.id,
+        },
+      },
+    });
+    return comment != null;
+  }
+
   async createComment(
     body: UeCommentPostDto,
     user: User,
@@ -255,7 +278,7 @@ export class UEService {
         SelectComment({
           data: {
             body: body.body,
-            isAnonymous: body.isAnonymous,
+            isAnonymous: body.isAnonymous ?? false,
             updatedAt: new Date(),
             author: {
               connect: {

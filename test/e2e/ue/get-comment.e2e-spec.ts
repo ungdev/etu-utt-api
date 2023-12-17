@@ -4,9 +4,12 @@ import { UEUnComputedDetail } from 'src/ue/interfaces/ue-detail.interface';
 import { createComment, createUE, createUser, suite } from '../../test_utils';
 import { ConfigService } from '@nestjs/config';
 import { UEComment } from '../../../src/ue/interfaces/comment.interface';
+import { UEService } from '../../../src/ue/ue.service';
+import { UECommentReply } from '../../../src/ue/interfaces/comment-reply.interface';
 
 const GetCommentsE2ESpec = suite('Get Comments', (app) => {
   const user = createUser(app);
+  const user2 = createUser(app, { login: 'user2', studentId: 3 });
   const comments: UEComment[] = [];
   let ue: UEUnComputedDetail;
 
@@ -16,7 +19,12 @@ const GetCommentsE2ESpec = suite('Get Comments', (app) => {
       semester: 'A24',
     })) as UEUnComputedDetail;
     for (let i = 0; i < 30; i++)
-      comments.push(await createComment(app, ue.code, user));
+      comments.push(await createComment(app, ue.code, user, i % 2 === 0));
+    comments[0].answers.push(
+      (await app().get(UEService).replyComment(user, comments[0].id, {
+        body: 'HelloWorld',
+      })) as UECommentReply,
+    );
   });
 
   it('should return a 401 as user is not authenticated', () => {
@@ -56,6 +64,11 @@ const GetCommentsE2ESpec = suite('Get Comments', (app) => {
           )
           .map((comment) => ({
             ...comment,
+            answers: comment.answers.map((answer) => ({
+              ...answer,
+              createdAt: `${(<Date>answer.createdAt).toISOString()}`,
+              updatedAt: `${(<Date>answer.updatedAt).toISOString()}`,
+            })),
             updatedAt: `${(<Date>comment.updatedAt).toISOString()}`,
             createdAt: `${(<Date>comment.createdAt).toISOString()}`,
           })),
@@ -90,9 +103,53 @@ const GetCommentsE2ESpec = suite('Get Comments', (app) => {
           )
           .map((comment) => ({
             ...comment,
+            answers: comment.answers.map((answer) => ({
+              ...answer,
+              createdAt: `${(<Date>answer.createdAt).toISOString()}`,
+              updatedAt: `${(<Date>answer.updatedAt).toISOString()}`,
+            })),
             updatedAt: `${(<Date>comment.updatedAt).toISOString()}`,
             createdAt: `${(<Date>comment.createdAt).toISOString()}`,
           })),
+        itemCount: comments.length,
+        itemsPerPage: Number(
+          app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE'),
+        ),
+      });
+  });
+
+  it('should return the first page of comments with hidden anonymous authors', () => {
+    return pactum
+      .spec()
+      .withBearerToken(user2.token)
+      .get(`/ue/${ue.inscriptionCode}/comments`)
+      .expectStatus(HttpStatus.OK)
+      .expectJson({
+        items: comments
+          .sort((a, b) =>
+            b.upvotes - a.upvotes == 0
+              ? (<Date>b.createdAt).getTime() - (<Date>a.createdAt).getTime()
+              : b.upvotes - a.upvotes,
+          )
+          .slice(
+            0,
+            Number(
+              app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE'),
+            ),
+          )
+          .map((comment) => {
+            if (comment.isAnonymous) delete comment.author;
+            return {
+              ...comment,
+              answers: comment.answers.map((answer) => ({
+                ...answer,
+                createdAt: `${(<Date>answer.createdAt).toISOString()}`,
+                updatedAt: `${(<Date>answer.updatedAt).toISOString()}`,
+              })),
+              updatedAt: `${(<Date>comment.updatedAt).toISOString()}`,
+              createdAt: `${(<Date>comment.createdAt).toISOString()}`,
+            };
+          }),
         itemCount: comments.length,
         itemsPerPage: Number(
           app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE'),

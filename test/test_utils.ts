@@ -154,6 +154,41 @@ export async function createUE(
   return app().get(PrismaService).uE.create(SelectUEDetail(data));
 }
 
+export function makeUserJoinUE(
+  app: () => INestApplication,
+  userId: string,
+  ueCode: string,
+) {
+  return app()
+    .get(PrismaService)
+    .userUESubscription.create({
+      data: {
+        UE: {
+          connect: {
+            code: ueCode,
+          },
+        },
+        user: {
+          connect: {
+            id: userId,
+          },
+        },
+        semester: {
+          connectOrCreate: {
+            create: {
+              code: 'A24',
+              end: new Date(),
+              start: new Date(),
+            },
+            where: {
+              code: 'A24',
+            },
+          },
+        },
+      },
+    });
+}
+
 export function createCriterion(
   app: () => INestApplication,
   name = 'testCriterion',
