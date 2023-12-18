@@ -1,1 +1,1 @@
-export * from './ue'
+export * from './ue';

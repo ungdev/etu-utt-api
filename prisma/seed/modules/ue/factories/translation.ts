@@ -1,24 +1,14 @@
-/*
-export type Translation = {
-  id: string
-  french: string | null
-  english: string | null
-  spanish: string | null
-  german: string | null
-  chinese: string | null
-}*/
-
-import {Translation} from "@prisma/client";
-import {faker} from "@faker-js/faker";
+import { Translation } from '@prisma/client';
+import { faker } from '@faker-js/faker';
 
 export function fakeTranslation(id): Translation {
-    return {
-        //TODO: To improve later
-        id: id,
-        french: faker.lorem.paragraph(),
-        english: faker.lorem.paragraph(),
-        spanish: faker.lorem.paragraph(),
-        german: faker.lorem.paragraph(),
-        chinese: faker.lorem.paragraph()
-    };
+  return {
+    //TODO: To improve later
+    id: id,
+    fr: faker.lorem.paragraph(),
+    en: faker.lorem.paragraph(),
+    es: faker.lorem.paragraph(),
+    de: faker.lorem.paragraph(),
+    zh: faker.lorem.paragraph(),
+  };
 }
