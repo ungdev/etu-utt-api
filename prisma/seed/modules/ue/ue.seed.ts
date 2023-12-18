@@ -17,18 +17,21 @@ export async function ueSeed() {
     });
   }
   //In order to create UTTFilieres we need to create UTTBranches
+  let notUsedTranslationsUuids = [...translationsUuids];
   for (const code of branchesCode) {
+    const uuid = faker.helpers.arrayElement(notUsedTranslationsUuids);
+    notUsedTranslationsUuids.slice(notUsedTranslationsUuids.indexOf(uuid), 1);
     await prisma.uTTBranche.create({
-      data: fakeUttBranche(code, faker.helpers.arrayElement(translationsUuids)),
+      data: fakeUttBranche(code, uuid),
     });
   }
   //In order to create UE we need to create first UTTFiliere
+  notUsedTranslationsUuids = [...translationsUuids];
   for (const filiere of filieresCode) {
+    const uuid = faker.helpers.arrayElement(notUsedTranslationsUuids);
+    notUsedTranslationsUuids.slice(notUsedTranslationsUuids.indexOf(uuid), 1);
     await prisma.uTTFiliere.create({
-      data: fakeUTTFiliere(
-        filiere,
-        faker.helpers.arrayElement(translationsUuids),
-      ),
+      data: fakeUTTFiliere(filiere, uuid),
     });
   }
   for (let i = 0; i < fakerRounds; i++) {
