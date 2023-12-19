@@ -5,7 +5,7 @@ import { PrismaService } from '../../../src/prisma/prisma.service';
 
 const FindE2ESpec = e2eSuite('Find', (app) => {
   const user = createUser(app);
-  const userToSearch = createUser(app, { login: 'userToSearch', studentId: 2 });
+  const userToSearch = createUser(app);
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum.spec().get('/users/abcdef').expectStatus(HttpStatus.UNAUTHORIZED);

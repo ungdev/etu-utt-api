@@ -186,4 +186,13 @@ export default class TimetableService {
       (e) => [e.start, e.end, e.entryId],
     );
   }
+  async getTimetableGroups(userId: string) {
+    return sortArray(
+      await this.prisma.timetableGroup.findMany({
+        where: { userTimetableGroups: { some: { userId } } },
+        include: { userTimetableGroups: { where: { userId } } },
+      }),
+      (group1) => [group1.userTimetableGroups[0].priority, group1.createdAt],
+    );
+  }
 }

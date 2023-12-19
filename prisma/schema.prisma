@@ -153,8 +153,9 @@ model Semester {
 }
 
 model TimetableGroup {
-  id   String @id @default(uuid())
-  name String
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
 
   userTimetableGroups     UserTimetableGroup[]
   timetableEntries        TimetableEntry[]

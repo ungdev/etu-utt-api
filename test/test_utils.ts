@@ -3,9 +3,14 @@ import { INestApplication } from '@nestjs/common';
 import { AuthService } from '../src/auth/auth.service';
 import { AuthSignUpDto } from '../src/auth/dto';
 import { TestingModule } from '@nestjs/testing';
-import { RawUser } from '../src/prisma/types';
+import { RawTimetableGroup, RawUser } from '../src/prisma/types';
+import { faker } from '@faker-js/faker';
+
+faker.seed(69);
 
 export type E2EAppProvider = () => INestApplication;
+export type UnitAppProvider = () => TestingModule;
+export type AppProvider = E2EAppProvider | UnitAppProvider;
 
 export function e2eSuite(name: string, func: (app: E2EAppProvider) => void) {
   return (app: E2EAppProvider) =>
@@ -17,8 +22,6 @@ export function e2eSuite(name: string, func: (app: E2EAppProvider) => void) {
     });
 }
 
-export type UnitAppProvider = () => TestingModule;
-
 export function unitSuite(name: string, func: (app: UnitAppProvider) => void) {
   return (app: UnitAppProvider) =>
     describe(name, () => {
@@ -29,15 +32,14 @@ export function unitSuite(name: string, func: (app: UnitAppProvider) => void) {
     });
 }
 
-export type UserWithToken = Partial<RawUser & { token: string }>;
+export type FakeUser = Partial<RawUser & { token: string }>;
+export type FakeTimetableGroup = Partial<RawTimetableGroup>;
 
-export function createUser(
-  app: () => INestApplication,
-  { login = 'user', studentId = 2 } = {},
-): Partial<RawUser & { token: string }> {
+export function createUser(app: AppProvider): FakeUser {
+  const login = faker.internet.userName();
   const userData = {
     login,
-    studentId,
+    studentId: faker.datatype.number(),
     sex: 'OTHER',
     lastName: 'user',
     firstName: 'user',
@@ -53,4 +55,30 @@ export function createUser(
     }
   });
   return userWithToken;
+}
+
+export function createTimetableGroup(
+  app: AppProvider,
+  ...users: Array<{ user: FakeUser; priority: number }>
+): FakeTimetableGroup {
+  const timetableGroup: FakeTimetableGroup = {};
+  beforeAll(async () => {
+    console.log(users);
+    const createdGroup = await app()
+      .get(PrismaService)
+      .timetableGroup.create({
+        data: {
+          name: faker.random.words(),
+          userTimetableGroups: {
+            createMany: {
+              data: users.map((user) => ({ userId: user.user.id, priority: user.priority })),
+            },
+          },
+        },
+      });
+    for (const [key, value] of Object.entries(createdGroup)) {
+      timetableGroup[key] = value;
+    }
+  });
+  return timetableGroup;
 }

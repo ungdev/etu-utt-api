@@ -1,4 +1,4 @@
-import { Controller, Get, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { Controller, Get, NotFoundException, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
 import TimetableService from './timetable.service';
 import { JwtGuard } from '../auth/guard';
 import { GetUser } from '../auth/decorator';
@@ -24,5 +24,11 @@ export class TimetableController {
       end: timetable.end,
       location: timetable.location,
     }));
+  }
+  @Get('/current/groups')
+  @UseGuards(JwtGuard)
+  async getGroups(@GetUser() user: User) {
+    const groups = await this.timetableService.getTimetableGroups(user.id);
+    return groups.map((group) => ({ id: group.id, name: group.name, priority: group.userTimetableGroups[0].priority }));
   }
 }
