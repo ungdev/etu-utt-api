@@ -47,6 +47,8 @@ export const UEToUEDetailed = (ue: UEUnComputedDetail) => {
   };
 };
 
+// TODO: checker les rates
+
 const GetE2ESpec = suite('GET /ue/{ueCode}', (app) => {
   const user = createUser(app);
   const ues = [];

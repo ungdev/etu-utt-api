@@ -32,6 +32,7 @@ export class AuthController {
   }
 
   @HttpCode(HttpStatus.OK)
+  @IsPublic()
   @Get('signin')
   isSignedIn(@Headers() headers: Record<string, string>) {
     const authorizationHeader = headers['authorization'];
