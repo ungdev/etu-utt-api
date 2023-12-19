@@ -2,11 +2,22 @@ import { PrismaService } from '../src/prisma/prisma.service';
 import { INestApplication } from '@nestjs/common';
 import { AuthService } from '../src/auth/auth.service';
 import { AuthSignUpDto } from '../src/auth/dto';
-import { SelectCriterion } from '../src/ue/interfaces/criterion.interface';
-import { SelectUEOverview } from '../src/ue/interfaces/ue-overview.interface';
-import { SelectUEDetail } from '../src/ue/interfaces/ue-detail.interface';
+import {
+  Criterion,
+  SelectCriterion,
+} from '../src/ue/interfaces/criterion.interface';
+import {
+  SelectUEOverview,
+  UEOverView,
+} from '../src/ue/interfaces/ue-overview.interface';
+import {
+  SelectUEDetail,
+  UEDetail,
+} from '../src/ue/interfaces/ue-detail.interface';
 import { UEService } from '../src/ue/ue.service';
-import { User } from 'src/prisma/types';
+import { User } from '../src/prisma/types';
+import { UEComment } from '../src/ue/interfaces/comment.interface';
+import { UECommentReply } from 'src/ue/interfaces/comment-reply.interface';
 
 export function suite(
   name: string,
@@ -63,7 +74,7 @@ export function createUser(
   return userWithToken;
 }
 
-export async function createUE(
+export function createUE(
   app: () => INestApplication,
   {
     code = 'XX00',
@@ -74,6 +85,7 @@ export async function createUE(
     forOverview = false,
   } = {},
 ) {
+  const partialUE: Partial<UEOverView | UEDetail> = {};
   const data = {
     data: {
       code,
@@ -149,105 +161,146 @@ export async function createUE(
       },
     },
   };
-  if (forOverview)
-    return app().get(PrismaService).uE.create(SelectUEOverview(data));
-  return app().get(PrismaService).uE.create(SelectUEDetail(data));
+  beforeAll(async () => {
+    Object.assign(
+      partialUE,
+      await (forOverview
+        ? app().get(PrismaService).uE.create(SelectUEOverview(data))
+        : app().get(PrismaService).uE.create(SelectUEDetail(data))),
+    );
+  });
+  return partialUE;
 }
 
 export function makeUserJoinUE(
   app: () => INestApplication,
-  userId: string,
-  ueCode: string,
+  user: Partial<User>,
+  ue: Partial<UEOverView | UEDetail>,
 ) {
-  return app()
-    .get(PrismaService)
-    .userUESubscription.create({
-      data: {
-        UE: {
-          connect: {
-            code: ueCode,
-          },
-        },
-        user: {
-          connect: {
-            id: userId,
-          },
-        },
-        semester: {
-          connectOrCreate: {
-            create: {
-              code: 'A24',
-              end: new Date(),
-              start: new Date(),
-            },
-            where: {
-              code: 'A24',
+  beforeAll(() =>
+    app()
+      .get(PrismaService)
+      .userUESubscription.create({
+        data: {
+          UE: {
+            connect: {
+              code: ue.code,
             },
           },
+          user: {
+            connect: {
+              id: user.id,
+            },
+          },
+          semester: {
+            connectOrCreate: {
+              create: {
+                code: 'A24',
+                end: new Date(),
+                start: new Date(),
+              },
+              where: {
+                code: 'A24',
+              },
+            },
+          },
         },
-      },
-    });
+      }),
+  );
 }
 
 export function createCriterion(
   app: () => INestApplication,
   name = 'testCriterion',
 ) {
-  return app()
-    .get(PrismaService)
-    .uEStarCriterion.create(
-      SelectCriterion({
-        data: {
-          name,
-          descriptionTranslation: {
-            create: {},
-          },
-        },
-      }),
+  const lazyCriterion: Partial<Criterion> = {};
+  beforeAll(async () => {
+    Object.assign(
+      lazyCriterion,
+      await app()
+        .get(PrismaService)
+        .uEStarCriterion.create(
+          SelectCriterion({
+            data: {
+              name,
+              descriptionTranslation: {
+                create: {},
+              },
+            },
+          }),
+        ),
     );
+  });
+  return lazyCriterion;
 }
 
-export async function createComment(
+export function createComment(
   app: () => INestApplication,
-  onUECode: string,
+  onUE: Partial<UEOverView | UEDetail>,
   user: User,
   anonymous = false,
 ) {
-  const sub = await app()
-    .get(PrismaService)
-    .userUESubscription.findFirst({
-      where: {
-        UE: {
-          code: onUECode,
-        },
-        userId: user.id,
-      },
-    });
-  if (!sub)
-    await app()
+  const lazyComment: Partial<UEComment> = {};
+  beforeAll(async () => {
+    const sub = await app()
       .get(PrismaService)
-      .userUESubscription.create({
-        data: {
-          semester: {
-            connectOrCreate: {
-              create: {
-                code: 'A24',
-                start: new Date(),
-                end: new Date(),
-              },
-              where: { code: 'A24' },
-            },
+      .userUESubscription.findFirst({
+        where: {
+          UE: {
+            code: onUE.code,
           },
-          UE: { connect: { code: onUECode } },
-          user: { connect: { id: user.id } },
+          userId: user.id,
         },
       });
-  return app().get(UEService).createComment(
-    {
-      body: 'TEST',
-      isAnonymous: anonymous,
-    },
-    user,
-    onUECode,
-  );
+    if (!sub)
+      await app()
+        .get(PrismaService)
+        .userUESubscription.create({
+          data: {
+            semester: {
+              connectOrCreate: {
+                create: {
+                  code: 'A24',
+                  start: new Date(),
+                  end: new Date(),
+                },
+                where: { code: 'A24' },
+              },
+            },
+            UE: { connect: { code: onUE.code } },
+            user: { connect: { id: user.id } },
+          },
+        });
+    Object.assign(
+      lazyComment,
+      await app().get(UEService).createComment(
+        {
+          body: 'TEST',
+          isAnonymous: anonymous,
+        },
+        user,
+        onUE.code,
+      ),
+    );
+  });
+  return lazyComment;
+}
+
+export function createReply(
+  app: () => INestApplication,
+  user: Partial<User>,
+  comment: Partial<UEComment>,
+) {
+  const lazyReply: Partial<UECommentReply> = {};
+  beforeAll(async () => {
+    Object.assign(
+      lazyReply,
+      await app()
+        .get(UEService)
+        .replyComment(user as User, comment.id, {
+          body: "Bouboubou je suis pas d'accord",
+        }),
+    );
+  });
+  return lazyReply;
 }

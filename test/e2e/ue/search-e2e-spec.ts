@@ -16,20 +16,17 @@ const UEToUEOverView = (ue: UEOverView) => ({
 const SearchE2ESpec = suite('GET /ue', (app) => {
   const user = createUser(app);
   const ues = [];
-
-  beforeAll(async () => {
-    for (let i = 0; i < 30; i++)
-      ues.push(
-        await createUE(app, {
-          code: `XX${`${i}`.padStart(2, '0')}`,
-          semester: i % 2 == 1 ? 'A24' : 'P24',
-          category: i % 3 == 0 ? 'CS' : 'TM',
-          filiere: i % 4 == 0 ? 'T1' : 'T2',
-          branch: i % 5 == 0 ? 'B1' : 'B2',
-          forOverview: true,
-        }),
-      );
-  });
+  for (let i = 0; i < 30; i++)
+    ues.push(
+      createUE(app, {
+        code: `XX${`${i}`.padStart(2, '0')}`,
+        semester: i % 2 == 1 ? 'A24' : 'P24',
+        category: i % 3 == 0 ? 'CS' : 'TM',
+        filiere: i % 4 == 0 ? 'T1' : 'T2',
+        branch: i % 5 == 0 ? 'B1' : 'B2',
+        forOverview: true,
+      }),
+    );
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum

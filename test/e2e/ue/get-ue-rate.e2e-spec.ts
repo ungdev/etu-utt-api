@@ -4,7 +4,6 @@ import { HttpStatus } from '@nestjs/common';
 import { ERROR_CODE } from 'src/exceptions';
 import { UEUnComputedDetail } from '../../../src/ue/interfaces/ue-detail.interface';
 import { UEService } from '../../../src/ue/ue.service';
-import { Criterion } from '../../../src/ue/interfaces/criterion.interface';
 
 export const UEToUEDetailed = (ue: UEUnComputedDetail) => {
   const starVoteCriteria: {
@@ -52,17 +51,13 @@ export const UEToUEDetailed = (ue: UEUnComputedDetail) => {
 const GetRateE2ESpec = suite('GET /ue/{ueCode}/rate', (app) => {
   const user = createUser(app);
   const user2 = createUser(app, { login: 'user2' });
-  let ue: UEUnComputedDetail;
-  let c1: Criterion;
-  let c2: Criterion;
+  const ue = createUE(app, {
+    code: `XX00`,
+  });
+  const c1 = createCriterion(app, 'difficulty');
+  const c2 = createCriterion(app, 'interest');
 
   beforeAll(async () => {
-    ue = (await createUE(app, {
-      code: `XX00`,
-    })) as UEUnComputedDetail;
-
-    c1 = await createCriterion(app, 'difficulty');
-    c2 = await createCriterion(app, 'interest');
     await app().get(UEService).doRateUE(user, ue.code, {
       criterion: c1.id,
       value: 1,

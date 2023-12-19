@@ -1,20 +1,15 @@
 import { HttpStatus } from '@nestjs/common';
 import { createUser, suite, createUE, makeUserJoinUE } from '../../test_utils';
 import * as pactum from 'pactum';
-import { UEUnComputedDetail } from '../../../src/ue/interfaces/ue-detail.interface';
 import { ERROR_CODE } from '../../../src/exceptions';
 
 const PostCommment = suite('POST /ue/{ueCode}/comments', (app) => {
   const user = createUser(app);
   const user2 = createUser(app, { login: 'user2' });
   const user3 = createUser(app, { login: 'user3' });
-  let ue: UEUnComputedDetail;
-
-  beforeAll(async () => {
-    ue = (await createUE(app)) as UEUnComputedDetail;
-    await makeUserJoinUE(app, user2.id, ue.code);
-    await makeUserJoinUE(app, user3.id, ue.code);
-  });
+  const ue = createUE(app);
+  makeUserJoinUE(app, user2, ue);
+  makeUserJoinUE(app, user3, ue);
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum

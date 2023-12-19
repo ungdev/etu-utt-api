@@ -1,6 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
 import * as pactum from 'pactum';
-import { UEUnComputedDetail } from 'src/ue/interfaces/ue-detail.interface';
 import { createComment, createUE, createUser, suite } from '../../test_utils';
 import { ConfigService } from '@nestjs/config';
 import { UEComment } from '../../../src/ue/interfaces/comment.interface';
@@ -10,16 +9,15 @@ import { UECommentReply } from '../../../src/ue/interfaces/comment-reply.interfa
 const GetCommentsE2ESpec = suite('GET /ue/{ueCode}/comments', (app) => {
   const user = createUser(app);
   const user2 = createUser(app, { login: 'user2', studentId: 3 });
+  const ue = createUE(app, {
+    code: `XX01`,
+    semester: 'A24',
+  });
   const comments: UEComment[] = [];
-  let ue: UEUnComputedDetail;
+  for (let i = 0; i < 30; i++)
+    comments.push(createComment(app, ue, user, i % 2 === 0) as UEComment);
 
   beforeAll(async () => {
-    ue = (await createUE(app, {
-      code: `XX01`,
-      semester: 'A24',
-    })) as UEUnComputedDetail;
-    for (let i = 0; i < 30; i++)
-      comments.push(await createComment(app, ue.code, user, i % 2 === 0));
     comments[0].answers.push(
       (await app().get(UEService).replyComment(user, comments[0].id, {
         body: 'HelloWorld',

@@ -7,21 +7,14 @@ import {
   createCriterion,
 } from '../../test_utils';
 import * as pactum from 'pactum';
-import { UEUnComputedDetail } from '../../../src/ue/interfaces/ue-detail.interface';
 import { ERROR_CODE } from 'src/exceptions';
-import { Criterion } from 'src/ue/interfaces/criterion.interface';
 
 const PutRate = suite('PUT /ue/{ueCode}/rate', (app) => {
   const user = createUser(app);
   const user2 = createUser(app, { login: 'user2' });
-  let ue: UEUnComputedDetail;
-  let criterion: Criterion;
-
-  beforeAll(async () => {
-    ue = (await createUE(app)) as UEUnComputedDetail;
-    await makeUserJoinUE(app, user.id, ue.code);
-    criterion = await createCriterion(app, 'etAlors');
-  });
+  const ue = createUE(app);
+  makeUserJoinUE(app, user, ue);
+  const criterion = createCriterion(app, 'etAlors');
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum

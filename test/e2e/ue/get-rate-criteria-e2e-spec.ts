@@ -5,13 +5,8 @@ import * as pactum from 'pactum';
 const GetRateCriteria = suite('GET /ue/rate/criteria', (app) => {
   const user = createUser(app);
   const criteria = [];
-
-  beforeAll(async () => {
-    for (let i = 0; i < 30; i++)
-      criteria.push(
-        await createCriterion(app, `criterion-${`${i}`.padStart(2, '0')}`),
-      );
-  });
+  for (let i = 0; i < 30; i++)
+    criteria.push(createCriterion(app, `criterion-${`${i}`.padStart(2, '0')}`));
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum
