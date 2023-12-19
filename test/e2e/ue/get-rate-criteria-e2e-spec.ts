@@ -2,7 +2,7 @@ import { HttpStatus } from '@nestjs/common';
 import { createUser, suite, createCriterion } from '../../test_utils';
 import * as pactum from 'pactum';
 
-const GetRateCriteria = suite('Get Rate Criteria', (app) => {
+const GetRateCriteria = suite('GET /ue/rate/criteria', (app) => {
   const user = createUser(app);
   const criteria = [];
 

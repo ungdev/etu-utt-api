@@ -49,7 +49,7 @@ export const UEToUEDetailed = (ue: UEUnComputedDetail) => {
   };
 };
 
-const GetRateE2ESpec = suite('Get Rating', (app) => {
+const GetRateE2ESpec = suite('GET /ue/{ueCode}/rate', (app) => {
   const user = createUser(app);
   const user2 = createUser(app, { login: 'user2' });
   let ue: UEUnComputedDetail;

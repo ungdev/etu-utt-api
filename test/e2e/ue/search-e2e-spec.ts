@@ -13,7 +13,7 @@ const UEToUEOverView = (ue: UEOverView) => ({
   })),
 });
 
-const SearchE2ESpec = suite('Search', (app) => {
+const SearchE2ESpec = suite('GET /ue', (app) => {
   const user = createUser(app);
   const ues = [];
 

@@ -47,7 +47,7 @@ export const UEToUEDetailed = (ue: UEUnComputedDetail) => {
   };
 };
 
-const GetE2ESpec = suite('Get', (app) => {
+const GetE2ESpec = suite('GET /ue/{ueCode}', (app) => {
   const user = createUser(app);
   const ues = [];
 

@@ -4,7 +4,7 @@ import * as pactum from 'pactum';
 import { UEUnComputedDetail } from '../../../src/ue/interfaces/ue-detail.interface';
 import { ERROR_CODE } from '../../../src/exceptions';
 
-const PostCommment = suite('Post Comment', (app) => {
+const PostCommment = suite('POST /ue/{ueCode}/comments', (app) => {
   const user = createUser(app);
   const user2 = createUser(app, { login: 'user2' });
   const user3 = createUser(app, { login: 'user3' });
@@ -49,7 +49,7 @@ const PostCommment = suite('Post Comment', (app) => {
       })
       .expectStatus(HttpStatus.FORBIDDEN)
       .expectJson({
-        errorCode: 4222,
+        errorCode: ERROR_CODE.NOT_ALREADY_DONE_UE,
         error: 'You must have done this UE before to perform this action',
       });
   });

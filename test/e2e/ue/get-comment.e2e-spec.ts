@@ -7,7 +7,7 @@ import { UEComment } from '../../../src/ue/interfaces/comment.interface';
 import { UEService } from '../../../src/ue/ue.service';
 import { UECommentReply } from '../../../src/ue/interfaces/comment-reply.interface';
 
-const GetCommentsE2ESpec = suite('Get Comments', (app) => {
+const GetCommentsE2ESpec = suite('GET /ue/{ueCode}/comments', (app) => {
   const user = createUser(app);
   const user2 = createUser(app, { login: 'user2', studentId: 3 });
   const comments: UEComment[] = [];

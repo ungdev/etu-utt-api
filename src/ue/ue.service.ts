@@ -225,13 +225,21 @@ export class UEService {
     return comment && comment.authorId == user.id;
   }
 
+  async doesReplyExist(replyId: string) {
+    return !!(await this.prisma.uECommentReply.findUnique({
+      where: {
+        id: replyId,
+      },
+    }));
+  }
+
   async isUserCommentReplyAuthor(user: User, replyId: string) {
     const reply = await this.prisma.uECommentReply.findUnique({
       where: {
         id: replyId,
       },
     });
-    return reply && reply.authorId == user.id;
+    return reply?.authorId == user.id;
   }
 
   async getLastSemesterDoneByUser(user: User, ueCode: string) {
@@ -246,9 +254,15 @@ export class UEService {
     return semester;
   }
 
+  async doesUEExist(ueCode: string) {
+    return !!(await this.prisma.uE.findUnique({
+      where: {
+        code: ueCode,
+      },
+    }));
+  }
+
   async hasAlreadyDoneThisUE(user: User, ueCode: string) {
-    if (!(await this.prisma.uE.findUnique({ where: { code: ueCode } })))
-      throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     return (await this.getLastSemesterDoneByUser(user, ueCode)) != null;
   }
 
@@ -424,6 +438,14 @@ export class UEService {
       upvotes: comment.upvotes.length,
       upvoted: comment.upvotes.some((upvote) => upvote.userId == user.id),
     };
+  }
+
+  async doesCriterionExist(criterionId: string) {
+    return !!(await this.prisma.uEStarCriterion.findUnique({
+      where: {
+        id: criterionId,
+      },
+    }));
   }
 
   async getRateCriteria(): Promise<Criterion[]> {

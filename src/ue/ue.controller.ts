@@ -54,6 +54,8 @@ export class UEController {
     @GetUser() user: User,
     @Body() body: UeCommentPostDto,
   ) {
+    if (!(await this.ueService.doesUEExist(ueCode)))
+      throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     if (!(await this.ueService.hasAlreadyDoneThisUE(user, ueCode)))
       throw new AppException(ERROR_CODE.NOT_ALREADY_DONE_UE);
     if (await this.ueService.hasAlreadyPostedAComment(user, ueCode))
@@ -79,6 +81,8 @@ export class UEController {
     @Param('commentId') commentId: string,
     @GetUser() user: User,
   ) {
+    if (!(await this.ueService.doesCommentExist(commentId)))
+      throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
     if (await this.ueService.isUserCommentAuthor(user, commentId))
       return this.ueService.deleteComment(commentId, user);
     throw new AppException(ERROR_CODE.NOT_COMMENT_AUTHOR);
@@ -89,9 +93,16 @@ export class UEController {
     @Param('commentId') commentId: string,
     @GetUser() user: User,
   ) {
-    if (!(await this.ueService.hasAlreadyUpvoted(user, commentId)))
+    if (!(await this.ueService.doesCommentExist(commentId)))
+      throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
+    if (await this.ueService.isUserCommentAuthor(user, commentId))
+      throw new AppException(ERROR_CODE.IS_COMMENT_AUTHOR);
+    if (!(await this.ueService.hasAlreadyUpvoted(user, commentId))) {
       await this.ueService.upvoteComment(user, commentId);
-    else await this.ueService.deUpvoteComment(user, commentId);
+      return { upvoted: true };
+    }
+    await this.ueService.deUpvoteComment(user, commentId);
+    return { upvoted: false };
   }
 
   @Post('/comments/:commentId/reply')
@@ -111,7 +122,9 @@ export class UEController {
     @Param('replyId') replyId: string,
     @Body() body: CommentReplyDto,
   ) {
-    if (this.ueService.isUserCommentReplyAuthor(user, replyId))
+    if (!(await this.ueService.doesReplyExist(replyId)))
+      throw new AppException(ERROR_CODE.NO_SUCH_REPLY);
+    if (await this.ueService.isUserCommentReplyAuthor(user, replyId))
       return this.ueService.editReply(replyId, body);
     throw new AppException(ERROR_CODE.NOT_REPLY_AUTHOR);
   }
@@ -121,7 +134,9 @@ export class UEController {
     @GetUser() user: User,
     @Param('replyId') replyId: string,
   ) {
-    if (this.ueService.isUserCommentReplyAuthor(user, replyId))
+    if (!(await this.ueService.doesReplyExist(replyId)))
+      throw new AppException(ERROR_CODE.NO_SUCH_REPLY);
+    if (await this.ueService.isUserCommentReplyAuthor(user, replyId))
       return this.ueService.deleteReply(replyId);
     throw new AppException(ERROR_CODE.NOT_REPLY_AUTHOR);
   }
@@ -142,9 +157,13 @@ export class UEController {
     @GetUser() user: User,
     @Body() dto: UERateDto,
   ) {
-    if (await this.ueService.hasAlreadyDoneThisUE(user, ueCode))
-      return this.ueService.doRateUE(user, ueCode, dto);
-    throw new AppException(ERROR_CODE.NOT_ALREADY_DONE_UE);
+    if (!(await this.ueService.doesUEExist(ueCode)))
+      throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
+    if (!(await this.ueService.doesCriterionExist(dto.criterion)))
+      throw new AppException(ERROR_CODE.NO_SUCH_CRITERION);
+    if (!(await this.ueService.hasAlreadyDoneThisUE(user, ueCode)))
+      throw new AppException(ERROR_CODE.NOT_ALREADY_DONE_UE);
+    return this.ueService.doRateUE(user, ueCode, dto);
   }
 
   /*

@@ -5,7 +5,7 @@ import { UEUnComputedDetail } from '../../../src/ue/interfaces/ue-detail.interfa
 import { ERROR_CODE } from '../../../src/exceptions';
 import { UEComment } from '../../../src/ue/interfaces/comment.interface';
 
-const UpdateComment = suite('Update Comment', (app) => {
+const UpdateComment = suite('PATCH /ue/comments/{commentId}', (app) => {
   const user = createUser(app);
   const user2 = createUser(app, { login: 'user2' });
   let ue: UEUnComputedDetail;

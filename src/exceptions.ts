@@ -7,8 +7,11 @@ export const enum ERROR_CODE {
   NOT_COMMENT_AUTHOR = 4221,
   NOT_ALREADY_DONE_UE = 4222,
   NOT_REPLY_AUTHOR = 4223,
+  IS_COMMENT_AUTHOR = 4224,
   NO_SUCH_UE = 4401,
   NO_SUCH_COMMENT = 4402,
+  NO_SUCH_REPLY = 4403,
+  NO_SUCH_CRITERION = 4404,
 }
 
 const Errors: {
@@ -41,12 +44,24 @@ const Errors: {
     message: 'You are not the author of this reply',
     httpCode: HttpStatus.FORBIDDEN,
   },
+  [ERROR_CODE.IS_COMMENT_AUTHOR]: {
+    message: 'You are the author of this comment',
+    httpCode: HttpStatus.FORBIDDEN,
+  },
   [ERROR_CODE.NO_SUCH_UE]: {
     message: 'The UE % does not exist',
     httpCode: HttpStatus.NOT_FOUND,
   },
   [ERROR_CODE.NO_SUCH_COMMENT]: {
     message: 'This comment does not exist',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
+  [ERROR_CODE.NO_SUCH_REPLY]: {
+    message: 'This reply does not exist',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
+  [ERROR_CODE.NO_SUCH_CRITERION]: {
+    message: 'This criterion does not exist',
     httpCode: HttpStatus.NOT_FOUND,
   },
 };
