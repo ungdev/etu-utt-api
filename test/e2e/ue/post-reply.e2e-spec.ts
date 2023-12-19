@@ -61,7 +61,7 @@ const PostCommmentReply = suite(
       return pactum
         .spec()
         .withBearerToken(user.token)
-        .post(`/ue/comments/${comment.id.slice(0, 10)}/reply`)
+        .post(`/ue/comments/00000000-0000-0000-0000-000000000000/reply`)
         .withBody({
           body: 'heyhey',
         })
@@ -70,6 +70,17 @@ const PostCommmentReply = suite(
           errorCode: ERROR_CODE.NO_SUCH_COMMENT,
           error: 'This comment does not exist',
         });
+    });
+
+    it('should return a 400 because comment does not exist', () => {
+      return pactum
+        .spec()
+        .withBearerToken(user.token)
+        .post(`/ue/comments/${comment.id.slice(0, 31)}/reply`)
+        .withBody({
+          body: 'heyhey',
+        })
+        .expectStatus(HttpStatus.BAD_REQUEST);
     });
   },
 );

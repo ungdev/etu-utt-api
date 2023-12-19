@@ -65,11 +65,22 @@ const UpdateCommentReply = suite(
         .expectStatus(HttpStatus.BAD_REQUEST);
     });
 
+    it('should return a 400 because uuid is not an uuid', () => {
+      return pactum
+        .spec()
+        .withBearerToken(user.token)
+        .patch(`/ue/comments/reply/${reply.id.slice(0, 31)}`)
+        .withBody({
+          body: 'heyhey',
+        })
+        .expectStatus(HttpStatus.BAD_REQUEST);
+    });
+
     it('should return a 404 because reply does not exist', () => {
       return pactum
         .spec()
         .withBearerToken(user.token)
-        .patch(`/ue/comments/reply/${reply.id.slice(0, 10)}`)
+        .patch(`/ue/comments/reply/00000000-0000-0000-0000-000000000000`)
         .withBody({
           body: 'heyhey',
         })

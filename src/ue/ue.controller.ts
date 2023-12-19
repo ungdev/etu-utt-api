@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Put,
@@ -65,7 +66,7 @@ export class UEController {
 
   @Patch('/comments/:commentId')
   async EditUEComment(
-    @Param('commentId') commentId: string,
+    @Param('commentId', ParseUUIDPipe) commentId: string,
     @GetUser() user: User,
     @Body() body: UeCommentUpdateDto,
   ) {
@@ -78,7 +79,7 @@ export class UEController {
 
   @Delete('/comments/:commentId')
   async DiscardUEComment(
-    @Param('commentId') commentId: string,
+    @Param('commentId', ParseUUIDPipe) commentId: string,
     @GetUser() user: User,
   ) {
     if (!(await this.ueService.doesCommentExist(commentId)))
@@ -90,7 +91,7 @@ export class UEController {
 
   @Put('/comments/:commentId/upvote')
   async UpvoteUEComment(
-    @Param('commentId') commentId: string,
+    @Param('commentId', ParseUUIDPipe) commentId: string,
     @GetUser() user: User,
   ) {
     if (!(await this.ueService.doesCommentExist(commentId)))
@@ -108,7 +109,7 @@ export class UEController {
   @Post('/comments/:commentId/reply')
   async CreateReplyComment(
     @GetUser() user: User,
-    @Param('commentId') commentId: string,
+    @Param('commentId', ParseUUIDPipe) commentId: string,
     @Body() body: CommentReplyDto,
   ) {
     if (!(await this.ueService.doesCommentExist(commentId)))
@@ -119,7 +120,7 @@ export class UEController {
   @Patch('/comments/reply/:replyId')
   async EditReplyComment(
     @GetUser() user: User,
-    @Param('replyId') replyId: string,
+    @Param('replyId', ParseUUIDPipe) replyId: string,
     @Body() body: CommentReplyDto,
   ) {
     if (!(await this.ueService.doesReplyExist(replyId)))
@@ -132,7 +133,7 @@ export class UEController {
   @Delete('/comments/reply/:replyId')
   async DeleteReplyComment(
     @GetUser() user: User,
-    @Param('replyId') replyId: string,
+    @Param('replyId', ParseUUIDPipe) replyId: string,
   ) {
     if (!(await this.ueService.doesReplyExist(replyId)))
       throw new AppException(ERROR_CODE.NO_SUCH_REPLY);

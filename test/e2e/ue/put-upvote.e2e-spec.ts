@@ -28,11 +28,19 @@ const PutUpvote = suite('PUT /ue/comments/{commentId}/upvote', (app) => {
       });
   });
 
+  it('should return a 400 because uuid is not an uuid', () => {
+    return pactum
+      .spec()
+      .withBearerToken(user2.token)
+      .put(`/ue/comments/${comment1.id.slice(0, 31)}/upvote`)
+      .expectStatus(HttpStatus.BAD_REQUEST);
+  });
+
   it('should return a 404 because reply does not exist', () => {
     return pactum
       .spec()
       .withBearerToken(user2.token)
-      .put(`/ue/comments/${comment1.id.slice(0, 10)}/upvote`)
+      .put(`/ue/comments/00000000-0000-0000-0000-000000000000/upvote`)
       .expectStatus(HttpStatus.NOT_FOUND)
       .expectJson({
         errorCode: ERROR_CODE.NO_SUCH_COMMENT,

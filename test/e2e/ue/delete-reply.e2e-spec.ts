@@ -37,11 +37,19 @@ const DeleteCommentReply = suite(
         });
     });
 
+    it('should return a 400 because uuid is not an uuid', () => {
+      return pactum
+        .spec()
+        .withBearerToken(user.token)
+        .delete(`/ue/comments/reply/${comment1.id.slice(0, 31)}`)
+        .expectStatus(HttpStatus.BAD_REQUEST);
+    });
+
     it('should return a 404 because reply does not exist', () => {
       return pactum
         .spec()
         .withBearerToken(user.token)
-        .delete(`/ue/comments/reply/${reply.id.slice(0, 10)}`)
+        .delete(`/ue/comments/reply/00000000-0000-0000-0000-000000000000`)
         .expectStatus(HttpStatus.NOT_FOUND)
         .expectJson({
           errorCode: ERROR_CODE.NO_SUCH_REPLY,
