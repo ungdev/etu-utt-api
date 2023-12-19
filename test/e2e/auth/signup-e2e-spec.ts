@@ -1,7 +1,7 @@
 import { AuthSignUpDto } from '../../../src/auth/dto';
 import * as pactum from 'pactum';
 import { PrismaService } from '../../../src/prisma/prisma.service';
-import { e2eSuite } from '../../test_utils';
+import { e2eSuite } from '../../utils/test_utils';
 
 const SignupE2ESpec = e2eSuite('Signup', (app) => {
   const dto = {

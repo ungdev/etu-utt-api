@@ -3,6 +3,7 @@ import TimetableService from './timetable.service';
 import { JwtGuard } from '../auth/guard';
 import { GetUser } from '../auth/decorator';
 import { User } from '../users/interfaces/user.interface';
+import { RegexPipe } from '../app.pipe';
 
 @Controller('/timetable')
 export class TimetableController {
@@ -25,6 +26,48 @@ export class TimetableController {
       location: timetable.location,
     }));
   }
+
+  @Get('/:entryId')
+  @UseGuards(JwtGuard)
+  async getEntryDetails(
+    @Param('entryId', new RegexPipe(/^\d+@[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/)) entryId: string,
+    @GetUser() user: User,
+  ) {
+    [, entryId] = entryId.split('@');
+    const entryOverride = await this.timetableService.fetchEntryOverride(entryId);
+    if (entryOverride) {
+      entryId = entryOverride.overrideTimetableEntryId;
+    }
+    const entry = await this.timetableService.getEntryDetails(entryId, user.id);
+    if (!entry) {
+      throw new NotFoundException(`No timetable event with id ${entryId}`);
+    }
+    return {
+      id: entry.id,
+      location: entry.location,
+      duration: entry.occurrenceDuration,
+      firstRepetitionDate: entry.eventStart,
+      lastRepetitionDate: new Date(entry.eventStart.getTime() + entry.occurrencesCount * entry.repeatEvery),
+      repetitionFrequency: entry.repeatEvery,
+      repetitions: entry.occurrencesCount,
+      group: entry.timetableGroupId,
+      overrides: entry.overwrittenBy.map((entryOverride) => ({
+        id: entryOverride.id,
+        location: entryOverride.location,
+        firstRepetitionDate: new Date(entry.eventStart.getTime() + entryOverride.occurrenceRelativeStart),
+        lastRepetitionDate: new Date(
+          entry.eventStart.getTime() +
+            entry.occurrencesCount * entry.repeatEvery +
+            entryOverride.occurrenceRelativeStart,
+        ),
+        firstOccurrenceOverride: entryOverride.applyFrom,
+        lastOccurrenceOverride: entryOverride.applyUntil,
+        overrideFrequency: entryOverride.repeatEvery,
+        group: entryOverride.timetableGroupId,
+      })),
+    };
+  }
+
   @Get('/current/groups')
   @UseGuards(JwtGuard)
   async getGroups(@GetUser() user: User) {

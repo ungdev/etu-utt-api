@@ -186,6 +186,45 @@ export default class TimetableService {
       (e) => [e.start, e.end, e.entryId],
     );
   }
+
+  async fetchEntryOverride(overrideId: string) {
+    return this.prisma.timetableEntryOverride.findUnique({
+      where: { id: overrideId },
+    });
+  }
+
+  async getEntryDetails(entryId: string, userId: string) {
+    const timetableEntry = await this.prisma.timetableEntry.findUnique({
+      where: { id: entryId, timetableGroup: { userTimetableGroups: { some: { userId } } } },
+      include: {
+        overwrittenBy: {
+          where: { timetableGroup: { userTimetableGroups: { some: { userId } } } },
+        },
+        timetableGroup: true,
+      },
+    });
+    if (!timetableEntry) return null;
+    const timetableGroupPriorities: { [groupId: string]: { priority: number; createdAt: Date } } = Object.fromEntries(
+      (
+        await this.prisma.userTimetableGroup.findMany({
+          where: {
+            userId,
+            timetableGroup: { OR: timetableEntry.overwrittenBy.map((override) => ({ id: override.timetableGroupId })) },
+          },
+          include: { timetableGroup: true },
+        })
+      ).map((group) => [
+        group.timetableGroupId,
+        { priority: group.priority, createdAt: group.timetableGroup.createdAt },
+      ]),
+    );
+    sortArray(timetableEntry.overwrittenBy, (override) => [
+      -timetableGroupPriorities[override.timetableGroupId].priority,
+      -timetableGroupPriorities[override.timetableGroupId].createdAt,
+    ]);
+    return timetableEntry;
+  }
+
   async getTimetableGroups(userId: string) {
     return sortArray(
       await this.prisma.timetableGroup.findMany({

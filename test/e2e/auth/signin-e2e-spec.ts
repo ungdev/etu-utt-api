@@ -1,6 +1,6 @@
 import { AuthSignInDto } from '../../../src/auth/dto';
 import * as pactum from 'pactum';
-import { e2eSuite } from '../../test_utils';
+import { e2eSuite } from '../../utils/test_utils';
 import { AuthService } from '../../../src/auth/auth.service';
 
 const SignInE2ESpec = e2eSuite('Signin', (app) => {

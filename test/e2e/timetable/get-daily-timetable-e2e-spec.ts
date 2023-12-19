@@ -1,11 +1,12 @@
-import { createUser, e2eSuite } from '../../test_utils';
+import { e2eSuite } from '../../utils/test_utils';
+import * as fakedb from '../../utils/fakedb';
 import { HttpStatus } from '@nestjs/common';
 import { RawTimetableEntry } from '../../../src/prisma/types';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import * as pactum from 'pactum';
 
 const GetDailyTimetableE2ESpec = e2eSuite('GET /timetable/current/daily/:day/:month/:year', (app) => {
-  const user = createUser(app);
+  const user = fakedb.createUser(app);
   let timetableEntry: RawTimetableEntry;
 
   beforeAll(async () => {

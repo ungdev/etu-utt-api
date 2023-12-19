@@ -6,7 +6,7 @@ import * as pactum from 'pactum';
 import AuthE2ESpec from './auth';
 import ProfileE2ESpec from './profile';
 import UsersE2ESpec from './users';
-import TimetableE2ESpec from "./timetable";
+import TimetableE2ESpec from './timetable';
 
 describe('EtuUTT API e2e testing', () => {
   let app: INestApplication;

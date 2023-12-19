@@ -1,11 +1,12 @@
-import { createUser, e2eSuite } from '../../test_utils';
+import { e2eSuite } from '../../utils/test_utils';
 import * as pactum from 'pactum';
 import { HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../../../src/prisma/prisma.service';
+import * as fakedb from '../../utils/fakedb';
 
 const FindE2ESpec = e2eSuite('Find', (app) => {
-  const user = createUser(app);
-  const userToSearch = createUser(app);
+  const user = fakedb.createUser(app);
+  const userToSearch = fakedb.createUser(app);
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum.spec().get('/users/abcdef').expectStatus(HttpStatus.UNAUTHORIZED);

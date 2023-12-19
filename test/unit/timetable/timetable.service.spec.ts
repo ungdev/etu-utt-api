@@ -2,7 +2,7 @@ import TimetableService from '../../../src/timetable/timetable.service';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { randomStringGenerator } from '@nestjs/common/utils/random-string-generator.util';
 import { RawTimetableEntry, RawTimetableEntryOverride, RawTimetableGroup, RawUser } from '../../../src/prisma/types';
-import { unitSuite } from '../../test_utils';
+import { unitSuite } from '../../utils/test_utils';
 
 const TimetableServiceUnitSpec = unitSuite('Timetable.service', (app) => {
   let timetableService: TimetableService;
@@ -131,6 +131,7 @@ const TimetableServiceUnitSpec = unitSuite('Timetable.service', (app) => {
   });
 
   it('should have priority over the existing override of user 1, as the new override will be newer', async () => {
+    console.log(entry);
     const newerOverride = await prisma.timetableEntryOverride.create({
       data: {
         applyFrom: 0,

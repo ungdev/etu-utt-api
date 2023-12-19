@@ -19,10 +19,12 @@
  * @param array The array to sort
  * @param mapper A function that returns a list of values that will be used for comparison. The length of the array should be fixed in advance.
  */
-export function sortArray<T>(array: T[], mapper: (e: T) => any[]): T[] {
+export function sortArray<T>(array: T[], mapper: (e: T) => any[] | any): T[] {
   return array.sort((a, b) => {
-    const aValues = mapper(a);
-    const bValues = mapper(b);
+    const aMapped = mapper(a);
+    const bMapped = mapper(b);
+    const aValues = aMapped instanceof Array ? aMapped : [aMapped];
+    const bValues = bMapped instanceof Array ? bMapped : [bMapped];
     for (let i = 0; i < aValues.length; i++) {
       if (aValues[i] < bValues[i]) {
         return -1;

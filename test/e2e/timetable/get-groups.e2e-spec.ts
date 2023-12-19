@@ -1,14 +1,15 @@
-import { createTimetableGroup, createUser, e2eSuite } from '../../test_utils';
+import { e2eSuite } from '../../utils/test_utils';
+import * as fakedb from '../../utils/fakedb';
 import * as pactum from 'pactum';
 import { HttpStatus } from '@nestjs/common';
 
 const GetGroupsE2ESpec = e2eSuite('GET /timetable/current/groups', (app) => {
-  const user1 = createUser(app);
-  const user2 = createUser(app);
-  const user1Group = createTimetableGroup(app, { user: user1, priority: 2 });
+  const user1 = fakedb.createUser(app);
+  const user2 = fakedb.createUser(app);
+  const user1Group = fakedb.createTimetableGroup(app, { user: user1, priority: 2 });
   // Create a group for user2
-  createTimetableGroup(app, { user: user2, priority: 1 });
-  const user1And2Group = createTimetableGroup(app, { user: user1, priority: 1 }, { user: user2, priority: 1 });
+  fakedb.createTimetableGroup(app, { user: user2, priority: 1 });
+  const user1And2Group = fakedb.createTimetableGroup(app, { user: user1, priority: 1 }, { user: user2, priority: 1 });
 
   it('should fail as user is not connected', () =>
     pactum.spec().get('/timetable/current/groups').expectStatus(HttpStatus.UNAUTHORIZED));

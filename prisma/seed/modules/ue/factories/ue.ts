@@ -7,9 +7,7 @@ export function fakeUE(): UE {
   return {
     id: faker.datatype.uuid(),
     //Purely arbitrary values, if you wish to change do not hesitate!
-    code:
-      faker.helpers.arrayElement(baseUesCode) +
-      faker.datatype.number({ min: 1, max: 13 }),
+    code: faker.helpers.arrayElement(baseUesCode) + faker.datatype.number({ min: 1, max: 13 }),
     name: faker.name.jobTitle(),
     validationRate: faker.datatype.number({ min: 0, max: 100 }),
     createdAt: date,

@@ -1,6 +1,6 @@
 import * as pactum from 'pactum';
 import { PrismaService } from '../../../src/prisma/prisma.service';
-import { e2eSuite } from '../../test_utils';
+import { e2eSuite } from '../../utils/test_utils';
 import { AuthSignUpDto } from '../../../src/auth/dto';
 import { AuthService } from '../../../src/auth/auth.service';
 
