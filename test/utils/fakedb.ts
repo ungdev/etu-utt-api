@@ -4,7 +4,8 @@ import { AuthSignUpDto } from '../../src/auth/dto';
 import { AuthService } from '../../src/auth/auth.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { AppProvider } from './test_utils';
-import { Prisma } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
+import { PrismaTypes } from './prisma.types';
 
 export type FakeUser = Partial<RawUser & { token: string }>;
 export type FakeTimetableGroup = Partial<RawTimetableGroup>;
@@ -108,4 +109,94 @@ export function createTimetableEntryOverride(
     }
   });
   return override;
+}
+
+/*export function createTimetableEntryOverride2(app: AppProvider, data) {
+  return create2(app, 'timetableEntryOverride', { applyFrom: 0, applyUntil: 0 }, data);
+}*/
+/*
+export function create<
+  T2 extends TypeMap<PrismaClient
+  Table extends { create: (arg: { data: Data & Connections }) => Promise<ReturnType> },
+  Data,
+  Connections extends Array<{fieldName: string, id: string /!*; [key: string]: any*!/ }>,
+  ReturnType,
+>(app: AppProvider, table: Table, default_: Data, data: Partial<Data> = {}, connections: Connections): Partial<ReturnType> {
+  const row: Partial<ReturnType> = {};
+  beforeAll(async () => {
+    const createdRow = await app().get(PrismaService)[table].create({ data: { ...default_, ...data, ...connections.map((c) => ({[fieldName]: {connect: }})) } });
+    Object.assign(row, createdRow);
+  });
+  return row;
+}*/
+
+/*type AllData<Table extends Prisma.TypeMap['meta']['modelProps']> = Parameters<
+  PrismaClient[Table]['create']
+>[0] extends Prisma.SelectSubset<{ data: infer D }, any>
+  ? D
+  : never;
+type NormalData<Table extends Prisma.TypeMap['meta']['modelProps']> = AllData<Table> extends Prisma.XOR<
+  infer A,
+  infer B
+>
+  ? Pick<A, keyof B & keyof A>
+  : never;
+type Connections<Table extends Prisma.TypeMap['meta']['modelProps']> = AllData<Table> extends Prisma.XOR<
+  infer A,
+  infer B
+>
+  ? Omit<B, keyof A>
+  : never;*/
+type Fake<Table extends Prisma.TypeMap['meta']['modelProps']> = ReturnType<PrismaClient[Table]['create']>;
+
+// type E<T> = {[]}
+// type A = Parameters<PrismaClient<infer T>["timetableEntry"]['create']>[0] extends Prisma.SelectSubset<any, infer R<T>> ? true: false;
+// type B = Connections<"timetableEntry">;
+// type C = Prisma.XOR<Prisma.TimetableEntryCreateInput, Prisma.TimetableEntryUncheckedCreateInput> extends Prisma.XOR<infer A, infer B> ? keyof B : never;
+// type D = keyof AllData<"timetableEntry">;
+
+type T = Prisma.TypeMap['meta']['modelProps'];
+
+//type A = '' extends keyof PrismaTypes ? true : false;
+// type a = keyof typeof Prisma & `Timetable${string}`;
+type EEEE<Table extends Prisma.TypeMap['meta']['modelProps']> = Table extends keyof PrismaTypes
+  ? PrismaTypes[Table]
+  : never;
+type rel<Table extends Prisma.TypeMap['meta']['modelProps']> = {
+  [K in keyof EEEE<Table> as Required<EEEE<Table>[K]> extends { create: object } ? K : never]: EEEE<Table>[K];
+};
+//type E = keyof rel<'timetableEntry'>;
+type nonRel<Table extends Prisma.TypeMap['meta']['modelProps']> = {
+  [K in Exclude<keyof EEEE<Table>, keyof rel<Table>>]: EEEE<Table>[K];
+};
+//type E2 = keyof nonRel<'timetableEntry'>;
+
+type E2 = rel<'timetableEntryOverride'>;
+type relArgs<Table extends T> = {
+  [K in keyof rel<Table>]: rel<Table>[K] /*extends { connect: any } ? true : false*/;
+};
+type E3 = relArgs<'timetableEntryOverride'>;
+
+//const a: E3;
+
+// type ajkj = rel<"timetableEntry">;
+//
+// type nonRel<Table extends Prisma.TypeMap['meta']['modelProps']> = {[ K in Exclude<keyof AllData<Table>, keyof rel<Table>>]: AllData<Table>[K]};
+// type hgjgj = nonRel<"timetableEntry">;
+
+export function create2<Table extends Prisma.TypeMap['meta']['modelProps']>(
+  app: AppProvider,
+  table: Table,
+  default_: nonRel<Table>,
+  data: Partial<nonRel<Table>> = {},
+  connections: rel<Table>,
+): Partial<Fake<Table>> {
+  const row: Partial<Fake<Table>> = {};
+  beforeAll(async () => {
+    const createdRow = await (
+      app().get(PrismaService)[table].create as unknown as (arg: object) => Partial<Fake<Table>>
+    )({ data: { ...default_, ...data, ...connections } });
+    Object.assign(row, createdRow);
+  });
+  return row;
 }
