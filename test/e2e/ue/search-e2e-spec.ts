@@ -2,16 +2,6 @@ import { createUE, createUser, suite } from '../../test_utils';
 import * as pactum from 'pactum';
 import { HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { UEOverView } from 'src/ue/interfaces/ue-overview.interface';
-
-const UEToUEOverView = (ue: UEOverView) => ({
-  ...ue,
-  openSemester: ue.openSemester.map((semester) => ({
-    ...semester,
-    start: (<Date>semester.start).toISOString(),
-    end: (<Date>semester.end).toISOString(),
-  })),
-});
 
 const SearchE2ESpec = suite('GET /ue', (app) => {
   const user = createUser(app);
@@ -58,12 +48,10 @@ const SearchE2ESpec = suite('GET /ue', (app) => {
       .get('/ue')
       .expectStatus(HttpStatus.OK)
       .expectJson({
-        items: ues
-          .slice(
-            0,
-            Number(app().get(ConfigService).get('PAGINATION_PAGE_SIZE')),
-          )
-          .map(UEToUEOverView),
+        items: ues.slice(
+          0,
+          Number(app().get(ConfigService).get('PAGINATION_PAGE_SIZE')),
+        ),
         itemCount: ues.length,
         itemsPerPage: Number(
           app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE'),
@@ -79,15 +67,13 @@ const SearchE2ESpec = suite('GET /ue', (app) => {
       .withQueryParams('page', 2)
       .expectStatus(HttpStatus.OK)
       .expectJson({
-        items: ues
-          .slice(
-            Number(app().get(ConfigService).get('PAGINATION_PAGE_SIZE')),
-            Math.min(
-              30,
-              Number(app().get(ConfigService).get('PAGINATION_PAGE_SIZE') * 2),
-            ),
-          )
-          .map(UEToUEOverView),
+        items: ues.slice(
+          Number(app().get(ConfigService).get('PAGINATION_PAGE_SIZE')),
+          Math.min(
+            30,
+            Number(app().get(ConfigService).get('PAGINATION_PAGE_SIZE') * 2),
+          ),
+        ),
         itemCount: ues.length,
         itemsPerPage: Number(
           app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE'),
@@ -103,11 +89,9 @@ const SearchE2ESpec = suite('GET /ue', (app) => {
       .withQueryParams('availableAtSemester', 'A24')
       .expectStatus(HttpStatus.OK)
       .expectJson({
-        items: ues
-          .filter((ue) =>
-            ue.openSemester.some((semester) => semester.code === 'A24'),
-          )
-          .map(UEToUEOverView),
+        items: ues.filter((ue) =>
+          ue.openSemester.some((semester) => semester.code === 'A24'),
+        ),
         itemCount: ues.filter((ue) =>
           ue.openSemester.some((semester) => semester.code === 'A24'),
         ).length,
@@ -125,11 +109,9 @@ const SearchE2ESpec = suite('GET /ue', (app) => {
       .withQueryParams('creditType', 'CS')
       .expectStatus(HttpStatus.OK)
       .expectJson({
-        items: ues
-          .filter((ue) =>
-            ue.credits.some((credit) => credit.category.code === 'CS'),
-          )
-          .map(UEToUEOverView),
+        items: ues.filter((ue) =>
+          ue.credits.some((credit) => credit.category.code === 'CS'),
+        ),
         itemCount: ues.filter((ue) =>
           ue.credits.some((credit) => credit.category.code === 'CS'),
         ).length,
@@ -147,9 +129,9 @@ const SearchE2ESpec = suite('GET /ue', (app) => {
       .withQueryParams('filiere', 'T1')
       .expectStatus(HttpStatus.OK)
       .expectJson({
-        items: ues
-          .filter((ue) => ue.filiere.some((filiere) => filiere.code === 'T1'))
-          .map(UEToUEOverView),
+        items: ues.filter((ue) =>
+          ue.filiere.some((filiere) => filiere.code === 'T1'),
+        ),
         itemCount: ues.filter((ue) =>
           ue.filiere.some((filiere) => filiere.code === 'T1'),
         ).length,
@@ -167,11 +149,9 @@ const SearchE2ESpec = suite('GET /ue', (app) => {
       .withQueryParams('branch', 'B1')
       .expectStatus(HttpStatus.OK)
       .expectJson({
-        items: ues
-          .filter((ue) =>
-            ue.filiere.some((filiere) => filiere.branche.code === 'B1'),
-          )
-          .map(UEToUEOverView),
+        items: ues.filter((ue) =>
+          ue.filiere.some((filiere) => filiere.branche.code === 'B1'),
+        ),
         itemsPerPage: Number(
           app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE'),
         ),
@@ -189,9 +169,7 @@ const SearchE2ESpec = suite('GET /ue', (app) => {
       .withQueryParams('q', 'XX0')
       .expectStatus(HttpStatus.OK)
       .expectJson({
-        items: ues
-          .filter((ue) => ue.code.startsWith('XX0'))
-          .map(UEToUEOverView),
+        items: ues.filter((ue) => ue.code.startsWith('XX0')),
         itemsPerPage: Number(
           app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE'),
         ),

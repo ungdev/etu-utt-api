@@ -19,11 +19,10 @@ import { User } from '../src/prisma/types';
 import { UEComment } from '../src/ue/interfaces/comment.interface';
 import { UECommentReply } from 'src/ue/interfaces/comment-reply.interface';
 
-export function suite(
-  name: string,
-  func: (app: () => INestApplication) => void,
-) {
-  return (app: () => INestApplication) =>
+type ApplicationContext = () => INestApplication;
+
+export function suite(name: string, func: (app: ApplicationContext) => void) {
+  return (app: ApplicationContext) =>
     describe(name, () => {
       beforeAll(async () => {
         await app().get(PrismaService).cleanDb();
@@ -33,7 +32,7 @@ export function suite(
 }
 
 export function createUser(
-  app: () => INestApplication,
+  app: ApplicationContext,
   { login = 'user', studentId = 2 } = {},
 ) {
   const user = {
@@ -74,8 +73,20 @@ export function createUser(
   return userWithToken;
 }
 
+type UECreationOptions<T extends boolean> = {
+  code?: string;
+  category?: string;
+  filiere?: string;
+  branch?: string;
+  semester?: string;
+  forOverview?: T;
+};
+export function createUE<T extends boolean = false>(
+  app: ApplicationContext,
+  opt?: UECreationOptions<T>,
+): Partial<T extends true ? UEOverView : UEDetail>;
 export function createUE(
-  app: () => INestApplication,
+  app: ApplicationContext,
   {
     code = 'XX00',
     category = 'CS',
@@ -162,18 +173,69 @@ export function createUE(
     },
   };
   beforeAll(async () => {
+    const ue = await (forOverview
+      ? app().get(PrismaService).uE.create(SelectUEOverview(data))
+      : app().get(PrismaService).uE.create(SelectUEDetail(data)));
+    const starVoteCriteria: {
+      [key: string]: {
+        createdAt: Date;
+        value: number;
+      }[];
+    } = {};
+    if (!forOverview && 'workTime' in ue) {
+      for (const starVote of ue.starVotes) {
+        if (starVote.criterionId in starVoteCriteria)
+          starVoteCriteria[starVote.criterionId].push({
+            createdAt: starVote.createdAt as Date,
+            value: starVote.value,
+          });
+        else
+          starVoteCriteria[starVote.criterionId] = [
+            {
+              createdAt: starVote.createdAt as Date,
+              value: starVote.value,
+            },
+          ];
+      }
+    }
     Object.assign(
       partialUE,
-      await (forOverview
-        ? app().get(PrismaService).uE.create(SelectUEOverview(data))
-        : app().get(PrismaService).uE.create(SelectUEDetail(data))),
+      !('workTime' in ue)
+        ? {
+            ...ue,
+            openSemester: ue.openSemester.map((semester) => ({
+              ...semester,
+              start: (<Date>semester.start).toISOString(),
+              end: (<Date>semester.end).toISOString(),
+            })),
+          }
+        : {
+            ...ue,
+            openSemester: ue.openSemester.map((semester) => semester.code),
+            starVotes: Object.fromEntries(
+              Object.entries(starVoteCriteria).map(([key, entry]) => {
+                let coefficients = 0;
+                let ponderation = 0;
+                for (const { value, createdAt } of entry) {
+                  const dt =
+                    (starVoteCriteria[key][0].createdAt.getTime() -
+                      createdAt.getTime()) /
+                    1000;
+                  const dp = Math.exp(-dt / 10e7);
+                  ponderation += dp * value;
+                  coefficients += dp;
+                }
+                return [key, ponderation / coefficients];
+              }),
+            ),
+          },
     );
   });
   return partialUE;
 }
 
 export function makeUserJoinUE(
-  app: () => INestApplication,
+  app: ApplicationContext,
   user: Partial<User>,
   ue: Partial<UEOverView | UEDetail>,
 ) {
@@ -210,7 +272,7 @@ export function makeUserJoinUE(
 }
 
 export function createCriterion(
-  app: () => INestApplication,
+  app: ApplicationContext,
   name = 'testCriterion',
 ) {
   const lazyCriterion: Partial<Criterion> = {};
@@ -235,7 +297,7 @@ export function createCriterion(
 }
 
 export function createComment(
-  app: () => INestApplication,
+  app: ApplicationContext,
   onUE: Partial<UEOverView | UEDetail>,
   user: User,
   anonymous = false,
@@ -287,7 +349,7 @@ export function createComment(
 }
 
 export function createReply(
-  app: () => INestApplication,
+  app: ApplicationContext,
   user: Partial<User>,
   comment: Partial<UEComment>,
 ) {

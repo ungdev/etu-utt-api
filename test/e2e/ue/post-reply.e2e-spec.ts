@@ -82,6 +82,29 @@ const PostCommmentReply = suite(
         })
         .expectStatus(HttpStatus.BAD_REQUEST);
     });
+
+    it('should return the posted comment', () => {
+      return pactum
+        .spec()
+        .withBearerToken(user.token)
+        .post(`/ue/comments/${comment.id}/reply`)
+        .withBody({
+          body: 'heyhey',
+        })
+        .expectStatus(HttpStatus.CREATED)
+        .expectJsonLike({
+          id: /[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}/,
+          author: {
+            id: user.id,
+            lastName: user.lastName,
+            firstName: user.firstName,
+            studentId: user.studentId,
+          },
+          body: 'heyhey',
+          createdAt: "typeof $V === 'string'",
+          updatedAt: "typeof $V === 'string'",
+        });
+    });
   },
 );
 

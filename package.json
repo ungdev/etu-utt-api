@@ -14,15 +14,15 @@
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test,prisma}/**/*.ts\" --fix",
     "test": "jest --config ./test/jest-e2e.json",
-    "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
+    "test:watch": "jest --watch --config ./test/jest-e2e.json",
+    "test:cov": "jest --coverage --config ./test/jest-e2e.json",
+    "test:e2e": "env-cmd -f .env.test jest --watchAll --no-cache --config ./test/jest-e2e.json",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "db:reset": "env-cmd -f .env.dev --use-shell \"pnpm prisma migrate reset --force && pnpm prisma db push\"",
     "db:test:reset": "env-cmd -f .env.test --use-shell \"pnpm prisma migrate reset --force && pnpm prisma db push\"",
     "db:editor": "env-cmd -f .env.dev --use-shell \"npx prisma studio\"",
     "db:test:editor": "env-cmd -f .env.test --use-shell \"npx prisma studio\"",
     "pretest:e2e": "npm run db:test:reset",
-    "test:e2e": "env-cmd -f .env.test jest --watchAll --no-cache --config ./test/jest-e2e.json",
     "db:seed": "env-cmd -f .env.dev -- ts-node prisma/seed/seed.ts"
   },
   "dependencies": {
