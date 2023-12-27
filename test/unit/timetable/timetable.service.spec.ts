@@ -55,7 +55,7 @@ const TimetableServiceUnitSpec = unitSuite('Timetable.service', (app) => {
         occurrenceDuration: 1_000_000,
         type: 'CUSTOM',
         location: 'At a very random place',
-        timetableGroup: { connect: everyoneGroup },
+        timetableGroups: { connect: [{ id: everyoneGroup.id }] },
       },
     });
     overrideEntry = await prisma.timetableEntryOverride.create({
@@ -63,7 +63,7 @@ const TimetableServiceUnitSpec = unitSuite('Timetable.service', (app) => {
         applyFrom: 0,
         applyUntil: 0,
         location: 'Another random place',
-        timetableGroup: { connect: user1Group },
+        timetableGroups: { connect: user1Group },
         overrideTimetableEntry: { connect: entry },
       },
     });
@@ -86,7 +86,7 @@ const TimetableServiceUnitSpec = unitSuite('Timetable.service', (app) => {
         occurrenceDuration: 10,
         type: 'CUSTOM',
         location: 'Same place as the other event',
-        timetableGroup: { connect: user1Group },
+        timetableGroups: { connect: user1Group },
       },
     });
     let timetable = await timetableService.getTimetableOfUserInNextXMs(user1.id, new Date(0), 1);
@@ -114,7 +114,7 @@ const TimetableServiceUnitSpec = unitSuite('Timetable.service', (app) => {
       data: {
         applyFrom: 0,
         applyUntil: 0,
-        timetableGroup: { connect: everyoneGroup },
+        timetableGroups: { connect: everyoneGroup },
         overrideTimetableEntry: { connect: entry },
         location: 'Petaouchnok',
       },
@@ -131,13 +131,12 @@ const TimetableServiceUnitSpec = unitSuite('Timetable.service', (app) => {
   });
 
   it('should have priority over the existing override of user 1, as the new override will be newer', async () => {
-    console.log(entry);
     const newerOverride = await prisma.timetableEntryOverride.create({
       data: {
         applyFrom: 0,
         applyUntil: 0,
         location: 'Schtroumpf',
-        timetableGroup: { connect: user1Group },
+        timetableGroups: { connect: user1Group },
         overrideTimetableEntry: { connect: entry },
       },
     });

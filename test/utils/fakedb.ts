@@ -75,7 +75,7 @@ export function createTimetableEntry(
           occurrenceDuration,
           type: 'CUSTOM',
           location: faker.address.cityName(),
-          timetableGroup: { connect: { id: group.id } },
+          timetableGroups: { connect: [{ id: group.id }] },
         },
       });
     for (const [key, value] of Object.entries(createdEntry)) {
@@ -100,7 +100,7 @@ export function createTimetableEntryOverride(
           applyFrom: 0,
           applyUntil: 0,
           overrideTimetableEntry: { connect: { id: timetableEntry.id } },
-          timetableGroup: { connect: { id: group.id } },
+          timetableGroups: { connect: [{ id: group.id }] },
           ...data,
         },
       });

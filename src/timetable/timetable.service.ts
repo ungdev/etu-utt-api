@@ -39,10 +39,9 @@ export default class TimetableService {
     }> = (
       await this.prisma.timetableEntry.findMany({
         where: {
-          timetableGroup: { userTimetableGroups: { some: { userId } } }, // For user
+          timetableGroups: { some: { userTimetableGroups: { some: { userId } } } }, // For user
           eventStart: { lte: selectTo }, // Select only events that start occurring before the end of the interval
         },
-        include: { timetableGroup: { select: { userTimetableGroups: { where: { userId }, take: 1 } } } },
       })
     )
       // Filter entries that will not appear in the next X seconds.
@@ -118,14 +117,20 @@ export default class TimetableService {
           applyFrom: { lte: occurrence.index }, // The TimetableOccurrence it is linked to is in the interval of occurrences overwritten.
           applyUntil: { gte: occurrence.index },
         })),
-        timetableGroup: { userTimetableGroups: { some: { userId } } }, // The override concerns the user.
+        timetableGroups: { some: { userTimetableGroups: { some: { userId } } } }, // The override concerns the user.
       },
-      include: { timetableGroup: { select: { userTimetableGroups: { where: { userId }, take: 1 } } } },
+      include: {
+        timetableGroups: {
+          where: { userTimetableGroups: { some: { userId } } },
+          select: { userTimetableGroups: { where: { userId } } },
+        },
+      },
     });
     // Sort overrides by priority, then by creation date in ascending order.
-    sortArray(overrides, (e) =>
-      e.timetableGroup !== null ? [e.timetableGroup.userTimetableGroups[0].priority, e.createdAt.getTime()] : [],
-    );
+    sortArray(overrides, (e) => [
+      Math.max(...e.timetableGroups.map((group) => group.userTimetableGroups[0].priority)),
+      e.createdAt.getTime(),
+    ]);
     // Update the occurrences.
     for (const override of overrides) {
       // In this part we will mostly use occurrencesNoOverride, because we need to have access to the values before they were overwritten.
@@ -195,32 +200,35 @@ export default class TimetableService {
 
   async getEntryDetails(entryId: string, userId: string) {
     const timetableEntry = await this.prisma.timetableEntry.findUnique({
-      where: { id: entryId, timetableGroup: { userTimetableGroups: { some: { userId } } } },
+      where: { id: entryId, timetableGroups: { some: { userTimetableGroups: { some: { userId } } } } },
       include: {
         overwrittenBy: {
-          where: { timetableGroup: { userTimetableGroups: { some: { userId } } } },
+          where: { timetableGroups: { some: { userTimetableGroups: { some: { userId } } } } },
+          include: { timetableGroups: { where: { userTimetableGroups: { some: { userId } } }, select: { id: true } } },
         },
-        timetableGroup: true,
+        timetableGroups: { where: { userTimetableGroups: { some: { userId } } }, select: { id: true } },
       },
     });
     if (!timetableEntry) return null;
-    const timetableGroupPriorities: { [groupId: string]: { priority: number; createdAt: Date } } = Object.fromEntries(
+    const timetableGroupPriorities: { [groupId: string]: number } = Object.fromEntries(
       (
         await this.prisma.userTimetableGroup.findMany({
           where: {
             userId,
-            timetableGroup: { OR: timetableEntry.overwrittenBy.map((override) => ({ id: override.timetableGroupId })) },
+            timetableGroup: {
+              // Take the row where the group id is one of the ids of one of the group of one of the override
+              OR: timetableEntry.overwrittenBy.map((override) => ({
+                OR: override.timetableGroups.map((group) => ({ id: group.id })),
+              })),
+            },
           },
           include: { timetableGroup: true },
         })
-      ).map((group) => [
-        group.timetableGroupId,
-        { priority: group.priority, createdAt: group.timetableGroup.createdAt },
-      ]),
+      ).map((group) => [group.timetableGroupId, group.priority]),
     );
     sortArray(timetableEntry.overwrittenBy, (override) => [
-      -timetableGroupPriorities[override.timetableGroupId].priority,
-      -timetableGroupPriorities[override.timetableGroupId].createdAt,
+      -Math.max(...override.timetableGroups.map((group) => timetableGroupPriorities[group.id])),
+      -override.createdAt.getTime(),
     ]);
     return timetableEntry;
   }

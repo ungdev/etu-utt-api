@@ -20,8 +20,8 @@ const GetDailyTimetableE2ESpec = e2eSuite('GET /timetable/current/daily/:day/:mo
           occurrenceDuration: 3_600_000,
           type: 'CUSTOM',
           location: 'The surimi operation center',
-          timetableGroup: {
-            create: { name: 'user group', userTimetableGroups: { create: { priority: 1, userId: user.id } } },
+          timetableGroups: {
+            create: [{ name: 'user group', userTimetableGroups: { create: { priority: 1, userId: user.id } } }],
           },
         },
       });

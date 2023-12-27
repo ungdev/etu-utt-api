@@ -172,13 +172,12 @@ model TimetableEntry {
   location           String
   eventId            String?
   ueCourseId         String?
-  timetableGroupId   String
   createdAt          DateTime           @default(now())
 
-  ueCourse       UECourse?                @relation(fields: [ueCourseId], references: [id])
-  event          Event?                   @relation(fields: [eventId], references: [id])
-  timetableGroup TimetableGroup           @relation(fields: [timetableGroupId], references: [id])
-  overwrittenBy  TimetableEntryOverride[] @relation(name: "overrideTimetableEntry")
+  ueCourse        UECourse?                @relation(fields: [ueCourseId], references: [id])
+  event           Event?                   @relation(fields: [eventId], references: [id])
+  overwrittenBy   TimetableEntryOverride[] @relation(name: "overrideTimetableEntry")
+  timetableGroups TimetableGroup[]
 }
 
 model TimetableEntryOverride {
@@ -192,10 +191,9 @@ model TimetableEntryOverride {
   location                 String?
   createdAt                DateTime @default(now())
   overrideTimetableEntryId String
-  timetableGroupId         String
 
-  overrideTimetableEntry TimetableEntry? @relation(name: "overrideTimetableEntry", fields: [overrideTimetableEntryId], references: [id])
-  timetableGroup         TimetableGroup  @relation(fields: [timetableGroupId], references: [id])
+  overrideTimetableEntry TimetableEntry?  @relation(name: "overrideTimetableEntry", fields: [overrideTimetableEntryId], references: [id])
+  timetableGroups        TimetableGroup[]
 }
 
 model Translation {

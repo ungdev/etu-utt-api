@@ -50,7 +50,7 @@ export class TimetableController {
       lastRepetitionDate: new Date(entry.eventStart.getTime() + entry.occurrencesCount * entry.repeatEvery),
       repetitionFrequency: entry.repeatEvery,
       repetitions: entry.occurrencesCount,
-      group: entry.timetableGroupId,
+      groups: entry.timetableGroups.map((group) => group.id),
       overrides: entry.overwrittenBy.map((entryOverride) => ({
         id: entryOverride.id,
         location: entryOverride.location,
@@ -63,7 +63,7 @@ export class TimetableController {
         firstOccurrenceOverride: entryOverride.applyFrom,
         lastOccurrenceOverride: entryOverride.applyUntil,
         overrideFrequency: entryOverride.repeatEvery,
-        group: entryOverride.timetableGroupId,
+        groups: entryOverride.timetableGroups.map((group) => group.id),
       })),
     };
   }

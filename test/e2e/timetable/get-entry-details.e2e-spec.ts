@@ -28,7 +28,7 @@ const GetEntryDetailsE2ESpec = e2eSuite('GET /timetable/:entryId', (app) => {
       ).toISOString(),
       repetitionFrequency: entry.repeatEvery,
       repetitions: entry.occurrencesCount,
-      group: user1Group.id,
+      groups: [user1Group.id],
       overrides: [
         {
           id: override2.id,
@@ -38,7 +38,7 @@ const GetEntryDetailsE2ESpec = e2eSuite('GET /timetable/:entryId', (app) => {
           firstOccurrenceOverride: override2.applyFrom,
           lastOccurrenceOverride: override2.applyUntil,
           overrideFrequency: override2.repeatEvery,
-          group: user1OtherGroup.id,
+          groups: [user1OtherGroup.id],
         },
         {
           id: override1.id,
@@ -48,7 +48,7 @@ const GetEntryDetailsE2ESpec = e2eSuite('GET /timetable/:entryId', (app) => {
           firstOccurrenceOverride: override1.applyFrom,
           lastOccurrenceOverride: override1.applyUntil,
           overrideFrequency: override1.repeatEvery,
-          group: user1Group.id,
+          groups: [user1Group.id],
         },
       ],
     };
