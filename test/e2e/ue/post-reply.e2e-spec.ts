@@ -5,6 +5,7 @@ import {
   createUE,
   makeUserJoinUE,
   createComment,
+  JsonLike,
 } from '../../test_utils';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
@@ -93,7 +94,7 @@ const PostCommmentReply = suite(
         })
         .expectStatus(HttpStatus.CREATED)
         .expectJsonLike({
-          id: /[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}/,
+          id: JsonLike.ANY_UUID,
           author: {
             id: user.id,
             lastName: user.lastName,
@@ -101,8 +102,8 @@ const PostCommmentReply = suite(
             studentId: user.studentId,
           },
           body: 'heyhey',
-          createdAt: "typeof $V === 'string'",
-          updatedAt: "typeof $V === 'string'",
+          createdAt: JsonLike.ANY_DATE,
+          updatedAt: JsonLike.ANY_DATE,
         });
     });
   },

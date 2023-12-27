@@ -1,5 +1,11 @@
 import { HttpStatus } from '@nestjs/common';
-import { createUser, suite, createUE, makeUserJoinUE } from '../../test_utils';
+import {
+  createUser,
+  suite,
+  createUE,
+  makeUserJoinUE,
+  JsonLike,
+} from '../../test_utils';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
 
@@ -60,14 +66,14 @@ const PostCommment = suite('POST /ue/{ueCode}/comments', (app) => {
       })
       .expectStatus(HttpStatus.CREATED)
       .expectJsonLike({
-        id: "typeof $V === 'string'",
+        id: JsonLike.ANY_UUID,
         author: {
           firstName: 'user',
           lastName: 'user',
           studentId: 2,
         },
-        createdAt: "typeof $V === 'string'",
-        updatedAt: "typeof $V === 'string'",
+        createdAt: JsonLike.ANY_DATE,
+        updatedAt: JsonLike.ANY_DATE,
         semester: {
           code: 'A24',
         },
@@ -104,14 +110,14 @@ const PostCommment = suite('POST /ue/{ueCode}/comments', (app) => {
       })
       .expectStatus(HttpStatus.CREATED)
       .expectJsonLike({
-        id: "typeof $V === 'string'",
+        id: JsonLike.ANY_UUID,
         author: {
           firstName: 'user',
           lastName: 'user',
           studentId: 2,
         },
-        createdAt: "typeof $V === 'string'",
-        updatedAt: "typeof $V === 'string'",
+        createdAt: JsonLike.ANY_DATE,
+        updatedAt: JsonLike.ANY_DATE,
         semester: {
           code: 'A24',
         },

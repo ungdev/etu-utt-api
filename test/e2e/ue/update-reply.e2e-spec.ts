@@ -5,6 +5,7 @@ import {
   createUE,
   createComment,
   createReply,
+  JsonLike,
 } from '../../test_utils';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
@@ -101,15 +102,15 @@ const UpdateCommentReply = suite(
         })
         .expectStatus(HttpStatus.OK)
         .expectJsonLike({
-          id: "typeof $V === 'string'",
+          id: JsonLike.ANY_UUID,
           author: {
             id: user.id,
             firstName: user.firstName,
             lastName: user.lastName,
             studentId: user.studentId,
           },
-          createdAt: "typeof $V === 'string'",
-          updatedAt: "typeof $V === 'string'",
+          createdAt: JsonLike.ANY_DATE,
+          updatedAt: JsonLike.ANY_DATE,
           body: "Je m'appelle Alban Ichou et j'approuve ce commentaire",
         });
     });

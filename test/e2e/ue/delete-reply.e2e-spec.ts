@@ -5,6 +5,7 @@ import {
   createUE,
   createComment,
   createReply,
+  JsonLike,
 } from '../../test_utils';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
@@ -64,15 +65,15 @@ const DeleteCommentReply = suite(
         .delete(`/ue/comments/reply/${reply.id}`)
         .expectStatus(HttpStatus.OK)
         .expectJsonLike({
-          id: "typeof $V === 'string'",
+          id: JsonLike.ANY_UUID,
           author: {
             id: user.id,
             firstName: user.firstName,
             lastName: user.lastName,
             studentId: user.studentId,
           },
-          createdAt: "typeof $V === 'string'",
-          updatedAt: "typeof $V === 'string'",
+          createdAt: JsonLike.ANY_DATE,
+          updatedAt: JsonLike.ANY_DATE,
           body: "Bouboubou je suis pas d'accord",
         });
     });

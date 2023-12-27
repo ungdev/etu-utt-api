@@ -19,7 +19,15 @@ import { User } from '../src/prisma/types';
 import { UEComment } from '../src/ue/interfaces/comment.interface';
 import { UECommentReply } from 'src/ue/interfaces/comment-reply.interface';
 
+/** Type alias for the lambda used to retrieve the nest app */
 type ApplicationContext = () => INestApplication;
+
+/** Utilities to use in {@link Spec.expectJsonLike} to match database-generated values */
+export const JsonLike = {
+  STRING: "typeof $V === 'string'",
+  ANY_UUID: /[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}/,
+  ANY_DATE: /\d{4}-\d{2}-\d{2}T(\d{2}:){2}\d{2}.\d{3}Z/,
+};
 
 export function suite(name: string, func: (app: ApplicationContext) => void) {
   return (app: ApplicationContext) =>
