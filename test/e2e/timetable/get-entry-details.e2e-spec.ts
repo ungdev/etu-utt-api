@@ -24,7 +24,7 @@ const GetEntryDetailsE2ESpec = e2eSuite('GET /timetable/:entryId', (app) => {
       duration: entry.occurrenceDuration,
       firstRepetitionDate: entry.eventStart.toISOString(),
       lastRepetitionDate: new Date(
-        entry.eventStart.getTime() + entry.occurrenceDuration * entry.repeatEvery,
+        entry.eventStart.getTime() + (entry.occurrencesCount - 1) * entry.repeatEvery,
       ).toISOString(),
       repetitionFrequency: entry.repeatEvery,
       repetitions: entry.occurrencesCount,

@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { TimetableOccurrence } from './interfaces/timetable.interface';
 import { RawTimetableEntry } from '../prisma/types';
 import { sortArray } from '../utils';
+import TimetableCreateEntryDto from './dto/timetable-create-entry.dto';
 
 /**
  * Service for everything related to timetables.
@@ -241,5 +242,22 @@ export default class TimetableService {
       }),
       (group1) => [group1.userTimetableGroups[0].priority, group1.createdAt],
     );
+  }
+
+  async createTimetableEntry(data: TimetableCreateEntryDto) {
+    return this.prisma.timetableEntry.create({
+      data: {
+        location: data.location,
+        occurrenceDuration: data.duration,
+        eventStart: data.firstRepetitionDate,
+        repeatEvery: data.repetitionFrequency,
+        occurrencesCount: data.repetitions,
+        timetableGroups: { connect: data.groups.map((groupId) => ({ id: groupId })) },
+        type: 'CUSTOM',
+      },
+      include: {
+        timetableGroups: { select: { id: true } },
+      },
+    });
   }
 }

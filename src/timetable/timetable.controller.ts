@@ -1,9 +1,10 @@
-import { Controller, Get, NotFoundException, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
+import {Body, Controller, Get, NotFoundException, Param, ParseIntPipe, Post, UseGuards} from '@nestjs/common';
 import TimetableService from './timetable.service';
 import { JwtGuard } from '../auth/guard';
 import { GetUser } from '../auth/decorator';
 import { User } from '../users/interfaces/user.interface';
-import { RegexPipe } from '../app.pipe';
+import { regex, RegexPipe } from '../app.pipe';
+import TimetableCreateEntryDto from "./dto/timetable-create-entry.dto";
 
 @Controller('/timetable')
 export class TimetableController {
@@ -29,10 +30,7 @@ export class TimetableController {
 
   @Get('/:entryId')
   @UseGuards(JwtGuard)
-  async getEntryDetails(
-    @Param('entryId', new RegexPipe(/^\d+@[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/)) entryId: string,
-    @GetUser() user: User,
-  ) {
+  async getEntryDetails(@Param('entryId', new RegexPipe(regex.timetableOccurrenceId)) entryId: string, @GetUser() user: User) {
     [, entryId] = entryId.split('@');
     const entryOverride = await this.timetableService.fetchEntryOverride(entryId);
     if (entryOverride) {
@@ -47,7 +45,7 @@ export class TimetableController {
       location: entry.location,
       duration: entry.occurrenceDuration,
       firstRepetitionDate: entry.eventStart,
-      lastRepetitionDate: new Date(entry.eventStart.getTime() + entry.occurrencesCount * entry.repeatEvery),
+      lastRepetitionDate: new Date(entry.eventStart.getTime() + (entry.occurrencesCount - 1) * entry.repeatEvery),
       repetitionFrequency: entry.repeatEvery,
       repetitions: entry.occurrencesCount,
       groups: entry.timetableGroups.map((group) => group.id),
@@ -73,5 +71,22 @@ export class TimetableController {
   async getGroups(@GetUser() user: User) {
     const groups = await this.timetableService.getTimetableGroups(user.id);
     return groups.map((group) => ({ id: group.id, name: group.name, priority: group.userTimetableGroups[0].priority }));
+  }
+
+  @Post('/current')
+  @UseGuards(JwtGuard)
+  async createEntry(@Body() body: TimetableCreateEntryDto) {
+    const entry = await this.timetableService.createTimetableEntry(body);
+    return {
+      id: entry.id,
+      location: entry.location,
+      duration: entry.occurrenceDuration,
+      firstRepetitionDate: entry.eventStart,
+      lastRepetitionDate: new Date(entry.eventStart.getTime() + (entry.occurrencesCount - 1) * entry.repeatEvery),
+      repetitionFrequency: entry.repeatEvery,
+      repetitions: entry.occurrencesCount,
+      groups: entry.timetableGroups.map((group) => group.id),
+      overrides: [],
+    };
   }
 }
