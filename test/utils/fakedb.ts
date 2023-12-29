@@ -34,12 +34,24 @@ export function createUser(app: AppProvider): FakeUser {
   return userWithToken;
 }
 
+export type CreateTimetableGroupParams = { users?: Array<{ user: FakeUser; priority: number }> };
 export function createTimetableGroup(
   app: AppProvider,
-  ...users: Array<{ user: FakeUser; priority: number }>
-): FakeTimetableGroup {
+  params: CreateTimetableGroupParams,
+  onTheFly?: false,
+): FakeTimetableGroup;
+export function createTimetableGroup(
+  app: AppProvider,
+  params: CreateTimetableGroupParams,
+  onTheFly?: true,
+): Promise<FakeTimetableGroup>;
+export function createTimetableGroup(
+  app: AppProvider,
+  { users = [] }: CreateTimetableGroupParams,
+  onTheFly = false,
+): FakeTimetableGroup | Promise<FakeTimetableGroup> {
   const timetableGroup: FakeTimetableGroup = {};
-  beforeAll(async () => {
+  const createTimetableGroup = async () => {
     const createdGroup = await app()
       .get(PrismaService)
       .timetableGroup.create({
@@ -52,11 +64,10 @@ export function createTimetableGroup(
           },
         },
       });
-    for (const [key, value] of Object.entries(createdGroup)) {
-      timetableGroup[key] = value;
-    }
-  });
-  return timetableGroup;
+    Object.assign(timetableGroup, createdGroup);
+  };
+  const promise = onTheFly ? createTimetableGroup() : (beforeAll(createTimetableGroup) as void);
+  return onTheFly ? (promise as Promise<void>).then(() => timetableGroup) : timetableGroup;
 }
 
 export type CreateTimetableEntryParameters = {

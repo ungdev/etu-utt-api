@@ -1,4 +1,15 @@
-import { Body, Controller, Get, NotFoundException, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  ConflictException,
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import TimetableService from './timetable.service';
 import { JwtGuard } from '../auth/guard';
 import { GetUser } from '../auth/decorator';
@@ -6,7 +17,6 @@ import { User } from '../users/interfaces/user.interface';
 import { regex, RegexPipe } from '../app.pipe';
 import TimetableCreateEntryDto from './dto/timetable-create-entry.dto';
 import TimetableUpdateEntryDto from './dto/timetable-update-entry.dto';
-import { ApiNotFoundResponse } from '@nestjs/swagger';
 import { DetailedEntry, ResponseDetailedEntry } from './interfaces/timetable.interface';
 
 @Controller('/timetable')
@@ -80,15 +90,21 @@ export class TimetableController {
     @Param('entryId', new RegexPipe(regex.uuid)) entryId: string,
     @Body() body: TimetableUpdateEntryDto,
   ) {
+    if (!(await this.timetableService.entryExists(entryId, user.id))) {
+      throw new NotFoundException(`No entry with id ${entryId}`);
+    }
     for (const groupId of body.for) {
       if (!(await this.timetableService.groupExists(groupId, user.id))) {
         throw new NotFoundException(`No group with id ${groupId}`);
       }
     }
-    const entry = await this.timetableService.updateTimetableEntry(entryId, body, user.id);
-    if (!entry) {
-      throw new NotFoundException(`No entry with id ${entryId}`);
+    const groups = await this.timetableService.getTimetableGroupsOfEntry(entryId);
+    for (const groupId of body.for) {
+      if (!groups.some((group) => group.id === groupId)) {
+        throw new ConflictException(`Group with id ${groupId} is not part of the timetable entry`);
+      }
     }
+    const entry = await this.timetableService.updateTimetableEntry(entryId, body, user.id);
     return this.formatEntryDetails(entry);
   }
 

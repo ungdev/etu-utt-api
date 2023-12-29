@@ -6,10 +6,15 @@ import { HttpStatus } from '@nestjs/common';
 const GetGroupsE2ESpec = e2eSuite('GET /timetable/current/groups', (app) => {
   const user1 = fakedb.createUser(app);
   const user2 = fakedb.createUser(app);
-  const user1Group = fakedb.createTimetableGroup(app, { user: user1, priority: 2 });
+  const user1Group = fakedb.createTimetableGroup(app, { users: [{ user: user1, priority: 2 }] });
   // Create a group for user2
-  fakedb.createTimetableGroup(app, { user: user2, priority: 1 });
-  const user1And2Group = fakedb.createTimetableGroup(app, { user: user1, priority: 1 }, { user: user2, priority: 1 });
+  fakedb.createTimetableGroup(app, { users: [{ user: user2, priority: 1 }] });
+  const user1And2Group = fakedb.createTimetableGroup(app, {
+    users: [
+      { user: user1, priority: 1 },
+      { user: user2, priority: 1 },
+    ],
+  });
 
   it('should fail as user is not connected', () =>
     pactum.spec().get('/timetable/current/groups').expectStatus(HttpStatus.UNAUTHORIZED));

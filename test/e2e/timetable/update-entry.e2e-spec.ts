@@ -5,25 +5,33 @@ import { HttpStatus } from '@nestjs/common';
 import { uuid } from 'pactum-matchers';
 import { faker } from '@faker-js/faker';
 import { PrismaService } from '../../../src/prisma/prisma.service';
+import { createTimetableGroup } from '../../utils/fakedb';
+import TimetableUpdateEntryDto from '../../../src/timetable/dto/timetable-update-entry.dto';
 
 const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) => {
   const user = fakedb.createUser(app);
-  const userGroup = fakedb.createTimetableGroup(app, { user, priority: 1 });
-  const userOtherGroup = fakedb.createTimetableGroup(app, { user, priority: 1 });
-  const entry = fakedb.createTimetableEntry(app, { groups: [userGroup], occurrencesCount: 3, repeatEvery: 10 });
+  const userGroup = fakedb.createTimetableGroup(app, { users: [{ user, priority: 1 }] });
+  const userOtherGroup = fakedb.createTimetableGroup(app, { users: [{ user, priority: 1 }] });
+  const userThirdGroup = fakedb.createTimetableGroup(app, { users: [{ user, priority: 1 }] });
+  const entry = fakedb.createTimetableEntry(app, {
+    groups: [userGroup, userOtherGroup],
+    occurrencesCount: 3,
+    repeatEvery: 10,
+  });
   const override = fakedb.createTimetableEntryOverride(app, entry, {
     applyFrom: 1,
     applyUntil: 2,
     repeatEvery: 1,
-    groups: [userGroup],
+    groups: [userGroup, userOtherGroup],
   });
   const otherEntry = fakedb.createTimetableEntry(app);
-  const dummyPayload = () => ({
+  const dummyPayload = (overrides: Partial<TimetableUpdateEntryDto> = {}): TimetableUpdateEntryDto => ({
     location: "bet you can't find it",
     updateFrom: 0,
     updateUntil: 0,
     applyEvery: 1,
     for: [userGroup.id],
+    ...overrides,
   });
 
   it('should fail as user is not authenticated', () =>
@@ -48,13 +56,37 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
       .withJson(dummyPayload())
       .expectStatus(HttpStatus.NOT_FOUND));
 
+  it('should fail as user is not in group', async () => {
+    const emptyGroup = await createTimetableGroup(app, {}, true);
+    await pactum
+      .spec()
+      .patch(`/timetable/current/${otherEntry.id}`)
+      .withBearerToken(user.token)
+      .withJson(dummyPayload({ for: [emptyGroup.id] }))
+      .expectStatus(HttpStatus.NOT_FOUND);
+  });
+
+  it('should fail as we are trying to create an override with a group that is not in the entry', () =>
+    pactum
+      .spec()
+      .patch(`/timetable/current/${entry.id}`)
+      .withBearerToken(user.token)
+      .withJson(dummyPayload({ for: [userGroup.id, userThirdGroup.id] }))
+      .expectStatus(HttpStatus.CONFLICT));
+
   it('should update the whole entry', async () => {
     const newLocation = faker.address.cityName();
     await pactum
       .spec()
       .patch(`/timetable/current/${entry.id}`)
       .withBearerToken(user.token)
-      .withJson({ location: newLocation, updateFrom: 0, updateUntil: 2, applyEvery: 1, for: [userGroup.id] })
+      .withJson({
+        location: newLocation,
+        updateFrom: 0,
+        updateUntil: 2,
+        applyEvery: 1,
+        for: [userGroup.id, userOtherGroup.id],
+      })
       .expectStatus(HttpStatus.OK)
       .expectJson({
         id: entry.id,
@@ -64,7 +96,7 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
         lastRepetitionDate: new Date(20).toISOString(),
         repetitionFrequency: 10,
         repetitions: 3,
-        groups: [userGroup.id],
+        groups: [userOtherGroup.id, userGroup.id],
         overrides: [
           {
             id: override.id,
@@ -74,19 +106,25 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
             firstOccurrenceOverride: 1,
             lastOccurrenceOverride: 2,
             overrideFrequency: 1,
-            groups: [userGroup.id],
+            groups: [userOtherGroup.id, userGroup.id],
           },
         ],
       });
     entry.location = newLocation;
   });
 
-  it('should create a new override', async () => {
+  it('should create a new override because the modification is not applied to all occurrences', async () => {
     await pactum
       .spec()
       .patch(`/timetable/current/${entry.id}`)
       .withBearerToken(user.token)
-      .withJson({ location: 'Somewhere else', updateFrom: 0, updateUntil: 1, applyEvery: 1, for: [userGroup.id] })
+      .withJson({
+        location: 'Somewhere else',
+        updateFrom: 0,
+        updateUntil: 1,
+        applyEvery: 1,
+        for: [userGroup.id, userOtherGroup.id],
+      })
       .expectStatus(HttpStatus.OK)
       .expectJsonMatchStrict({
         id: entry.id,
@@ -96,7 +134,7 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
         lastRepetitionDate: new Date(20).toISOString(),
         repetitionFrequency: 10,
         repetitions: 3,
-        groups: [userGroup.id],
+        groups: [userOtherGroup.id, userGroup.id],
         overrides: [
           {
             id: uuid(),
@@ -106,7 +144,7 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
             firstOccurrenceOverride: 0,
             lastOccurrenceOverride: 1,
             overrideFrequency: 1,
-            groups: [userGroup.id],
+            groups: [userOtherGroup.id, userGroup.id],
           },
           {
             id: override.id,
@@ -116,7 +154,7 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
             firstOccurrenceOverride: 1,
             lastOccurrenceOverride: 2,
             overrideFrequency: 1,
-            groups: [userGroup.id],
+            groups: [userOtherGroup.id, userGroup.id],
           },
         ],
       });
@@ -131,7 +169,13 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
       .spec()
       .patch(`/timetable/current/${entry.id}`)
       .withBearerToken(user.token)
-      .withJson({ location: newLocation, updateFrom: 1, updateUntil: 2, applyEvery: 1, for: [userGroup.id] })
+      .withJson({
+        location: newLocation,
+        updateFrom: 1,
+        updateUntil: 2,
+        applyEvery: 1,
+        for: [userGroup.id, userOtherGroup.id],
+      })
       .expectStatus(HttpStatus.OK)
       .expectJson({
         id: entry.id,
@@ -141,7 +185,7 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
         lastRepetitionDate: new Date(20).toISOString(),
         repetitionFrequency: 10,
         repetitions: 3,
-        groups: [userGroup.id],
+        groups: [userOtherGroup.id, userGroup.id],
         overrides: [
           {
             id: override.id,
@@ -151,7 +195,7 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
             firstOccurrenceOverride: 1,
             lastOccurrenceOverride: 2,
             overrideFrequency: 1,
-            groups: [userGroup.id],
+            groups: [userOtherGroup.id, userGroup.id],
           },
         ],
       });
@@ -169,7 +213,7 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
         updateFrom: 1,
         updateUntil: 2,
         applyEvery: 1,
-        for: [userOtherGroup.id, userGroup.id],
+        for: [userGroup.id],
       })
       .expectStatus(HttpStatus.OK)
       .expectJsonMatchStrict({
@@ -180,7 +224,7 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
         lastRepetitionDate: new Date(20).toISOString(),
         repetitionFrequency: 10,
         repetitions: 3,
-        groups: [userGroup.id],
+        groups: [userOtherGroup.id, userGroup.id],
         overrides: [
           {
             id: uuid(),
@@ -190,7 +234,7 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
             firstOccurrenceOverride: 1,
             lastOccurrenceOverride: 2,
             overrideFrequency: 1,
-            groups: [userOtherGroup.id, userGroup.id],
+            groups: [userGroup.id],
           },
           {
             id: override.id,
@@ -200,7 +244,7 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
             firstOccurrenceOverride: 1,
             lastOccurrenceOverride: 2,
             overrideFrequency: 1,
-            groups: [userGroup.id],
+            groups: [userOtherGroup.id, userGroup.id],
           },
         ],
       });

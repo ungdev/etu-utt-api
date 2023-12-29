@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { DetailedEntry, TimetableOccurrence } from './interfaces/timetable.interface';
-import { RawTimetableEntry, RawTimetableEntryOverride } from '../prisma/types';
+import { RawTimetableEntry } from '../prisma/types';
 import { sortArray } from '../utils';
 import TimetableCreateEntryDto from './dto/timetable-create-entry.dto';
 import TimetableUpdateEntryDto from './dto/timetable-update-entry.dto';
@@ -360,5 +360,17 @@ export default class TimetableService {
 
   async groupExists(groupId: string, userId: string) {
     return (await this.prisma.userTimetableGroup.count({ where: { userId, timetableGroupId: groupId } })) > 0;
+  }
+
+  async getTimetableGroupsOfEntry(entryId: string) {
+    return this.prisma.timetableGroup.findMany({ where: { timetableEntries: { some: { id: entryId } } } });
+  }
+
+  async entryExists(entryId: string, userId: string) {
+    return (
+      (await this.prisma.timetableEntry.count({
+        where: { id: entryId, timetableGroups: { some: { userTimetableGroups: { some: { userId } } } } },
+      })) > 0
+    );
   }
 }

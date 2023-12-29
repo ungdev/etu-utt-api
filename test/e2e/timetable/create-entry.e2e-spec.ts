@@ -6,7 +6,7 @@ import { uuid } from 'pactum-matchers';
 
 const CreateEntryE2ESpec = e2eSuite('POST /timetable/current', (app) => {
   const user = fakedb.createUser(app);
-  const userGroup = fakedb.createTimetableGroup(app, { user, priority: 0 });
+  const userGroup = fakedb.createTimetableGroup(app, { users: [{ user, priority: 0 }] });
 
   it('should fail as user is not authenticated', () =>
     pactum.spec().post('/timetable/current').expectStatus(HttpStatus.UNAUTHORIZED));
