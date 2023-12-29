@@ -2,8 +2,7 @@ import { e2eSuite } from '../../utils/test_utils';
 import * as fakedb from '../../utils/fakedb';
 import * as pactum from 'pactum';
 import { HttpStatus } from '@nestjs/common';
-import { like, regex } from 'pactum-matchers';
-import { regex as usualRegex } from '../../../src/app.pipe';
+import { uuid } from 'pactum-matchers';
 
 const CreateEntryE2ESpec = e2eSuite('POST /timetable/current', (app) => {
   const user = fakedb.createUser(app);
@@ -29,8 +28,8 @@ const CreateEntryE2ESpec = e2eSuite('POST /timetable/current', (app) => {
         groups: [userGroup.id],
       })
       .expectStatus(HttpStatus.CREATED)
-      .expectJsonMatch({
-        id: regex(usualRegex.uuid),
+      .expectJsonMatchStrict({
+        id: uuid(),
         location: 'In the test ig ?',
         duration: 3,
         firstRepetitionDate: new Date(0).toISOString(),

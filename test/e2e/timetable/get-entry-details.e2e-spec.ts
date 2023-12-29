@@ -9,11 +9,11 @@ const GetEntryDetailsE2ESpec = e2eSuite('GET /timetable/:entryId', (app) => {
   const user1Group = fakedb.createTimetableGroup(app, { user: user1, priority: 1 });
   const user1OtherGroup = fakedb.createTimetableGroup(app, { user: user1, priority: 2 });
   const user2Group = fakedb.createTimetableGroup(app, { user: user2, priority: 1 });
-  const entry = fakedb.createTimetableEntry(app, 0, 0, user1Group);
-  const override1 = fakedb.createTimetableEntryOverride(app, entry, user1Group);
-  const override2 = fakedb.createTimetableEntryOverride(app, entry, user1OtherGroup);
+  const entry = fakedb.createTimetableEntry(app, { groups: [user1Group] });
+  const override1 = fakedb.createTimetableEntryOverride(app, entry, { groups: [user1Group] });
+  const override2 = fakedb.createTimetableEntryOverride(app, entry, { groups: [user1OtherGroup] });
   // Create an override not for user1
-  fakedb.createTimetableEntryOverride(app, entry, user2Group);
+  fakedb.createTimetableEntryOverride(app, entry, { groups: [user2Group] });
 
   let entryDetails: object;
 
@@ -73,8 +73,7 @@ const GetEntryDetailsE2ESpec = e2eSuite('GET /timetable/:entryId', (app) => {
   it('should fail as the override does not concern the user', () =>
     pactum.spec().get(`/timetable/0@${override1.id}`).withBearerToken(user2.token).expectStatus(HttpStatus.NOT_FOUND));
 
-  it('should return the details of the entry', () =>
-    pactum
+  it('should return the details of the entry', () => pactum
       .spec()
       .get(`/timetable/0@${entry.id}`)
       .withBearerToken(user1.token)

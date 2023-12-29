@@ -1,3 +1,5 @@
+import { RawTimetableEntry, RawTimetableEntryOverride } from '../../prisma/types';
+
 /**
  * Represents a single occurence in the timetable.
  * The main difference between this and the TimetableEntry is that the TimetableOccurence doesn't contain metadata about this occurrence (override, repeat, ...)
@@ -25,4 +27,33 @@ export interface TimetableOccurrence {
    * Where this occurrence will take place
    */
   location: string;
+}
+
+/**
+ * Represents an entry with group ids and detailed overrides.
+ */
+export interface DetailedEntry extends RawTimetableEntry {
+  timetableGroups: Array<{ id: string }>;
+  overwrittenBy: Array<RawTimetableEntryOverride & { timetableGroups: Array<{ id: string }> }>;
+}
+
+export interface ResponseDetailedEntry {
+  id: string;
+  location: string;
+  duration: number;
+  firstRepetitionDate: Date;
+  lastRepetitionDate: Date;
+  repetitionFrequency: number;
+  repetitions: number;
+  groups: string[];
+  overrides: Array<{
+    id: string;
+    location: string;
+    firstRepetitionDate: Date;
+    lastRepetitionDate: Date;
+    firstOccurrenceOverride: number;
+    lastOccurrenceOverride: number;
+    overrideFrequency: number;
+    groups: string[];
+  }>;
 }

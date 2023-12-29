@@ -1,10 +1,13 @@
-import {Body, Controller, Get, NotFoundException, Param, ParseIntPipe, Post, UseGuards} from '@nestjs/common';
+import { Body, Controller, Get, NotFoundException, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
 import TimetableService from './timetable.service';
 import { JwtGuard } from '../auth/guard';
 import { GetUser } from '../auth/decorator';
 import { User } from '../users/interfaces/user.interface';
 import { regex, RegexPipe } from '../app.pipe';
-import TimetableCreateEntryDto from "./dto/timetable-create-entry.dto";
+import TimetableCreateEntryDto from './dto/timetable-create-entry.dto';
+import TimetableUpdateEntryDto from './dto/timetable-update-entry.dto';
+import { ApiNotFoundResponse } from '@nestjs/swagger';
+import { DetailedEntry, ResponseDetailedEntry } from './interfaces/timetable.interface';
 
 @Controller('/timetable')
 export class TimetableController {
@@ -30,7 +33,10 @@ export class TimetableController {
 
   @Get('/:entryId')
   @UseGuards(JwtGuard)
-  async getEntryDetails(@Param('entryId', new RegexPipe(regex.timetableOccurrenceId)) entryId: string, @GetUser() user: User) {
+  async getEntryDetails(
+    @Param('entryId', new RegexPipe(regex.timetableOccurrenceId)) entryId: string,
+    @GetUser() user: User,
+  ) {
     [, entryId] = entryId.split('@');
     const entryOverride = await this.timetableService.fetchEntryOverride(entryId);
     if (entryOverride) {
@@ -40,30 +46,7 @@ export class TimetableController {
     if (!entry) {
       throw new NotFoundException(`No timetable event with id ${entryId}`);
     }
-    return {
-      id: entry.id,
-      location: entry.location,
-      duration: entry.occurrenceDuration,
-      firstRepetitionDate: entry.eventStart,
-      lastRepetitionDate: new Date(entry.eventStart.getTime() + (entry.occurrencesCount - 1) * entry.repeatEvery),
-      repetitionFrequency: entry.repeatEvery,
-      repetitions: entry.occurrencesCount,
-      groups: entry.timetableGroups.map((group) => group.id),
-      overrides: entry.overwrittenBy.map((entryOverride) => ({
-        id: entryOverride.id,
-        location: entryOverride.location,
-        firstRepetitionDate: new Date(entry.eventStart.getTime() + entryOverride.occurrenceRelativeStart),
-        lastRepetitionDate: new Date(
-          entry.eventStart.getTime() +
-            entry.occurrencesCount * entry.repeatEvery +
-            entryOverride.occurrenceRelativeStart,
-        ),
-        firstOccurrenceOverride: entryOverride.applyFrom,
-        lastOccurrenceOverride: entryOverride.applyUntil,
-        overrideFrequency: entryOverride.repeatEvery,
-        groups: entryOverride.timetableGroups.map((group) => group.id),
-      })),
-    };
+    return this.formatEntryDetails(entry);
   }
 
   @Get('/current/groups')
@@ -87,6 +70,56 @@ export class TimetableController {
       repetitions: entry.occurrencesCount,
       groups: entry.timetableGroups.map((group) => group.id),
       overrides: [],
+    };
+  }
+
+  @Patch('/current/:entryId')
+  @UseGuards(JwtGuard)
+  async updateEntry(
+    @GetUser() user: User,
+    @Param('entryId', new RegexPipe(regex.uuid)) entryId: string,
+    @Body() body: TimetableUpdateEntryDto,
+  ) {
+    for (const groupId of body.for) {
+      if (!(await this.timetableService.groupExists(groupId, user.id))) {
+        throw new NotFoundException(`No group with id ${groupId}`);
+      }
+    }
+    const entry = await this.timetableService.updateTimetableEntry(entryId, body, user.id);
+    if (!entry) {
+      throw new NotFoundException(`No entry with id ${entryId}`);
+    }
+    return this.formatEntryDetails(entry);
+  }
+
+  private formatEntryDetails(entry: DetailedEntry): ResponseDetailedEntry {
+    return {
+      id: entry.id,
+      location: entry.location,
+      duration: entry.occurrenceDuration,
+      firstRepetitionDate: entry.eventStart,
+      lastRepetitionDate: new Date(entry.eventStart.getTime() + (entry.occurrencesCount - 1) * entry.repeatEvery),
+      repetitionFrequency: entry.repeatEvery,
+      repetitions: entry.occurrencesCount,
+      groups: entry.timetableGroups.map((group) => group.id),
+      overrides: entry.overwrittenBy.map((entryOverride) => ({
+        id: entryOverride.id,
+        location: entryOverride.location,
+        firstRepetitionDate: new Date(
+          entry.eventStart.getTime() +
+            entryOverride.applyFrom * entry.repeatEvery +
+            entryOverride.occurrenceRelativeStart,
+        ),
+        lastRepetitionDate: new Date(
+          entry.eventStart.getTime() +
+            entryOverride.applyUntil * entry.repeatEvery +
+            entryOverride.occurrenceRelativeStart,
+        ),
+        firstOccurrenceOverride: entryOverride.applyFrom,
+        lastOccurrenceOverride: entryOverride.applyUntil,
+        overrideFrequency: entryOverride.repeatEvery,
+        groups: entryOverride.timetableGroups.map((group) => group.id),
+      })),
     };
   }
 }

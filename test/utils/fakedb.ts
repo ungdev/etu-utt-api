@@ -59,40 +59,78 @@ export function createTimetableGroup(
   return timetableGroup;
 }
 
+export type CreateTimetableEntryParameters = {
+  startsAt?: Date;
+  occurrenceDuration?: number;
+  occurrencesCount?: number;
+  repeatEvery?: number;
+  groups?: FakeTimetableGroup[];
+};
 export function createTimetableEntry(
   app: AppProvider,
-  startsIn: number,
-  occurrenceDuration: number,
-  group: FakeTimetableGroup,
-): FakeTimetableEntry {
+  params?: CreateTimetableEntryParameters,
+  onTheFly?: false,
+): FakeTimetableEntry;
+export function createTimetableEntry(
+  app: AppProvider,
+  params?: CreateTimetableEntryParameters,
+  onTheFly?: true,
+): Promise<FakeTimetableEntry>;
+export function createTimetableEntry(
+  app: AppProvider,
+  {
+    startsAt = new Date(0),
+    occurrenceDuration = 0,
+    occurrencesCount = 1,
+    repeatEvery = 0,
+    groups = [],
+  }: CreateTimetableEntryParameters = {},
+  onTheFly = false,
+): Promise<FakeTimetableEntry> | FakeTimetableEntry {
   const entry: FakeTimetableEntry = {};
-  beforeAll(async () => {
+  const createTimetableEntry = async () => {
     const createdEntry = await app()
       .get(PrismaService)
       .timetableEntry.create({
         data: {
-          eventStart: new Date(Date.now() + startsIn),
+          eventStart: startsAt,
           occurrenceDuration,
           type: 'CUSTOM',
           location: faker.address.cityName(),
-          timetableGroups: { connect: [{ id: group.id }] },
+          occurrencesCount,
+          repeatEvery,
+          timetableGroups: { connect: groups.map((group) => ({ id: group.id })) },
         },
       });
-    for (const [key, value] of Object.entries(createdEntry)) {
-      entry[key] = value;
-    }
-  });
-  return entry;
+    Object.assign(entry, createdEntry);
+  };
+  const promise = onTheFly ? createTimetableEntry() : (beforeAll(createTimetableEntry) as void);
+  return onTheFly ? (promise as Promise<void>).then(() => entry) : entry;
 }
 
+export type CreateTimetableEntryOverrideParameters = {
+  groups?: FakeTimetableGroup[];
+} & Partial<Omit<Prisma.TimetableEntryOverrideCreateInput, 'overrideTimetableEntry' | 'timetableGroup'>>;
 export function createTimetableEntryOverride(
   app: AppProvider,
   timetableEntry: FakeTimetableEntry,
-  group: FakeTimetableGroup,
-  data: Partial<Omit<Prisma.TimetableEntryOverrideCreateInput, 'overrideTimetableEntry' | 'timetableGroup'>> = {},
-): FakeTimetableEntryOverride {
+  params: CreateTimetableEntryOverrideParameters,
+  onTheFly?: false,
+): FakeTimetableEntryOverride;
+export function createTimetableEntryOverride(
+  app: AppProvider,
+  timetableEntry: FakeTimetableEntry,
+  params: CreateTimetableEntryOverrideParameters,
+  onTheFly?: true,
+): Promise<FakeTimetableEntryOverride>;
+export function createTimetableEntryOverride(
+  app: AppProvider,
+  timetableEntry: FakeTimetableEntry,
+  { groups = [], ...data }: CreateTimetableEntryOverrideParameters,
+  onTheFly = false,
+): FakeTimetableEntryOverride | Promise<FakeTimetableEntryOverride> {
   const override: FakeTimetableEntryOverride = {};
-  beforeAll(async () => {
+  const createTimetableEntryOverride = async () => {
     const createdOverride = await app()
       .get(PrismaService)
       .timetableEntryOverride.create({
@@ -100,15 +138,14 @@ export function createTimetableEntryOverride(
           applyFrom: 0,
           applyUntil: 0,
           overrideTimetableEntry: { connect: { id: timetableEntry.id } },
-          timetableGroups: { connect: [{ id: group.id }] },
+          timetableGroups: { connect: groups.map((group) => ({ id: group.id })) },
           ...data,
         },
       });
-    for (const [key, value] of Object.entries(createdOverride)) {
-      override[key] = value;
-    }
-  });
-  return override;
+    Object.assign(override, createdOverride);
+  };
+  const promise = onTheFly ? createTimetableEntryOverride() : (beforeAll(createTimetableEntryOverride) as void);
+  return onTheFly ? (promise as Promise<void>).then(() => override) : override;
 }
 
 /*export function createTimetableEntryOverride2(app: AppProvider, data) {
