@@ -1,4 +1,3 @@
-import { HttpStatus } from '@nestjs/common';
 import {
   createUser,
   suite,
@@ -20,7 +19,7 @@ const PutRate = suite('PUT /ue/{ueCode}/rate', (app) => {
     return pactum
       .spec()
       .put(`/ue/${ue.code}/rate`)
-      .expectStatus(HttpStatus.UNAUTHORIZED);
+      .expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
   it('should return a 403 as user has not done the UE', () => {
@@ -32,11 +31,7 @@ const PutRate = suite('PUT /ue/{ueCode}/rate', (app) => {
         criterion: criterion.id,
         value: 1,
       })
-      .expectStatus(HttpStatus.FORBIDDEN)
-      .expectJson({
-        errorCode: ERROR_CODE.NOT_ALREADY_DONE_UE,
-        error: 'You must have done this UE before to perform this action',
-      });
+      .expectAppError(ERROR_CODE.NOT_ALREADY_DONE_UE);
   });
 
   it('should return a 400 as value is not a number', () => {
@@ -48,7 +43,7 @@ const PutRate = suite('PUT /ue/{ueCode}/rate', (app) => {
         criterion: criterion.id,
         value: 'helloWorld',
       })
-      .expectStatus(HttpStatus.BAD_REQUEST);
+      .expectAppError(ERROR_CODE.MALFORMED_PARAM, 'value');
   });
 
   it('should return a 400 as the criterion is not a string', () => {
@@ -60,7 +55,7 @@ const PutRate = suite('PUT /ue/{ueCode}/rate', (app) => {
         criterion: true,
         value: 1,
       })
-      .expectStatus(HttpStatus.BAD_REQUEST);
+      .expectAppError(ERROR_CODE.MALFORMED_PARAM, 'criterion');
   });
 
   it('should return a 404 as the criterion does not exist', () => {
@@ -72,11 +67,7 @@ const PutRate = suite('PUT /ue/{ueCode}/rate', (app) => {
         criterion: criterion.id.slice(0, 10),
         value: 1,
       })
-      .expectStatus(HttpStatus.NOT_FOUND)
-      .expectJson({
-        errorCode: ERROR_CODE.NO_SUCH_CRITERION,
-        error: 'This criterion does not exist',
-      });
+      .expectAppError(ERROR_CODE.NO_SUCH_CRITERION);
   });
 
   it('should return a 404 as the UE does not exist', () => {
@@ -88,11 +79,7 @@ const PutRate = suite('PUT /ue/{ueCode}/rate', (app) => {
         criterion: criterion.id,
         value: 1,
       })
-      .expectStatus(HttpStatus.NOT_FOUND)
-      .expectJson({
-        errorCode: ERROR_CODE.NO_SUCH_UE,
-        error: `The UE ${ue.code.slice(0, 3)}9 does not exist`,
-      });
+      .expectAppError(ERROR_CODE.NO_SUCH_UE, `${ue.code.slice(0, 3)}9`);
   });
 
   it('should return the updated rate for specific criterion', () => {
@@ -104,8 +91,7 @@ const PutRate = suite('PUT /ue/{ueCode}/rate', (app) => {
         criterion: criterion.id,
         value: 1,
       })
-      .expectStatus(HttpStatus.OK)
-      .expectJson({
+      .expectUERate({
         criterionId: criterion.id,
         value: 1,
       });

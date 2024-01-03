@@ -1,4 +1,3 @@
-import { HttpStatus } from '@nestjs/common';
 import {
   createUser,
   suite,
@@ -24,7 +23,7 @@ const PostCommment = suite('POST /ue/{ueCode}/comments', (app) => {
       .withBody({
         body: 'Test comment',
       })
-      .expectStatus(HttpStatus.UNAUTHORIZED);
+      .expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
   it('should return a 400 because body is a string', () => {
@@ -36,7 +35,7 @@ const PostCommment = suite('POST /ue/{ueCode}/comments', (app) => {
         body: false,
         isAnonymous: true,
       })
-      .expectStatus(HttpStatus.BAD_REQUEST);
+      .expectAppError(ERROR_CODE.MALFORMED_PARAM, 'body');
   });
 
   it('should return a 403 because user has not done the UE yet', () => {
@@ -48,11 +47,7 @@ const PostCommment = suite('POST /ue/{ueCode}/comments', (app) => {
         body: 'Cette  UE est troooop bien',
         isAnonymous: true,
       })
-      .expectStatus(HttpStatus.FORBIDDEN)
-      .expectJson({
-        errorCode: ERROR_CODE.NOT_ALREADY_DONE_UE,
-        error: 'You must have done this UE before to perform this action',
-      });
+      .expectAppError(ERROR_CODE.NOT_ALREADY_DONE_UE);
   });
 
   it('should return a post a comment in the UE as anonymous user', () => {
@@ -64,25 +59,28 @@ const PostCommment = suite('POST /ue/{ueCode}/comments', (app) => {
         body: 'Cette  UE est troooop bien',
         isAnonymous: true,
       })
-      .expectStatus(HttpStatus.CREATED)
-      .expectJsonLike({
-        id: JsonLike.ANY_UUID,
-        author: {
-          firstName: 'user',
-          lastName: 'user',
-          studentId: 2,
+      .expectUEComment(
+        {
+          id: JsonLike.ANY_UUID,
+          author: {
+            id: user2.id,
+            firstName: user2.firstName,
+            lastName: user2.lastName,
+            studentId: user2.studentId,
+          },
+          createdAt: JsonLike.ANY_DATE,
+          updatedAt: JsonLike.ANY_DATE,
+          semester: {
+            code: 'A24',
+          },
+          isAnonymous: true,
+          body: 'Cette  UE est troooop bien',
+          answers: [],
+          upvotes: 0,
+          upvoted: false,
         },
-        createdAt: JsonLike.ANY_DATE,
-        updatedAt: JsonLike.ANY_DATE,
-        semester: {
-          code: 'A24',
-        },
-        isAnonymous: true,
-        body: 'Cette  UE est troooop bien',
-        answers: [],
-        upvotes: 0,
-        upvoted: false,
-      });
+        true,
+      );
   });
 
   it('should return a 403 while trying to post another comment', () => {
@@ -93,11 +91,7 @@ const PostCommment = suite('POST /ue/{ueCode}/comments', (app) => {
       .withBody({
         body: 'Cette  UE est troooop bien',
       })
-      .expectStatus(HttpStatus.FORBIDDEN)
-      .expectJson({
-        errorCode: ERROR_CODE.FORBIDDEN_ALREADY_COMMENTED,
-        error: 'You have already posted a comment for this UE',
-      });
+      .expectAppError(ERROR_CODE.FORBIDDEN_ALREADY_COMMENTED);
   });
 
   it('should return a post a comment in the UE as a logged in user', () => {
@@ -108,25 +102,28 @@ const PostCommment = suite('POST /ue/{ueCode}/comments', (app) => {
       .withBody({
         body: 'Cette  UE est troooop bien',
       })
-      .expectStatus(HttpStatus.CREATED)
-      .expectJsonLike({
-        id: JsonLike.ANY_UUID,
-        author: {
-          firstName: 'user',
-          lastName: 'user',
-          studentId: 2,
+      .expectUEComment(
+        {
+          id: JsonLike.ANY_UUID,
+          author: {
+            id: user3.id,
+            firstName: user3.firstName,
+            lastName: user3.lastName,
+            studentId: user3.studentId,
+          },
+          createdAt: JsonLike.ANY_DATE,
+          updatedAt: JsonLike.ANY_DATE,
+          semester: {
+            code: 'A24',
+          },
+          isAnonymous: false,
+          body: 'Cette  UE est troooop bien',
+          answers: [],
+          upvotes: 0,
+          upvoted: false,
         },
-        createdAt: JsonLike.ANY_DATE,
-        updatedAt: JsonLike.ANY_DATE,
-        semester: {
-          code: 'A24',
-        },
-        isAnonymous: false,
-        body: 'Cette  UE est troooop bien',
-        answers: [],
-        upvotes: 0,
-        upvoted: false,
-      });
+        true,
+      );
   });
 
   it('should return a 400 because body is too short', () => {
@@ -137,7 +134,7 @@ const PostCommment = suite('POST /ue/{ueCode}/comments', (app) => {
       .withBody({
         body: 'gg',
       })
-      .expectStatus(HttpStatus.BAD_REQUEST);
+      .expectAppError(ERROR_CODE.MALFORMED_PARAM, 'body');
   });
 
   it('should return a 404 because UE does not exist', () => {
@@ -148,11 +145,7 @@ const PostCommment = suite('POST /ue/{ueCode}/comments', (app) => {
       .withBody({
         body: 'heyhey',
       })
-      .expectStatus(HttpStatus.NOT_FOUND)
-      .expectJson({
-        errorCode: ERROR_CODE.NO_SUCH_UE,
-        error: 'The UE XX0 does not exist',
-      });
+      .expectAppError(ERROR_CODE.NO_SUCH_UE, ue.code.slice(0, 3));
   });
 });
 

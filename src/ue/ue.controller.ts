@@ -32,6 +32,8 @@ export class UEController {
 
   @Get('/:ueCode')
   async getUE(@Param('ueCode') ueCode: string) {
+    if (!(await this.ueService.doesUEExist(ueCode)))
+      throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     return this.ueService.getUE(ueCode.toUpperCase());
   }
 
@@ -41,6 +43,8 @@ export class UEController {
     @GetUser() user: User,
     @Query() dto: GetUECommentsDto,
   ) {
+    if (!(await this.ueService.doesUEExist(ueCode)))
+      throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     return this.ueService.getComments(
       ueCode,
       user,
@@ -66,7 +70,13 @@ export class UEController {
 
   @Patch('/comments/:commentId')
   async EditUEComment(
-    @Param('commentId', ParseUUIDPipe) commentId: string,
+    @Param(
+      'commentId',
+      new ParseUUIDPipe({
+        exceptionFactory: () => new AppException(ERROR_CODE.NOT_AN_UUID),
+      }),
+    )
+    commentId: string,
     @GetUser() user: User,
     @Body() body: UeCommentUpdateDto,
   ) {
@@ -79,7 +89,13 @@ export class UEController {
 
   @Delete('/comments/:commentId')
   async DiscardUEComment(
-    @Param('commentId', ParseUUIDPipe) commentId: string,
+    @Param(
+      'commentId',
+      new ParseUUIDPipe({
+        exceptionFactory: () => new AppException(ERROR_CODE.NOT_AN_UUID),
+      }),
+    )
+    commentId: string,
     @GetUser() user: User,
   ) {
     if (!(await this.ueService.doesCommentExist(commentId)))
@@ -91,7 +107,13 @@ export class UEController {
 
   @Put('/comments/:commentId/upvote')
   async UpvoteUEComment(
-    @Param('commentId', ParseUUIDPipe) commentId: string,
+    @Param(
+      'commentId',
+      new ParseUUIDPipe({
+        exceptionFactory: () => new AppException(ERROR_CODE.NOT_AN_UUID),
+      }),
+    )
+    commentId: string,
     @GetUser() user: User,
   ) {
     if (!(await this.ueService.doesCommentExist(commentId)))
@@ -109,7 +131,13 @@ export class UEController {
   @Post('/comments/:commentId/reply')
   async CreateReplyComment(
     @GetUser() user: User,
-    @Param('commentId', ParseUUIDPipe) commentId: string,
+    @Param(
+      'commentId',
+      new ParseUUIDPipe({
+        exceptionFactory: () => new AppException(ERROR_CODE.NOT_AN_UUID),
+      }),
+    )
+    commentId: string,
     @Body() body: CommentReplyDto,
   ) {
     if (!(await this.ueService.doesCommentExist(commentId)))
@@ -120,7 +148,13 @@ export class UEController {
   @Patch('/comments/reply/:replyId')
   async EditReplyComment(
     @GetUser() user: User,
-    @Param('replyId', ParseUUIDPipe) replyId: string,
+    @Param(
+      'replyId',
+      new ParseUUIDPipe({
+        exceptionFactory: () => new AppException(ERROR_CODE.NOT_AN_UUID),
+      }),
+    )
+    replyId: string,
     @Body() body: CommentReplyDto,
   ) {
     if (!(await this.ueService.doesReplyExist(replyId)))
@@ -133,7 +167,13 @@ export class UEController {
   @Delete('/comments/reply/:replyId')
   async DeleteReplyComment(
     @GetUser() user: User,
-    @Param('replyId', ParseUUIDPipe) replyId: string,
+    @Param(
+      'replyId',
+      new ParseUUIDPipe({
+        exceptionFactory: () => new AppException(ERROR_CODE.NOT_AN_UUID),
+      }),
+    )
+    replyId: string,
   ) {
     if (!(await this.ueService.doesReplyExist(replyId)))
       throw new AppException(ERROR_CODE.NO_SUCH_REPLY);
@@ -149,6 +189,8 @@ export class UEController {
 
   @Get('/:ueCode/rate')
   async GetRateUE(@Param('ueCode') ueCode: string, @GetUser() user: User) {
+    if (!(await this.ueService.doesUEExist(ueCode)))
+      throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     return this.ueService.getRateUE(user, ueCode);
   }
 

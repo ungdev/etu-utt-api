@@ -1,4 +1,3 @@
-import { HttpStatus } from '@nestjs/common';
 import {
   createUser,
   suite,
@@ -19,7 +18,7 @@ const DeleteComment = suite('DELETE /ue/comments/{commentId}', (app) => {
     return pactum
       .spec()
       .delete(`/ue/comments/${comment1.id}`)
-      .expectStatus(HttpStatus.UNAUTHORIZED);
+      .expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
   it('should return a 403 because user is not the author', () => {
@@ -27,11 +26,7 @@ const DeleteComment = suite('DELETE /ue/comments/{commentId}', (app) => {
       .spec()
       .withBearerToken(user2.token)
       .delete(`/ue/comments/${comment1.id}`)
-      .expectStatus(HttpStatus.FORBIDDEN)
-      .expectJson({
-        errorCode: ERROR_CODE.NOT_COMMENT_AUTHOR,
-        error: 'You are not the author of this comment',
-      });
+      .expectAppError(ERROR_CODE.NOT_COMMENT_AUTHOR);
   });
 
   it('should return a 400 because uuid is not an uuid', () => {
@@ -39,7 +34,7 @@ const DeleteComment = suite('DELETE /ue/comments/{commentId}', (app) => {
       .spec()
       .withBearerToken(user.token)
       .delete(`/ue/comments/${comment1.id.slice(0, 31)}`)
-      .expectStatus(HttpStatus.BAD_REQUEST);
+      .expectAppError(ERROR_CODE.NOT_AN_UUID);
   });
 
   it('should return a 404 because comment does not exist', () => {
@@ -47,11 +42,7 @@ const DeleteComment = suite('DELETE /ue/comments/{commentId}', (app) => {
       .spec()
       .withBearerToken(user.token)
       .delete(`/ue/comments/00000000-0000-0000-0000-000000000000`)
-      .expectStatus(HttpStatus.NOT_FOUND)
-      .expectJson({
-        errorCode: ERROR_CODE.NO_SUCH_COMMENT,
-        error: 'This comment does not exist',
-      });
+      .expectAppError(ERROR_CODE.NO_SUCH_COMMENT);
   });
 
   it('should return the deleted comment', () => {
@@ -59,8 +50,7 @@ const DeleteComment = suite('DELETE /ue/comments/{commentId}', (app) => {
       .spec()
       .withBearerToken(user.token)
       .delete(`/ue/comments/${comment1.id}`)
-      .expectStatus(HttpStatus.OK)
-      .expectJsonLike({
+      .expectUEComment({
         id: JsonLike.ANY_UUID,
         author: {
           id: user.id,

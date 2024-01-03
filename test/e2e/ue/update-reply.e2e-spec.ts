@@ -1,4 +1,3 @@
-import { HttpStatus } from '@nestjs/common';
 import {
   createUser,
   suite,
@@ -26,7 +25,7 @@ const UpdateCommentReply = suite(
         .withBody({
           body: 'Test comment',
         })
-        .expectStatus(HttpStatus.UNAUTHORIZED);
+        .expectAppError(ERROR_CODE.NOT_LOGGED_IN);
     });
 
     it('should return a 400 because body is a string', () => {
@@ -37,7 +36,7 @@ const UpdateCommentReply = suite(
         .withBody({
           body: false,
         })
-        .expectStatus(HttpStatus.BAD_REQUEST);
+        .expectAppError(ERROR_CODE.MALFORMED_PARAM, 'body');
     });
 
     it('should return a 403 because user is not the author', () => {
@@ -48,11 +47,7 @@ const UpdateCommentReply = suite(
         .withBody({
           body: "Je m'appelle Alban Ichou et j'approuve ce commentaire",
         })
-        .expectStatus(HttpStatus.FORBIDDEN)
-        .expectJson({
-          errorCode: ERROR_CODE.NOT_REPLY_AUTHOR,
-          error: 'You are not the author of this reply',
-        });
+        .expectAppError(ERROR_CODE.NOT_REPLY_AUTHOR);
     });
 
     it('should return a 400 because body is too short', () => {
@@ -63,7 +58,7 @@ const UpdateCommentReply = suite(
         .withBody({
           body: 'gg',
         })
-        .expectStatus(HttpStatus.BAD_REQUEST);
+        .expectAppError(ERROR_CODE.MALFORMED_PARAM, 'body');
     });
 
     it('should return a 400 because uuid is not an uuid', () => {
@@ -74,7 +69,7 @@ const UpdateCommentReply = suite(
         .withBody({
           body: 'heyhey',
         })
-        .expectStatus(HttpStatus.BAD_REQUEST);
+        .expectAppError(ERROR_CODE.NOT_AN_UUID);
     });
 
     it('should return a 404 because reply does not exist', () => {
@@ -85,11 +80,7 @@ const UpdateCommentReply = suite(
         .withBody({
           body: 'heyhey',
         })
-        .expectStatus(HttpStatus.NOT_FOUND)
-        .expectJson({
-          errorCode: ERROR_CODE.NO_SUCH_REPLY,
-          error: 'This reply does not exist',
-        });
+        .expectAppError(ERROR_CODE.NO_SUCH_REPLY);
     });
 
     it('should return the updated comment', () => {
@@ -100,8 +91,7 @@ const UpdateCommentReply = suite(
         .withBody({
           body: "Je m'appelle Alban Ichou et j'approuve ce commentaire",
         })
-        .expectStatus(HttpStatus.OK)
-        .expectJsonLike({
+        .expectUECommentReply({
           id: JsonLike.ANY_UUID,
           author: {
             id: user.id,

@@ -1,7 +1,7 @@
 import { createUE, createUser, suite } from '../../test_utils';
 import * as pactum from 'pactum';
-import { HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { ERROR_CODE } from 'src/exceptions';
 
 const SearchE2ESpec = suite('GET /ue', (app) => {
   const user = createUser(app);
@@ -22,7 +22,7 @@ const SearchE2ESpec = suite('GET /ue', (app) => {
     return pactum
       .spec()
       .get('/ue?q=XX01')
-      .expectStatus(HttpStatus.UNAUTHORIZED);
+      .expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
   it('should return a 400 as semester is in a wrong format', () => {
@@ -30,7 +30,7 @@ const SearchE2ESpec = suite('GET /ue', (app) => {
       .spec()
       .withBearerToken(user.token)
       .get('/ue?q=XX01&availableAtSemester=AP28')
-      .expectStatus(HttpStatus.BAD_REQUEST);
+      .expectAppError(ERROR_CODE.MALFORMED_PARAM, 'availableAtSemester');
   });
 
   it('should return a 400 as page is negative', () => {
@@ -38,7 +38,7 @@ const SearchE2ESpec = suite('GET /ue', (app) => {
       .spec()
       .withBearerToken(user.token)
       .get('/ue?q=XX01&page=-1')
-      .expectStatus(HttpStatus.BAD_REQUEST);
+      .expectAppError(ERROR_CODE.MALFORMED_PARAM, 'page');
   });
 
   it('should return a list of all ues (within the first page)', () => {
@@ -46,8 +46,7 @@ const SearchE2ESpec = suite('GET /ue', (app) => {
       .spec()
       .withBearerToken(user.token)
       .get('/ue')
-      .expectStatus(HttpStatus.OK)
-      .expectJson({
+      .expectUEs({
         items: ues.slice(
           0,
           Number(app().get(ConfigService).get('PAGINATION_PAGE_SIZE')),
@@ -65,8 +64,7 @@ const SearchE2ESpec = suite('GET /ue', (app) => {
       .withBearerToken(user.token)
       .get('/ue')
       .withQueryParams('page', 2)
-      .expectStatus(HttpStatus.OK)
-      .expectJson({
+      .expectUEs({
         items: ues.slice(
           Number(app().get(ConfigService).get('PAGINATION_PAGE_SIZE')),
           Math.min(
@@ -87,8 +85,7 @@ const SearchE2ESpec = suite('GET /ue', (app) => {
       .withBearerToken(user.token)
       .get('/ue')
       .withQueryParams('availableAtSemester', 'A24')
-      .expectStatus(HttpStatus.OK)
-      .expectJson({
+      .expectUEs({
         items: ues.filter((ue) =>
           ue.openSemester.some((semester) => semester.code === 'A24'),
         ),
@@ -107,8 +104,7 @@ const SearchE2ESpec = suite('GET /ue', (app) => {
       .withBearerToken(user.token)
       .get('/ue')
       .withQueryParams('creditType', 'CS')
-      .expectStatus(HttpStatus.OK)
-      .expectJson({
+      .expectUEs({
         items: ues.filter((ue) =>
           ue.credits.some((credit) => credit.category.code === 'CS'),
         ),
@@ -127,8 +123,7 @@ const SearchE2ESpec = suite('GET /ue', (app) => {
       .withBearerToken(user.token)
       .get('/ue')
       .withQueryParams('filiere', 'T1')
-      .expectStatus(HttpStatus.OK)
-      .expectJson({
+      .expectUEs({
         items: ues.filter((ue) =>
           ue.filiere.some((filiere) => filiere.code === 'T1'),
         ),
@@ -147,8 +142,7 @@ const SearchE2ESpec = suite('GET /ue', (app) => {
       .withBearerToken(user.token)
       .get('/ue')
       .withQueryParams('branch', 'B1')
-      .expectStatus(HttpStatus.OK)
-      .expectJson({
+      .expectUEs({
         items: ues.filter((ue) =>
           ue.filiere.some((filiere) => filiere.branche.code === 'B1'),
         ),
@@ -167,8 +161,7 @@ const SearchE2ESpec = suite('GET /ue', (app) => {
       .withBearerToken(user.token)
       .get('/ue')
       .withQueryParams('q', 'XX0')
-      .expectStatus(HttpStatus.OK)
-      .expectJson({
+      .expectUEs({
         items: ues.filter((ue) => ue.code.startsWith('XX0')),
         itemsPerPage: Number(
           app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE'),

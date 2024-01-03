@@ -1,6 +1,5 @@
 import { createCriterion, createUE, createUser, suite } from '../../test_utils';
 import * as pactum from 'pactum';
-import { HttpStatus } from '@nestjs/common';
 import { ERROR_CODE } from 'src/exceptions';
 import { UEService } from '../../../src/ue/ue.service';
 
@@ -32,7 +31,7 @@ const GetRateE2ESpec = suite('GET /ue/{ueCode}/rate', (app) => {
     return pactum
       .spec()
       .get('/ue/XX00/rate')
-      .expectStatus(HttpStatus.UNAUTHORIZED);
+      .expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
   it('should return an error if the ue does not exist', () => {
@@ -40,11 +39,7 @@ const GetRateE2ESpec = suite('GET /ue/{ueCode}/rate', (app) => {
       .spec()
       .withBearerToken(user.token)
       .get('/ue/AA01/rate')
-      .expectStatus(HttpStatus.NOT_FOUND)
-      .expectJson({
-        errorCode: ERROR_CODE.NO_SUCH_UE,
-        error: 'The UE AA01 does not exist',
-      });
+      .expectAppError(ERROR_CODE.NO_SUCH_UE, 'AA01');
   });
 
   it('should return the user rate for the UE', () => {
@@ -52,8 +47,7 @@ const GetRateE2ESpec = suite('GET /ue/{ueCode}/rate', (app) => {
       .spec()
       .withBearerToken(user.token)
       .get('/ue/XX00/rate')
-      .expectStatus(HttpStatus.OK)
-      .expectJson([
+      .expectUERates([
         {
           criterionId: c1.id,
           value: 1,
@@ -70,8 +64,7 @@ const GetRateE2ESpec = suite('GET /ue/{ueCode}/rate', (app) => {
       .spec()
       .withBearerToken(user2.token)
       .get('/ue/XX00/rate')
-      .expectStatus(HttpStatus.OK)
-      .expectJson([
+      .expectUERates([
         {
           criterionId: c1.id,
           value: 2,

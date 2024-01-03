@@ -5,7 +5,6 @@ import { ConfigService } from '@nestjs/config';
 import { UeCommentPostDto } from './dto/ue-comment-post.dto';
 import { User } from '../prisma/types';
 import { UERateDto } from './dto/ue-rate.dto';
-import { AppException, ERROR_CODE } from '../exceptions';
 import { UeCommentUpdateDto } from './dto/ue-comment-update.dto';
 import { CommentReplyDto } from './dto/ue-comment-reply.dto';
 import { GetUECommentsDto } from './dto/ue-get-comments.dto';
@@ -121,7 +120,6 @@ export class UEService {
         },
       }),
     );
-    if (!ue) throw new AppException(ERROR_CODE.NO_SUCH_UE, code);
     const starVoteCriteria: {
       [key: string]: {
         createdAt: Date;
@@ -272,7 +270,6 @@ export class UEService {
         code: ueCode,
       },
     });
-    if (!ue) throw new AppException(ERROR_CODE.NO_SUCH_UE);
     const comment = await this.prisma.uEComment.findUnique({
       where: {
         UEId_authorId: {
@@ -465,7 +462,6 @@ export class UEService {
         code: ueCode,
       },
     });
-    if (!UE) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     return this.prisma.uEStarVote.findMany(
       SelectRate({
         where: {
@@ -491,7 +487,6 @@ export class UEService {
         code: ueCode,
       },
     });
-    if (!UE) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     return this.prisma.uEStarVote.upsert(
       SelectRate({
         where: {

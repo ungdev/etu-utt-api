@@ -1,4 +1,3 @@
-import { HttpStatus } from '@nestjs/common';
 import {
   createUser,
   suite,
@@ -25,7 +24,7 @@ const PostCommmentReply = suite(
         .withBody({
           body: 'Test comment',
         })
-        .expectStatus(HttpStatus.UNAUTHORIZED);
+        .expectAppError(ERROR_CODE.NOT_LOGGED_IN);
     });
 
     it('should return a 400 because body is required', () => {
@@ -33,7 +32,7 @@ const PostCommmentReply = suite(
         .spec()
         .withBearerToken(user.token)
         .post(`/ue/comments/${comment.id}/reply`)
-        .expectStatus(HttpStatus.BAD_REQUEST);
+        .expectAppError(ERROR_CODE.MALFORMED_PARAM, 'body');
     });
 
     it('should return a 400 because body is a string', () => {
@@ -44,7 +43,7 @@ const PostCommmentReply = suite(
         .withBody({
           body: 13,
         })
-        .expectStatus(HttpStatus.BAD_REQUEST);
+        .expectAppError(ERROR_CODE.MALFORMED_PARAM, 'body');
     });
 
     it('should return a 400 because body is too short', () => {
@@ -55,7 +54,7 @@ const PostCommmentReply = suite(
         .withBody({
           body: 'gg',
         })
-        .expectStatus(HttpStatus.BAD_REQUEST);
+        .expectAppError(ERROR_CODE.MALFORMED_PARAM, 'body');
     });
 
     it('should return a 404 because comment does not exist', () => {
@@ -66,14 +65,10 @@ const PostCommmentReply = suite(
         .withBody({
           body: 'heyhey',
         })
-        .expectStatus(HttpStatus.NOT_FOUND)
-        .expectJson({
-          errorCode: ERROR_CODE.NO_SUCH_COMMENT,
-          error: 'This comment does not exist',
-        });
+        .expectAppError(ERROR_CODE.NO_SUCH_COMMENT);
     });
 
-    it('should return a 400 because comment does not exist', () => {
+    it('should return a 400 because comment id is invalid', () => {
       return pactum
         .spec()
         .withBearerToken(user.token)
@@ -81,7 +76,7 @@ const PostCommmentReply = suite(
         .withBody({
           body: 'heyhey',
         })
-        .expectStatus(HttpStatus.BAD_REQUEST);
+        .expectAppError(ERROR_CODE.NOT_AN_UUID);
     });
 
     it('should return the posted comment', () => {
@@ -92,19 +87,21 @@ const PostCommmentReply = suite(
         .withBody({
           body: 'heyhey',
         })
-        .expectStatus(HttpStatus.CREATED)
-        .expectJsonLike({
-          id: JsonLike.ANY_UUID,
-          author: {
-            id: user.id,
-            lastName: user.lastName,
-            firstName: user.firstName,
-            studentId: user.studentId,
+        .expectUECommentReply(
+          {
+            id: JsonLike.ANY_UUID,
+            author: {
+              id: user.id,
+              lastName: user.lastName,
+              firstName: user.firstName,
+              studentId: user.studentId,
+            },
+            body: 'heyhey',
+            createdAt: JsonLike.ANY_DATE,
+            updatedAt: JsonLike.ANY_DATE,
           },
-          body: 'heyhey',
-          createdAt: JsonLike.ANY_DATE,
-          updatedAt: JsonLike.ANY_DATE,
-        });
+          true,
+        );
     });
   },
 );

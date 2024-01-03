@@ -1,6 +1,6 @@
-import { HttpStatus } from '@nestjs/common';
 import { createUser, suite, createCriterion } from '../../test_utils';
 import * as pactum from 'pactum';
+import { ERROR_CODE } from 'src/exceptions';
 
 const GetRateCriteria = suite('GET /ue/rate/criteria', (app) => {
   const user = createUser(app);
@@ -12,7 +12,7 @@ const GetRateCriteria = suite('GET /ue/rate/criteria', (app) => {
     return pactum
       .spec()
       .get('/ue/rate/criteria')
-      .expectStatus(HttpStatus.UNAUTHORIZED);
+      .expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
   it('should return all the criteria', () => {
@@ -20,8 +20,7 @@ const GetRateCriteria = suite('GET /ue/rate/criteria', (app) => {
       .spec()
       .get('/ue/rate/criteria')
       .withBearerToken(user.token)
-      .expectStatus(HttpStatus.OK)
-      .expectJsonMatch(criteria);
+      .expectUECriteria(criteria);
   });
 });
 

@@ -1,10 +1,10 @@
-import { HttpStatus } from '@nestjs/common';
 import * as pactum from 'pactum';
 import { createComment, createUE, createUser, suite } from '../../test_utils';
 import { ConfigService } from '@nestjs/config';
 import { UEComment } from '../../../src/ue/interfaces/comment.interface';
 import { UEService } from '../../../src/ue/ue.service';
 import { UECommentReply } from '../../../src/ue/interfaces/comment-reply.interface';
+import { ERROR_CODE } from 'src/exceptions';
 
 // TODO : tester les upvotes et les answers
 
@@ -31,7 +31,7 @@ const GetCommentsE2ESpec = suite('GET /ue/{ueCode}/comments', (app) => {
     return pactum
       .spec()
       .get(`/ue/${ue.inscriptionCode}/comments`)
-      .expectStatus(HttpStatus.UNAUTHORIZED);
+      .expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
   it('should return a 400 as user uses a wrong page', () => {
@@ -40,7 +40,15 @@ const GetCommentsE2ESpec = suite('GET /ue/{ueCode}/comments', (app) => {
       .withBearerToken(user.token)
       .get(`/ue/${ue.inscriptionCode}/comments`)
       .withQueryParams('page', -1)
-      .expectStatus(HttpStatus.BAD_REQUEST);
+      .expectAppError(ERROR_CODE.MALFORMED_PARAM, 'page');
+  });
+
+  it('should return a 404 because UE does not exist', () => {
+    return pactum
+      .spec()
+      .withBearerToken(user.token)
+      .get(`/ue/${ue.inscriptionCode.slice(0, 3)}/comments`)
+      .expectAppError(ERROR_CODE.NO_SUCH_UE, ue.code.slice(0, 3));
   });
 
   it('should return the first page of comments', () => {
@@ -48,8 +56,7 @@ const GetCommentsE2ESpec = suite('GET /ue/{ueCode}/comments', (app) => {
       .spec()
       .withBearerToken(user.token)
       .get(`/ue/${ue.inscriptionCode}/comments`)
-      .expectStatus(HttpStatus.OK)
-      .expectJson({
+      .expectUEComments({
         items: comments
           .sort((a, b) =>
             b.upvotes - a.upvotes == 0
@@ -85,8 +92,7 @@ const GetCommentsE2ESpec = suite('GET /ue/{ueCode}/comments', (app) => {
       .withBearerToken(user.token)
       .get(`/ue/${ue.inscriptionCode}/comments`)
       .withQueryParams('page', 2)
-      .expectStatus(HttpStatus.OK)
-      .expectJson({
+      .expectUEComments({
         items: comments
           .sort((a, b) =>
             b.upvotes - a.upvotes == 0
@@ -123,8 +129,7 @@ const GetCommentsE2ESpec = suite('GET /ue/{ueCode}/comments', (app) => {
       .spec()
       .withBearerToken(user2.token)
       .get(`/ue/${ue.inscriptionCode}/comments`)
-      .expectStatus(HttpStatus.OK)
-      .expectJson({
+      .expectUEComments({
         items: comments
           .sort((a, b) =>
             b.upvotes - a.upvotes == 0

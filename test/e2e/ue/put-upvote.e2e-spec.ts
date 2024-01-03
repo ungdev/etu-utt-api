@@ -1,4 +1,3 @@
-import { HttpStatus } from '@nestjs/common';
 import { createUser, suite, createUE, createComment } from '../../test_utils';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
@@ -13,7 +12,7 @@ const PutUpvote = suite('PUT /ue/comments/{commentId}/upvote', (app) => {
     return pactum
       .spec()
       .put(`/ue/comments/${comment1.id}/upvote`)
-      .expectStatus(HttpStatus.UNAUTHORIZED);
+      .expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
   it('should return a 403 because user is the author', () => {
@@ -21,11 +20,7 @@ const PutUpvote = suite('PUT /ue/comments/{commentId}/upvote', (app) => {
       .spec()
       .withBearerToken(user.token)
       .put(`/ue/comments/${comment1.id}/upvote`)
-      .expectStatus(HttpStatus.FORBIDDEN)
-      .expectJson({
-        errorCode: ERROR_CODE.IS_COMMENT_AUTHOR,
-        error: 'You are the author of this comment',
-      });
+      .expectAppError(ERROR_CODE.IS_COMMENT_AUTHOR);
   });
 
   it('should return a 400 because uuid is not an uuid', () => {
@@ -33,7 +28,7 @@ const PutUpvote = suite('PUT /ue/comments/{commentId}/upvote', (app) => {
       .spec()
       .withBearerToken(user2.token)
       .put(`/ue/comments/${comment1.id.slice(0, 31)}/upvote`)
-      .expectStatus(HttpStatus.BAD_REQUEST);
+      .expectAppError(ERROR_CODE.NOT_AN_UUID);
   });
 
   it('should return a 404 because reply does not exist', () => {
@@ -41,11 +36,7 @@ const PutUpvote = suite('PUT /ue/comments/{commentId}/upvote', (app) => {
       .spec()
       .withBearerToken(user2.token)
       .put(`/ue/comments/00000000-0000-0000-0000-000000000000/upvote`)
-      .expectStatus(HttpStatus.NOT_FOUND)
-      .expectJson({
-        errorCode: ERROR_CODE.NO_SUCH_COMMENT,
-        error: 'This comment does not exist',
-      });
+      .expectAppError(ERROR_CODE.NO_SUCH_COMMENT);
   });
 
   it('should return the upvoted upvote', () => {
@@ -53,8 +44,7 @@ const PutUpvote = suite('PUT /ue/comments/{commentId}/upvote', (app) => {
       .spec()
       .withBearerToken(user2.token)
       .put(`/ue/comments/${comment1.id}/upvote`)
-      .expectStatus(HttpStatus.OK)
-      .expectJsonLike({ upvoted: true });
+      .expectUECommentUpvote({ upvoted: true });
   });
 
   it('should return the de-upvote upvote', () => {
@@ -62,8 +52,7 @@ const PutUpvote = suite('PUT /ue/comments/{commentId}/upvote', (app) => {
       .spec()
       .withBearerToken(user2.token)
       .put(`/ue/comments/${comment1.id}/upvote`)
-      .expectStatus(HttpStatus.OK)
-      .expectJsonLike({ upvoted: false });
+      .expectUECommentUpvote({ upvoted: false });
   });
 });
 

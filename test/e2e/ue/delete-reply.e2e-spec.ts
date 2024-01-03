@@ -1,4 +1,3 @@
-import { HttpStatus } from '@nestjs/common';
 import {
   createUser,
   suite,
@@ -23,7 +22,7 @@ const DeleteCommentReply = suite(
       return pactum
         .spec()
         .delete(`/ue/comments/reply/${reply.id}`)
-        .expectStatus(HttpStatus.UNAUTHORIZED);
+        .expectAppError(ERROR_CODE.NOT_LOGGED_IN);
     });
 
     it('should return a 403 because user is not the author', () => {
@@ -31,11 +30,7 @@ const DeleteCommentReply = suite(
         .spec()
         .withBearerToken(user2.token)
         .delete(`/ue/comments/reply/${reply.id}`)
-        .expectStatus(HttpStatus.FORBIDDEN)
-        .expectJson({
-          errorCode: ERROR_CODE.NOT_REPLY_AUTHOR,
-          error: 'You are not the author of this reply',
-        });
+        .expectAppError(ERROR_CODE.NOT_REPLY_AUTHOR);
     });
 
     it('should return a 400 because uuid is not an uuid', () => {
@@ -43,7 +38,7 @@ const DeleteCommentReply = suite(
         .spec()
         .withBearerToken(user.token)
         .delete(`/ue/comments/reply/${comment1.id.slice(0, 31)}`)
-        .expectStatus(HttpStatus.BAD_REQUEST);
+        .expectAppError(ERROR_CODE.NOT_AN_UUID);
     });
 
     it('should return a 404 because reply does not exist', () => {
@@ -51,11 +46,7 @@ const DeleteCommentReply = suite(
         .spec()
         .withBearerToken(user.token)
         .delete(`/ue/comments/reply/00000000-0000-0000-0000-000000000000`)
-        .expectStatus(HttpStatus.NOT_FOUND)
-        .expectJson({
-          errorCode: ERROR_CODE.NO_SUCH_REPLY,
-          error: 'This reply does not exist',
-        });
+        .expectAppError(ERROR_CODE.NO_SUCH_REPLY);
     });
 
     it('should return the deleted comment', () => {
@@ -63,8 +54,7 @@ const DeleteCommentReply = suite(
         .spec()
         .withBearerToken(user.token)
         .delete(`/ue/comments/reply/${reply.id}`)
-        .expectStatus(HttpStatus.OK)
-        .expectJsonLike({
+        .expectUECommentReply({
           id: JsonLike.ANY_UUID,
           author: {
             id: user.id,

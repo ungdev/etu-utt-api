@@ -1,6 +1,5 @@
 import { createUE, createUser, suite } from '../../test_utils';
 import * as pactum from 'pactum';
-import { HttpStatus } from '@nestjs/common';
 import { ERROR_CODE } from 'src/exceptions';
 
 // TODO: checker les rates
@@ -20,7 +19,10 @@ const GetE2ESpec = suite('GET /ue/{ueCode}', (app) => {
     );
 
   it('should return a 401 as user is not authenticated', () => {
-    return pactum.spec().get('/ue/XX01').expectStatus(HttpStatus.UNAUTHORIZED);
+    return pactum
+      .spec()
+      .get('/ue/XX01')
+      .expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
   it('should return an error if the ue does not exist', () => {
@@ -28,11 +30,7 @@ const GetE2ESpec = suite('GET /ue/{ueCode}', (app) => {
       .spec()
       .withBearerToken(user.token)
       .get('/ue/AA01')
-      .expectStatus(HttpStatus.NOT_FOUND)
-      .expectJson({
-        errorCode: ERROR_CODE.NO_SUCH_UE,
-        error: 'The UE AA01 does not exist',
-      });
+      .expectAppError(ERROR_CODE.NO_SUCH_UE, 'AA01');
   });
 
   it('should return the UE XX01', () => {
@@ -40,8 +38,7 @@ const GetE2ESpec = suite('GET /ue/{ueCode}', (app) => {
       .spec()
       .withBearerToken(user.token)
       .get('/ue/XX01')
-      .expectStatus(HttpStatus.OK)
-      .expectJson(ues.find((ue) => ue.code === 'XX01'));
+      .expectUE(ues.find((ue) => ue.code === 'XX01'));
   });
 });
 

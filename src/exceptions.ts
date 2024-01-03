@@ -1,6 +1,9 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 
 export const enum ERROR_CODE {
+  NOT_LOGGED_IN = 1001,
+  NOT_AN_UUID = 2001,
+  MALFORMED_PARAM = 2002,
   FORBIDDEN_NOT_ENOUGH_PERMISSIONS = 3001,
   FORBIDDEN_NOT_LOGGED_IN = 3002,
   FORBIDDEN_ALREADY_COMMENTED = 3101,
@@ -14,12 +17,24 @@ export const enum ERROR_CODE {
   NO_SUCH_CRITERION = 4404,
 }
 
-const Errors: {
+export const ErrorData: Readonly<{
   [error in ERROR_CODE]: {
     message: string;
     httpCode: HttpStatus;
   };
-} = {
+}> = Object.freeze({
+  [ERROR_CODE.NOT_LOGGED_IN]: {
+    message: 'You must be logged in to access this resource',
+    httpCode: HttpStatus.UNAUTHORIZED,
+  },
+  [ERROR_CODE.NOT_AN_UUID]: {
+    message: 'The given id is not a valid UUID',
+    httpCode: HttpStatus.BAD_REQUEST,
+  },
+  [ERROR_CODE.MALFORMED_PARAM]: {
+    message: 'The following parameters are invalid: %',
+    httpCode: HttpStatus.BAD_REQUEST,
+  },
   [ERROR_CODE.FORBIDDEN_NOT_ENOUGH_PERMISSIONS]: {
     message: 'Missing permission %',
     httpCode: HttpStatus.FORBIDDEN,
@@ -64,16 +79,16 @@ const Errors: {
     message: 'This criterion does not exist',
     httpCode: HttpStatus.NOT_FOUND,
   },
-};
+});
 
 export class AppException extends HttpException {
   constructor(code: ERROR_CODE, extraMessage?: string) {
     super(
       {
         errorCode: code,
-        error: Errors[code].message.replace('%', extraMessage || ''),
+        error: ErrorData[code].message.replace('%', extraMessage || ''),
       },
-      Errors[code].httpCode,
+      ErrorData[code].httpCode,
     );
   }
 }
