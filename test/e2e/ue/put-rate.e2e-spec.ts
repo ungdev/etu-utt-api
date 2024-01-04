@@ -43,7 +43,7 @@ const PutRate = suite('PUT /ue/{ueCode}/rate', (app) => {
         criterion: criterion.id,
         value: 'helloWorld',
       })
-      .expectAppError(ERROR_CODE.MALFORMED_PARAM, 'value');
+      .expectAppError(ERROR_CODE.PARAM_NOT_NUMBER, 'value');
   });
 
   it('should return a 400 as the criterion is not a string', () => {
@@ -55,7 +55,7 @@ const PutRate = suite('PUT /ue/{ueCode}/rate', (app) => {
         criterion: true,
         value: 1,
       })
-      .expectAppError(ERROR_CODE.MALFORMED_PARAM, 'criterion');
+      .expectAppError(ERROR_CODE.PARAM_NOT_STRING, 'criterion');
   });
 
   it('should return a 404 as the criterion does not exist', () => {

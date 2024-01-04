@@ -1,17 +1,40 @@
 import { ValidationPipe } from '@nestjs/common';
 import { AppException, ERROR_CODE } from './exceptions';
 
+const mappedErrors = {
+  isNotEmpty: ERROR_CODE.PARAM_MISSING,
+  isString: ERROR_CODE.PARAM_NOT_STRING,
+  isAlphanumeric: ERROR_CODE.PARAM_NOT_ALPHANUMERIC,
+  isNumber: ERROR_CODE.PARAM_NOT_NUMBER,
+  isEnum: ERROR_CODE.PARAM_NOT_ENUM,
+  isDate: ERROR_CODE.PARAM_NOT_DATE,
+  maxLength: ERROR_CODE.PARAM_TOO_LONG,
+  minLength: ERROR_CODE.PARAM_TOO_SHORT,
+  isPositive: ERROR_CODE.PARAM_NOT_POSITIVE,
+  min: ERROR_CODE.PARAM_TOO_LOW,
+  max: ERROR_CODE.PARAM_TOO_HIGH,
+} satisfies {
+  [constraint: string]: ERROR_CODE;
+};
+
 export const getValidationPipe = () =>
   new ValidationPipe({
     whitelist: true,
     exceptionFactory: (errors) => {
-      const properties = errors.reduce(
-        (values, value) =>
-          values.indexOf(value.property) < 0
-            ? [...values, value.property]
-            : values,
-        [],
+      const errorsByType: { [constraint: string]: string[] } = {};
+      for (const error of errors)
+        for (const constraint of Object.keys(error.constraints)) {
+          if (constraint in errorsByType)
+            errorsByType[constraint].push(error.property);
+          else errorsByType[constraint] = [error.property];
+        }
+      for (const [constraint, error] of Object.entries(mappedErrors)) {
+        if (constraint in errorsByType)
+          return new AppException(error, errorsByType[constraint].join(', '));
+      }
+      return new AppException(
+        ERROR_CODE.PARAM_MALFORMED,
+        errors.map((error) => error.property).join(', '),
       );
-      return new AppException(ERROR_CODE.MALFORMED_PARAM, properties.join());
     },
   });

@@ -36,7 +36,7 @@ const UpdateCommentReply = suite(
         .withBody({
           body: false,
         })
-        .expectAppError(ERROR_CODE.MALFORMED_PARAM, 'body');
+        .expectAppError(ERROR_CODE.PARAM_NOT_STRING, 'body');
     });
 
     it('should return a 403 because user is not the author', () => {
@@ -58,7 +58,7 @@ const UpdateCommentReply = suite(
         .withBody({
           body: 'gg',
         })
-        .expectAppError(ERROR_CODE.MALFORMED_PARAM, 'body');
+        .expectAppError(ERROR_CODE.PARAM_TOO_SHORT, 'body');
     });
 
     it('should return a 400 because uuid is not an uuid', () => {

@@ -40,7 +40,7 @@ const GetCommentsE2ESpec = suite('GET /ue/{ueCode}/comments', (app) => {
       .withBearerToken(user.token)
       .get(`/ue/${ue.inscriptionCode}/comments`)
       .withQueryParams('page', -1)
-      .expectAppError(ERROR_CODE.MALFORMED_PARAM, 'page');
+      .expectAppError(ERROR_CODE.PARAM_NOT_POSITIVE, 'page');
   });
 
   it('should return a 404 because UE does not exist', () => {

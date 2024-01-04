@@ -30,7 +30,7 @@ const SearchE2ESpec = suite('GET /ue', (app) => {
       .spec()
       .withBearerToken(user.token)
       .get('/ue?q=XX01&availableAtSemester=AP28')
-      .expectAppError(ERROR_CODE.MALFORMED_PARAM, 'availableAtSemester');
+      .expectAppError(ERROR_CODE.PARAM_TOO_LONG, 'availableAtSemester');
   });
 
   it('should return a 400 as page is negative', () => {
@@ -38,7 +38,7 @@ const SearchE2ESpec = suite('GET /ue', (app) => {
       .spec()
       .withBearerToken(user.token)
       .get('/ue?q=XX01&page=-1')
-      .expectAppError(ERROR_CODE.MALFORMED_PARAM, 'page');
+      .expectAppError(ERROR_CODE.PARAM_NOT_POSITIVE, 'page');
   });
 
   it('should return a list of all ues (within the first page)', () => {

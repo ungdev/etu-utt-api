@@ -32,7 +32,7 @@ const PostCommmentReply = suite(
         .spec()
         .withBearerToken(user.token)
         .post(`/ue/comments/${comment.id}/reply`)
-        .expectAppError(ERROR_CODE.MALFORMED_PARAM, 'body');
+        .expectAppError(ERROR_CODE.PARAM_MISSING, 'body');
     });
 
     it('should return a 400 because body is a string', () => {
@@ -43,7 +43,7 @@ const PostCommmentReply = suite(
         .withBody({
           body: 13,
         })
-        .expectAppError(ERROR_CODE.MALFORMED_PARAM, 'body');
+        .expectAppError(ERROR_CODE.PARAM_NOT_STRING, 'body');
     });
 
     it('should return a 400 because body is too short', () => {
@@ -54,7 +54,7 @@ const PostCommmentReply = suite(
         .withBody({
           body: 'gg',
         })
-        .expectAppError(ERROR_CODE.MALFORMED_PARAM, 'body');
+        .expectAppError(ERROR_CODE.PARAM_TOO_SHORT, 'body');
     });
 
     it('should return a 404 because comment does not exist', () => {

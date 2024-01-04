@@ -35,7 +35,7 @@ const PostCommment = suite('POST /ue/{ueCode}/comments', (app) => {
         body: false,
         isAnonymous: true,
       })
-      .expectAppError(ERROR_CODE.MALFORMED_PARAM, 'body');
+      .expectAppError(ERROR_CODE.PARAM_NOT_STRING, 'body');
   });
 
   it('should return a 403 because user has not done the UE yet', () => {
@@ -134,7 +134,7 @@ const PostCommment = suite('POST /ue/{ueCode}/comments', (app) => {
       .withBody({
         body: 'gg',
       })
-      .expectAppError(ERROR_CODE.MALFORMED_PARAM, 'body');
+      .expectAppError(ERROR_CODE.PARAM_TOO_SHORT, 'body');
   });
 
   it('should return a 404 because UE does not exist', () => {
