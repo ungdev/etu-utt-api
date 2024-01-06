@@ -184,28 +184,6 @@ export function createUE(
     const ue = await (forOverview
       ? app().get(PrismaService).uE.create(SelectUEOverview(data))
       : app().get(PrismaService).uE.create(SelectUEDetail(data)));
-    const starVoteCriteria: {
-      [key: string]: {
-        createdAt: Date;
-        value: number;
-      }[];
-    } = {};
-    if (!forOverview && 'workTime' in ue) {
-      for (const starVote of ue.starVotes) {
-        if (starVote.criterionId in starVoteCriteria)
-          starVoteCriteria[starVote.criterionId].push({
-            createdAt: starVote.createdAt as Date,
-            value: starVote.value,
-          });
-        else
-          starVoteCriteria[starVote.criterionId] = [
-            {
-              createdAt: starVote.createdAt as Date,
-              value: starVote.value,
-            },
-          ];
-      }
-    }
     Object.assign(
       partialUE,
       !('workTime' in ue)
@@ -220,22 +198,7 @@ export function createUE(
         : {
             ...ue,
             openSemester: ue.openSemester.map((semester) => semester.code),
-            starVotes: Object.fromEntries(
-              Object.entries(starVoteCriteria).map(([key, entry]) => {
-                let coefficients = 0;
-                let ponderation = 0;
-                for (const { value, createdAt } of entry) {
-                  const dt =
-                    (starVoteCriteria[key][0].createdAt.getTime() -
-                      createdAt.getTime()) /
-                    1000;
-                  const dp = Math.exp(-dt / 10e7);
-                  ponderation += dp * value;
-                  coefficients += dp;
-                }
-                return [key, ponderation / coefficients];
-              }),
-            ),
+            starVotes: {},
           },
     );
   });
@@ -277,6 +240,39 @@ export function makeUserJoinUE(
         },
       }),
   );
+}
+
+export function createUERating(
+  app: ApplicationContext,
+  user: Partial<User>,
+  criterion: Partial<Criterion>,
+  ue: Partial<UEDetail | UEOverView>,
+  value = 3,
+) {
+  beforeAll(async () => {
+    return app()
+      .get(PrismaService)
+      .uEStarVote.create({
+        data: {
+          criterion: {
+            connect: {
+              id: criterion.id,
+            },
+          },
+          user: {
+            connect: {
+              id: user.id,
+            },
+          },
+          UE: {
+            connect: {
+              code: ue.code,
+            },
+          },
+          value,
+        },
+      });
+  });
 }
 
 export function createCriterion(
@@ -354,6 +350,32 @@ export function createComment(
     );
   });
   return lazyComment;
+}
+
+export function upvoteComment(
+  app: ApplicationContext,
+  user: Partial<User>,
+  comment: Partial<UEComment>,
+) {
+  beforeAll(() => {
+    comment.upvotes++;
+    return app()
+      .get(PrismaService)
+      .uECommentUpvote.create({
+        data: {
+          comment: {
+            connect: {
+              id: comment.id,
+            },
+          },
+          user: {
+            connect: {
+              id: user.id,
+            },
+          },
+        },
+      });
+  });
 }
 
 export function createReply(

@@ -1,12 +1,16 @@
 import * as pactum from 'pactum';
-import { createComment, createUE, createUser, suite } from '../../test_utils';
+import {
+  createComment,
+  createUE,
+  createUser,
+  suite,
+  upvoteComment,
+} from '../../test_utils';
 import { ConfigService } from '@nestjs/config';
 import { UEComment } from '../../../src/ue/interfaces/comment.interface';
 import { UEService } from '../../../src/ue/ue.service';
 import { UECommentReply } from '../../../src/ue/interfaces/comment-reply.interface';
 import { ERROR_CODE } from 'src/exceptions';
-
-// TODO : tester les upvotes et les answers
 
 const GetCommentsE2ESpec = suite('GET /ue/{ueCode}/comments', (app) => {
   const user = createUser(app);
@@ -16,8 +20,17 @@ const GetCommentsE2ESpec = suite('GET /ue/{ueCode}/comments', (app) => {
     semester: 'A24',
   });
   const comments: UEComment[] = [];
-  for (let i = 0; i < 30; i++)
-    comments.push(createComment(app, ue, user, i % 2 === 0) as UEComment);
+  comments.push(createComment(app, ue, user, true) as UEComment);
+  upvoteComment(app, user2, comments[0]);
+  for (let i = 1; i < 30; i++) {
+    const commentAuthor = createUser(app, {
+      login: `user${i + 10}`,
+      studentId: i + 10,
+    });
+    comments.push(
+      createComment(app, ue, commentAuthor, i % 2 === 0) as UEComment,
+    );
+  }
 
   beforeAll(async () => {
     comments[0].answers.push(
@@ -78,7 +91,12 @@ const GetCommentsE2ESpec = suite('GET /ue/{ueCode}/comments', (app) => {
             })),
             updatedAt: `${(<Date>comment.updatedAt).toISOString()}`,
             createdAt: `${(<Date>comment.createdAt).toISOString()}`,
-          })),
+          }))
+          .map((comment) => {
+            if (comment.isAnonymous && comment.author.id !== user.id)
+              delete comment.author;
+            return comment;
+          }),
         itemCount: comments.length,
         itemsPerPage: Number(
           app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE'),
@@ -116,7 +134,12 @@ const GetCommentsE2ESpec = suite('GET /ue/{ueCode}/comments', (app) => {
             })),
             updatedAt: `${(<Date>comment.updatedAt).toISOString()}`,
             createdAt: `${(<Date>comment.createdAt).toISOString()}`,
-          })),
+          }))
+          .map((comment) => {
+            if (comment.isAnonymous && comment.author.id !== user.id)
+              delete comment.author;
+            return comment;
+          }),
         itemCount: comments.length,
         itemsPerPage: Number(
           app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE'),
@@ -125,6 +148,7 @@ const GetCommentsE2ESpec = suite('GET /ue/{ueCode}/comments', (app) => {
   });
 
   it('should return the first page of comments with hidden anonymous authors', () => {
+    comments[0].upvoted = true;
     return pactum
       .spec()
       .withBearerToken(user2.token)
@@ -142,18 +166,20 @@ const GetCommentsE2ESpec = suite('GET /ue/{ueCode}/comments', (app) => {
               app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE'),
             ),
           )
+          .map((comment) => ({
+            ...comment,
+            answers: comment.answers.map((answer) => ({
+              ...answer,
+              createdAt: `${(<Date>answer.createdAt).toISOString()}`,
+              updatedAt: `${(<Date>answer.updatedAt).toISOString()}`,
+            })),
+            updatedAt: `${(<Date>comment.updatedAt).toISOString()}`,
+            createdAt: `${(<Date>comment.createdAt).toISOString()}`,
+          }))
           .map((comment) => {
-            if (comment.isAnonymous) delete comment.author;
-            return {
-              ...comment,
-              answers: comment.answers.map((answer) => ({
-                ...answer,
-                createdAt: `${(<Date>answer.createdAt).toISOString()}`,
-                updatedAt: `${(<Date>answer.updatedAt).toISOString()}`,
-              })),
-              updatedAt: `${(<Date>comment.updatedAt).toISOString()}`,
-              createdAt: `${(<Date>comment.createdAt).toISOString()}`,
-            };
+            if (comment.isAnonymous && comment.author.id !== user2.id)
+              delete comment.author;
+            return comment;
           }),
         itemCount: comments.length,
         itemsPerPage: Number(

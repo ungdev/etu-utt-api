@@ -246,8 +246,8 @@ model UEComment {
   authorId    String
   semesterId  String
 
-  UE       UE                @relation(fields: [UEId], references: [id])
-  author   User              @relation(fields: [authorId], references: [id])
+  UE       UE                @relation(fields: [UEId], references: [id], onDelete: Cascade)
+  author   User              @relation(fields: [authorId], references: [id], onDelete: Cascade)
   semester Semester          @relation(fields: [semesterId], references: [code])
   answers  UECommentReply[]
   reports  UECommentReport[]
@@ -265,8 +265,8 @@ model UECommentReply {
   commentId String
   authorId  String
 
-  comment UEComment @relation(fields: [commentId], references: [id])
-  author  User      @relation(fields: [authorId], references: [id])
+  comment UEComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  author  User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
 }
 
 model UECommentReport {
@@ -274,12 +274,12 @@ model UECommentReport {
   body      String   @db.Text
   createdAt DateTime @default(now())
   commentId String
-  userId    String
+  userId    String?
   reasonId  String
 
-  comment UEComment             @relation(fields: [commentId], references: [id])
-  user    User                  @relation(fields: [userId], references: [id])
-  reason  UECommentReportReason @relation(fields: [reasonId], references: [name])
+  comment UEComment             @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    User?                 @relation(fields: [userId], references: [id], onDelete: SetNull)
+  reason  UECommentReportReason @relation(fields: [reasonId], references: [name], onDelete: Cascade)
 }
 
 model UECommentReportReason {
@@ -293,8 +293,8 @@ model UECommentReportReason {
 model UECommentUpvote {
   userId String
   commentId String
-  user User @relation(fields: [userId], references: [id])
-  comment UEComment @relation(fields: [commentId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment UEComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 
   @@id(fields: [userId, commentId])
@@ -395,11 +395,11 @@ model UEStarVote {
   createdAt   DateTime @default(now())
   UEId        String
   criterionId String
-  userId      String
+  userId      String?
 
-  UE        UE              @relation(fields: [UEId], references: [id])
-  criterion UEStarCriterion @relation(fields: [criterionId], references: [id])
-  user      User            @relation(fields: [userId], references: [id])
+  UE        UE              @relation(fields: [UEId], references: [id], onDelete: Cascade)
+  criterion UEStarCriterion @relation(fields: [criterionId], references: [id], onDelete: Cascade)
+  user      User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@unique([UEId, userId, criterionId])
 }

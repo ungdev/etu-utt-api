@@ -156,7 +156,7 @@ export class UEService {
             ponderation += dp * value;
             coefficients += dp;
           }
-          return [key, ponderation / coefficients];
+          return [key, Math.round((ponderation / coefficients) * 10) / 10];
         }),
       ),
     };
@@ -166,7 +166,7 @@ export class UEService {
     ueCode: string,
     user: User,
     dto: GetUECommentsDto,
-    bypassAnonymousData = false,
+    bypassAnonymousData: boolean,
   ): Promise<Pagination<UEComment>> {
     const [comments, commentCount] = (await this.prisma.$transaction([
       this.prisma.uEComment.findMany(
@@ -220,7 +220,7 @@ export class UEService {
         id: commentId,
       },
     });
-    return comment && comment.authorId == user.id;
+    return comment.authorId == user.id;
   }
 
   async doesReplyExist(replyId: string) {
@@ -237,7 +237,7 @@ export class UEService {
         id: replyId,
       },
     });
-    return reply?.authorId == user.id;
+    return reply.authorId == user.id;
   }
 
   async getLastSemesterDoneByUser(user: User, ueCode: string) {
@@ -307,7 +307,7 @@ export class UEService {
               connect: {
                 code: (
                   await this.getLastSemesterDoneByUser(user, ueCode)
-                )?.semesterId,
+                ).semesterId,
               },
             },
           },

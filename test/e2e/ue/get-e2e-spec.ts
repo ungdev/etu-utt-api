@@ -1,11 +1,21 @@
-import { createUE, createUser, suite } from '../../test_utils';
+import {
+  createCriterion,
+  createUE,
+  createUERating,
+  createUser,
+  makeUserJoinUE,
+  suite,
+} from '../../test_utils';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from 'src/exceptions';
-
-// TODO: checker les rates
+import { UEDetail } from 'src/ue/interfaces/ue-detail.interface';
 
 const GetE2ESpec = suite('GET /ue/{ueCode}', (app) => {
   const user = createUser(app);
+  const user2 = createUser(app, {
+    login: 'user2',
+    studentId: 2,
+  });
   const ues = [];
   for (let i = 0; i < 30; i++)
     ues.push(
@@ -17,6 +27,14 @@ const GetE2ESpec = suite('GET /ue/{ueCode}', (app) => {
         branch: i % 5 == 0 ? 'B1' : 'B2',
       }),
     );
+  const ueWithRating = createUE(app, {
+    code: `XX30`,
+  });
+  const criterion = createCriterion(app, 'test');
+  makeUserJoinUE(app, user, ueWithRating);
+  makeUserJoinUE(app, user2, ueWithRating);
+  createUERating(app, user, criterion, ueWithRating);
+  createUERating(app, user2, criterion, ueWithRating, 5);
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum
@@ -39,6 +57,19 @@ const GetE2ESpec = suite('GET /ue/{ueCode}', (app) => {
       .withBearerToken(user.token)
       .get('/ue/XX01')
       .expectUE(ues.find((ue) => ue.code === 'XX01'));
+  });
+
+  it('should return the UE XX30 with rating', () => {
+    return pactum
+      .spec()
+      .withBearerToken(user.token)
+      .get('/ue/XX30')
+      .expectUE({
+        ...(ueWithRating as Required<UEDetail>),
+        starVotes: {
+          [criterion.id]: 4.0,
+        },
+      });
   });
 });
 

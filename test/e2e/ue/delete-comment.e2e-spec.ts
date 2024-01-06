@@ -4,6 +4,7 @@ import {
   createUE,
   createComment,
   JsonLike,
+  upvoteComment,
 } from '../../test_utils';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
@@ -13,6 +14,7 @@ const DeleteComment = suite('DELETE /ue/comments/{commentId}', (app) => {
   const user2 = createUser(app, { login: 'user2' });
   const ue = createUE(app);
   const comment1 = createComment(app, ue, user);
+  upvoteComment(app, user, comment1);
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum
@@ -66,8 +68,8 @@ const DeleteComment = suite('DELETE /ue/comments/{commentId}', (app) => {
         isAnonymous: false,
         body: 'TEST',
         answers: [],
-        upvotes: 0,
-        upvoted: false,
+        upvotes: 1,
+        upvoted: true,
       });
   });
 });
