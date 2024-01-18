@@ -216,9 +216,17 @@ export default class TimetableService {
       include: {
         overwrittenBy: {
           where: { timetableGroups: { some: { userTimetableGroups: { some: { userId } } } } },
-          include: { timetableGroups: { where: { userTimetableGroups: { some: { userId } } }, select: { id: true } } },
+          include: {
+            timetableGroups: {
+              where: { userTimetableGroups: { some: { userId } } },
+              select: { id: true, createdAt: true },
+            },
+          },
         },
-        timetableGroups: { where: { userTimetableGroups: { some: { userId } } }, select: { id: true } },
+        timetableGroups: {
+          where: { userTimetableGroups: { some: { userId } } },
+          select: { id: true, createdAt: true },
+        },
       },
     });
     if (!timetableEntry) return null;
@@ -228,10 +236,13 @@ export default class TimetableService {
           where: {
             userId,
             timetableGroup: {
-              // Take the row where the group id is one of the ids of one of the group of one of the override
-              OR: timetableEntry.overwrittenBy.map((override) => ({
-                OR: override.timetableGroups.map((group) => ({ id: group.id })),
-              })),
+              OR: [
+                ...timetableEntry.timetableGroups.map((group) => ({ id: group.id })),
+                // Take the row where the group id is one of the ids of one of the group of one of the override
+                ...timetableEntry.overwrittenBy.map((override) => ({
+                  OR: override.timetableGroups.map((group) => ({ id: group.id })),
+                })),
+              ],
             },
           },
           include: { timetableGroup: true },
@@ -242,6 +253,13 @@ export default class TimetableService {
       -Math.max(...override.timetableGroups.map((group) => timetableGroupPriorities[group.id])),
       -override.createdAt.getTime(),
     ]);
+    sortArray(timetableEntry.timetableGroups, (group) => [
+      -timetableGroupPriorities[group.id],
+      -group.createdAt.getTime(),
+    ]);
+    for (const override of timetableEntry.overwrittenBy) {
+      sortArray(override.timetableGroups, (group) => [-timetableGroupPriorities[group.id], group.createdAt.getTime()]);
+    }
     return timetableEntry;
   }
 

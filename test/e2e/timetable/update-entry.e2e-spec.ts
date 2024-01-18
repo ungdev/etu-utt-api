@@ -11,7 +11,7 @@ import TimetableUpdateEntryDto from '../../../src/timetable/dto/timetable-update
 const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) => {
   const user = fakedb.createUser(app);
   const userGroup = fakedb.createTimetableGroup(app, { users: [{ user, priority: 1 }] });
-  const userOtherGroup = fakedb.createTimetableGroup(app, { users: [{ user, priority: 1 }] });
+  const userOtherGroup = fakedb.createTimetableGroup(app, { users: [{ user, priority: 2 }] });
   const userThirdGroup = fakedb.createTimetableGroup(app, { users: [{ user, priority: 1 }] });
   const entry = fakedb.createTimetableEntry(app, {
     groups: [userGroup, userOtherGroup],
@@ -227,16 +227,6 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
         groups: [userOtherGroup.id, userGroup.id],
         overrides: [
           {
-            id: uuid(),
-            location: newLocation,
-            firstRepetitionDate: new Date(10).toISOString(),
-            lastRepetitionDate: new Date(20).toISOString(),
-            firstOccurrenceOverride: 1,
-            lastOccurrenceOverride: 2,
-            overrideFrequency: 1,
-            groups: [userGroup.id],
-          },
-          {
             id: override.id,
             location: override.location,
             firstRepetitionDate: new Date(10).toISOString(),
@@ -245,6 +235,16 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
             lastOccurrenceOverride: 2,
             overrideFrequency: 1,
             groups: [userOtherGroup.id, userGroup.id],
+          },
+          {
+            id: uuid(),
+            location: newLocation,
+            firstRepetitionDate: new Date(10).toISOString(),
+            lastRepetitionDate: new Date(20).toISOString(),
+            firstOccurrenceOverride: 1,
+            lastOccurrenceOverride: 2,
+            overrideFrequency: 1,
+            groups: [userGroup.id],
           },
         ],
       });
