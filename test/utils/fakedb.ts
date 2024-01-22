@@ -4,7 +4,7 @@ import { AuthSignUpDto } from '../../src/auth/dto';
 import { AuthService } from '../../src/auth/auth.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { AppProvider } from './test_utils';
-import { Prisma } from '@prisma/client';
+import { Prisma, TimetableEntryType } from '@prisma/client';
 import { User } from '../../src/prisma/types';
 import { SelectUEOverview, UEOverView } from '../../src/ue/interfaces/ue-overview.interface';
 import { SelectUEDetail, UEDetail } from '../../src/ue/interfaces/ue-detail.interface';
@@ -12,6 +12,7 @@ import { Criterion, SelectCriterion } from '../../src/ue/interfaces/criterion.in
 import { UEComment } from '../../src/ue/interfaces/comment.interface';
 import { UEService } from '../../src/ue/ue.service';
 import { UECommentReply } from '../../src/ue/interfaces/comment-reply.interface';
+import { omit } from '../../src/utils';
 
 export type FakeUser = Partial<RawUser & { token: string }>;
 export type FakeTimetableGroup = Partial<RawTimetableGroup>;
@@ -90,13 +91,7 @@ export function createTimetableGroup(
   return onTheFly ? (promise as Promise<void>).then(() => timetableGroup) : timetableGroup;
 }
 
-export type CreateTimetableEntryParameters = {
-  startsAt?: Date;
-  occurrenceDuration?: number;
-  occurrencesCount?: number;
-  repeatEvery?: number;
-  groups?: FakeTimetableGroup[];
-};
+export type CreateTimetableEntryParameters = FakeTimetableEntry & { groups?: FakeTimetableGroup[] };
 export function createTimetableEntry(
   app: AppProvider,
   params?: CreateTimetableEntryParameters,
@@ -109,28 +104,35 @@ export function createTimetableEntry(
 ): Promise<FakeTimetableEntry>;
 export function createTimetableEntry(
   app: AppProvider,
-  {
-    startsAt = new Date(0),
-    occurrenceDuration = 0,
-    occurrencesCount = 1,
-    repeatEvery = 0,
-    groups = [],
-  }: CreateTimetableEntryParameters = {},
+  rawParams: CreateTimetableEntryParameters = {},
   onTheFly = false,
 ): Promise<FakeTimetableEntry> | FakeTimetableEntry {
+  const params = {
+    eventStart: new Date(0),
+    occurrenceDuration: 0,
+    occurrencesCount: 1,
+    repeatEvery: 0,
+    type: 'CUSTOM',
+    location: faker.address.cityName(),
+    groups: [],
+    ...rawParams,
+  } as typeof rawParams & {
+    eventStart: Date;
+    occurrenceDuration: number;
+    occurrencesCount: number;
+    repeatEvery: number;
+    type: TimetableEntryType;
+    location: string;
+    groups: [];
+  };
   const entry: FakeTimetableEntry = {};
   const createTimetableEntry = async () => {
     const createdEntry = await app()
       .get(PrismaService)
       .timetableEntry.create({
         data: {
-          eventStart: startsAt,
-          occurrenceDuration,
-          type: 'CUSTOM',
-          location: faker.address.cityName(),
-          occurrencesCount,
-          repeatEvery,
-          timetableGroups: { connect: groups.map((group) => ({ id: group.id })) },
+          timetableGroups: { connect: params.groups.map((group) => ({ id: group.id })) },
+          ...omit(params, 'groups', 'eventId', 'ueCourseId'),
         },
       });
     Object.assign(entry, createdEntry);
@@ -141,7 +143,7 @@ export function createTimetableEntry(
 
 export type CreateTimetableEntryOverrideParameters = {
   groups?: FakeTimetableGroup[];
-} & Partial<Omit<Prisma.TimetableEntryOverrideCreateInput, 'overrideTimetableEntry' | 'timetableGroup'>>;
+} & Partial<FakeTimetableEntryOverride>;
 export function createTimetableEntryOverride(
   app: AppProvider,
   timetableEntry: FakeTimetableEntry,
@@ -157,20 +159,24 @@ export function createTimetableEntryOverride(
 export function createTimetableEntryOverride(
   app: AppProvider,
   timetableEntry: FakeTimetableEntry,
-  { groups = [], ...data }: CreateTimetableEntryOverrideParameters,
+  rawParams: CreateTimetableEntryOverrideParameters = {},
   onTheFly = false,
 ): FakeTimetableEntryOverride | Promise<FakeTimetableEntryOverride> {
+  const params = {
+    groups: [],
+    applyFrom: 0,
+    applyUntil: 0,
+    ...rawParams,
+  } as typeof rawParams & { applyFrom: number; applyUntil: number };
   const override: FakeTimetableEntryOverride = {};
   const createTimetableEntryOverride = async () => {
     const createdOverride = await app()
       .get(PrismaService)
       .timetableEntryOverride.create({
         data: {
-          applyFrom: 0,
-          applyUntil: 0,
           overrideTimetableEntry: { connect: { id: timetableEntry.id } },
-          timetableGroups: { connect: groups.map((group) => ({ id: group.id })) },
-          ...data,
+          timetableGroups: { connect: params.groups.map((group) => ({ id: group.id })) },
+          ...omit(params, 'groups', 'overrideTimetableEntryId'),
         },
       });
     Object.assign(override, createdOverride);

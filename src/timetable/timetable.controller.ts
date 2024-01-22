@@ -1,15 +1,15 @@
 import {
   Body,
   ConflictException,
-  Controller,
+  Controller, Delete,
   Get,
   NotFoundException,
   Param,
   ParseIntPipe,
   Patch,
   Post,
-  UseGuards,
-} from '@nestjs/common';
+  UseGuards
+} from "@nestjs/common";
 import TimetableService from './timetable.service';
 import { JwtGuard } from '../auth/guard';
 import { GetUser } from '../auth/decorator';
@@ -18,6 +18,7 @@ import { regex, RegexPipe } from '../app.pipe';
 import TimetableCreateEntryDto from './dto/timetable-create-entry.dto';
 import TimetableUpdateEntryDto from './dto/timetable-update-entry.dto';
 import { DetailedEntry, ResponseDetailedEntry } from './interfaces/timetable.interface';
+import TimetableDeleteOccurrencesDto from "./dto/timetable-delete-occurrences.dto";
 
 @Controller('/timetable')
 export class TimetableController {
@@ -108,6 +109,31 @@ export class TimetableController {
     return this.formatEntryDetails(entry);
   }
 
+  @Delete('/current/:entryId')
+  @UseGuards(JwtGuard)
+  async deleteOccurrences(
+    @GetUser() user: User,
+    @Param('entryId', new RegexPipe(regex.uuid)) entryId: string,
+    @Body() body: TimetableDeleteOccurrencesDto,
+  ) {
+    if (!(await this.timetableService.entryExists(entryId, user.id))) {
+      throw new NotFoundException(`No entry with id ${entryId}`);
+    }
+    for (const groupId of body.for) {
+      if (!(await this.timetableService.groupExists(groupId, user.id))) {
+        throw new NotFoundException(`No group with id ${groupId}`);
+      }
+    }
+    const groups = await this.timetableService.getTimetableGroupsOfEntry(entryId);
+    for (const groupId of body.for) {
+      if (!groups.some((group) => group.id === groupId)) {
+        throw new ConflictException(`Group with id ${groupId} is not part of the timetable entry`);
+      }
+    }
+    const entry = await this.timetableService.deleteOccurrences(entryId, body, user.id);
+    return this.formatEntryDetails(entry);
+  }
+
   private formatEntryDetails(entry: DetailedEntry): ResponseDetailedEntry {
     return {
       id: entry.id,
@@ -135,6 +161,7 @@ export class TimetableController {
         lastOccurrenceOverride: entryOverride.applyUntil,
         overrideFrequency: entryOverride.repeatEvery,
         groups: entryOverride.timetableGroups.map((group) => group.id),
+        deletion: entryOverride.delete,
       })),
     };
   }

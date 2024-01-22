@@ -193,7 +193,7 @@ model TimetableEntryOverride {
   createdAt                DateTime @default(now())
   overrideTimetableEntryId String
 
-  overrideTimetableEntry TimetableEntry?  @relation(name: "overrideTimetableEntry", fields: [overrideTimetableEntryId], references: [id])
+  overrideTimetableEntry TimetableEntry?  @relation(name: "overrideTimetableEntry", fields: [overrideTimetableEntryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   timetableGroups        TimetableGroup[]
 }
 
@@ -222,8 +222,8 @@ model Translation {
 
 model UE {
   id              String   @id @default(uuid())
-  code            String   @db.VarChar(10) @unique
-  inscriptionCode String   @db.VarChar(4) @unique
+  code            String   @unique @db.VarChar(10)
+  inscriptionCode String   @unique @db.VarChar(4)
   name            String   @db.VarChar(255)
   validationRate  Float?
   createdAt       DateTime @default(now())
@@ -245,7 +245,7 @@ model UEAnnal {
   id            String    @id @default(uuid())
   filename      String    @db.VarChar(255)
   validatedById String
-  createdAt     DateTime @default(now())
+  createdAt     DateTime  @default(now())
   deletedAt     DateTime?
   UEId          String
   senderId      String
@@ -284,7 +284,7 @@ model UEComment {
   body        String    @db.Text
   isAnonymous Boolean
   createdAt   DateTime  @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
   UEId        String
   authorId    String
@@ -303,8 +303,8 @@ model UEComment {
 model UECommentReply {
   id        String    @id @default(uuid())
   body      String    @db.Text
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
   commentId String
   authorId  String
@@ -335,11 +335,11 @@ model UECommentReportReason {
 }
 
 model UECommentUpvote {
-  userId String
+  userId    String
   commentId String
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  comment UEComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment   UEComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
 
   @@id(fields: [userId, commentId])
 }
@@ -348,7 +348,7 @@ model UECourse {
   id         String     @id @default(uuid())
   type       CourseType
   room       String     @db.VarChar(50)
-  createdAt  DateTime @default(now())
+  createdAt  DateTime   @default(now())
   UEId       String
   semesterId String
 
@@ -364,8 +364,8 @@ model UECourseExchange {
   id             String    @id @default(uuid())
   stillAvailable Boolean
   body           String?   @db.Text
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
   deletedAt      DateTime?
   authorId       String
   courseFromId   String
@@ -380,8 +380,8 @@ model UECourseExchange {
 model UECourseExchangeReply {
   id         String    @id @default(uuid())
   body       String    @db.Text
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
   deletedAt  DateTime?
   authorId   String
   exchangeId String
@@ -440,7 +440,7 @@ model UEStarVote {
 
   UE        UE              @relation(fields: [UEId], references: [id], onDelete: Cascade)
   criterion UEStarCriterion @relation(fields: [criterionId], references: [id], onDelete: Cascade)
-  user      User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user      User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@unique([UEId, userId, criterionId])
 }
@@ -520,7 +520,7 @@ model User {
   permissionsAssigned   UserPermissionAssignement[] @relation(name: "permissions_assigned")
   courseExchanges       UECourseExchange[]
   courseExchangeReplies UECourseExchangeReply[]
-  commentUpvotes     UECommentUpvote[]
+  commentUpvotes        UECommentUpvote[]
   userTimetableGroup    UserTimetableGroup[]
 }
 
@@ -671,8 +671,8 @@ model UserTimestamps {
   id             String    @id @default(uuid())
   firstLoginDate DateTime?
   lastLoginDate  DateTime?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
   deletedAt      DateTime?
   userId         String    @unique
 

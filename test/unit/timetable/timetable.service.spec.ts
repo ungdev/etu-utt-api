@@ -22,7 +22,7 @@ const TimetableServiceUnitSpec = unitSuite('Timetable.service', (app) => {
     repeatEvery: 3_600_000,
     occurrenceDuration: 1_000_000,
     occurrencesCount: 4,
-    startsAt: new Date(0),
+    eventStart: new Date(0),
   }); // for everyone
   const overrideEntry = createTimetableEntryOverride(app, entry, {
     groups: [user1Group],
@@ -52,7 +52,7 @@ const TimetableServiceUnitSpec = unitSuite('Timetable.service', (app) => {
         groups: [user1Group],
         occurrencesCount: 10,
         occurrenceDuration: 10,
-        startsAt: new Date(0),
+        eventStart: new Date(0),
         repeatEvery: 1_000_000,
       },
       true,

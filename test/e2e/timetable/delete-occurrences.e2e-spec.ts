@@ -6,9 +6,9 @@ import { uuid } from 'pactum-matchers';
 import { faker } from '@faker-js/faker';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { createTimetableGroup } from '../../utils/fakedb';
-import TimetableUpdateEntryDto from '../../../src/timetable/dto/timetable-update-entry.dto';
+import TimetableDeleteOccurrencesDto from '../../../src/timetable/dto/timetable-delete-occurrences.dto';
 
-const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) => {
+const DeleteEntryE2ESpec = e2eSuite('DELETE /timetable/current/:entryId', (app) => {
   const user = fakedb.createUser(app);
   const userGroup = fakedb.createTimetableGroup(app, { users: [{ user, priority: 1 }] });
   const userOtherGroup = fakedb.createTimetableGroup(app, { users: [{ user, priority: 2 }] });
@@ -25,25 +25,24 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
     groups: [userGroup, userOtherGroup],
   });
   const otherEntry = fakedb.createTimetableEntry(app);
-  const dummyPayload = (overrides: Partial<TimetableUpdateEntryDto> = {}): TimetableUpdateEntryDto => ({
-    location: "bet you can't find it",
-    updateFrom: 0,
-    updateUntil: 0,
-    applyEvery: 1,
+  const dummyPayload = (overrides: Partial<TimetableDeleteOccurrencesDto> = {}): TimetableDeleteOccurrencesDto => ({
+    from: 0,
+    until: 0,
+    every: 1,
     for: [userGroup.id],
     ...overrides,
   });
 
   it('should fail as user is not authenticated', () =>
-    pactum.spec().patch(`/timetable/current/aaa`).expectStatus(HttpStatus.UNAUTHORIZED));
+    pactum.spec().delete(`/timetable/current/aaa`).expectStatus(HttpStatus.UNAUTHORIZED));
 
   it('should fail as entry id is invalid', () =>
-    pactum.spec().patch(`/timetable/current/aaa`).withBearerToken(user.token).expectStatus(HttpStatus.BAD_REQUEST));
+    pactum.spec().delete(`/timetable/current/aaa`).withBearerToken(user.token).expectStatus(HttpStatus.BAD_REQUEST));
 
   it('should fail as entry does not exist', () =>
     pactum
       .spec()
-      .patch(`/timetable/current/${faker.datatype.uuid()}`)
+      .delete(`/timetable/current/${faker.datatype.uuid()}`)
       .withBearerToken(user.token)
       .withJson(dummyPayload())
       .expectStatus(HttpStatus.NOT_FOUND));
@@ -51,7 +50,7 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
   it('should fail as entry does not belong to user', () =>
     pactum
       .spec()
-      .patch(`/timetable/current/${otherEntry.id}`)
+      .delete(`/timetable/current/${otherEntry.id}`)
       .withBearerToken(user.token)
       .withJson(dummyPayload())
       .expectStatus(HttpStatus.NOT_FOUND));
@@ -60,37 +59,35 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
     const emptyGroup = await createTimetableGroup(app, {}, true);
     await pactum
       .spec()
-      .patch(`/timetable/current/${otherEntry.id}`)
+      .delete(`/timetable/current/${otherEntry.id}`)
       .withBearerToken(user.token)
       .withJson(dummyPayload({ for: [emptyGroup.id] }))
       .expectStatus(HttpStatus.NOT_FOUND);
   });
 
-  it('should fail as we are trying to create an override with a group that is not in the entry', () =>
+  it('should fail as we are trying to delete an occurrence for a group the user is not in', () =>
     pactum
       .spec()
-      .patch(`/timetable/current/${entry.id}`)
+      .delete(`/timetable/current/${entry.id}`)
       .withBearerToken(user.token)
       .withJson(dummyPayload({ for: [userGroup.id, userThirdGroup.id] }))
       .expectStatus(HttpStatus.CONFLICT));
 
-  it('should update the whole entry', async () => {
-    const newLocation = faker.address.cityName();
+  it('should delete the whole entry', async () => {
     await pactum
       .spec()
-      .patch(`/timetable/current/${entry.id}`)
+      .delete(`/timetable/current/${entry.id}`)
       .withBearerToken(user.token)
       .withJson({
-        location: newLocation,
-        updateFrom: 0,
-        updateUntil: 2,
-        applyEvery: 1,
+        from: 0,
+        until: 2,
+        every: 1,
         for: [userGroup.id, userOtherGroup.id],
       })
       .expectStatus(HttpStatus.OK)
       .expectJson({
         id: entry.id,
-        location: newLocation,
+        location: entry.location,
         duration: entry.occurrenceDuration,
         firstRepetitionDate: new Date(0).toISOString(),
         lastRepetitionDate: new Date(20).toISOString(),
@@ -106,24 +103,64 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
             firstOccurrenceOverride: 1,
             lastOccurrenceOverride: 2,
             overrideFrequency: 1,
-            groups: [userOtherGroup.id, userGroup.id],
             deletion: false,
+            groups: [userOtherGroup.id, userGroup.id],
           },
         ],
       });
-    entry.location = newLocation;
+    await fakedb.createTimetableEntry(app, { ...entry, groups: [userGroup, userOtherGroup] }, true);
+    await fakedb.createTimetableEntryOverride(app, entry, { ...override, groups: [userGroup, userOtherGroup] }, true);
   });
 
-  it('should create a new override because the modification is not applied to all occurrences', async () => {
+  it('should convert the override to a deletion type', async () => {
     await pactum
       .spec()
-      .patch(`/timetable/current/${entry.id}`)
+      .delete(`/timetable/current/${entry.id}`)
       .withBearerToken(user.token)
       .withJson({
-        location: 'Somewhere else',
-        updateFrom: 0,
-        updateUntil: 1,
-        applyEvery: 1,
+        from: 1,
+        until: 2,
+        every: 1,
+        for: [userGroup.id, userOtherGroup.id],
+      })
+      .expectStatus(HttpStatus.OK)
+      .expectJson({
+        id: entry.id,
+        location: entry.location,
+        duration: entry.occurrenceDuration,
+        firstRepetitionDate: new Date(0).toISOString(),
+        lastRepetitionDate: new Date(20).toISOString(),
+        repetitionFrequency: 10,
+        repetitions: 3,
+        groups: [userOtherGroup.id, userGroup.id],
+        overrides: [
+          {
+            id: override.id,
+            firstRepetitionDate: new Date(10).toISOString(),
+            lastRepetitionDate: new Date(20).toISOString(),
+            firstOccurrenceOverride: 1,
+            lastOccurrenceOverride: 2,
+            overrideFrequency: 1,
+            deletion: true,
+            location: null,
+            groups: [userOtherGroup.id, userGroup.id],
+          },
+        ],
+      });
+    await app()
+      .get(PrismaService)
+      .timetableEntryOverride.update({ where: { id: override.id }, data: override });
+  });
+
+  it('should create a new override because the deletion is not applied to all occurrences', async () => {
+    await pactum
+      .spec()
+      .delete(`/timetable/current/${entry.id}`)
+      .withBearerToken(user.token)
+      .withJson({
+        from: 0,
+        until: 1,
+        every: 1,
         for: [userGroup.id, userOtherGroup.id],
       })
       .expectStatus(HttpStatus.OK)
@@ -139,14 +176,14 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
         overrides: [
           {
             id: uuid(),
-            location: 'Somewhere else',
+            location: null,
             firstRepetitionDate: new Date(0).toISOString(),
             lastRepetitionDate: new Date(10).toISOString(),
             firstOccurrenceOverride: 0,
             lastOccurrenceOverride: 1,
             overrideFrequency: 1,
+            deletion: true,
             groups: [userOtherGroup.id, userGroup.id],
-            deletion: false,
           },
           {
             id: override.id,
@@ -156,8 +193,8 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
             firstOccurrenceOverride: 1,
             lastOccurrenceOverride: 2,
             overrideFrequency: 1,
-            groups: [userOtherGroup.id, userGroup.id],
             deletion: false,
+            groups: [userOtherGroup.id, userGroup.id],
           },
         ],
       });
@@ -166,57 +203,15 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
       .timetableEntryOverride.deleteMany({ where: { NOT: { id: override.id } } });
   });
 
-  it('should update the override', async () => {
-    const newLocation = faker.address.cityName();
-    await pactum
-      .spec()
-      .patch(`/timetable/current/${entry.id}`)
-      .withBearerToken(user.token)
-      .withJson({
-        location: newLocation,
-        updateFrom: 1,
-        updateUntil: 2,
-        applyEvery: 1,
-        for: [userGroup.id, userOtherGroup.id],
-      })
-      .expectStatus(HttpStatus.OK)
-      .expectJson({
-        id: entry.id,
-        location: entry.location,
-        duration: entry.occurrenceDuration,
-        firstRepetitionDate: new Date(0).toISOString(),
-        lastRepetitionDate: new Date(20).toISOString(),
-        repetitionFrequency: 10,
-        repetitions: 3,
-        groups: [userOtherGroup.id, userGroup.id],
-        overrides: [
-          {
-            id: override.id,
-            location: newLocation,
-            firstRepetitionDate: new Date(10).toISOString(),
-            lastRepetitionDate: new Date(20).toISOString(),
-            firstOccurrenceOverride: 1,
-            lastOccurrenceOverride: 2,
-            overrideFrequency: 1,
-            groups: [userOtherGroup.id, userGroup.id],
-            deletion: false,
-          },
-        ],
-      });
-    override.location = newLocation;
-  });
-
   it('should create a new override as they are not for the same groups', async () => {
-    const newLocation = faker.address.cityName();
     await pactum
       .spec()
-      .patch(`/timetable/current/${entry.id}`)
+      .delete(`/timetable/current/${entry.id}`)
       .withBearerToken(user.token)
       .withJson({
-        location: newLocation,
-        updateFrom: 1,
-        updateUntil: 2,
-        applyEvery: 1,
+        from: 1,
+        until: 2,
+        every: 1,
         for: [userGroup.id],
       })
       .expectStatus(HttpStatus.OK)
@@ -238,19 +233,19 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
             firstOccurrenceOverride: 1,
             lastOccurrenceOverride: 2,
             overrideFrequency: 1,
-            groups: [userOtherGroup.id, userGroup.id],
             deletion: false,
+            groups: [userOtherGroup.id, userGroup.id],
           },
           {
             id: uuid(),
-            location: newLocation,
+            location: null,
             firstRepetitionDate: new Date(10).toISOString(),
             lastRepetitionDate: new Date(20).toISOString(),
             firstOccurrenceOverride: 1,
             lastOccurrenceOverride: 2,
             overrideFrequency: 1,
+            deletion: true,
             groups: [userGroup.id],
-            deletion: false,
           },
         ],
       });
@@ -260,4 +255,4 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
   });
 });
 
-export default UpdateEntryE2ESpec;
+export default DeleteEntryE2ESpec;

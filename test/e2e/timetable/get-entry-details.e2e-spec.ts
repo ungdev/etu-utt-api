@@ -38,6 +38,7 @@ const GetEntryDetailsE2ESpec = e2eSuite('GET /timetable/:entryId', (app) => {
           firstOccurrenceOverride: override2.applyFrom,
           lastOccurrenceOverride: override2.applyUntil,
           overrideFrequency: override2.repeatEvery,
+          deletion: false,
           groups: [user1OtherGroup.id],
         },
         {
@@ -48,6 +49,7 @@ const GetEntryDetailsE2ESpec = e2eSuite('GET /timetable/:entryId', (app) => {
           firstOccurrenceOverride: override1.applyFrom,
           lastOccurrenceOverride: override1.applyUntil,
           overrideFrequency: override1.repeatEvery,
+          deletion: false,
           groups: [user1Group.id],
         },
       ],

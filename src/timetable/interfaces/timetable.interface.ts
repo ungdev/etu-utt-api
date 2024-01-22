@@ -55,5 +55,6 @@ export interface ResponseDetailedEntry {
     lastOccurrenceOverride: number;
     overrideFrequency: number;
     groups: string[];
+    deletion: boolean;
   }>;
 }
