@@ -133,8 +133,8 @@ export class UEService {
   /**
    * Retrieves a {@link UEDetail}
    * @remarks The ue must exist
-   * @param code the inscriptionCode of the ue to retrieve
-   * @returns the {@link UEDetail} of the ue matching the given inscriptionCode
+   * @param code the code of the ue to retrieve
+   * @returns the {@link UEDetail} of the ue matching the given code
    */
   async getUE(code: string): Promise<UEDetail> {
     // Fetch an ue from the database. This ue shall not be returned as is because
@@ -142,7 +142,7 @@ export class UEService {
     const ue = await this.prisma.uE.findUnique(
       SelectUEDetail({
         where: {
-          inscriptionCode: code,
+          code,
         },
       }),
     );
@@ -193,7 +193,7 @@ export class UEService {
 
   /**
    * Retrieves a page of {@link UEComment} matching the user query
-   * @param ueCode the inscriptionCode of the UE
+   * @param ueCode the code of the UE
    * @param user the user fetching the comments. Used to determine if an anonymous comment should include its author
    * @param dto the query parameters of this route
    * @param bypassAnonymousData if true, the author of an anonymous comment will be included in the response (this is the case if the user is a moderator)
@@ -212,7 +212,7 @@ export class UEService {
         SelectComment({
           where: {
             UE: {
-              inscriptionCode: ueCode,
+              code: ueCode,
             },
           },
           orderBy: [
@@ -232,7 +232,7 @@ export class UEService {
         }),
       ),
       this.prisma.uEComment.count({
-        where: { UE: { inscriptionCode: ueCode } },
+        where: { UE: { code: ueCode } },
       }),
     ])) as [UERawComment[], number];
     // If the user is neither a moderator or the comment author, and the comment is anonymous,
@@ -305,14 +305,14 @@ export class UEService {
    * Retrieves the last semester done by a user for a given ue
    * @remarks The user must not be null
    * @param user the user to retrieve semesters of
-   * @param ueCode the inscriptionCode of the UE
+   * @param ueCode the code of the UE
    * @returns the last semester done by the {@link user} for the {@link ueCode | ue}
    */
   async getLastSemesterDoneByUser(user: User, ueCode: string) {
     const semester = await this.prisma.userUESubscription.findMany({
       where: {
         UE: {
-          inscriptionCode: ueCode,
+          code: ueCode,
         },
         userId: user.id,
       },
@@ -402,7 +402,7 @@ export class UEService {
             },
             UE: {
               connect: {
-                inscriptionCode: ueCode,
+                code: ueCode,
               },
             },
             semester: {

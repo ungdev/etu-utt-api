@@ -43,7 +43,7 @@ const GetCommentsE2ESpec = suite('GET /ue/{ueCode}/comments', (app) => {
   it('should return a 401 as user is not authenticated', () => {
     return pactum
       .spec()
-      .get(`/ue/${ue.inscriptionCode}/comments`)
+      .get(`/ue/${ue.code}/comments`)
       .expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
@@ -51,7 +51,7 @@ const GetCommentsE2ESpec = suite('GET /ue/{ueCode}/comments', (app) => {
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .get(`/ue/${ue.inscriptionCode}/comments`)
+      .get(`/ue/${ue.code}/comments`)
       .withQueryParams('page', -1)
       .expectAppError(ERROR_CODE.PARAM_NOT_POSITIVE, 'page');
   });
@@ -60,7 +60,7 @@ const GetCommentsE2ESpec = suite('GET /ue/{ueCode}/comments', (app) => {
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .get(`/ue/${ue.inscriptionCode.slice(0, 3)}/comments`)
+      .get(`/ue/${ue.code.slice(0, 3)}/comments`)
       .expectAppError(ERROR_CODE.NO_SUCH_UE, ue.code.slice(0, 3));
   });
 
@@ -68,7 +68,7 @@ const GetCommentsE2ESpec = suite('GET /ue/{ueCode}/comments', (app) => {
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .get(`/ue/${ue.inscriptionCode}/comments`)
+      .get(`/ue/${ue.code}/comments`)
       .expectUEComments({
         items: comments
           .sort((a, b) =>
@@ -108,7 +108,7 @@ const GetCommentsE2ESpec = suite('GET /ue/{ueCode}/comments', (app) => {
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .get(`/ue/${ue.inscriptionCode}/comments`)
+      .get(`/ue/${ue.code}/comments`)
       .withQueryParams('page', 2)
       .expectUEComments({
         items: comments
@@ -152,7 +152,7 @@ const GetCommentsE2ESpec = suite('GET /ue/{ueCode}/comments', (app) => {
     return pactum
       .spec()
       .withBearerToken(user2.token)
-      .get(`/ue/${ue.inscriptionCode}/comments`)
+      .get(`/ue/${ue.code}/comments`)
       .expectUEComments({
         items: comments
           .sort((a, b) =>

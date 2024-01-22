@@ -93,7 +93,7 @@ export type UEDetail = Omit<
  * const ue = await this.prisma.uE.findUnique(
  *   SelectUEDetail({
  *     where: {
- *       inscriptionCode: code,
+ *       code,
  *     },
  *   }),
  * );
