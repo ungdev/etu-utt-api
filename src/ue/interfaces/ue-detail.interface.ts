@@ -80,6 +80,24 @@ export type UEDetail = Omit<
   starVotes: { [key: string]: number };
 };
 
+/**
+ * Generates the argument to use in prisma function to retrieve an object containing the necessary
+ * properties to match against the {@link UEUnComputedDetail} type.
+ *
+ * In order to turn the {@link UEUnComputedDetail} into a {@link UEDetail}, you shall populate the `openSemester`
+ * and `starVotes` fields the same way as in {@link getUE}
+ * @param arg extra arguments to provide to the prisma function. This includes `where` or `data` fields
+ * @returns arguments to use in prisma function.
+ *
+ * @example
+ * const ue = await this.prisma.uE.findUnique(
+ *   SelectUEDetail({
+ *     where: {
+ *       inscriptionCode: code,
+ *     },
+ *   }),
+ * );
+ */
 export function SelectUEDetail<T>(arg: T): T & typeof UE_DETAIL_SELECT_FILTER {
   return {
     ...arg,

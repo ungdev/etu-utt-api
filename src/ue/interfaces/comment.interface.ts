@@ -53,6 +53,25 @@ export type UEComment = Omit<UERawComment, 'upvotes'> & {
   upvoted: boolean;
 };
 
+/**
+ * Generates the argument to use in prisma function to retrieve an object containing the necessary
+ * properties to match against the {@link UEComment} type.
+ * @param arg extra arguments to provide to the prisma function. This includes `where` or `data` fields
+ * @returns arguments to use in prisma function.
+ *
+ * @example
+ * const comment = await this.prisma.uEComment.update(
+ *   SelectComment({
+ *     where: {
+ *       id: commentId,
+ *     },
+ *     data: {
+ *       body: body.body,
+ *       isAnonymous: body.isAnonymous,
+ *     },
+ *   }),
+ * );
+ */
 export function SelectComment<T>(arg: T): T & typeof COMMENT_SELECT_FILTER {
   return {
     ...arg,

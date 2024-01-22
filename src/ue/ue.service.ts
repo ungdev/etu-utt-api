@@ -29,8 +29,20 @@ import { SelectRate, UERating } from './interfaces/rate.interface';
 export class UEService {
   constructor(readonly prisma: PrismaService, readonly config: ConfigService) {}
 
+  /**
+   * Retrieves a page of {@link UEOverView} matching the user query. This query searchs for a text in
+   * the ue code, name, comment, objectives and programme. The user can restrict his research to a branch,
+   * a filiere, a credit type or a semester.
+   * @param query the query parameters of this route
+   * @returns a page of {@link UEOverView} matching the user query
+   */
   async searchUEs(query: UESearchDto): Promise<Pagination<UEOverView>> {
+    // The where query object for prisma
     const where = {
+      // Search for the user query (if there is one)
+      // We're using this syntax not to have the `null` value in our filters
+      // because prisma handled `null` and `undefined` differently (only `undefined`
+      // is ignored whereas `null` matches the sql NULL value)
       ...(query.q
         ? {
             OR: [
@@ -61,6 +73,7 @@ export class UEService {
             ],
           }
         : {}),
+      // Filter per filiere and branch if such a filter is present
       ...(query.filiere || query.branch
         ? {
             filiere: {
@@ -77,6 +90,7 @@ export class UEService {
             },
           }
         : {}),
+      // Filter per credit type
       credits: {
         some: {
           category: {
@@ -84,12 +98,15 @@ export class UEService {
           },
         },
       },
+      // Filter per semester
       openSemester: {
         some: {
           code: query.availableAtSemester?.toUpperCase(),
         },
       },
     };
+    // Use a prisma transaction to execute two requests at once:
+    // We fetch a page of items matching our filters and retrieve the total count of items matching our filters
     const [items, itemCount] = await this.prisma.$transaction([
       this.prisma.uE.findMany(
         SelectUEOverview({
@@ -105,6 +122,7 @@ export class UEService {
       ),
       this.prisma.uE.count({ where }),
     ]);
+    // Data pagination
     return {
       items,
       itemCount,
@@ -112,7 +130,15 @@ export class UEService {
     };
   }
 
+  /**
+   * Retrieves a {@link UEDetail}
+   * @remarks The ue must exist
+   * @param code the inscriptionCode of the ue to retrieve
+   * @returns the {@link UEDetail} of the ue matching the given inscriptionCode
+   */
   async getUE(code: string): Promise<UEDetail> {
+    // Fetch an ue from the database. This ue shall not be returned as is because
+    // it is not formatted at that point.
     const ue = await this.prisma.uE.findUnique(
       SelectUEDetail({
         where: {
@@ -120,6 +146,7 @@ export class UEService {
         },
       }),
     );
+    // We store rates in a object where the key is the criterion id and the value is a list ratings
     const starVoteCriteria: {
       [key: string]: {
         createdAt: Date;
@@ -140,6 +167,8 @@ export class UEService {
           },
         ];
     }
+    // Compute ratings for each criterion, using an exponential decay function
+    // And turn semester into their respective code.
     return {
       ...ue,
       openSemester: ue.openSemester.map((semester) => semester.code),
@@ -162,12 +191,22 @@ export class UEService {
     };
   }
 
+  /**
+   * Retrieves a page of {@link UEComment} matching the user query
+   * @param ueCode the inscriptionCode of the UE
+   * @param user the user fetching the comments. Used to determine if an anonymous comment should include its author
+   * @param dto the query parameters of this route
+   * @param bypassAnonymousData if true, the author of an anonymous comment will be included in the response (this is the case if the user is a moderator)
+   * @returns a page of {@link UEComment} matching the user query
+   */
   async getComments(
     ueCode: string,
     user: User,
     dto: GetUECommentsDto,
     bypassAnonymousData: boolean,
   ): Promise<Pagination<UEComment>> {
+    // Use a prisma transaction to execute two requests at once:
+    // We fetch a page of comments matching our filters and retrieve the total count of comments matching our filters
     const [comments, commentCount] = (await this.prisma.$transaction([
       this.prisma.uEComment.findMany(
         SelectComment({
@@ -196,6 +235,8 @@ export class UEService {
         where: { UE: { inscriptionCode: ueCode } },
       }),
     ])) as [UERawComment[], number];
+    // If the user is neither a moderator or the comment author, and the comment is anonymous,
+    // we remove the author from the response
     for (const comment of comments)
       if (
         comment.isAnonymous &&
@@ -203,6 +244,7 @@ export class UEService {
         comment.author.id !== user.id
       )
         delete comment.author;
+    // Data pagination
     return {
       items: comments.map((comment) => ({
         ...comment,
@@ -214,6 +256,13 @@ export class UEService {
     };
   }
 
+  /**
+   * Checks whether a user is the author of a comment
+   * @remarks The comment must exist and user must not be null
+   * @param user the user to check
+   * @param commentId the comment to check
+   * @returns whether the {@link user} is the author of the {@link commentId | comment}
+   */
   async isUserCommentAuthor(user: User, commentId: string) {
     const comment = await this.prisma.uEComment.findUnique({
       where: {
@@ -223,6 +272,11 @@ export class UEService {
     return comment.authorId == user.id;
   }
 
+  /**
+   * Checks whether a reply exists
+   * @param replyId the id of the reply to check
+   * @returns whether the {@link replyId | reply} exists
+   */
   async doesReplyExist(replyId: string) {
     return !!(await this.prisma.uECommentReply.findUnique({
       where: {
@@ -231,6 +285,13 @@ export class UEService {
     }));
   }
 
+  /**
+   * Checks whether a user is the author of a reply
+   * @remarks The reply must exist and user must not be null
+   * @param user the user to check
+   * @param replyId the reply to check
+   * @returns whether the {@link user} is the author of the {@link replyId | reply}
+   */
   async isUserCommentReplyAuthor(user: User, replyId: string) {
     const reply = await this.prisma.uECommentReply.findUnique({
       where: {
@@ -240,8 +301,15 @@ export class UEService {
     return reply.authorId == user.id;
   }
 
+  /**
+   * Retrieves the last semester done by a user for a given ue
+   * @remarks The user must not be null
+   * @param user the user to retrieve semesters of
+   * @param ueCode the inscriptionCode of the UE
+   * @returns the last semester done by the {@link user} for the {@link ueCode | ue}
+   */
   async getLastSemesterDoneByUser(user: User, ueCode: string) {
-    const semester = await this.prisma.userUESubscription.findFirst({
+    const semester = await this.prisma.userUESubscription.findMany({
       where: {
         UE: {
           inscriptionCode: ueCode,
@@ -249,9 +317,19 @@ export class UEService {
         userId: user.id,
       },
     });
-    return semester;
+    // Sort semester by year then by semester type. Pick the last one (ie. first one in the array)
+    return semester.sort((a, b) => {
+      const diff =
+        Number(b.semesterId.slice(1)) - Number(a.semesterId.slice(1));
+      return diff == 0 ? a.semesterId.localeCompare(b.semesterId) : diff;
+    })[0];
   }
 
+  /**
+   * Checks whether an ue exists
+   * @param ueCode the code of the ue to check
+   * @returns whether the ue exists
+   */
   async doesUEExist(ueCode: string) {
     return !!(await this.prisma.uE.findUnique({
       where: {
@@ -260,16 +338,32 @@ export class UEService {
     }));
   }
 
+  /**
+   * Checks whether a user has already done an ue
+   * @remarks The user must not be null
+   * @param user the user to check
+   * @param ueCode the code of the ue to check
+   * @returns whether the {@link user} has already done the {@link ueCode | ue}
+   */
   async hasAlreadyDoneThisUE(user: User, ueCode: string) {
     return (await this.getLastSemesterDoneByUser(user, ueCode)) != null;
   }
 
+  /**
+   * Checks whether a user has already posted a comment for an ue
+   * @remarks The user must not be null and UE must exist
+   * @param user the user to check
+   * @param ueCode the code of the ue to check
+   * @returns whether the {@link user} has already posted a comment for the {@link ueCode | ue}
+   */
   async hasAlreadyPostedAComment(user: User, ueCode: string) {
+    // Find the UE
     const ue = await this.prisma.uE.findUnique({
       where: {
         code: ueCode,
       },
     });
+    // Find a comment (in the UE) whoose author is the user
     const comment = await this.prisma.uEComment.findUnique({
       where: {
         UEId_authorId: {
@@ -281,6 +375,14 @@ export class UEService {
     return comment != null;
   }
 
+  /**
+   * Creates a comment for an ue
+   * @remarks The user must not be null and UE must exist
+   * @param body the body of the request
+   * @param user the user posting the comment
+   * @param ueCode the code of the ue to post the comment to
+   * @returns the created {@link UEComment}
+   */
   async createComment(
     body: UeCommentPostDto,
     user: User,
@@ -305,6 +407,7 @@ export class UEService {
             },
             semester: {
               connect: {
+                // Use last semester done when creating the comment
                 code: (
                   await this.getLastSemesterDoneByUser(user, ueCode)
                 ).semesterId,
@@ -313,11 +416,20 @@ export class UEService {
           },
         }),
       )),
+      // The comment has no upvotes yet
       upvotes: 0,
       upvoted: false,
     };
   }
 
+  /**
+   * Updates a comment
+   * @remaks The comment must exist and the user must not be null
+   * @param body the updates to apply to the comment
+   * @param commentId the id of the comment
+   * @param user the user updating the comment
+   * @returns the updated comment
+   */
   async updateComment(
     body: UeCommentUpdateDto,
     commentId: string,
@@ -341,6 +453,13 @@ export class UEService {
     };
   }
 
+  /**
+   * Checks whether a user has already upvoted a comment
+   * @remarks The user must not be null
+   * @param user the user to check
+   * @param commentId the id of the comment to check
+   * @returns whether the {@link user} has already upvoted the {@link commentId | comment}
+   */
   async hasAlreadyUpvoted(user: User, commentId: string) {
     const commentUpvote = await this.prisma.uECommentUpvote.findUnique({
       where: {
@@ -353,6 +472,11 @@ export class UEService {
     return commentUpvote != null;
   }
 
+  /**
+   * Checks whether a comment exists
+   * @param commentId the id of the comment to check
+   * @returns whether the {@link commentId | comment} exists
+   */
   async doesCommentExist(commentId: string) {
     return this.prisma.uEComment.findUnique({
       where: {
@@ -361,6 +485,14 @@ export class UEService {
     });
   }
 
+  /**
+   * Creates a reply to a comment
+   * @remarks The user must not be null and the comment must exist
+   * @param user the user posting the reply
+   * @param commentId the id of the comment to reply to
+   * @param reply the reply to post
+   * @returns the created {@link UECommentReply}
+   */
   async replyComment(
     user: User,
     commentId: string,
@@ -377,6 +509,13 @@ export class UEService {
     );
   }
 
+  /**
+   * Updates a reply
+   * @remarks The {@link replyId | reply} must exist
+   * @param replyId the id of the reply to edit
+   * @param reply the modifications to apply to the reply
+   * @returns the updated {@link UECommentReply}
+   */
   async editReply(
     replyId: string,
     reply: CommentReplyDto,
@@ -393,6 +532,12 @@ export class UEService {
     );
   }
 
+  /**
+   * Deletes a reply
+   * @remarks The {@link replyId | reply} must exist
+   * @param replyId the id of the reply to delete
+   * @returns the deleted {@link UECommentReply}
+   */
   async deleteReply(replyId: string): Promise<UECommentReply> {
     return this.prisma.uECommentReply.delete(
       SelectCommentReply({
@@ -403,6 +548,12 @@ export class UEService {
     );
   }
 
+  /**
+   * Upvote a comment for a specific user
+   * @remarks The user must not be null and the comment must exist
+   * @param user the user upvoting the comment
+   * @param commentId the id of the comment to upvote
+   */
   async upvoteComment(user: User, commentId: string) {
     await this.prisma.uECommentUpvote.create({
       data: {
@@ -412,6 +563,12 @@ export class UEService {
     });
   }
 
+  /**
+   * Un-upvote a comment for a specific user
+   * @remarks The user must not be null and the comment must exist
+   * @param user the user un-upvoting the comment
+   * @param commentId the id of the comment to un-upvote
+   */
   async deUpvoteComment(user: User, commentId: string) {
     await this.prisma.uECommentUpvote.delete({
       where: {
@@ -423,6 +580,13 @@ export class UEService {
     });
   }
 
+  /**
+   * Deletes a comment
+   * @remarks The {@link commentId | comment} must exist
+   * @param commentId the if of the comment to delete
+   * @param user the user deleting the comment
+   * @returns the deleted {@link UEComment}
+   */
   async deleteComment(commentId: string, user: User): Promise<UEComment> {
     const comment = await this.prisma.uEComment.delete(
       SelectComment({
@@ -438,6 +602,11 @@ export class UEService {
     };
   }
 
+  /**
+   * Checks whether a criterion exists
+   * @param criterionId the id of the criterion to check
+   * @returns whether the {@link criterionId | criterion} exists
+   */
   async doesCriterionExist(criterionId: string) {
     return !!(await this.prisma.uEStarCriterion.findUnique({
       where: {
@@ -446,6 +615,10 @@ export class UEService {
     }));
   }
 
+  /**
+   * Retrieves a list of all available criteria
+   * @returns the list of all criteria
+   */
   async getRateCriteria(): Promise<Criterion[]> {
     return this.prisma.uEStarCriterion.findMany(
       SelectCriterion({
@@ -456,6 +629,13 @@ export class UEService {
     );
   }
 
+  /**
+   * Retrieves the user ratings of a given ue
+   * @remarks The user must not be null and the ue must exist
+   * @param user the user fetching his ratings
+   * @param ueCode the code of the ue to fetch the rates of
+   * @returns the rates of the {@link ueCode | ue} for the {@link user}
+   */
   async getRateUE(user: User, ueCode: string): Promise<UERating[]> {
     const UE = await this.prisma.uE.findUnique({
       where: {
@@ -477,6 +657,14 @@ export class UEService {
     );
   }
 
+  /**
+   * Creates or updates a rating for a given ue
+   * @remarks The user must not be null and the ue must exist
+   * @param user the user rating the ue
+   * @param ueCode the code of the ue to rate
+   * @param dto the rating to apply
+   * @returns the new rate of the {@link ueCode | ue} for the {@link user}
+   */
   async doRateUE(
     user: User,
     ueCode: string,

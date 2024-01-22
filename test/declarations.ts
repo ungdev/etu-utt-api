@@ -9,9 +9,11 @@ import { UEDetail } from 'src/ue/interfaces/ue-detail.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { UERating } from 'src/ue/interfaces/rate.interface';
 
+/** Shortcut function for `this.expectStatus(200).expectJsonLike` */
 function expect<T>(obj: JsonLikeVariant<T>) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonLike(obj);
 }
+/** Shortcut function for `this.expectStatus(200|204).expectJsonLike` */
 function expectOkOrCreate<T>(obj: JsonLikeVariant<T>, created = false) {
   return (<Spec>this)
     .expectStatus(created ? HttpStatus.CREATED : HttpStatus.OK)

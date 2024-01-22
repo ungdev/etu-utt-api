@@ -1,5 +1,17 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 
+/**
+ * Error codes
+ * @enum {number} ERROR_CODE - Error codes used in the API to identify errors and send the correct
+ * HTTP status code and message to the client.
+ * All error data is stored in {@link ErrorData}.
+ *
+ * Guide lines for error codes:
+ * - 1xxx: Authentication errors
+ * - 2xxx: Parameter errors
+ * - 3xxx: Permission errors. This includes all http 403 errors.
+ * - 4xxx: Resource errors. This includes all http 404 errors.
+ */
 export const enum ERROR_CODE {
   NOT_LOGGED_IN = 1001,
   PARAM_MALFORMED = 2001,
@@ -16,7 +28,6 @@ export const enum ERROR_CODE {
   PARAM_TOO_HIGH = 2012,
   NOT_AN_UUID = 2101,
   FORBIDDEN_NOT_ENOUGH_PERMISSIONS = 3001,
-  FORBIDDEN_NOT_LOGGED_IN = 3002,
   FORBIDDEN_ALREADY_COMMENTED = 3101,
   NOT_COMMENT_AUTHOR = 4221,
   NOT_ALREADY_DONE_UE = 4222,
@@ -28,6 +39,11 @@ export const enum ERROR_CODE {
   NO_SUCH_CRITERION = 4404,
 }
 
+/**
+ * Error data for each error code used in the API.
+ * This is used to send the correct HTTP status code and message to the client.
+ * The message can contain a `%` character, which will be replaced by the extra message passed to the {@link AppException} constructor.
+ */
 export const ErrorData: Readonly<{
   [error in ERROR_CODE]: {
     message: string;
@@ -94,10 +110,6 @@ export const ErrorData: Readonly<{
     message: 'Missing permission %',
     httpCode: HttpStatus.FORBIDDEN,
   },
-  [ERROR_CODE.FORBIDDEN_NOT_LOGGED_IN]: {
-    message: 'You must be logged in to access this page',
-    httpCode: HttpStatus.UNAUTHORIZED,
-  },
   [ERROR_CODE.FORBIDDEN_ALREADY_COMMENTED]: {
     message: 'You have already posted a comment for this UE',
     httpCode: HttpStatus.FORBIDDEN,
@@ -136,6 +148,11 @@ export const ErrorData: Readonly<{
   },
 });
 
+/**
+ * Custom exception class used to send the correct HTTP status code and message to the client.
+ * It extends the {@link HttpException} in order to be handled by the default exception filter
+ * and return an http error with proper format.
+ */
 export class AppException extends HttpException {
   constructor(code: ERROR_CODE, extraMessage?: string) {
     super(

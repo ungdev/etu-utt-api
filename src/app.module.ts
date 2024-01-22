@@ -24,6 +24,8 @@ import { JwtGuard } from './auth/guard';
     UsersModule,
     UEModule,
   ],
+  // The providers below are used for all the routes of the api.
+  // For example, the JwtGuard is used for all the routes and checks whether the user is authentified.
   providers: [
     {
       provide: APP_GUARD,
