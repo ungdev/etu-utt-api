@@ -20,6 +20,7 @@ const SignInE2ESpec = e2eSuite('Signin', (app) => {
         lastName: 'sebastien',
         password: dto.password,
         birthday: new Date(Date.now()),
+        role: 'STUDENT',
       });
   });
 

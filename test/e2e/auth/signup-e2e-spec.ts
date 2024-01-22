@@ -11,6 +11,7 @@ const SignupE2ESpec = e2eSuite('Signup', (app) => {
     lastName: 'testLastName',
     studentId: 44250,
     sex: 'OTHER',
+    role: 'STUDENT',
     birthday: new Date('1999-01-01'),
   } as AuthSignUpDto;
 

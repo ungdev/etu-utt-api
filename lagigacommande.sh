@@ -1,1 +1,0 @@
-grep -oE "model\s+([^ {]+)\s+{" prisma/schema.prisma | awk '{print "  " tolower(substr($2,1,1)) substr($2,2)": Prisma." $2 "CreateInput,"}' | sed -e '1i type PrismaTypes = {' -e '$a}' > test/utils/prisma.types.d.ts

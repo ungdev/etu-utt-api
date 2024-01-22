@@ -1,5 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
-import { JwtGuard } from '../auth/guard';
+import { BadRequestException, Body, Controller, Get, Post } from '@nestjs/common';
 import { GetUser } from '../auth/decorator';
 import { PrismaService } from '../prisma/prisma.service';
 import { User } from '../users/interfaces/user.interface';
@@ -10,7 +9,6 @@ export class ProfileController {
   constructor(private prisma: PrismaService) {}
 
   @Get()
-  @UseGuards(JwtGuard)
   async getProfile(@GetUser() user: User) {
     return {
       id: user.id,
@@ -27,7 +25,6 @@ export class ProfileController {
   }
 
   @Post()
-  @UseGuards(JwtGuard)
   async updateProfile(@GetUser() user: User, @Body() dto: ProfileUpdateDto) {
     if (dto.nickname === undefined && dto.website === undefined && dto.passions === undefined) {
       throw new BadRequestException('You must provide at least one field to update');

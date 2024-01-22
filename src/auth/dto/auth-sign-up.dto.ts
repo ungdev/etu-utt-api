@@ -2,7 +2,7 @@ import { IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from 'clas
 import { AuthSignInDto } from './auth-sign-in.dto';
 import { IsPositive } from 'class-validator';
 import { Type } from 'class-transformer';
-import { Sex } from '@prisma/client';
+import { Sex, UserRole } from '@prisma/client';
 
 export class AuthSignUpDto extends AuthSignInDto {
   @IsString()
@@ -27,4 +27,8 @@ export class AuthSignUpDto extends AuthSignInDto {
   @IsNotEmpty()
   @Type(() => Date)
   birthday: Date;
+
+  @IsEnum(UserRole)
+  @IsNotEmpty()
+  role: UserRole;
 }

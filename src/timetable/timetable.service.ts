@@ -353,10 +353,13 @@ export default class TimetableService {
         await this.prisma.userTimetableGroup.findMany({
           where: {
             timetableGroup: {
-              // Take the row where the group id is one of the ids of one of the group of one of the override
-              OR: entry.overwrittenBy.map((override) => ({
-                OR: override.timetableGroups.map((group) => ({ id: group.id })),
-              })),
+              OR: [
+                ...entry.timetableGroups.map((group) => ({ id: group.id })),
+                // Take the row where the group id is one of the ids of one of the group of one of the override
+                ...entry.overwrittenBy.map((override) => ({
+                  OR: override.timetableGroups.map((group) => ({ id: group.id })),
+                })),
+              ],
             },
           },
           include: { timetableGroup: true },
@@ -374,6 +377,12 @@ export default class TimetableService {
       -timetableGroupPriorities[group.id].priority,
       -timetableGroupPriorities[group.id].createdAt.getTime(),
     ]);
+    entry.overwrittenBy.forEach((override) => {
+      sortArray(override.timetableGroups, (group) => [
+        -timetableGroupPriorities[group.id].priority,
+        timetableGroupPriorities[group.id].createdAt.getTime(),
+      ]);
+    });
   }
 
   async groupExists(groupId: string, userId: string) {

@@ -9,7 +9,7 @@ export function fakeUser(): User {
     studentId: faker.datatype.number(),
     login: faker.datatype.string(),
     RGPDId: faker.datatype.uuid(),
-    roles: {},
+    role: 'STUDENT',
     hash: '', // TODO : find how to hash the password : etuutt
   };
 }

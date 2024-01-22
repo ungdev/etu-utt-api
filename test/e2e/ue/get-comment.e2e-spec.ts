@@ -1,0 +1,156 @@
+import * as pactum from 'pactum';
+import { e2eSuite } from '../../utils/test_utils';
+import { createComment, createUE, createUser, upvoteComment } from '../../utils/fakedb';
+import { ConfigService } from '@nestjs/config';
+import { UEComment } from '../../../src/ue/interfaces/comment.interface';
+import { UEService } from '../../../src/ue/ue.service';
+import { UECommentReply } from '../../../src/ue/interfaces/comment-reply.interface';
+import { ERROR_CODE } from 'src/exceptions';
+
+const GetCommentsE2ESpec = e2eSuite('GET /ue/{ueCode}/comments', (app) => {
+  const user = createUser(app);
+  const user2 = createUser(app);
+  const ue = createUE(app, {
+    code: `XX01`,
+    semester: 'A24',
+  });
+  const comments: UEComment[] = [];
+  comments.push(createComment(app, ue, user, true) as UEComment);
+  upvoteComment(app, user2, comments[0]);
+  for (let i = 1; i < 30; i++) {
+    const commentAuthor = createUser(app);
+    comments.push(createComment(app, ue, commentAuthor, i % 2 === 0) as UEComment);
+  }
+
+  beforeAll(async () => {
+    comments[0].answers.push(
+      (await app().get(UEService).replyComment(user, comments[0].id, {
+        body: 'HelloWorld',
+      })) as UECommentReply,
+    );
+  });
+
+  it('should return a 401 as user is not authenticated', () => {
+    return pactum.spec().get(`/ue/${ue.inscriptionCode}/comments`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
+  });
+
+  it('should return a 400 as user uses a wrong page', () => {
+    return pactum
+      .spec()
+      .withBearerToken(user.token)
+      .get(`/ue/${ue.inscriptionCode}/comments`)
+      .withQueryParams('page', -1)
+      .expectAppError(ERROR_CODE.PARAM_NOT_POSITIVE, 'page');
+  });
+
+  it('should return a 404 because UE does not exist', () => {
+    return pactum
+      .spec()
+      .withBearerToken(user.token)
+      .get(`/ue/${ue.inscriptionCode.slice(0, 3)}/comments`)
+      .expectAppError(ERROR_CODE.NO_SUCH_UE, ue.code.slice(0, 3));
+  });
+
+  it('should return the first page of comments', () => {
+    return pactum
+      .spec()
+      .withBearerToken(user.token)
+      .get(`/ue/${ue.inscriptionCode}/comments`)
+      .expectUEComments({
+        items: comments
+          .sort((a, b) =>
+            b.upvotes - a.upvotes == 0
+              ? (<Date>b.createdAt).getTime() - (<Date>a.createdAt).getTime()
+              : b.upvotes - a.upvotes,
+          )
+          .slice(0, Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')))
+          .map((comment) => ({
+            ...comment,
+            answers: comment.answers.map((answer) => ({
+              ...answer,
+              createdAt: `${(<Date>answer.createdAt).toISOString()}`,
+              updatedAt: `${(<Date>answer.updatedAt).toISOString()}`,
+            })),
+            updatedAt: `${(<Date>comment.updatedAt).toISOString()}`,
+            createdAt: `${(<Date>comment.createdAt).toISOString()}`,
+          }))
+          .map((comment) => {
+            if (comment.isAnonymous && comment.author.id !== user.id) delete comment.author;
+            return comment;
+          }),
+        itemCount: comments.length,
+        itemsPerPage: Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')),
+      });
+  });
+
+  it('should return the second page of comments', () => {
+    return pactum
+      .spec()
+      .withBearerToken(user.token)
+      .get(`/ue/${ue.inscriptionCode}/comments`)
+      .withQueryParams('page', 2)
+      .expectUEComments({
+        items: comments
+          .sort((a, b) =>
+            b.upvotes - a.upvotes == 0
+              ? (<Date>b.createdAt).getTime() - (<Date>a.createdAt).getTime()
+              : b.upvotes - a.upvotes,
+          )
+          .slice(
+            Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')),
+            Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')) * 2,
+          )
+          .map((comment) => ({
+            ...comment,
+            answers: comment.answers.map((answer) => ({
+              ...answer,
+              createdAt: `${(<Date>answer.createdAt).toISOString()}`,
+              updatedAt: `${(<Date>answer.updatedAt).toISOString()}`,
+            })),
+            updatedAt: `${(<Date>comment.updatedAt).toISOString()}`,
+            createdAt: `${(<Date>comment.createdAt).toISOString()}`,
+          }))
+          .map((comment) => {
+            if (comment.isAnonymous && comment.author.id !== user.id) delete comment.author;
+            return comment;
+          }),
+        itemCount: comments.length,
+        itemsPerPage: Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')),
+      });
+  });
+
+  it('should return the first page of comments with hidden anonymous authors', () => {
+    comments[0].upvoted = true;
+    return pactum
+      .spec()
+      .withBearerToken(user2.token)
+      .get(`/ue/${ue.inscriptionCode}/comments`)
+      .expectUEComments({
+        items: comments
+          .sort((a, b) =>
+            b.upvotes - a.upvotes == 0
+              ? (<Date>b.createdAt).getTime() - (<Date>a.createdAt).getTime()
+              : b.upvotes - a.upvotes,
+          )
+          .slice(0, Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')))
+          .map((comment) => ({
+            ...comment,
+            answers: comment.answers.map((answer) => ({
+              ...answer,
+              createdAt: `${(<Date>answer.createdAt).toISOString()}`,
+              updatedAt: `${(<Date>answer.updatedAt).toISOString()}`,
+            })),
+            updatedAt: `${(<Date>comment.updatedAt).toISOString()}`,
+            createdAt: `${(<Date>comment.createdAt).toISOString()}`,
+          }))
+          .map((comment) => {
+            if (comment.isAnonymous && comment.author.id !== user2.id) delete comment.author;
+            return comment;
+          }),
+        itemCount: comments.length,
+        itemsPerPage: Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')),
+      });
+  });
+});
+
+export default GetCommentsE2ESpec;

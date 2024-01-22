@@ -4,8 +4,14 @@ import { AuthSignUpDto } from '../../src/auth/dto';
 import { AuthService } from '../../src/auth/auth.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { AppProvider } from './test_utils';
-import { Prisma, PrismaClient } from '@prisma/client';
-import { PrismaTypes } from './prisma.types';
+import { Prisma } from '@prisma/client';
+import { User } from '../../src/prisma/types';
+import { SelectUEOverview, UEOverView } from '../../src/ue/interfaces/ue-overview.interface';
+import { SelectUEDetail, UEDetail } from '../../src/ue/interfaces/ue-detail.interface';
+import { Criterion, SelectCriterion } from '../../src/ue/interfaces/criterion.interface';
+import { UEComment } from '../../src/ue/interfaces/comment.interface';
+import { UEService } from '../../src/ue/ue.service';
+import { UECommentReply } from '../../src/ue/interfaces/comment-reply.interface';
 
 export type FakeUser = Partial<RawUser & { token: string }>;
 export type FakeTimetableGroup = Partial<RawTimetableGroup>;
@@ -22,14 +28,28 @@ export function createUser(app: AppProvider): FakeUser {
     firstName: 'user',
     birthday: new Date(Date.now()),
     password: 'password',
-  } as AuthSignUpDto;
-  const userWithToken: Partial<RawUser & { token: string }> = {};
+    role: 'STUDENT',
+  } as AuthSignUpDto & User;
+  const userWithToken: Partial<User & { token: string }> = {};
   beforeAll(async () => {
     userWithToken.token = await app().get(AuthService).signup(userData);
-    const user = await app().get(PrismaService).user.findUnique({ where: { login } });
-    for (const [key, value] of Object.entries(user)) {
-      userWithToken[key] = value;
-    }
+    const user = await app()
+      .get(PrismaService)
+      .user.findUnique({
+        where: { login },
+        include: {
+          infos: true,
+          permissions: {
+            select: {
+              userPermissionId: true,
+            },
+          },
+        },
+      });
+    const permissions = user.permissions.map((perm) => perm.userPermissionId);
+    delete user.permissions;
+    Object.assign(userWithToken, user);
+    userWithToken.permissions = permissions;
   });
   return userWithToken;
 }
@@ -159,92 +179,296 @@ export function createTimetableEntryOverride(
   return onTheFly ? (promise as Promise<void>).then(() => override) : override;
 }
 
-/*export function createTimetableEntryOverride2(app: AppProvider, data) {
-  return create2(app, 'timetableEntryOverride', { applyFrom: 0, applyUntil: 0 }, data);
-}*/
-/*
-export function create<
-  T2 extends TypeMap<PrismaClient
-  Table extends { create: (arg: { data: Data & Connections }) => Promise<ReturnType> },
-  Data,
-  Connections extends Array<{fieldName: string, id: string /!*; [key: string]: any*!/ }>,
-  ReturnType,
->(app: AppProvider, table: Table, default_: Data, data: Partial<Data> = {}, connections: Connections): Partial<ReturnType> {
-  const row: Partial<ReturnType> = {};
-  beforeAll(async () => {
-    const createdRow = await app().get(PrismaService)[table].create({ data: { ...default_, ...data, ...connections.map((c) => ({[fieldName]: {connect: }})) } });
-    Object.assign(row, createdRow);
-  });
-  return row;
-}*/
-
-/*type AllData<Table extends Prisma.TypeMap['meta']['modelProps']> = Parameters<
-  PrismaClient[Table]['create']
->[0] extends Prisma.SelectSubset<{ data: infer D }, any>
-  ? D
-  : never;
-type NormalData<Table extends Prisma.TypeMap['meta']['modelProps']> = AllData<Table> extends Prisma.XOR<
-  infer A,
-  infer B
->
-  ? Pick<A, keyof B & keyof A>
-  : never;
-type Connections<Table extends Prisma.TypeMap['meta']['modelProps']> = AllData<Table> extends Prisma.XOR<
-  infer A,
-  infer B
->
-  ? Omit<B, keyof A>
-  : never;*/
-type Fake<Table extends Prisma.TypeMap['meta']['modelProps']> = ReturnType<PrismaClient[Table]['create']>;
-
-// type E<T> = {[]}
-// type A = Parameters<PrismaClient<infer T>["timetableEntry"]['create']>[0] extends Prisma.SelectSubset<any, infer R<T>> ? true: false;
-// type B = Connections<"timetableEntry">;
-// type C = Prisma.XOR<Prisma.TimetableEntryCreateInput, Prisma.TimetableEntryUncheckedCreateInput> extends Prisma.XOR<infer A, infer B> ? keyof B : never;
-// type D = keyof AllData<"timetableEntry">;
-
-type T = Prisma.TypeMap['meta']['modelProps'];
-
-//type A = '' extends keyof PrismaTypes ? true : false;
-// type a = keyof typeof Prisma & `Timetable${string}`;
-type EEEE<Table extends Prisma.TypeMap['meta']['modelProps']> = Table extends keyof PrismaTypes
-  ? PrismaTypes[Table]
-  : never;
-type rel<Table extends Prisma.TypeMap['meta']['modelProps']> = {
-  [K in keyof EEEE<Table> as Required<EEEE<Table>[K]> extends { create: object } ? K : never]: EEEE<Table>[K];
+type UECreationOptions<T extends boolean> = {
+  code?: string;
+  category?: string;
+  filiere?: string;
+  branch?: string;
+  semester?: string;
+  forOverview?: T;
 };
-//type E = keyof rel<'timetableEntry'>;
-type nonRel<Table extends Prisma.TypeMap['meta']['modelProps']> = {
-  [K in Exclude<keyof EEEE<Table>, keyof rel<Table>>]: EEEE<Table>[K];
-};
-//type E2 = keyof nonRel<'timetableEntry'>;
-
-type E2 = rel<'timetableEntryOverride'>;
-type relArgs<Table extends T> = {
-  [K in keyof rel<Table>]: rel<Table>[K] /*extends { connect: any } ? true : false*/;
-};
-type E3 = relArgs<'timetableEntryOverride'>;
-
-//const a: E3;
-
-// type ajkj = rel<"timetableEntry">;
-//
-// type nonRel<Table extends Prisma.TypeMap['meta']['modelProps']> = {[ K in Exclude<keyof AllData<Table>, keyof rel<Table>>]: AllData<Table>[K]};
-// type hgjgj = nonRel<"timetableEntry">;
-
-export function create2<Table extends Prisma.TypeMap['meta']['modelProps']>(
+export function createUE<T extends boolean = false>(
   app: AppProvider,
-  table: Table,
-  default_: nonRel<Table>,
-  data: Partial<nonRel<Table>> = {},
-  connections: rel<Table>,
-): Partial<Fake<Table>> {
-  const row: Partial<Fake<Table>> = {};
+  opt?: UECreationOptions<T>,
+): Partial<T extends true ? UEOverView : UEDetail>;
+export function createUE(
+  app: AppProvider,
+  { code = 'XX00', category = 'CS', filiere = 'JSP', branch = 'JSP_BR', semester = 'A24', forOverview = false } = {},
+) {
+  const partialUE: Partial<UEOverView | UEDetail> = {};
+  const data = {
+    data: {
+      code,
+      inscriptionCode: code,
+      name: `UE ${code}`,
+      credits: {
+        create: [
+          {
+            category: {
+              connectOrCreate: {
+                create: { code: category, name: category },
+                where: { code: category },
+              },
+            },
+            credits: 6,
+          },
+        ],
+      },
+      filiere: {
+        connectOrCreate: {
+          create: {
+            code: filiere,
+            name: filiere,
+            branche: {
+              connectOrCreate: {
+                create: {
+                  code: branch,
+                  name: branch,
+                  descriptionTranslation: {
+                    create: {},
+                  },
+                },
+                where: {
+                  code: branch,
+                },
+              },
+            },
+            descriptionTranslation: {
+              create: {},
+            },
+          },
+          where: {
+            code: filiere,
+          },
+        },
+      },
+      info: {
+        create: {
+          programme: 'What is going to be studied',
+          objectives: 'The objectives of the UE',
+        },
+      },
+      workTime: {
+        create: {
+          cm: 20,
+          td: 20,
+          tp: 16,
+          the: 102,
+          projet: 48,
+        },
+      },
+      openSemester: {
+        connectOrCreate: {
+          create: {
+            code: semester,
+            start: new Date(),
+            end: new Date(),
+          },
+          where: {
+            code: semester,
+          },
+        },
+      },
+    },
+  };
   beforeAll(async () => {
-    const createdRow = await (
-      app().get(PrismaService)[table].create as unknown as (arg: object) => Partial<Fake<Table>>
-    )({ data: { ...default_, ...data, ...connections } });
-    Object.assign(row, createdRow);
+    const ue = await (forOverview
+      ? app().get(PrismaService).uE.create(SelectUEOverview(data))
+      : app().get(PrismaService).uE.create(SelectUEDetail(data)));
+    Object.assign(
+      partialUE,
+      !('workTime' in ue)
+        ? {
+            ...ue,
+            openSemester: ue.openSemester.map((semester) => ({
+              ...semester,
+              start: (<Date>semester.start).toISOString(),
+              end: (<Date>semester.end).toISOString(),
+            })),
+          }
+        : {
+            ...ue,
+            openSemester: ue.openSemester.map((semester) => semester.code),
+            starVotes: {},
+          },
+    );
   });
-  return row;
+  return partialUE;
+}
+
+export function makeUserJoinUE(app: AppProvider, user: Partial<User>, ue: Partial<UEOverView | UEDetail>) {
+  beforeAll(() =>
+    app()
+      .get(PrismaService)
+      .userUESubscription.create({
+        data: {
+          UE: {
+            connect: {
+              code: ue.code,
+            },
+          },
+          user: {
+            connect: {
+              id: user.id,
+            },
+          },
+          semester: {
+            connectOrCreate: {
+              create: {
+                code: 'A24',
+                end: new Date(),
+                start: new Date(),
+              },
+              where: {
+                code: 'A24',
+              },
+            },
+          },
+        },
+      }),
+  );
+}
+
+export function createUERating(
+  app: AppProvider,
+  user: Partial<User>,
+  criterion: Partial<Criterion>,
+  ue: Partial<UEDetail | UEOverView>,
+  value = 3,
+) {
+  beforeAll(async () => {
+    return app()
+      .get(PrismaService)
+      .uEStarVote.create({
+        data: {
+          criterion: {
+            connect: {
+              id: criterion.id,
+            },
+          },
+          user: {
+            connect: {
+              id: user.id,
+            },
+          },
+          UE: {
+            connect: {
+              code: ue.code,
+            },
+          },
+          value,
+        },
+      });
+  });
+}
+
+export function createCriterion(app: AppProvider, name = 'testCriterion') {
+  const lazyCriterion: Partial<Criterion> = {};
+  beforeAll(async () => {
+    Object.assign(
+      lazyCriterion,
+      await app()
+        .get(PrismaService)
+        .uEStarCriterion.create(
+          SelectCriterion({
+            data: {
+              name,
+              descriptionTranslation: {
+                create: {},
+              },
+            },
+          }),
+        ),
+    );
+  });
+  return lazyCriterion;
+}
+
+export function createComment(
+  app: AppProvider,
+  onUE: Partial<UEOverView | UEDetail>,
+  user: FakeUser,
+  anonymous = false,
+) {
+  const lazyComment: Partial<UEComment> = {};
+  beforeAll(async () => {
+    const sub = await app()
+      .get(PrismaService)
+      .userUESubscription.findFirst({
+        where: {
+          UE: {
+            code: onUE.code,
+          },
+          userId: user.id,
+        },
+      });
+    if (!sub)
+      await app()
+        .get(PrismaService)
+        .userUESubscription.create({
+          data: {
+            semester: {
+              connectOrCreate: {
+                create: {
+                  code: 'A24',
+                  start: new Date(),
+                  end: new Date(),
+                },
+                where: { code: 'A24' },
+              },
+            },
+            UE: { connect: { code: onUE.code } },
+            user: { connect: { id: user.id } },
+          },
+        });
+    Object.assign(
+      lazyComment,
+      await app().get(UEService).createComment(
+        {
+          body: 'TEST',
+          isAnonymous: anonymous,
+        },
+        user.id,
+        onUE.code,
+      ),
+    );
+  });
+  return lazyComment;
+}
+
+export function upvoteComment(app: AppProvider, user: Partial<User>, comment: Partial<UEComment>) {
+  beforeAll(() => {
+    comment.upvotes++;
+    return app()
+      .get(PrismaService)
+      .uECommentUpvote.create({
+        data: {
+          comment: {
+            connect: {
+              id: comment.id,
+            },
+          },
+          user: {
+            connect: {
+              id: user.id,
+            },
+          },
+        },
+      });
+  });
+}
+
+export function createReply(app: AppProvider, user: Partial<User>, comment: Partial<UEComment>) {
+  const lazyReply: Partial<UECommentReply> = {};
+  beforeAll(async () => {
+    Object.assign(
+      lazyReply,
+      await app()
+        .get(UEService)
+        .replyComment(user as User, comment.id, {
+          body: "Bouboubou je suis pas d'accord",
+        }),
+    );
+  });
+  return lazyReply;
 }

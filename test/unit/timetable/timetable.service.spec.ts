@@ -1,72 +1,39 @@
 import TimetableService from '../../../src/timetable/timetable.service';
 import { PrismaService } from '../../../src/prisma/prisma.service';
-import { randomStringGenerator } from '@nestjs/common/utils/random-string-generator.util';
-import { RawTimetableEntry, RawTimetableEntryOverride, RawTimetableGroup, RawUser } from '../../../src/prisma/types';
 import { unitSuite } from '../../utils/test_utils';
+import * as fakedb from '../../utils/fakedb';
+import { createTimetableEntry, createTimetableEntryOverride } from '../../utils/fakedb';
+import { faker } from '@faker-js/faker';
 
 const TimetableServiceUnitSpec = unitSuite('Timetable.service', (app) => {
   let timetableService: TimetableService;
   let prisma: PrismaService;
-  let user1: RawUser;
-  let user2: RawUser;
-  let everyoneGroup: RawTimetableGroup;
-  let user1Group: RawTimetableGroup;
-  let entry: RawTimetableEntry; // for everyone
-  let overrideEntry: RawTimetableEntryOverride; // for user 1
+  const user1 = fakedb.createUser(app);
+  const user2 = fakedb.createUser(app);
+  const everyoneGroup = fakedb.createTimetableGroup(app, {
+    users: [
+      { user: user1, priority: 1 },
+      { user: user2, priority: 1 },
+    ],
+  });
+  const user1Group = fakedb.createTimetableGroup(app, { users: [{ user: user1, priority: 2 }] });
+  const entry = createTimetableEntry(app, {
+    groups: [everyoneGroup],
+    repeatEvery: 3_600_000,
+    occurrenceDuration: 1_000_000,
+    occurrencesCount: 4,
+    startsAt: new Date(0),
+  }); // for everyone
+  const overrideEntry = createTimetableEntryOverride(app, entry, {
+    groups: [user1Group],
+    applyFrom: 0,
+    applyUntil: 0,
+    location: faker.address.cityName(),
+  }); // for user 1
 
   beforeAll(async () => {
     timetableService = app().get(TimetableService);
     prisma = app().get(PrismaService);
-    everyoneGroup = await prisma.timetableGroup.create({ data: { name: 'primary' } });
-    user1Group = await prisma.timetableGroup.create({ data: { name: 'override' } });
-    user1 = await prisma.user.create({
-      data: {
-        login: randomStringGenerator(),
-        hash: 'strongpasswordhash',
-        firstName: 'Mario',
-        lastName: 'undefined',
-        userTimetableGroup: {
-          create: [
-            { timetableGroup: { connect: everyoneGroup }, priority: 1 },
-            { timetableGroup: { connect: user1Group }, priority: 2 },
-          ],
-        },
-      },
-    });
-    user2 = await prisma.user.create({
-      data: {
-        login: randomStringGenerator(),
-        hash: 'trytofindapasswordthathashestothat:)',
-        firstName: 'Luigi',
-        lastName: 'undefined',
-        userTimetableGroup: {
-          create: {
-            timetableGroup: { connect: everyoneGroup },
-            priority: 1,
-          },
-        },
-      },
-    });
-    entry = await prisma.timetableEntry.create({
-      data: {
-        eventStart: new Date(0),
-        occurrencesCount: 4,
-        repeatEvery: 3_600_000,
-        occurrenceDuration: 1_000_000,
-        type: 'CUSTOM',
-        location: 'At a very random place',
-        timetableGroups: { connect: [{ id: everyoneGroup.id }] },
-      },
-    });
-    overrideEntry = await prisma.timetableEntryOverride.create({
-      data: {
-        applyFrom: 0,
-        applyUntil: 0,
-        location: 'Another random place',
-        timetableGroups: { connect: user1Group },
-        overrideTimetableEntry: { connect: entry },
-      },
-    });
   });
 
   it('should return the entry', async () => {
@@ -79,21 +46,22 @@ const TimetableServiceUnitSpec = unitSuite('Timetable.service', (app) => {
   });
 
   it('should create an event only for user 1', async () => {
-    const otherEntry = await prisma.timetableEntry.create({
-      data: {
-        eventStart: new Date(0),
-        occurrencesCount: 1,
+    const otherEntry = await createTimetableEntry(
+      app,
+      {
+        groups: [user1Group],
+        occurrencesCount: 10,
         occurrenceDuration: 10,
-        type: 'CUSTOM',
-        location: 'Same place as the other event',
-        timetableGroups: { connect: user1Group },
+        startsAt: new Date(0),
+        repeatEvery: 1_000_000,
       },
-    });
+      true,
+    );
     let timetable = await timetableService.getTimetableOfUserInNextXMs(user1.id, new Date(0), 1);
     expect(timetable).toHaveLength(2);
     timetable = await timetableService.getTimetableOfUserInNextXMs(user2.id, new Date(0), 1);
     expect(timetable).toHaveLength(1);
-    await prisma.timetableEntry.delete({ where: otherEntry });
+    await prisma.timetableEntry.delete({ where: { id: otherEntry.id } });
   });
 
   it('should return the primary entry with an override for user1', async () => {
@@ -110,15 +78,12 @@ const TimetableServiceUnitSpec = unitSuite('Timetable.service', (app) => {
   });
 
   it('should return an for user2 but not user1, as the priority of this new override is smaller than the one for user1', async () => {
-    const lessImportantOverride = await prisma.timetableEntryOverride.create({
-      data: {
-        applyFrom: 0,
-        applyUntil: 0,
-        timetableGroups: { connect: everyoneGroup },
-        overrideTimetableEntry: { connect: entry },
-        location: 'Petaouchnok',
-      },
-    });
+    const lessImportantOverride = await fakedb.createTimetableEntryOverride(
+      app,
+      entry,
+      { groups: [everyoneGroup], applyFrom: 0, applyUntil: 0 },
+      true,
+    );
     // user 1 : we should still get the override overrideEntry
     let timetable = await timetableService.getTimetableOfUserInNextXMs(user1.id, new Date(0), 1);
     expect(timetable).toHaveLength(1);
@@ -127,23 +92,20 @@ const TimetableServiceUnitSpec = unitSuite('Timetable.service', (app) => {
     timetable = await timetableService.getTimetableOfUserInNextXMs(user2.id, new Date(0), 1);
     expect(timetable).toHaveLength(1);
     expect(timetable[0].entryId).toEqual(lessImportantOverride.id);
-    await prisma.timetableEntryOverride.delete({ where: lessImportantOverride });
+    await prisma.timetableEntryOverride.delete({ where: { id: lessImportantOverride.id } });
   });
 
   it('should have priority over the existing override of user 1, as the new override will be newer', async () => {
-    const newerOverride = await prisma.timetableEntryOverride.create({
-      data: {
-        applyFrom: 0,
-        applyUntil: 0,
-        location: 'Schtroumpf',
-        timetableGroups: { connect: user1Group },
-        overrideTimetableEntry: { connect: entry },
-      },
-    });
+    const newerOverride = await fakedb.createTimetableEntryOverride(
+      app,
+      entry,
+      { groups: [user1Group], applyFrom: 0, applyUntil: 0, location: faker.address.cityName() },
+      true,
+    );
     const timetable = await timetableService.getTimetableOfUserInNextXMs(user1.id, new Date(0), 1);
     expect(timetable).toHaveLength(1);
     expect(timetable[0].location).toEqual(newerOverride.location);
-    await prisma.timetableEntryOverride.delete({ where: newerOverride });
+    await prisma.timetableEntryOverride.delete({ where: { id: newerOverride.id } });
   });
 });
 

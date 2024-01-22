@@ -28,3 +28,10 @@ export function unitSuite(name: string, func: (app: UnitAppProvider) => void) {
       func(app);
     });
 }
+
+/** Utilities to use in {@link Spec.expectJsonLike} to match database-generated values */
+export const JsonLike = {
+  STRING: "typeof $V === 'string'",
+  ANY_UUID: /[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}/,
+  ANY_DATE: /\d{4}-\d{2}-\d{2}T(\d{2}:){2}\d{2}.\d{3}Z/,
+};
