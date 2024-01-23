@@ -211,7 +211,7 @@ model UEAnnal {
   semesterId    String
   typeId        String
 
-  UE       UE              @relation(fields: [ueId], references: [id], onDelete: Cascade)
+  ue       UE              @relation(fields: [ueId], references: [id], onDelete: Cascade)
   sender   User?           @relation(fields: [senderId], references: [id], onDelete: SetNull)
   semester Semester        @relation(fields: [semesterId], references: [code])
   reports  UEAnnalReport[]
@@ -320,7 +320,7 @@ model UECourse {
   semesterId String
 
   students            User[]
-  UE                  UE                 @relation(fields: [ueId], references: [id])
+  ue                  UE                 @relation(fields: [ueId], references: [id])
   semester            Semester           @relation(fields: [semesterId], references: [code])
   courseExchangesFrom UECourseExchange[] @relation(name: "courseFrom")
   courseExchangesTo   UECourseExchange[] @relation(name: "courseTo")
@@ -362,7 +362,7 @@ model UECredit {
   ueId       String
   categoryId String
 
-  UE       UE               @relation(fields: [ueId], references: [id], onDelete: Cascade)
+  ue       UE               @relation(fields: [ueId], references: [id], onDelete: Cascade)
   category UECreditCategory @relation(fields: [categoryId], references: [code])
 }
 
@@ -383,7 +383,7 @@ model UEInfo {
   program    String? @db.Text
   ueId       String  @unique
 
-  UE           UE   @relation(fields: [ueId], references: [id], onDelete: Cascade)
+  ue           UE   @relation(fields: [ueId], references: [id], onDelete: Cascade)
   requirements UE[] @relation(name: "ueRequirements")
 }
 
