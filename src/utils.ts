@@ -1,23 +1,22 @@
 /**
  * Sorts an array in place and returns it.
  * Array is sorted based a mapper function, that returns in order the values by which to sort the array.
- * Use example :
- * <pre>
- *   const array = [
- *     { a: 3, b: 'early into the alphabet' },
- *     { a: 1, b: 'hello world !' },
- *     { a: 1, b: 'hi' },
- *   ];
- *   sortArray(array, (e) => [e.a, e.b]);
- *   // Result :
- *   // [
- *   //   { a: 1, b: 'hello world !' },
- *   //   { a: 1, b: 'hi' },
- *   //   { a: 3, b: 'early into the alphabet' },
- *   // ]
- * </pre>
+ * @example
+ * const array = [
+ *   { a: 3, b: 'early into the alphabet' },
+ *   { a: 1, b: 'hello world !' },
+ *   { a: 1, b: 'hi' },
+ * ];
+ * sortArray(array, (e) => [e.a, e.b]);
+ * // Result :
+ * // [
+ * //   { a: 1, b: 'hello world !' },
+ * //   { a: 1, b: 'hi' },
+ * //   { a: 3, b: 'early into the alphabet' },
+ * // ]
  * @param array The array to sort
- * @param mapper A function that returns a list of values that will be used for comparison. The length of the array should be fixed in advance.
+ * @param mapper A function that returns a list of values that will be used for comparison.
+ *               The length of the array should be fixed, not dependent on the value to map.
  */
 export function sortArray<T>(array: T[], mapper: (e: T) => any[] | any): T[] {
   return array.sort((a, b) => {
@@ -37,10 +36,20 @@ export function sortArray<T>(array: T[], mapper: (e: T) => any[] | any): T[] {
   });
 }
 
+/**
+ * Returns a new object built from the given object with only the specified keys.
+ * @param obj The object to transform.
+ * @param keys The keys to pick.
+ */
 export function pick<T extends object, K extends keyof T>(obj: T, ...keys: K[]): Pick<T, K> {
   return Object.fromEntries(Object.entries(obj).filter(([key]) => keys.includes(key as K))) as Pick<T, K>;
 }
 
+/**
+ * Returns a new object built from the given object with all keys except the ones specified.
+ * @param obj The object to transform.
+ * @param keys The keys to omit.
+ */
 export function omit<T extends object, K extends keyof T>(obj: T, ...keys: K[]): Omit<T, K> {
   return Object.fromEntries(Object.entries(obj).filter(([key]) => !keys.includes(key as K))) as Omit<T, K>;
 }

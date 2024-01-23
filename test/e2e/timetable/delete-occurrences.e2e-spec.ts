@@ -5,7 +5,6 @@ import { HttpStatus } from '@nestjs/common';
 import { uuid } from 'pactum-matchers';
 import { faker } from '@faker-js/faker';
 import { PrismaService } from '../../../src/prisma/prisma.service';
-import { createTimetableGroup } from '../../utils/fakedb';
 import TimetableDeleteOccurrencesDto from '../../../src/timetable/dto/timetable-delete-occurrences.dto';
 
 const DeleteEntryE2ESpec = e2eSuite('DELETE /timetable/current/:entryId', (app) => {
@@ -56,7 +55,7 @@ const DeleteEntryE2ESpec = e2eSuite('DELETE /timetable/current/:entryId', (app) 
       .expectStatus(HttpStatus.NOT_FOUND));
 
   it('should fail as user is not in group', async () => {
-    const emptyGroup = await createTimetableGroup(app, {}, true);
+    const emptyGroup = await fakedb.createTimetableGroup(app, {}, true);
     await pactum
       .spec()
       .delete(`/timetable/current/${otherEntry.id}`)

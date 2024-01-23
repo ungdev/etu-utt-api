@@ -1,12 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { DetailedEntry, TimetableOccurrence } from './interfaces/timetable.interface';
-import { RawTimetableEntry } from '../prisma/types';
-import { sortArray } from '../utils';
+import {
+  DetailedTimetableEntry,
+  TimetableEntryGroupForUser,
+  TimetableEntryOccurrence,
+} from './interfaces/timetable.interface';
+import { RawTimetableEntry, RawTimetableEntryOverride, RawTimetableGroup } from '../prisma/types';
+import { omit, sortArray } from "../utils";
 import TimetableCreateEntryDto from './dto/timetable-create-entry.dto';
 import TimetableUpdateEntryDto from './dto/timetable-update-entry.dto';
 import TimetableDeleteOccurrencesDto from './dto/timetable-delete-occurrences.dto';
 
+/**
+ * The inclusions to use when fetching a {@link DetailedTimetableEntry}.
+ * @param userId The id of the user for whose we want to fetch the entry.
+ */
 const detailedEntryInclusions = (userId: string) => ({
   overwrittenBy: {
     where: { timetableGroups: { some: { userTimetableGroups: { some: { userId } } } } },
@@ -25,13 +33,13 @@ export default class TimetableService {
   constructor(private prisma: PrismaService) {}
 
   /**
-   * Returns the {@link TimetableOccurrence}s for the user for the next 24 hours.
+   * Returns the {@link TimetableEntryOccurrence}s for the user for the next 24 hours.
    * This does exactly the same as calling the {@link getTimetableOfUserInNextXMs} function, with millis set to 24h
    * @param userId The id of the {@link User} we want to fetch the timetable.
-   * @param from The Date from which the {@link TimetableOccurrence}s will be fetched.
+   * @param from The Date from which the {@link TimetableEntryOccurrence}s will be fetched.
    * @see getTimetableOfUserInNextXMs
    */
-  async getTimetableOfUserInNext24h(userId: string, from: Date): Promise<TimetableOccurrence[]> {
+  async getTimetableOfUserInNext24h(userId: string, from: Date): Promise<TimetableEntryOccurrence[]> {
     return this.getTimetableOfUserInNextXMs(userId, from, 24 * 3_600_000);
   }
 
@@ -42,7 +50,11 @@ export default class TimetableService {
    * @param selectFrom The beginning of the interval.
    * @param millis The size of the interval.
    */
-  async getTimetableOfUserInNextXMs(userId: string, selectFrom: Date, millis: number): Promise<TimetableOccurrence[]> {
+  async getTimetableOfUserInNextXMs(
+    userId: string,
+    selectFrom: Date,
+    millis: number,
+  ): Promise<TimetableEntryOccurrence[]> {
     // The end of the interval
     const selectTo = new Date(selectFrom.getTime() + millis);
     // First, fetch all TimetableEntry, filter and format them
@@ -97,10 +109,10 @@ export default class TimetableService {
     // They will then be updated by the non-primary ones (TimetableEntryOverride)
     // The order of occurrences is important : all occurrences from a single TimetableEntry are all one after another,
     // and sorted by ascending index in a single TimetableEntry stretch
-    const occurrences: Array<TimetableOccurrence | null> = [];
+    const occurrences: Array<TimetableEntryOccurrence | null> = [];
     // The original id of the entry of the occurrence at index i and its occurrenceIndex will be stored at index i in this array.
     // We need to back up this information, to be able to link a TimetableOccurrence to a TimetableEntry
-    const occurrencesNoOverride: Array<TimetableOccurrence> = [];
+    const occurrencesNoOverride: Array<TimetableEntryOccurrence> = [];
     for (const entry of entries) {
       // Skip entry if it's not primary.
       // Add every occurrence of this entry in the time range given.
@@ -109,7 +121,7 @@ export default class TimetableService {
       let occurrenceIndex = entry.computedData.firstOccurrenceIndex;
       let occurrenceStart = entry.computedData.firstOccurrenceStart;
       while (occurrenceIndex < entry.entry.occurrencesCount && occurrenceStart < selectTo) {
-        const occurrence: TimetableOccurrence = {
+        const occurrence: TimetableEntryOccurrence = {
           entryId: entry.entry.id,
           index: occurrenceIndex,
           start: occurrenceStart,
@@ -205,57 +217,106 @@ export default class TimetableService {
     );
   }
 
-  async fetchEntryOverride(overrideId: string) {
+  /**
+   * Fetches the entry override with the given id.
+   * @param overrideId The id of the override we want to fetch
+   * @return {@link RawTimetableEntryOverride}
+   */
+  async fetchEntryOverride(overrideId: string): Promise<RawTimetableEntryOverride> {
     return this.prisma.timetableEntryOverride.findUnique({
       where: { id: overrideId },
     });
   }
 
-  async getEntryDetails(entryId: string, userId: string, method: 'findUnique' | 'delete' = 'findUnique') {
+  /**
+   * Fetches the entry with the given id for the given user, and returns a detailed version of it.
+   * @param entryId The id of the entry we want to fetch
+   * @param userId The id of the user we want to fetch the entry for (used to filter groups and overrides)
+   * @param method The prisma method to call to fetch the entry (depending on whether you want to delete the entry or only fetch it). Defaults to 'findUnique'.
+   * @return {@link DetailedTimetableEntry}
+   */
+  async getEntryDetails(
+    entryId: string,
+    userId: string,
+    method: 'findUnique' | 'delete' = 'findUnique',
+  ): Promise<DetailedTimetableEntry> {
     const timetableEntry = await this.prisma.timetableEntry[method]({
       where: { id: entryId, timetableGroups: { some: { userTimetableGroups: { some: { userId } } } } },
       include: detailedEntryInclusions(userId),
     });
     if (!timetableEntry) return null;
-    await this.sortOverridesAndGroups(timetableEntry);
+    await this.sortOverridesAndGroups(timetableEntry, userId);
     return timetableEntry;
   }
 
-  async getTimetableGroups(userId: string) {
+  /**
+   * Fetches the groups of the user.
+   * @param userId The id of the user we want to fetch the groups for.
+   * @return {@link DetailedTimetableEntryGroup[]}
+   */
+  async getTimetableGroups(userId: string): Promise<TimetableEntryGroupForUser[]> {
     return sortArray(
       await this.prisma.timetableGroup.findMany({
         where: { userTimetableGroups: { some: { userId } } },
         include: { userTimetableGroups: { where: { userId } } },
       }),
       (group1) => [group1.userTimetableGroups[0].priority, group1.createdAt],
-    );
+    ).map((group) => ({
+      ...omit(group, 'userTimetableGroups'),
+      priority: group.userTimetableGroups[0].priority,
+    }));
   }
 
-  async createTimetableEntry(data: TimetableCreateEntryDto) {
-    return this.prisma.timetableEntry.create({
-      data: {
-        location: data.location,
-        occurrenceDuration: data.duration,
-        eventStart: data.firstRepetitionDate,
-        repeatEvery: data.repetitionFrequency,
-        occurrencesCount: data.repetitions,
-        timetableGroups: { connect: data.groups.map((groupId) => ({ id: groupId })) },
-        type: 'CUSTOM',
-      },
-      include: {
-        timetableGroups: { select: { id: true } },
-      },
-    });
+  /**
+   * Creates a new entry in the timetable.
+   * @param data The data of the entry to create.
+   * @return {@link DetailedTimetableEntry}
+   */
+  async createTimetableEntry(data: TimetableCreateEntryDto): Promise<DetailedTimetableEntry> {
+    const timetableEntry = {
+      ...(await this.prisma.timetableEntry.create({
+        data: {
+          location: data.location,
+          occurrenceDuration: data.duration,
+          eventStart: data.firstRepetitionDate,
+          repeatEvery: data.repetitionFrequency,
+          occurrencesCount: data.repetitions,
+          timetableGroups: { connect: data.groups.map((groupId) => ({ id: groupId })) },
+          type: 'CUSTOM',
+        },
+        include: {
+          timetableGroups: { select: { id: true } },
+        },
+      })),
+      overwrittenBy: [],
+    };
+    await this.sortOverridesAndGroups(timetableEntry);
+    return timetableEntry;
   }
 
-  async updateTimetableEntry(entryId: string, data: TimetableUpdateEntryDto, userId: string): Promise<DetailedEntry> {
+  /**
+   * Updates an entry in the timetable.
+   * @param entryId The id of the entry to update.
+   * @param data The data to update the entry with.
+   * @param userId The id of the user we want to update the entry for.
+   * @return {@link DetailedTimetableEntry} or null if the entry was not found.
+   */
+  async updateTimetableEntry(
+    entryId: string,
+    data: TimetableUpdateEntryDto,
+    userId: string,
+  ): Promise<DetailedTimetableEntry> {
+    // Find the entry.
     const entry = await this.prisma.timetableEntry.findUnique({
       where: { id: entryId },
       include: { timetableGroups: { select: { id: true } } },
     });
+    // We did not find the entry, return as we cannot do anything about it.
     if (!entry) {
       return null;
     }
+    // If the update should apply to all groups of the entry and to all occurrences, creating an override is useless.
+    // We should instead modify the entry directly.
     if (
       data.for.length === entry.timetableGroups.length &&
       data.for.every((groupId) => entry.timetableGroups.some((group) => group.id === groupId)) &&
@@ -263,14 +324,17 @@ export default class TimetableService {
       data.updateUntil === entry.occurrencesCount - 1 &&
       data.applyEvery === 1
     ) {
-      const updatedEntry: DetailedEntry = await this.prisma.timetableEntry.update({
+      // Update the entry, format it and return it.
+      const updatedEntry: DetailedTimetableEntry = await this.prisma.timetableEntry.update({
         where: { id: entryId },
         data: { location: data.location },
         include: detailedEntryInclusions(userId),
       });
-      await this.sortOverridesAndGroups(updatedEntry);
+      await this.sortOverridesAndGroups(updatedEntry, userId);
       return updatedEntry;
     }
+    // If we are here, we need to use an override.
+    // First, try to find an override that matches the data.
     const override = (
       await this.prisma.timetableEntryOverride.findMany({
         where: {
@@ -285,6 +349,7 @@ export default class TimetableService {
     )
       // We still need to verify that there aren't groups that are in the data but not in the override.
       .filter((override) => override.timetableGroups.length === data.for.length)[0];
+    // If we found an override, update it, and fetch and return the formatted entry.
     if (override) {
       await this.prisma.timetableEntryOverride.update({
         where: { id: override.id },
@@ -292,6 +357,7 @@ export default class TimetableService {
       });
       return this.getEntryDetails(entryId, userId);
     }
+    // If we are here, no override matching the specified criteria match, we need to create one.
     await this.prisma.timetableEntryOverride.create({
       data: {
         applyFrom: data.updateFrom,
@@ -302,14 +368,30 @@ export default class TimetableService {
         timetableGroups: { connect: data.for.map((groupId) => ({ id: groupId })) },
       },
     });
+    // Fetch and return the formatted entry.
     return this.getEntryDetails(entryId, userId);
   }
 
-  private async sortOverridesAndGroups(entry: DetailedEntry) {
+  /**
+   * Sorts the properties overwrittenBy, timetableGroups and overwrittenBy.timetableGroups of a {@link DetailedTimetableEntry}.
+   * The changes are made in-place.
+   * @param entry The entry to sort.
+   * @param userId The id of the user we want to sort the entry for.
+   *               This is used for optimization purposes, it is not needed to work. If you can, specify it.
+   * @return The entry all well sorted, ready to be used.
+   */
+  private async sortOverridesAndGroups(entry: DetailedTimetableEntry, userId: string = undefined): Promise<void> {
+    // Information about the groups.
+    // An object containing the group id as a key, and an object containing the priority and the creation date of the group as a value.
     const timetableGroupInfo: { [groupId: string]: { priority: number; createdAt: Date } } = Object.fromEntries(
+      // Fetch the rows of the userTimetableGroup table that are linked to :
+      // - one of the group of the entry,
+      // - or one of the group of one of the override of the entry.
+      // If userId is specified, we also filter by userId, to have fewer groups.
       (
         await this.prisma.userTimetableGroup.findMany({
           where: {
+            userId,
             timetableGroup: {
               OR: [
                 ...entry.timetableGroups.map((group) => ({ id: group.id })),
@@ -322,19 +404,25 @@ export default class TimetableService {
           },
           include: { timetableGroup: true },
         })
-      ).map((group) => [
-        group.timetableGroupId,
-        { priority: group.priority, createdAt: group.timetableGroup.createdAt },
-      ]),
+      )
+        // We make a list of entries for the Object.fromEntries function.
+        // The key is the id of the group, and the value is an object containing some data needed later about this group (priority and createdAt).
+        .map((group) => [
+          group.timetableGroupId,
+          { priority: group.priority, createdAt: group.timetableGroup.createdAt },
+        ]),
     );
+    // Sort entry.overwrittenBy, by priority and creation date in descending order.
     sortArray(entry.overwrittenBy, (override) => [
       -Math.max(...override.timetableGroups.map((group) => timetableGroupInfo[group.id].priority)),
       -override.createdAt.getTime(),
     ]);
+    // Sort entry.timetableGroups, by priority and creation date in descending order.
     sortArray(entry.timetableGroups, (group) => [
       -timetableGroupInfo[group.id].priority,
       -timetableGroupInfo[group.id].createdAt.getTime(),
     ]);
+    // Sort entry.overwrittenBy.timetableGroups, by priority and creation date in descending order.
     for (const override of entry.overwrittenBy) {
       sortArray(override.timetableGroups, (group) => [
         -timetableGroupInfo[group.id].priority,
@@ -343,14 +431,32 @@ export default class TimetableService {
     }
   }
 
-  async groupExists(groupId: string, userId: string) {
+  /**
+   * Whether a group exists.
+   * @param groupId The id of the group to check.
+   * @param userId The group must be for this user to consider it does exist.
+   */
+  async groupExists(groupId: string, userId: string): Promise<boolean> {
     return (await this.prisma.userTimetableGroup.count({ where: { userId, timetableGroupId: groupId } })) > 0;
   }
 
-  async getTimetableGroupsOfEntry(entryId: string) {
-    return this.prisma.timetableGroup.findMany({ where: { timetableEntries: { some: { id: entryId } } } });
+  /**
+   * Fetches the groups of the entry with the given id.
+   * @param entryId The id of the entry we want to fetch the groups of.
+   * @param userId The id of the user we want to fetch the groups for.
+   * @return {@link RawTimetableGroup[]}
+   */
+  async getTimetableGroupsOfEntry(entryId: string, userId: string): Promise<RawTimetableGroup[]> {
+    return this.prisma.timetableGroup.findMany({
+      where: { timetableEntries: { some: { id: entryId } }, userTimetableGroups: { some: { userId } } },
+    });
   }
 
+  /**
+   * Whether an entry exists.
+   * @param entryId The id of the entry to check.
+   * @param userId The entry must be for this user to consider it does exist.
+   */
   async entryExists(entryId: string, userId: string) {
     return (
       (await this.prisma.timetableEntry.count({
@@ -359,19 +465,30 @@ export default class TimetableService {
     );
   }
 
+  /**
+   * Deletes some occurrences of an entry.
+   * @param entryId The id of the entry to delete the occurrences of.
+   * @param data The information of what to delete.
+   * @param userId The id of the user we want to delete the occurrences for.
+   */
   async deleteOccurrences(entryId: string, data: TimetableDeleteOccurrencesDto, userId: string) {
+    // First, fetch the entry.
     const entry = await this.prisma.timetableEntry.findUnique({
       where: { id: entryId },
       include: { timetableGroups: { select: { id: true } } },
     });
+    // If we need to delete every occurrence of the entry for all the groups of the entry, we can just delete the entry.
     if (
       entry.timetableGroups.length === data.for.length &&
       data.for.every((groupId) => entry.timetableGroups.some((group) => group.id === groupId)) &&
       data.from === 0 &&
-      data.until === entry.occurrencesCount - 1
+      data.until === entry.occurrencesCount - 1 &&
+      data.every === 1
     ) {
       return await this.getEntryDetails(entryId, userId, 'delete');
     }
+    // If we are here, we need to use an override.
+    // Find an override that overrides the right occurrences for the right groups, if there exists one.
     const override = (
       await this.prisma.timetableEntryOverride.findMany({
         where: {
@@ -386,6 +503,7 @@ export default class TimetableService {
     )
       // We still need to verify that there aren't groups that are in the data but not in the override.
       .filter((override) => override.timetableGroups.length === data.for.length)[0];
+    // If such an override exists, update it.
     if (override) {
       await this.prisma.timetableEntryOverride.update({
         where: { id: override.id },
@@ -393,6 +511,7 @@ export default class TimetableService {
       });
       return this.getEntryDetails(entryId, userId);
     }
+    // Else, create a new override matching the given data.
     await this.prisma.timetableEntryOverride.create({
       data: {
         applyFrom: data.from,

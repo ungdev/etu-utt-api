@@ -5,7 +5,6 @@ import { HttpStatus } from '@nestjs/common';
 import { uuid } from 'pactum-matchers';
 import { faker } from '@faker-js/faker';
 import { PrismaService } from '../../../src/prisma/prisma.service';
-import { createTimetableGroup } from '../../utils/fakedb';
 import TimetableUpdateEntryDto from '../../../src/timetable/dto/timetable-update-entry.dto';
 
 const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) => {
@@ -57,7 +56,7 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
       .expectStatus(HttpStatus.NOT_FOUND));
 
   it('should fail as user is not in group', async () => {
-    const emptyGroup = await createTimetableGroup(app, {}, true);
+    const emptyGroup = await fakedb.createTimetableGroup(app, {}, true);
     await pactum
       .spec()
       .patch(`/timetable/current/${otherEntry.id}`)

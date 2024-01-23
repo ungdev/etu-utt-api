@@ -18,7 +18,7 @@ import { User } from '../users/interfaces/user.interface';
 import { regex, RegexPipe } from '../app.pipe';
 import TimetableCreateEntryDto from './dto/timetable-create-entry.dto';
 import TimetableUpdateEntryDto from './dto/timetable-update-entry.dto';
-import { DetailedEntry, ResponseDetailedEntry } from './interfaces/timetable.interface';
+import { DetailedTimetableEntry, ResponseDetailedTimetableEntry } from './interfaces/timetable.interface';
 import TimetableDeleteOccurrencesDto from './dto/timetable-delete-occurrences.dto';
 
 @Controller('/timetable')
@@ -65,7 +65,7 @@ export class TimetableController {
   @UseGuards(JwtGuard)
   async getGroups(@GetUser() user: User) {
     const groups = await this.timetableService.getTimetableGroups(user.id);
-    return groups.map((group) => ({ id: group.id, name: group.name, priority: group.userTimetableGroups[0].priority }));
+    return groups.map((group) => ({ id: group.id, name: group.name, priority: group.priority }));
   }
 
   @Post('/current')
@@ -100,7 +100,7 @@ export class TimetableController {
         throw new NotFoundException(`No group with id ${groupId}`);
       }
     }
-    const groups = await this.timetableService.getTimetableGroupsOfEntry(entryId);
+    const groups = await this.timetableService.getTimetableGroupsOfEntry(entryId, user.id);
     for (const groupId of body.for) {
       if (!groups.some((group) => group.id === groupId)) {
         throw new ConflictException(`Group with id ${groupId} is not part of the timetable entry`);
@@ -125,7 +125,7 @@ export class TimetableController {
         throw new NotFoundException(`No group with id ${groupId}`);
       }
     }
-    const groups = await this.timetableService.getTimetableGroupsOfEntry(entryId);
+    const groups = await this.timetableService.getTimetableGroupsOfEntry(entryId, user.id);
     for (const groupId of body.for) {
       if (!groups.some((group) => group.id === groupId)) {
         throw new ConflictException(`Group with id ${groupId} is not part of the timetable entry`);
@@ -135,7 +135,11 @@ export class TimetableController {
     return this.formatEntryDetails(entry);
   }
 
-  private formatEntryDetails(entry: DetailedEntry): ResponseDetailedEntry {
+  /**
+   * Formats a {@link DetailedTimetableEntry} into a {@link ResponseDetailedTimetableEntry}.
+   * @param entry The entry to format.
+   */
+  private formatEntryDetails(entry: DetailedTimetableEntry): ResponseDetailedTimetableEntry {
     return {
       id: entry.id,
       location: entry.location,

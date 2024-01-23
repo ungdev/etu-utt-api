@@ -1,10 +1,10 @@
-import { RawTimetableEntry, RawTimetableEntryOverride } from '../../prisma/types';
+import { RawTimetableEntry, RawTimetableEntryOverride, RawTimetableGroup } from "../../prisma/types";
 
 /**
- * Represents a single occurence in the timetable.
- * The main difference between this and the TimetableEntry is that the TimetableOccurence doesn't contain metadata about this occurrence (override, repeat, ...)
+ * Represents a single occurrence in the timetable.
+ * The main difference between this and the TimetableEntry is that the TimetableOccurrence doesn't contain metadata about this occurrence (override, repeat, ...)
  */
-export interface TimetableOccurrence {
+export interface TimetableEntryOccurrence {
   /**
    * The id of the id of the entry this occurrence is built on
    */
@@ -32,12 +32,15 @@ export interface TimetableOccurrence {
 /**
  * Represents an entry with group ids and detailed overrides.
  */
-export interface DetailedEntry extends RawTimetableEntry {
+export interface DetailedTimetableEntry extends RawTimetableEntry {
   timetableGroups: Array<{ id: string }>;
   overwrittenBy: Array<RawTimetableEntryOverride & { timetableGroups: Array<{ id: string }> }>;
 }
 
-export interface ResponseDetailedEntry {
+/**
+ * The type representing a detailed entry when sending it.
+ */
+export interface ResponseDetailedTimetableEntry {
   id: string;
   location: string;
   duration: number;
@@ -58,3 +61,9 @@ export interface ResponseDetailedEntry {
     deletion: boolean;
   }>;
 }
+
+/**
+ * A group with a priority.
+ * This group should be associated with a specific user, as the priority is user-specific.
+ */
+export type TimetableEntryGroupForUser = RawTimetableGroup & { priority: number };

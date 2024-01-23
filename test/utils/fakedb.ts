@@ -19,11 +19,21 @@ import { UEService } from '../../src/ue/ue.service';
 import { UECommentReply } from '../../src/ue/interfaces/comment-reply.interface';
 import { omit, pick } from '../../src/utils';
 
+/**
+ * The fake entities can be used like normal entities in the <code>it(string, () => void)</code> functions.
+ * They are what is returned by the functions in this file.
+ */
 export type FakeUser = Partial<RawUser & RawUserInfos & { token: string }>;
 export type FakeTimetableGroup = Partial<RawTimetableGroup>;
 export type FakeTimetableEntry = Partial<RawTimetableEntry>;
 export type FakeTimetableEntryOverride = Partial<RawTimetableEntryOverride>;
 
+/**
+ * Creates a user in the database.
+ * @param app The function that returns the app.
+ * @param rawParams The parameters to use to create the user.
+ * @returns {@link FakeUser}
+ */
 export function createUser(app: AppProvider, rawParams: FakeUser & { password?: string } = {}): FakeUser {
   const params = {
     login: faker.internet.userName(),
@@ -42,7 +52,7 @@ export function createUser(app: AppProvider, rawParams: FakeUser & { password?: 
       .get(PrismaService)
       .user.create({
         data: {
-          hash: await app().get(AuthService).getHash(params.password),
+          hash: rawParams.hash ?? (await app().get(AuthService).getHash(params.password)),
           ...pick(params, 'id', 'login', 'hash', 'studentId', 'firstName', 'lastName', 'role'),
           infos: { create: pick(params, 'birthday', 'sex', 'nickname') },
         },
@@ -74,11 +84,22 @@ export function createTimetableGroup(
   params: CreateTimetableGroupParams,
   onTheFly?: true,
 ): Promise<FakeTimetableGroup>;
+/**
+ * Creates a timetableGroup in the database.
+ * @param app The function that returns the app.
+ * @param rawParams The parameters to use to create the group.
+ * @param onTheFly If false, the creation will be done in a beforeAll block.
+ * @returns {@link FakeTimetableGroup}
+ */
 export function createTimetableGroup(
   app: AppProvider,
-  { users = [] }: CreateTimetableGroupParams,
+  rawParams: CreateTimetableGroupParams,
   onTheFly = false,
 ): FakeTimetableGroup | Promise<FakeTimetableGroup> {
+  const params = {
+    users: [],
+    ...rawParams,
+  };
   const timetableGroup: FakeTimetableGroup = {};
   const createTimetableGroup = async () => {
     const createdGroup = await app()
@@ -88,7 +109,7 @@ export function createTimetableGroup(
           name: faker.random.words(),
           userTimetableGroups: {
             createMany: {
-              data: users.map((user) => ({ userId: user.user.id, priority: user.priority })),
+              data: params.users.map((user) => ({ userId: user.user.id, priority: user.priority })),
             },
           },
         },
@@ -110,6 +131,13 @@ export function createTimetableEntry(
   params?: CreateTimetableEntryParameters,
   onTheFly?: true,
 ): Promise<FakeTimetableEntry>;
+/**
+ * Creates a timetableEntry in the database.
+ * @param app The function that returns the app.
+ * @param rawParams The parameters to use to create the entry.
+ * @param onTheFly If false, the creation will be done in a beforeAll block.
+ * @returns {@link FakeTimetableEntry}
+ */
 export function createTimetableEntry(
   app: AppProvider,
   rawParams: CreateTimetableEntryParameters = {},
@@ -156,6 +184,13 @@ export function createTimetableEntryOverride(
   params: CreateTimetableEntryOverrideParameters,
   onTheFly?: true,
 ): Promise<FakeTimetableEntryOverride>;
+/**
+ * Creates a timetableEntryOverride in the database.
+ * @param app The function that returns the app.
+ * @param timetableEntry The timetableEntry to override.
+ * @param rawParams The parameters to use to create the override.
+ * @param onTheFly If false, the creation will be done in a beforeAll block.
+ */
 export function createTimetableEntryOverride(
   app: AppProvider,
   timetableEntry: FakeTimetableEntry,
