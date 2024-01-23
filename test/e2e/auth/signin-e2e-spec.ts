@@ -1,7 +1,6 @@
 import { AuthSignInDto } from '../../../src/auth/dto';
 import * as pactum from 'pactum';
 import { e2eSuite } from '../../utils/test_utils';
-import { AuthService } from '../../../src/auth/auth.service';
 import * as fakedb from '../../utils/fakedb';
 
 const SignInE2ESpec = e2eSuite('POST /auth/signin', (app) => {

@@ -6,7 +6,7 @@ import {
   TimetableEntryOccurrence,
 } from './interfaces/timetable.interface';
 import { RawTimetableEntry, RawTimetableEntryOverride, RawTimetableGroup } from '../prisma/types';
-import { omit, sortArray } from "../utils";
+import { omit, sortArray } from '../utils';
 import TimetableCreateEntryDto from './dto/timetable-create-entry.dto';
 import TimetableUpdateEntryDto from './dto/timetable-update-entry.dto';
 import TimetableDeleteOccurrencesDto from './dto/timetable-delete-occurrences.dto';
