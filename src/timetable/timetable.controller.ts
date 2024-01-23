@@ -1,15 +1,16 @@
 import {
   Body,
   ConflictException,
-  Controller, Delete,
+  Controller,
+  Delete,
   Get,
   NotFoundException,
   Param,
   ParseIntPipe,
   Patch,
   Post,
-  UseGuards
-} from "@nestjs/common";
+  UseGuards,
+} from '@nestjs/common';
 import TimetableService from './timetable.service';
 import { JwtGuard } from '../auth/guard';
 import { GetUser } from '../auth/decorator';
@@ -18,7 +19,7 @@ import { regex, RegexPipe } from '../app.pipe';
 import TimetableCreateEntryDto from './dto/timetable-create-entry.dto';
 import TimetableUpdateEntryDto from './dto/timetable-update-entry.dto';
 import { DetailedEntry, ResponseDetailedEntry } from './interfaces/timetable.interface';
-import TimetableDeleteOccurrencesDto from "./dto/timetable-delete-occurrences.dto";
+import TimetableDeleteOccurrencesDto from './dto/timetable-delete-occurrences.dto';
 
 @Controller('/timetable')
 export class TimetableController {

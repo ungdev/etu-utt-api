@@ -1,4 +1,4 @@
-import { ArrayNotEmpty, IsArray, IsInt, IsNotEmpty, IsPositive, IsString, IsUUID } from "class-validator";
+import { ArrayNotEmpty, IsArray, IsInt, IsNotEmpty, IsPositive, IsString, IsUUID } from 'class-validator';
 
 export default class TimetableDeleteOccurrencesDto {
   @IsInt()

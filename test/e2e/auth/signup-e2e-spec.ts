@@ -3,7 +3,7 @@ import * as pactum from 'pactum';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { e2eSuite } from '../../utils/test_utils';
 
-const SignupE2ESpec = e2eSuite('Signup', (app) => {
+const SignupE2ESpec = e2eSuite('POST /auth/signup', (app) => {
   const dto = {
     login: 'testLogin',
     password: 'testPassword',

@@ -3,7 +3,7 @@ import { UESearchDto } from './dto/ue-search.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { UeCommentPostDto } from './dto/ue-comment-post.dto';
-import { User } from '../prisma/types';
+import { User } from '../users/interfaces/user.interface';
 import { UERateDto } from './dto/ue-rate.dto';
 import { UeCommentUpdateDto } from './dto/ue-comment-update.dto';
 import { CommentReplyDto } from './dto/ue-comment-reply.dto';
@@ -14,7 +14,7 @@ import { SelectComment, UEComment, UERawComment } from './interfaces/comment.int
 import { SelectCommentReply, UECommentReply } from './interfaces/comment-reply.interface';
 import { Criterion, SelectCriterion } from './interfaces/criterion.interface';
 import { SelectRate, UERating } from './interfaces/rate.interface';
-import {FakeUser} from "../../test/utils/fakedb";
+import { FakeUser } from '../../test/utils/fakedb';
 
 @Injectable()
 export class UEService {

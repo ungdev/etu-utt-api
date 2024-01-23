@@ -1,56 +1,35 @@
-import { AuthSignUpDto } from '../../../src/auth/dto';
-import { PrismaService } from '../../../src/prisma/prisma.service';
-import { AuthService } from '../../../src/auth/auth.service';
 import * as pactum from 'pactum';
 import { e2eSuite } from '../../utils/test_utils';
-import { UserBase } from '../../../src/prisma/types';
+import * as fakedb from '../../utils/fakedb';
 
-const includeInfos = { include: { infos: true } };
-
-function userToBodyUser(user: UserBase) {
+function userToBodyUser(user: fakedb.FakeUser) {
   return {
     id: user.id,
     firstName: user.firstName,
     lastName: user.lastName,
-    nickname: user.infos.nickname,
+    nickname: user.nickname,
   };
 }
 
-const SearchE2ESpec = e2eSuite('Search', (app) => {
-  const userInfos = {
+const SearchE2ESpec = e2eSuite('GET /users', (app) => {
+  const user = fakedb.createUser(app, {
     login: 'users',
-    password: 'verystrongpwd',
     sex: 'FEMALE',
     studentId: 69,
     lastName: 'profile',
     firstName: 'profile',
     role: 'STUDENT',
     birthday: new Date(Date.UTC(2000, 1, 1)),
-  } as AuthSignUpDto;
-
-  const otherUserInfos = {
+  });
+  const otherUser = fakedb.createUser(app, {
     login: 'otheruser',
-    password: 'thisisevenstronger',
     sex: 'MALE',
     studentId: 70,
     lastName: 'other',
     firstName: 'user',
     role: 'STUDENT',
     birthday: new Date(Date.UTC(1998, 12, 4)),
-  } as AuthSignUpDto;
-
-  let token: string;
-
-  beforeAll(async () => {
-    await app().get(PrismaService).cleanDb();
-    token = await app().get(AuthService).signup(userInfos);
-    await app().get(AuthService).signup(otherUserInfos);
-    await app()
-      .get(PrismaService)
-      .user.update({
-        where: { login: otherUserInfos.login },
-        data: { infos: { update: { nickname: 'nickname' } } },
-      });
+    nickname: 'nickname',
   });
 
   it('should return a 401 because user is not authenticated', async () => {
@@ -58,75 +37,46 @@ const SearchE2ESpec = e2eSuite('Search', (app) => {
   });
 
   it('should return both users by searching by their firstName', async () => {
-    const users = await app().get(PrismaService).user.findMany(includeInfos);
     return pactum
       .spec()
       .get('/users?firstName=e')
-      .withBearerToken(token)
+      .withBearerToken(user.token)
       .expectStatus(200)
-      .expectBodyContains(userToBodyUser(users[0]))
-      .expectBodyContains(userToBodyUser(users[1]));
+      .expectBodyContains(userToBodyUser(user))
+      .expectBodyContains(userToBodyUser(otherUser));
   });
 
-  it('should return a user by searching by their last name', async () => {
-    const user = await app()
-      .get(PrismaService)
-      .user.findUnique({
-        where: { login: userInfos.login },
-        ...includeInfos,
-      });
-    return pactum
+  it('should return a user by searching by their last name', async () =>
+    pactum
       .spec()
-      .get(`/users?lastName=${userInfos.lastName}`)
-      .withBearerToken(token)
+      .get(`/users?lastName=${user.lastName}`)
+      .withBearerToken(user.token)
       .expectStatus(200)
-      .expectBody([userToBodyUser(user)]);
-  });
+      .expectBody([userToBodyUser(user)]));
 
-  it('should return a user by searching by their nickname', async () => {
-    const user = await app()
-      .get(PrismaService)
-      .user.findUnique({
-        where: { login: otherUserInfos.login },
-        ...includeInfos,
-      });
-    return pactum
+  it('should return a user by searching by their nickname', async () =>
+    pactum
       .spec()
       .get('/users?nickname=nickname')
-      .withBearerToken(token)
+      .withBearerToken(user.token)
       .expectStatus(200)
-      .expectBody([userToBodyUser(user)]);
-  });
+      .expectBody([userToBodyUser(otherUser)]));
 
-  it('should return a user by searching with the name field (searching in the first name)', async () => {
-    const users = await app()
-      .get(PrismaService)
-      .user.findUnique({
-        where: { login: otherUserInfos.login },
-        ...includeInfos,
-      });
-    return pactum
+  it('should return a user by searching with the name field (searching in the first name)', async () =>
+    pactum
       .spec()
-      .get(`/users?name=${otherUserInfos.firstName}`)
-      .withBearerToken(token)
+      .get(`/users?name=${user.firstName}`)
+      .withBearerToken(user.token)
       .expectStatus(200)
-      .expectBody([userToBodyUser(users)]);
-  });
+      .expectBody([userToBodyUser(user)]));
 
-  it('should return a user by searching with the name field (searching in the last name)', async () => {
-    const users = await app()
-      .get(PrismaService)
-      .user.findUnique({
-        where: { login: otherUserInfos.login },
-        ...includeInfos,
-      });
-    return pactum
+  it('should return a user by searching with the name field (searching in the last name)', async () =>
+    pactum
       .spec()
-      .get(`/users?name=${otherUserInfos.lastName}`)
-      .withBearerToken(token)
+      .get(`/users?name=${user.lastName}`)
+      .withBearerToken(user.token)
       .expectStatus(200)
-      .expectBody([userToBodyUser(users)]);
-  });
+      .expectBody([userToBodyUser(user)]));
 });
 
 export default SearchE2ESpec;

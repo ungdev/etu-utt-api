@@ -11,14 +11,11 @@ export class AuthService {
   constructor(private prisma: PrismaService, private jwt: JwtService, private config: ConfigService) {}
 
   async signup(dto: AuthSignUpDto): Promise<string> {
-    const saltRounds = 10;
-    const hash = await bcrypt.hash(dto.password, saltRounds);
-
     try {
       const user = await this.prisma.user.create({
         data: {
           login: dto.login,
-          hash,
+          hash: await this.getHash(dto.password),
           firstName: dto.firstName,
           lastName: dto.lastName,
           studentId: dto.studentId,
@@ -41,7 +38,7 @@ export class AuthService {
   }
 
   async signin(dto: AuthSignInDto): Promise<string> {
-    // find the user by login, if does not exist, throw exeption
+    // find the user by login, if it does not exist, throw exception
     const user = await this.prisma.user.findUnique({
       where: {
         login: dto.login,
@@ -81,5 +78,10 @@ export class AuthService {
       expiresIn: this.config.get('JWT_EXPIRES_IN'),
       secret: secret,
     });
+  }
+
+  getHash(password: string): Promise<string> {
+    const saltRounds = 10;
+    return bcrypt.hash(password, saltRounds);
   }
 }

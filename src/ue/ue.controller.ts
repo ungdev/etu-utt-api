@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Put, 
 import { UESearchDto } from './dto/ue-search.dto';
 import { UEService } from './ue.service';
 import { GetUser } from '../auth/decorator';
-import { User } from '../prisma/types';
+import { User } from '../users/interfaces/user.interface';
 import { UeCommentPostDto } from './dto/ue-comment-post.dto';
 import { AppException, ERROR_CODE } from '../exceptions';
 import { UERateDto } from './dto/ue-rate.dto';

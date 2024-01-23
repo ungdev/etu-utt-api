@@ -1,43 +1,51 @@
-import { RawTimetableEntry, RawTimetableEntryOverride, RawTimetableGroup, RawUser } from '../../src/prisma/types';
+import {
+  RawTimetableEntry,
+  RawTimetableEntryOverride,
+  RawTimetableGroup,
+  RawUser,
+  RawUserInfos,
+} from '../../src/prisma/types';
 import { faker } from '@faker-js/faker';
-import { AuthSignUpDto } from '../../src/auth/dto';
 import { AuthService } from '../../src/auth/auth.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { AppProvider } from './test_utils';
-import { Prisma, TimetableEntryType } from '@prisma/client';
-import { User } from '../../src/prisma/types';
+import { Sex, TimetableEntryType, UserRole } from '@prisma/client';
+import { User } from '../../src/users/interfaces/user.interface';
 import { SelectUEOverview, UEOverView } from '../../src/ue/interfaces/ue-overview.interface';
 import { SelectUEDetail, UEDetail } from '../../src/ue/interfaces/ue-detail.interface';
 import { Criterion, SelectCriterion } from '../../src/ue/interfaces/criterion.interface';
 import { UEComment } from '../../src/ue/interfaces/comment.interface';
 import { UEService } from '../../src/ue/ue.service';
 import { UECommentReply } from '../../src/ue/interfaces/comment-reply.interface';
-import { omit } from '../../src/utils';
+import { omit, pick } from '../../src/utils';
 
-export type FakeUser = Partial<RawUser & { token: string }>;
+export type FakeUser = Partial<RawUser & RawUserInfos & { token: string }>;
 export type FakeTimetableGroup = Partial<RawTimetableGroup>;
 export type FakeTimetableEntry = Partial<RawTimetableEntry>;
 export type FakeTimetableEntryOverride = Partial<RawTimetableEntryOverride>;
 
-export function createUser(app: AppProvider): FakeUser {
-  const login = faker.internet.userName();
-  const userData = {
-    login,
+export function createUser(app: AppProvider, rawParams: FakeUser & { password?: string } = {}): FakeUser {
+  const params = {
+    login: faker.internet.userName(),
     studentId: faker.datatype.number(),
-    sex: 'OTHER',
-    lastName: 'user',
-    firstName: 'user',
-    birthday: new Date(Date.now()),
-    password: 'password',
-    role: 'STUDENT',
-  } as AuthSignUpDto & User;
+    sex: 'OTHER' as Sex,
+    lastName: faker.name.lastName(),
+    firstName: faker.name.firstName(),
+    role: 'STUDENT' as UserRole,
+    birthday: new Date(0),
+    password: faker.internet.password(),
+    ...rawParams,
+  };
   const userWithToken: Partial<User & { token: string }> = {};
   beforeAll(async () => {
-    userWithToken.token = await app().get(AuthService).signup(userData);
     const user = await app()
       .get(PrismaService)
-      .user.findUnique({
-        where: { login },
+      .user.create({
+        data: {
+          hash: await app().get(AuthService).getHash(params.password),
+          ...pick(params, 'id', 'login', 'hash', 'studentId', 'firstName', 'lastName', 'role'),
+          infos: { create: pick(params, 'birthday', 'sex', 'nickname') },
+        },
         include: {
           infos: true,
           permissions: {
@@ -49,7 +57,8 @@ export function createUser(app: AppProvider): FakeUser {
       });
     const permissions = user.permissions.map((perm) => perm.userPermissionId);
     delete user.permissions;
-    Object.assign(userWithToken, user);
+    Object.assign(userWithToken, { ...omit(user, 'infos', 'permissions'), ...omit(user.infos, 'id') });
+    userWithToken.token = await app().get(AuthService).signToken(user.id, user.login);
     userWithToken.permissions = permissions;
   });
   return userWithToken;
@@ -112,18 +121,10 @@ export function createTimetableEntry(
     occurrenceDuration: 0,
     occurrencesCount: 1,
     repeatEvery: 0,
-    type: 'CUSTOM',
+    type: 'CUSTOM' as TimetableEntryType,
     location: faker.address.cityName(),
     groups: [],
     ...rawParams,
-  } as typeof rawParams & {
-    eventStart: Date;
-    occurrenceDuration: number;
-    occurrencesCount: number;
-    repeatEvery: number;
-    type: TimetableEntryType;
-    location: string;
-    groups: [];
   };
   const entry: FakeTimetableEntry = {};
   const createTimetableEntry = async () => {
@@ -167,7 +168,7 @@ export function createTimetableEntryOverride(
     applyFrom: 0,
     applyUntil: 0,
     ...rawParams,
-  } as typeof rawParams & { applyFrom: number; applyUntil: number };
+  };
   const override: FakeTimetableEntryOverride = {};
   const createTimetableEntryOverride = async () => {
     const createdOverride = await app()
