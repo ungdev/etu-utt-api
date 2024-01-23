@@ -36,13 +36,6 @@ const GetE2ESpec = suite('GET /ue/{ueCode}', (app) => {
   createUERating(app, user, criterion, ueWithRating);
   createUERating(app, user2, criterion, ueWithRating, 5);
 
-  it('should return a 401 as user is not authenticated', () => {
-    return pactum
-      .spec()
-      .get('/ue/XX01')
-      .expectAppError(ERROR_CODE.NOT_LOGGED_IN);
-  });
-
   it('should return an error if the ue does not exist', () => {
     return pactum
       .spec()

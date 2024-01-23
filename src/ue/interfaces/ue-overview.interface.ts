@@ -16,9 +16,9 @@ const UE_OVERVIEW_SELECT_FILTER = {
         },
       },
     },
-    filiere: {
+    branchOption: {
       select: {
-        branche: {
+        branch: {
           select: {
             code: true,
             name: true,
@@ -30,13 +30,17 @@ const UE_OVERVIEW_SELECT_FILTER = {
     },
     info: {
       select: {
-        antecedent: true,
+        requirements: {
+          select: {
+            code: true,
+          },
+        },
         comment: true,
         degree: true,
         languages: true,
         minors: true,
         objectives: true,
-        programme: true,
+        program: true,
       },
     },
     openSemester: {
@@ -49,7 +53,6 @@ const UE_OVERVIEW_SELECT_FILTER = {
   },
 } as const;
 
-type DeepWritable<T> = { -readonly [key in keyof T]: DeepWritable<T[key]> };
 export type UEOverView = DeepWritable<
   Prisma.UEGetPayload<typeof UE_OVERVIEW_SELECT_FILTER>
 >;
@@ -61,7 +64,8 @@ export type UEOverView = DeepWritable<
  * The {@link UEOverView} type only contains partial ue data and should not be used to display ue details.
  * Consider using {@link UEDetail} instead.
  *
- * @param arg extra arguments to provide to the prisma function. This includes `where` or `data` fields
+ * @param arg extra arguments to provide to the prisma function. This includes `where` or `data` fields.
+ * Sub arguments of the ones provided in {@link UE_OVERVIEW_SELECT_FILTER} will be ignored
  * @returns arguments to use in prisma function.
  *
  * @example

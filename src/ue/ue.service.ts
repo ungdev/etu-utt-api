@@ -31,7 +31,7 @@ export class UEService {
 
   /**
    * Retrieves a page of {@link UEOverView} matching the user query. This query searchs for a text in
-   * the ue code, name, comment, objectives and programme. The user can restrict his research to a branch,
+   * the ue code, name, comment, objectives and program. The user can restrict his research to a branch,
    * a filiere, a credit type or a semester.
    * @param query the query parameters of this route
    * @returns a page of {@link UEOverView} matching the user query
@@ -40,9 +40,9 @@ export class UEService {
     // The where query object for prisma
     const where = {
       // Search for the user query (if there is one)
-      // We're using this syntax not to have the `null` value in our filters
-      // because prisma handled `null` and `undefined` differently (only `undefined`
-      // is ignored whereas `null` matches the sql NULL value)
+      // We're using this syntax because of the behavior of the OR operator :
+      // it requires one of the conditions to be fullfilled but if query.q is undefined,
+      // all conditions will be ignored.
       ...(query.q
         ? {
             OR: [
@@ -66,22 +66,22 @@ export class UEService {
                   OR: [
                     { comment: query.q },
                     { objectives: query.q },
-                    { programme: query.q },
+                    { program: query.q },
                   ],
                 },
               },
             ],
           }
         : {}),
-      // Filter per filiere and branch if such a filter is present
-      ...(query.filiere || query.branch
+      // Filter per branch option and branch if such a filter is present
+      ...(query.branchOption || query.branch
         ? {
-            filiere: {
+            branchOption: {
               some: {
                 OR: [
-                  { code: query.filiere },
+                  { code: query.branchOption },
                   {
-                    branche: {
+                    branch: {
                       code: query.branch,
                     },
                   },
@@ -211,7 +211,7 @@ export class UEService {
       this.prisma.uEComment.findMany(
         SelectComment({
           where: {
-            UE: {
+            ue: {
               code: ueCode,
             },
           },
@@ -232,7 +232,7 @@ export class UEService {
         }),
       ),
       this.prisma.uEComment.count({
-        where: { UE: { code: ueCode } },
+        where: { ue: { code: ueCode } },
       }),
     ])) as [UERawComment[], number];
     // If the user is neither a moderator or the comment author, and the comment is anonymous,
@@ -241,7 +241,7 @@ export class UEService {
       if (
         comment.isAnonymous &&
         !bypassAnonymousData &&
-        comment.author.id !== user.id
+        comment.author?.id !== user.id
       )
         delete comment.author;
     // Data pagination
@@ -278,11 +278,13 @@ export class UEService {
    * @returns whether the {@link replyId | reply} exists
    */
   async doesReplyExist(replyId: string) {
-    return !!(await this.prisma.uECommentReply.findUnique({
-      where: {
-        id: replyId,
-      },
-    }));
+    return (
+      (await this.prisma.uECommentReply.count({
+        where: {
+          id: replyId,
+        },
+      })) != 0
+    );
   }
 
   /**
@@ -309,20 +311,19 @@ export class UEService {
    * @returns the last semester done by the {@link user} for the {@link ueCode | ue}
    */
   async getLastSemesterDoneByUser(user: User, ueCode: string) {
-    const semester = await this.prisma.userUESubscription.findMany({
+    return this.prisma.userUESubscription.findFirst({
       where: {
-        UE: {
+        ue: {
           code: ueCode,
         },
         userId: user.id,
       },
+      orderBy: {
+        semester: {
+          end: 'desc',
+        },
+      },
     });
-    // Sort semester by year then by semester type. Pick the last one (ie. first one in the array)
-    return semester.sort((a, b) => {
-      const diff =
-        Number(b.semesterId.slice(1)) - Number(a.semesterId.slice(1));
-      return diff == 0 ? a.semesterId.localeCompare(b.semesterId) : diff;
-    })[0];
   }
 
   /**
@@ -331,11 +332,13 @@ export class UEService {
    * @returns whether the ue exists
    */
   async doesUEExist(ueCode: string) {
-    return !!(await this.prisma.uE.findUnique({
-      where: {
-        code: ueCode,
-      },
-    }));
+    return (
+      (await this.prisma.uE.count({
+        where: {
+          code: ueCode,
+        },
+      })) != 0
+    );
   }
 
   /**
@@ -366,9 +369,9 @@ export class UEService {
     // Find a comment (in the UE) whoose author is the user
     const comment = await this.prisma.uEComment.findUnique({
       where: {
-        UEId_authorId: {
+        ueId_authorId: {
           authorId: user.id,
-          UEId: ue.id,
+          ueId: ue.id,
         },
       },
     });
@@ -400,7 +403,7 @@ export class UEService {
                 id: user.id,
               },
             },
-            UE: {
+            ue: {
               connect: {
                 code: ueCode,
               },
@@ -461,12 +464,10 @@ export class UEService {
    * @returns whether the {@link user} has already upvoted the {@link commentId | comment}
    */
   async hasAlreadyUpvoted(user: User, commentId: string) {
-    const commentUpvote = await this.prisma.uECommentUpvote.findUnique({
+    const commentUpvote = await this.prisma.uECommentUpvote.findFirst({
       where: {
-        userId_commentId: {
-          commentId,
-          userId: user.id,
-        },
+        commentId,
+        userId: user.id,
       },
     });
     return commentUpvote != null;
@@ -478,11 +479,13 @@ export class UEService {
    * @returns whether the {@link commentId | comment} exists
    */
   async doesCommentExist(commentId: string) {
-    return this.prisma.uEComment.findUnique({
-      where: {
-        id: commentId,
-      },
-    });
+    return (
+      (await this.prisma.uEComment.count({
+        where: {
+          id: commentId,
+        },
+      })) != 0
+    );
   }
 
   /**
@@ -570,12 +573,10 @@ export class UEService {
    * @param commentId the id of the comment to un-upvote
    */
   async deUpvoteComment(user: User, commentId: string) {
-    await this.prisma.uECommentUpvote.delete({
+    await this.prisma.uECommentUpvote.deleteMany({
       where: {
-        userId_commentId: {
-          commentId,
-          userId: user.id,
-        },
+        commentId,
+        userId: user.id,
       },
     });
   }
@@ -608,11 +609,13 @@ export class UEService {
    * @returns whether the {@link criterionId | criterion} exists
    */
   async doesCriterionExist(criterionId: string) {
-    return !!(await this.prisma.uEStarCriterion.findUnique({
-      where: {
-        id: criterionId,
-      },
-    }));
+    return (
+      (await this.prisma.uEStarCriterion.count({
+        where: {
+          id: criterionId,
+        },
+      })) != 0
+    );
   }
 
   /**
@@ -646,7 +649,7 @@ export class UEService {
       SelectRate({
         where: {
           userId: user.id,
-          UEId: UE.id,
+          ueId: UE.id,
         },
         orderBy: {
           criterion: {
@@ -678,8 +681,8 @@ export class UEService {
     return this.prisma.uEStarVote.upsert(
       SelectRate({
         where: {
-          UEId_userId_criterionId: {
-            UEId: UE.id,
+          ueId_userId_criterionId: {
+            ueId: UE.id,
             userId: user.id,
             criterionId: dto.criterion,
           },
@@ -687,7 +690,7 @@ export class UEService {
         create: {
           value: dto.value,
           criterionId: dto.criterion,
-          UEId: UE.id,
+          ueId: UE.id,
           userId: user.id,
         },
         update: {

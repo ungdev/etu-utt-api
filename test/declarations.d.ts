@@ -6,7 +6,6 @@ import { UEDetail } from 'src/ue/interfaces/ue-detail.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { UERating } from 'src/ue/interfaces/rate.interface';
 
-type DeepWritable<T> = { -readonly [key in keyof T]: DeepWritable<T[key]> };
 export type JsonLikeVariant<T> = {
   [K in keyof T]: T[K] extends string | Date | DeepWritable<Date>
     ? string | RegExp
@@ -35,8 +34,6 @@ declare module './declarations' {
      * depending on the {@link created} property.
      */
     expectUEComment(comment: JsonLikeVariant<UEComment>, created = false): this;
-    /** expects to return the given {@link upvote} */
-    expectUECommentUpvote(upvote: JsonLikeVariant<{ upvoted: boolean }>): this;
     /** expects to return the given {@link commentPage | page of comments} */
     expectUEComments(commentPage: JsonLikeVariant<Pagination<UEComment>>): this;
     /**

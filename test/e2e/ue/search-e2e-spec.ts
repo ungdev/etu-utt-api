@@ -18,13 +18,6 @@ const SearchE2ESpec = suite('GET /ue', (app) => {
       }),
     );
 
-  it('should return a 401 as user is not authenticated', () => {
-    return pactum
-      .spec()
-      .get('/ue?q=XX01')
-      .expectAppError(ERROR_CODE.NOT_LOGGED_IN);
-  });
-
   it('should return a 400 as semester is in a wrong format', () => {
     return pactum
       .spec()
@@ -122,13 +115,13 @@ const SearchE2ESpec = suite('GET /ue', (app) => {
       .spec()
       .withBearerToken(user.token)
       .get('/ue')
-      .withQueryParams('filiere', 'T1')
+      .withQueryParams('branchOption', 'T1')
       .expectUEs({
         items: ues.filter((ue) =>
-          ue.filiere.some((filiere) => filiere.code === 'T1'),
+          ue.branchOption.some((branchOption) => branchOption.code === 'T1'),
         ),
         itemCount: ues.filter((ue) =>
-          ue.filiere.some((filiere) => filiere.code === 'T1'),
+          ue.branchOption.some((branchOption) => branchOption.code === 'T1'),
         ).length,
         itemsPerPage: Number(
           app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE'),
@@ -144,13 +137,17 @@ const SearchE2ESpec = suite('GET /ue', (app) => {
       .withQueryParams('branch', 'B1')
       .expectUEs({
         items: ues.filter((ue) =>
-          ue.filiere.some((filiere) => filiere.branche.code === 'B1'),
+          ue.branchOption.some(
+            (branchOption) => branchOption.branch.code === 'B1',
+          ),
         ),
         itemsPerPage: Number(
           app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE'),
         ),
         itemCount: ues.filter((ue) =>
-          ue.filiere.some((filiere) => filiere.branche.code === 'B1'),
+          ue.branchOption.some(
+            (branchOption) => branchOption.branch.code === 'B1',
+          ),
         ).length,
       });
   });

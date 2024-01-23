@@ -146,47 +146,6 @@ const GetCommentsE2ESpec = suite('GET /ue/{ueCode}/comments', (app) => {
         ),
       });
   });
-
-  it('should return the first page of comments with hidden anonymous authors', () => {
-    comments[0].upvoted = true;
-    return pactum
-      .spec()
-      .withBearerToken(user2.token)
-      .get(`/ue/${ue.code}/comments`)
-      .expectUEComments({
-        items: comments
-          .sort((a, b) =>
-            b.upvotes - a.upvotes == 0
-              ? (<Date>b.createdAt).getTime() - (<Date>a.createdAt).getTime()
-              : b.upvotes - a.upvotes,
-          )
-          .slice(
-            0,
-            Number(
-              app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE'),
-            ),
-          )
-          .map((comment) => ({
-            ...comment,
-            answers: comment.answers.map((answer) => ({
-              ...answer,
-              createdAt: `${(<Date>answer.createdAt).toISOString()}`,
-              updatedAt: `${(<Date>answer.updatedAt).toISOString()}`,
-            })),
-            updatedAt: `${(<Date>comment.updatedAt).toISOString()}`,
-            createdAt: `${(<Date>comment.createdAt).toISOString()}`,
-          }))
-          .map((comment) => {
-            if (comment.isAnonymous && comment.author.id !== user2.id)
-              delete comment.author;
-            return comment;
-          }),
-        itemCount: comments.length,
-        itemsPerPage: Number(
-          app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE'),
-        ),
-      });
-  });
 });
 
 export default GetCommentsE2ESpec;

@@ -1,8 +1,9 @@
 import { createUser, suite, createUE, createComment } from '../../test_utils';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
+import { HttpStatus } from '@nestjs/common';
 
-const PutUpvote = suite('PUT /ue/comments/{commentId}/upvote', (app) => {
+const DeleteUpvote = suite('DELETE /ue/comments/{commentId}/upvote', (app) => {
   const user = createUser(app);
   const user2 = createUser(app, { login: 'user2' });
   const ue = createUE(app);
@@ -11,7 +12,7 @@ const PutUpvote = suite('PUT /ue/comments/{commentId}/upvote', (app) => {
   it('should return a 401 as user is not authenticated', () => {
     return pactum
       .spec()
-      .put(`/ue/comments/${comment1.id}/upvote`)
+      .delete(`/ue/comments/${comment1.id}/upvote`)
       .expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
@@ -19,7 +20,7 @@ const PutUpvote = suite('PUT /ue/comments/{commentId}/upvote', (app) => {
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .put(`/ue/comments/${comment1.id}/upvote`)
+      .delete(`/ue/comments/${comment1.id}/upvote`)
       .expectAppError(ERROR_CODE.IS_COMMENT_AUTHOR);
   });
 
@@ -27,7 +28,7 @@ const PutUpvote = suite('PUT /ue/comments/{commentId}/upvote', (app) => {
     return pactum
       .spec()
       .withBearerToken(user2.token)
-      .put(`/ue/comments/${comment1.id.slice(0, 31)}/upvote`)
+      .delete(`/ue/comments/${comment1.id.slice(0, 31)}/upvote`)
       .expectAppError(ERROR_CODE.NOT_AN_UUID);
   });
 
@@ -35,25 +36,30 @@ const PutUpvote = suite('PUT /ue/comments/{commentId}/upvote', (app) => {
     return pactum
       .spec()
       .withBearerToken(user2.token)
-      .put(`/ue/comments/00000000-0000-0000-0000-000000000000/upvote`)
+      .delete(`/ue/comments/00000000-0000-0000-0000-000000000000/upvote`)
       .expectAppError(ERROR_CODE.NO_SUCH_COMMENT);
   });
 
-  it('should return the upvoted upvote', () => {
+  it('should delete the upvote', async () => {
+    await pactum
+      .spec()
+      .withBearerToken(user2.token)
+      .post(`/ue/comments/${comment1.id}/upvote`)
+      .expectStatus(HttpStatus.CREATED);
     return pactum
       .spec()
       .withBearerToken(user2.token)
-      .put(`/ue/comments/${comment1.id}/upvote`)
-      .expectUECommentUpvote({ upvoted: true });
+      .delete(`/ue/comments/${comment1.id}/upvote`)
+      .expectStatus(HttpStatus.NO_CONTENT);
   });
 
-  it('should return the de-upvote upvote', () => {
+  it('should not be able to re-de-upvote upvote', () => {
     return pactum
       .spec()
       .withBearerToken(user2.token)
-      .put(`/ue/comments/${comment1.id}/upvote`)
-      .expectUECommentUpvote({ upvoted: false });
+      .delete(`/ue/comments/${comment1.id}/upvote`)
+      .expectAppError(ERROR_CODE.FORBIDDEN_ALREADY_UNUPVOTED);
   });
 });
 
-export default PutUpvote;
+export default DeleteUpvote;

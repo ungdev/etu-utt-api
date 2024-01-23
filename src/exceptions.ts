@@ -12,6 +12,7 @@ import { HttpException, HttpStatus } from '@nestjs/common';
  * - 3xxx: Permission errors. This includes all http 403 errors.
  * - 4xxx: Resource errors. This includes all http 404 errors.
  */
+
 export const enum ERROR_CODE {
   NOT_LOGGED_IN = 1001,
   PARAM_MALFORMED = 2001,
@@ -29,6 +30,8 @@ export const enum ERROR_CODE {
   NOT_AN_UUID = 2101,
   FORBIDDEN_NOT_ENOUGH_PERMISSIONS = 3001,
   FORBIDDEN_ALREADY_COMMENTED = 3101,
+  FORBIDDEN_ALREADY_UPVOTED = 3102,
+  FORBIDDEN_ALREADY_UNUPVOTED = 3103,
   NOT_COMMENT_AUTHOR = 4221,
   NOT_ALREADY_DONE_UE = 4222,
   NOT_REPLY_AUTHOR = 4223,
@@ -112,6 +115,14 @@ export const ErrorData: Readonly<{
   },
   [ERROR_CODE.FORBIDDEN_ALREADY_COMMENTED]: {
     message: 'You have already posted a comment for this UE',
+    httpCode: HttpStatus.FORBIDDEN,
+  },
+  [ERROR_CODE.FORBIDDEN_ALREADY_UPVOTED]: {
+    message: 'You must un-upvote this comment before upvoting it again',
+    httpCode: HttpStatus.FORBIDDEN,
+  },
+  [ERROR_CODE.FORBIDDEN_ALREADY_UNUPVOTED]: {
+    message: 'You must upvote this comment before un-upvoting it',
     httpCode: HttpStatus.FORBIDDEN,
   },
   [ERROR_CODE.NOT_COMMENT_AUTHOR]: {

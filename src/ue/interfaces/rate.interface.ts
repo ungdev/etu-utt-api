@@ -7,7 +7,6 @@ const RATE_SELECT_FILTER = {
   },
 } as const;
 
-type DeepWritable<T> = { -readonly [key in keyof T]: DeepWritable<T[key]> };
 export type UERating = DeepWritable<
   Prisma.UEStarVoteGetPayload<typeof RATE_SELECT_FILTER>
 >;
@@ -15,7 +14,8 @@ export type UERating = DeepWritable<
 /**
  * Generates the argument to use in prisma function to retrieve an object containing the necessary
  * properties to match against the {@link UERating} type.
- * @param arg extra arguments to provide to the prisma function. This includes `where` or `data` fields
+ * @param arg extra arguments to provide to the prisma function. This includes `where` or `data` fields.
+ * Sub arguments of the ones provided in {@link RATE_SELECT_FILTER} will be ignored
  * @returns arguments to use in prisma function.
  *
  * @example
@@ -23,7 +23,7 @@ export type UERating = DeepWritable<
  *   SelectRate({
  *     where: {
  *       userId: user.id,
- *       UEId: UE.id,
+ *       ueId: UE.id,
  *     },
  *     orderBy: {
  *       criterion: {

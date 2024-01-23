@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -12,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { UESearchDto } from './dto/ue-search.dto';
 import { UEService } from './ue.service';
-import { GetUser } from '../auth/decorator';
+import { GetUser, IsPublic } from '../auth/decorator';
 import { User } from '../prisma/types';
 import { UeCommentPostDto } from './dto/ue-comment-post.dto';
 import { AppException, ERROR_CODE } from '../exceptions';
@@ -26,11 +28,13 @@ export class UEController {
   constructor(readonly ueService: UEService) {}
 
   @Get()
+  @IsPublic()
   async searchUE(@Query() queryParams: UESearchDto) {
     return this.ueService.searchUEs(queryParams);
   }
 
   @Get('/:ueCode')
+  @IsPublic()
   async getUE(@Param('ueCode') ueCode: string) {
     if (!(await this.ueService.doesUEExist(ueCode)))
       throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
@@ -105,7 +109,8 @@ export class UEController {
     throw new AppException(ERROR_CODE.NOT_COMMENT_AUTHOR);
   }
 
-  @Put('/comments/:commentId/upvote')
+  @Post('/comments/:commentId/upvote')
+  @HttpCode(HttpStatus.CREATED)
   async UpvoteUEComment(
     @Param(
       'commentId',
@@ -120,12 +125,30 @@ export class UEController {
       throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
     if (await this.ueService.isUserCommentAuthor(user, commentId))
       throw new AppException(ERROR_CODE.IS_COMMENT_AUTHOR);
-    if (!(await this.ueService.hasAlreadyUpvoted(user, commentId))) {
-      await this.ueService.upvoteComment(user, commentId);
-      return { upvoted: true };
-    }
+    if (await this.ueService.hasAlreadyUpvoted(user, commentId))
+      throw new AppException(ERROR_CODE.FORBIDDEN_ALREADY_UPVOTED);
+    await this.ueService.upvoteComment(user, commentId);
+  }
+
+  @Delete('/comments/:commentId/upvote')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async UnUpvoteUEComment(
+    @Param(
+      'commentId',
+      new ParseUUIDPipe({
+        exceptionFactory: () => new AppException(ERROR_CODE.NOT_AN_UUID),
+      }),
+    )
+    commentId: string,
+    @GetUser() user: User,
+  ) {
+    if (!(await this.ueService.doesCommentExist(commentId)))
+      throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
+    if (await this.ueService.isUserCommentAuthor(user, commentId))
+      throw new AppException(ERROR_CODE.IS_COMMENT_AUTHOR);
+    if (!(await this.ueService.hasAlreadyUpvoted(user, commentId)))
+      throw new AppException(ERROR_CODE.FORBIDDEN_ALREADY_UNUPVOTED);
     await this.ueService.deUpvoteComment(user, commentId);
-    return { upvoted: false };
   }
 
   @Post('/comments/:commentId/reply')
@@ -183,6 +206,7 @@ export class UEController {
   }
 
   @Get('/rate/criteria')
+  @IsPublic()
   async GetRateCriteria() {
     return this.ueService.getRateCriteria();
   }

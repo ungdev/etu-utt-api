@@ -22,7 +22,7 @@ export class JwtGuard extends AuthGuard('jwt') {
         (result instanceof Observable && !(await firstValueFrom(result)))
       )
         throw new Error();
-      // The user is logged in, wa can serve the request
+      // The user is logged in, we can serve the request
       return true;
     } catch {
       // The user is not logged in, throw an logging error

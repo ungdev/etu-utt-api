@@ -30,7 +30,6 @@ SpecProto.expectUE = expect<UEDetail>;
 SpecProto.expectUEs = expect<Pagination<UEOverView>>;
 SpecProto.expectUEComment = expectOkOrCreate<UEComment>;
 SpecProto.expectUEComments = expect<Pagination<UEComment>>;
-SpecProto.expectUECommentUpvote = expect<{ upvoted: boolean }>;
 SpecProto.expectUECommentReply = expectOkOrCreate<UECommentReply>;
 SpecProto.expectUECriteria = expect<Criterion[]>;
 SpecProto.expectUERate = expect<UERating>;

@@ -10,3 +10,8 @@ declare interface Pagination<T> {
   itemsPerPage: number;
   itemCount: number;
 }
+
+/** Used to recursively remove any readonly keyword on a object and all its properties */
+declare type DeepWritable<T> = {
+  -readonly [key in keyof T]: DeepWritable<T[key]>;
+};

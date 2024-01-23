@@ -123,12 +123,12 @@ export function createUE(
           },
         ],
       },
-      filiere: {
+      branchOption: {
         connectOrCreate: {
           create: {
             code: filiere,
             name: filiere,
-            branche: {
+            branch: {
               connectOrCreate: {
                 create: {
                   code: branch,
@@ -153,7 +153,7 @@ export function createUE(
       },
       info: {
         create: {
-          programme: 'What is going to be studied',
+          program: 'What is going to be studied',
           objectives: 'The objectives of the UE',
         },
       },
@@ -163,7 +163,7 @@ export function createUE(
           td: 20,
           tp: 16,
           the: 102,
-          projet: 48,
+          project: 48,
         },
       },
       openSemester: {
@@ -186,7 +186,7 @@ export function createUE(
       : app().get(PrismaService).uE.create(SelectUEDetail(data)));
     Object.assign(
       partialUE,
-      !('workTime' in ue)
+      forOverview
         ? {
             ...ue,
             openSemester: ue.openSemester.map((semester) => ({
@@ -215,7 +215,7 @@ export function makeUserJoinUE(
       .get(PrismaService)
       .userUESubscription.create({
         data: {
-          UE: {
+          ue: {
             connect: {
               code: ue.code,
             },
@@ -264,7 +264,7 @@ export function createUERating(
               id: user.id,
             },
           },
-          UE: {
+          ue: {
             connect: {
               code: ue.code,
             },
@@ -312,7 +312,7 @@ export function createComment(
       .get(PrismaService)
       .userUESubscription.findFirst({
         where: {
-          UE: {
+          ue: {
             code: onUE.code,
           },
           userId: user.id,
@@ -333,7 +333,7 @@ export function createComment(
                 where: { code: 'A24' },
               },
             },
-            UE: { connect: { code: onUE.code } },
+            ue: { connect: { code: onUE.code } },
             user: { connect: { id: user.id } },
           },
         });
