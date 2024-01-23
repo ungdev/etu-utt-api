@@ -56,7 +56,6 @@ export function createUser(app: AppProvider, rawParams: FakeUser & { password?: 
         },
       });
     const permissions = user.permissions.map((perm) => perm.userPermissionId);
-    delete user.permissions;
     Object.assign(userWithToken, { ...omit(user, 'infos', 'permissions'), ...omit(user.infos, 'id') });
     userWithToken.token = await app().get(AuthService).signToken(user.id, user.login);
     userWithToken.permissions = permissions;

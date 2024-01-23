@@ -3,7 +3,7 @@ import { e2eSuite } from '../../utils/test_utils';
 import { AuthService } from '../../../src/auth/auth.service';
 import { ConfigService } from '@nestjs/config';
 
-const SignupE2ESpec = e2eSuite('Verify token', (app) => {
+const VerifyE2ESpec = e2eSuite('GET /token/signin', (app) => {
   it('should return a 400 if the token is missing', async () => pactum.spec().get('/auth/signin').expectStatus(400));
 
   it('should return a 400 as the header is miss formatted', async () =>
@@ -39,4 +39,4 @@ const SignupE2ESpec = e2eSuite('Verify token', (app) => {
   });
 });
 
-export default SignupE2ESpec;
+export default VerifyE2ESpec;

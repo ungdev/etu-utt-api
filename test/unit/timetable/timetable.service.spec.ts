@@ -31,7 +31,7 @@ const TimetableServiceUnitSpec = unitSuite('Timetable.service', (app) => {
     location: faker.address.cityName(),
   }); // for user 1
 
-  beforeAll(async () => {
+  beforeAll(() => {
     timetableService = app().get(TimetableService);
     prisma = app().get(PrismaService);
   });

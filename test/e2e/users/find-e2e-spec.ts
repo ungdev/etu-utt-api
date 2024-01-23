@@ -4,7 +4,7 @@ import { HttpStatus } from '@nestjs/common';
 import * as fakedb from '../../utils/fakedb';
 import { pick } from '../../../src/utils';
 
-const FindE2ESpec = e2eSuite('Find', (app) => {
+const FindE2ESpec = e2eSuite('GET /users/:userId', (app) => {
   const user = fakedb.createUser(app);
   const userToSearch = fakedb.createUser(app);
 
