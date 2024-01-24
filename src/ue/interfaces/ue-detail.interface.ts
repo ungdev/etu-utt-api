@@ -8,13 +8,17 @@ const UE_DETAIL_SELECT_FILTER = {
     validationRate: true,
     info: {
       select: {
-        antecedent: true,
+        requirements: {
+          select: {
+            code: true,
+          },
+        },
         comment: true,
         degree: true,
         languages: true,
         minors: true,
         objectives: true,
-        programme: true,
+        program: true,
       },
     },
     openSemester: {
@@ -28,7 +32,7 @@ const UE_DETAIL_SELECT_FILTER = {
         td: true,
         tp: true,
         the: true,
-        projet: true,
+        project: true,
         internship: true,
       },
     },
@@ -43,11 +47,11 @@ const UE_DETAIL_SELECT_FILTER = {
         },
       },
     },
-    filiere: {
+    branchOption: {
       select: {
         code: true,
         name: true,
-        branche: {
+        branch: {
           select: {
             code: true,
             name: true,
@@ -68,13 +72,31 @@ const UE_DETAIL_SELECT_FILTER = {
   },
 } as const;
 
-type DeepWritable<T> = { -readonly [key in keyof T]: DeepWritable<T[key]> };
 export type UEUnComputedDetail = DeepWritable<Prisma.UEGetPayload<typeof UE_DETAIL_SELECT_FILTER>>;
 export type UEDetail = Omit<UEUnComputedDetail, 'openSemester' | 'starVotes'> & {
   openSemester: string[];
   starVotes: { [key: string]: number };
 };
 
+/**
+ * Generates the argument to use in prisma function to retrieve an object containing the necessary
+ * properties to match against the {@link UEUnComputedDetail} type.
+ *
+ * In order to turn the {@link UEUnComputedDetail} into a {@link UEDetail}, you shall populate the `openSemester`
+ * and `starVotes` fields the same way as in {@link getUE}
+ * @param arg extra arguments to provide to the prisma function. This includes `where` or `data` fields.
+ * Sub arguments of the ones provided in {@link UE_DETAIL_SELECT_FILTER} will be ignored
+ * @returns arguments to use in prisma function.
+ *
+ * @example
+ * const ue = await this.prisma.uE.findUnique(
+ *   SelectUEDetail({
+ *     where: {
+ *       code,
+ *     },
+ *   }),
+ * );
+ */
 export function SelectUEDetail<T>(arg: T): T & typeof UE_DETAIL_SELECT_FILTER {
   return {
     ...arg,

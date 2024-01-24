@@ -1,7 +1,20 @@
-import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Put, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { UESearchDto } from './dto/ue-search.dto';
 import { UEService } from './ue.service';
-import { GetUser } from '../auth/decorator';
+import { GetUser, IsPublic } from '../auth/decorator';
 import { User } from '../users/interfaces/user.interface';
 import { UeCommentPostDto } from './dto/ue-comment-post.dto';
 import { AppException, ERROR_CODE } from '../exceptions';
@@ -15,11 +28,13 @@ export class UEController {
   constructor(readonly ueService: UEService) {}
 
   @Get()
+  @IsPublic()
   async searchUE(@Query() queryParams: UESearchDto) {
     return this.ueService.searchUEs(queryParams);
   }
 
   @Get('/:ueCode')
+  @IsPublic()
   async getUE(@Param('ueCode') ueCode: string) {
     if (!(await this.ueService.doesUEExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     return this.ueService.getUE(ueCode.toUpperCase());
@@ -28,7 +43,7 @@ export class UEController {
   @Get('/:ueCode/comments')
   async getUEComments(@Param('ueCode') ueCode: string, @GetUser() user: User, @Query() dto: GetUECommentsDto) {
     if (!(await this.ueService.doesUEExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
-    return this.ueService.getComments(ueCode, user, dto, user.permissions.includes('commentModerator'));
+    return this.ueService.getComments(ueCode, user.id, dto, user.permissions.includes('commentModerator'));
   }
 
   @Post('/:ueCode/comments')
@@ -55,7 +70,7 @@ export class UEController {
   ) {
     if (!(await this.ueService.doesCommentExist(commentId))) throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
     if (await this.ueService.isUserCommentAuthor(user, commentId))
-      return this.ueService.updateComment(body, commentId, user.id);
+      return this.ueService.updateComment(body, commentId, user);
     throw new AppException(ERROR_CODE.NOT_COMMENT_AUTHOR);
   }
 
@@ -71,12 +86,12 @@ export class UEController {
     @GetUser() user: User,
   ) {
     if (!(await this.ueService.doesCommentExist(commentId))) throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
-    if (await this.ueService.isUserCommentAuthor(user, commentId))
-      return this.ueService.deleteComment(commentId, user.id);
+    if (await this.ueService.isUserCommentAuthor(user, commentId)) return this.ueService.deleteComment(commentId, user);
     throw new AppException(ERROR_CODE.NOT_COMMENT_AUTHOR);
   }
 
-  @Put('/comments/:commentId/upvote')
+  @Post('/comments/:commentId/upvote')
+  @HttpCode(HttpStatus.CREATED)
   async UpvoteUEComment(
     @Param(
       'commentId',
@@ -89,12 +104,28 @@ export class UEController {
   ) {
     if (!(await this.ueService.doesCommentExist(commentId))) throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
     if (await this.ueService.isUserCommentAuthor(user, commentId)) throw new AppException(ERROR_CODE.IS_COMMENT_AUTHOR);
-    if (!(await this.ueService.hasAlreadyUpvoted(user, commentId))) {
-      await this.ueService.upvoteComment(user.id, commentId);
-      return { upvoted: true };
-    }
-    await this.ueService.deUpvoteComment(user.id, commentId);
-    return { upvoted: false };
+    if (await this.ueService.hasAlreadyUpvoted(user, commentId))
+      throw new AppException(ERROR_CODE.FORBIDDEN_ALREADY_UPVOTED);
+    await this.ueService.upvoteComment(user, commentId);
+  }
+
+  @Delete('/comments/:commentId/upvote')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async UnUpvoteUEComment(
+    @Param(
+      'commentId',
+      new ParseUUIDPipe({
+        exceptionFactory: () => new AppException(ERROR_CODE.NOT_AN_UUID),
+      }),
+    )
+    commentId: string,
+    @GetUser() user: User,
+  ) {
+    if (!(await this.ueService.doesCommentExist(commentId))) throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
+    if (await this.ueService.isUserCommentAuthor(user, commentId)) throw new AppException(ERROR_CODE.IS_COMMENT_AUTHOR);
+    if (!(await this.ueService.hasAlreadyUpvoted(user, commentId)))
+      throw new AppException(ERROR_CODE.FORBIDDEN_ALREADY_UNUPVOTED);
+    await this.ueService.deUpvoteComment(user, commentId);
   }
 
   @Post('/comments/:commentId/reply')
@@ -110,7 +141,7 @@ export class UEController {
     @Body() body: CommentReplyDto,
   ) {
     if (!(await this.ueService.doesCommentExist(commentId))) throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
-    return this.ueService.replyComment(user, commentId, body);
+    return this.ueService.replyComment(user.id, commentId, body);
   }
 
   @Patch('/comments/reply/:replyId')
@@ -147,6 +178,7 @@ export class UEController {
   }
 
   @Get('/rate/criteria')
+  @IsPublic()
   async GetRateCriteria() {
     return this.ueService.getRateCriteria();
   }
@@ -154,7 +186,7 @@ export class UEController {
   @Get('/:ueCode/rate')
   async GetRateUE(@Param('ueCode') ueCode: string, @GetUser() user: User) {
     if (!(await this.ueService.doesUEExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
-    return this.ueService.getRateUE(user.id, ueCode);
+    return this.ueService.getRateUE(user, ueCode);
   }
 
   @Put('/:ueCode/rate')

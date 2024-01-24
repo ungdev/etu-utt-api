@@ -5,8 +5,8 @@ import { e2eSuite, JsonLike } from '../../utils/test_utils';
 
 const PostCommment = e2eSuite('POST /ue/{ueCode}/comments', (app) => {
   const user = createUser(app);
-  const user2 = createUser(app);
-  const user3 = createUser(app);
+  const user2 = createUser(app, { login: 'user2' });
+  const user3 = createUser(app, { login: 'user3' });
   const ue = createUE(app);
   makeUserJoinUE(app, user2, ue);
   makeUserJoinUE(app, user3, ue);
@@ -21,7 +21,7 @@ const PostCommment = e2eSuite('POST /ue/{ueCode}/comments', (app) => {
       .expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
-  it('should return a 400 because body is a string', () => {
+  it('should return a 400 because body is a not string', () => {
     return pactum
       .spec()
       .withBearerToken(user.token)
@@ -31,6 +31,28 @@ const PostCommment = e2eSuite('POST /ue/{ueCode}/comments', (app) => {
         isAnonymous: true,
       })
       .expectAppError(ERROR_CODE.PARAM_NOT_STRING, 'body');
+  });
+
+  it('should return a 400 because body is too short', () => {
+    return pactum
+      .spec()
+      .withBearerToken(user.token)
+      .post('/ue/XX00/comments')
+      .withBody({
+        body: 'gg',
+      })
+      .expectAppError(ERROR_CODE.PARAM_TOO_SHORT, 'body');
+  });
+
+  it('should return a 404 because UE does not exist', () => {
+    return pactum
+      .spec()
+      .withBearerToken(user.token)
+      .post(`/ue/${ue.code.slice(0, 3)}/comments`)
+      .withBody({
+        body: 'heyhey',
+      })
+      .expectAppError(ERROR_CODE.NO_SUCH_UE, ue.code.slice(0, 3));
   });
 
   it('should return a 403 because user has not done the UE yet', () => {
@@ -45,7 +67,7 @@ const PostCommment = e2eSuite('POST /ue/{ueCode}/comments', (app) => {
       .expectAppError(ERROR_CODE.NOT_ALREADY_DONE_UE);
   });
 
-  it('should return a post a comment in the UE as anonymous user', () => {
+  it('should return a comment as anonymous user', () => {
     return pactum
       .spec()
       .withBearerToken(user2.token)
@@ -89,7 +111,7 @@ const PostCommment = e2eSuite('POST /ue/{ueCode}/comments', (app) => {
       .expectAppError(ERROR_CODE.FORBIDDEN_ALREADY_COMMENTED);
   });
 
-  it('should return a post a comment in the UE as a logged in user', () => {
+  it('should return a comment as a logged in user', () => {
     return pactum
       .spec()
       .withBearerToken(user3.token)
@@ -119,28 +141,6 @@ const PostCommment = e2eSuite('POST /ue/{ueCode}/comments', (app) => {
         },
         true,
       );
-  });
-
-  it('should return a 400 because body is too short', () => {
-    return pactum
-      .spec()
-      .withBearerToken(user.token)
-      .post('/ue/XX00/comments')
-      .withBody({
-        body: 'gg',
-      })
-      .expectAppError(ERROR_CODE.PARAM_TOO_SHORT, 'body');
-  });
-
-  it('should return a 404 because UE does not exist', () => {
-    return pactum
-      .spec()
-      .withBearerToken(user.token)
-      .post(`/ue/${ue.code.slice(0, 3)}/comments`)
-      .withBody({
-        body: 'heyhey',
-      })
-      .expectAppError(ERROR_CODE.NO_SUCH_UE, ue.code.slice(0, 3));
   });
 });
 

@@ -1,8 +1,8 @@
-import { BadRequestException, Body, Controller, Get, Headers, HttpCode, HttpStatus, Post } from "@nestjs/common";
-import { AuthService } from "./auth.service";
-import { AuthSignInDto, AuthSignUpDto } from "./dto";
-import { IsPublic } from "./decorator/public.decorator";
-import { AppException, ERROR_CODE } from "../exceptions";
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Headers } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { AuthSignInDto, AuthSignUpDto } from './dto';
+import { IsPublic } from './decorator';
+import { AppException, ERROR_CODE } from '../exceptions';
 
 @Controller('auth')
 export class AuthController {

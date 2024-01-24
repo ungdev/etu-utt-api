@@ -5,7 +5,7 @@ import { e2eSuite } from '../../utils/test_utils';
 
 const PutRate = e2eSuite('PUT /ue/{ueCode}/rate', (app) => {
   const user = createUser(app);
-  const user2 = createUser(app);
+  const user2 = createUser(app, { login: 'user2' });
   const ue = createUE(app);
   makeUserJoinUE(app, user, ue);
   const criterion = createCriterion(app, 'etAlors');
@@ -36,6 +36,30 @@ const PutRate = e2eSuite('PUT /ue/{ueCode}/rate', (app) => {
         value: 'helloWorld',
       })
       .expectAppError(ERROR_CODE.PARAM_NOT_NUMBER, 'value');
+  });
+
+  it('should return a 400 as value is too high', () => {
+    return pactum
+      .spec()
+      .withBearerToken(user2.token)
+      .put(`/ue/${ue.code}/rate`)
+      .withBody({
+        criterion: criterion.id,
+        value: 6,
+      })
+      .expectAppError(ERROR_CODE.PARAM_TOO_HIGH, 'value');
+  });
+
+  it('should return a 400 as value is too low', () => {
+    return pactum
+      .spec()
+      .withBearerToken(user2.token)
+      .put(`/ue/${ue.code}/rate`)
+      .withBody({
+        criterion: criterion.id,
+        value: 0,
+      })
+      .expectAppError(ERROR_CODE.PARAM_TOO_LOW, 'value');
   });
 
   it('should return a 400 as the criterion is not a string', () => {

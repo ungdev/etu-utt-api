@@ -1,7 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { AppModule } from '../../src/app.module';
 import { INestApplication } from '@nestjs/common';
-import { PrismaService } from '../../src/prisma/prisma.service';
 import * as pactum from 'pactum';
 import AuthE2ESpec from './auth';
 import ProfileE2ESpec from './profile';

@@ -1,7 +1,7 @@
-import { Controller, Get, NotFoundException, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { UsersSearchDto } from './dto/users-search.dto';
 import UsersService from './users.service';
-import { AppException, ERROR_CODE } from "../exceptions";
+import { AppException, ERROR_CODE } from '../exceptions';
 
 @Controller('users')
 export default class UsersController {

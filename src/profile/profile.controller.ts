@@ -1,9 +1,9 @@
-import { BadRequestException, Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { GetUser } from '../auth/decorator';
 import { PrismaService } from '../prisma/prisma.service';
 import { User } from '../users/interfaces/user.interface';
 import { ProfileUpdateDto } from './dto/profile-update.dto';
-import { AppException, ERROR_CODE } from "../exceptions";
+import { AppException, ERROR_CODE } from '../exceptions';
 
 @Controller('profile')
 export class ProfileController {

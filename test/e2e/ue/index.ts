@@ -10,8 +10,9 @@ import UpdateComment from './update-comment.e2e-spec';
 import UpdateCommentReply from './update-reply.e2e-spec';
 import DeleteCommentReply from './delete-reply.e2e-spec';
 import DeleteComment from './delete-comment.e2e-spec';
-import PutUpvote from './put-upvote.e2e-spec';
+import PostUpvote from './post-upvote.e2e-spec';
 import PutRate from './put-rate.e2e-spec';
+import DeleteUpvote from './delete-upvote.e2e-spec';
 
 export default function UEE2ESpec(app: () => INestApplication) {
   describe('UE', () => {
@@ -26,7 +27,8 @@ export default function UEE2ESpec(app: () => INestApplication) {
     DeleteComment(app);
     UpdateCommentReply(app);
     DeleteCommentReply(app);
-    PutUpvote(app);
+    PostUpvote(app);
+    DeleteUpvote(app);
     PutRate(app);
   });
 }

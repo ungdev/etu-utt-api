@@ -5,7 +5,7 @@ import { e2eSuite, JsonLike } from '../../utils/test_utils';
 
 const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
   const user = createUser(app);
-  const user2 = createUser(app);
+  const user2 = createUser(app, { login: 'user2' });
   const ue = createUE(app);
   const comment1 = createComment(app, ue, user);
   upvoteComment(app, user2, comment1);

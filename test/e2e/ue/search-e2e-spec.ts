@@ -13,15 +13,11 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
         code: `XX${`${i}`.padStart(2, '0')}`,
         semester: i % 2 == 1 ? 'A24' : 'P24',
         category: i % 3 == 0 ? 'CS' : 'TM',
-        filiere: i % 4 == 0 ? 'T1' : 'T2',
+        branchOption: i % 4 == 0 ? 'T1' : 'T2',
         branch: i % 5 == 0 ? 'B1' : 'B2',
         forOverview: true,
       }),
     );
-
-  it('should return a 401 as user is not authenticated', () => {
-    return pactum.spec().get('/ue?q=XX01').expectAppError(ERROR_CODE.NOT_LOGGED_IN);
-  });
 
   it('should return a 400 as semester is in a wrong format', () => {
     return pactum
@@ -98,10 +94,10 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
       .spec()
       .withBearerToken(user.token)
       .get('/ue')
-      .withQueryParams('filiere', 'T1')
+      .withQueryParams('branchOption', 'T1')
       .expectUEs({
-        items: ues.filter((ue) => ue.filiere.some((filiere) => filiere.code === 'T1')),
-        itemCount: ues.filter((ue) => ue.filiere.some((filiere) => filiere.code === 'T1')).length,
+        items: ues.filter((ue) => ue.branchOption.some((branchOption) => branchOption.code === 'T1')),
+        itemCount: ues.filter((ue) => ue.branchOption.some((branchOption) => branchOption.code === 'T1')).length,
         itemsPerPage: Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')),
       });
   });
@@ -113,9 +109,9 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
       .get('/ue')
       .withQueryParams('branch', 'B1')
       .expectUEs({
-        items: ues.filter((ue) => ue.filiere.some((filiere) => filiere.branche.code === 'B1')),
+        items: ues.filter((ue) => ue.branchOption.some((branchOption) => branchOption.branch.code === 'B1')),
         itemsPerPage: Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')),
-        itemCount: ues.filter((ue) => ue.filiere.some((filiere) => filiere.branche.code === 'B1')).length,
+        itemCount: ues.filter((ue) => ue.branchOption.some((branchOption) => branchOption.branch.code === 'B1')).length,
       });
   });
 

@@ -6,7 +6,7 @@ import { e2eSuite } from '../../utils/test_utils';
 
 const GetRateE2ESpec = e2eSuite('GET /ue/{ueCode}/rate', (app) => {
   const user = createUser(app);
-  const user2 = createUser(app);
+  const user2 = createUser(app, { login: 'user2' });
   const ue = createUE(app, {
     code: `XX00`,
   });

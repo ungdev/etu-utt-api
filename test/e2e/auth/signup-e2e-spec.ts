@@ -2,6 +2,7 @@ import { AuthSignUpDto } from '../../../src/auth/dto';
 import * as pactum from 'pactum';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { e2eSuite } from '../../utils/test_utils';
+import { HttpStatus } from '@nestjs/common';
 
 const SignupE2ESpec = e2eSuite('POST /auth/signup', (app) => {
   const dto = {
@@ -117,7 +118,7 @@ const SignupE2ESpec = e2eSuite('POST /auth/signup', (app) => {
   });
 
   it('should fail as the credentials are already used', async () => {
-    await pactum.spec().post('/auth/signup').withBody(dto).expectStatus(403);
+    await pactum.spec().post('/auth/signup').withBody(dto).expectStatus(HttpStatus.CONFLICT);
   });
 });
 

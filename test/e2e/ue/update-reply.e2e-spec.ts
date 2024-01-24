@@ -5,7 +5,7 @@ import { e2eSuite, JsonLike } from '../../utils/test_utils';
 
 const UpdateCommentReply = e2eSuite('PATCH /ue/comments/reply/{replyId}', (app) => {
   const user = createUser(app);
-  const user2 = createUser(app);
+  const user2 = createUser(app, { login: 'user2' });
   const ue = createUE(app);
   const comment1 = createComment(app, ue, user);
   const reply = createReply(app, user, comment1);

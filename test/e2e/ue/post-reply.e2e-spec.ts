@@ -27,7 +27,7 @@ const PostCommmentReply = e2eSuite('POST /ue/comments/{commentId}/reply', (app) 
       .expectAppError(ERROR_CODE.PARAM_MISSING, 'body');
   });
 
-  it('should return a 400 because body is a string', () => {
+  it('should return a 400 because body is not a string', () => {
     return pactum
       .spec()
       .withBearerToken(user.token)

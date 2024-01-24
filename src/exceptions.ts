@@ -22,6 +22,8 @@ export const enum ERROR_CODE {
   INVALID_TOKEN_FORMAT = 3003,
   INVALID_CREDENTIALS = 3004,
   FORBIDDEN_ALREADY_COMMENTED = 3101,
+  FORBIDDEN_ALREADY_UPVOTED = 3102,
+  FORBIDDEN_ALREADY_UNUPVOTED = 3103,
   NOT_COMMENT_AUTHOR = 4221,
   NOT_ALREADY_DONE_UE = 4222,
   NOT_REPLY_AUTHOR = 4223,
@@ -108,11 +110,11 @@ export const ErrorData = Object.freeze({
   },
   [ERROR_CODE.NO_TOKEN]: {
     message: 'No token provided',
-    httpCode: HttpStatus.UNAUTHORIZED,
+    httpCode: HttpStatus.BAD_REQUEST,
   },
   [ERROR_CODE.INVALID_TOKEN_FORMAT]: {
     message: 'Token format is invalid',
-    httpCode: HttpStatus.UNAUTHORIZED,
+    httpCode: HttpStatus.BAD_REQUEST,
   },
   [ERROR_CODE.INVALID_CREDENTIALS]: {
     message: 'Credentials incorrect',
@@ -120,6 +122,14 @@ export const ErrorData = Object.freeze({
   },
   [ERROR_CODE.FORBIDDEN_ALREADY_COMMENTED]: {
     message: 'You have already posted a comment for this UE',
+    httpCode: HttpStatus.FORBIDDEN,
+  },
+  [ERROR_CODE.FORBIDDEN_ALREADY_UPVOTED]: {
+    message: 'You must un-upvote this comment before upvoting it again',
+    httpCode: HttpStatus.FORBIDDEN,
+  },
+  [ERROR_CODE.FORBIDDEN_ALREADY_UNUPVOTED]: {
+    message: 'You must upvote this comment before un-upvoting it',
     httpCode: HttpStatus.FORBIDDEN,
   },
   [ERROR_CODE.NOT_COMMENT_AUTHOR]: {

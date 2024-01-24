@@ -223,7 +223,7 @@ export function createTimetableEntryOverride(
 type UECreationOptions<T extends boolean> = {
   code?: string;
   category?: string;
-  filiere?: string;
+  branchOption?: string;
   branch?: string;
   semester?: string;
   forOverview?: T;
@@ -234,7 +234,14 @@ export function createUE<T extends boolean = false>(
 ): Partial<T extends true ? UEOverView : UEDetail>;
 export function createUE(
   app: AppProvider,
-  { code = 'XX00', category = 'CS', filiere = 'JSP', branch = 'JSP_BR', semester = 'A24', forOverview = false } = {},
+  {
+    code = 'XX00',
+    category = 'CS',
+    branchOption = 'JSP',
+    branch = 'JSP_BR',
+    semester = 'A24',
+    forOverview = false,
+  } = {},
 ) {
   const partialUE: Partial<UEOverView | UEDetail> = {};
   const data = {
@@ -255,12 +262,12 @@ export function createUE(
           },
         ],
       },
-      filiere: {
+      branchOption: {
         connectOrCreate: {
           create: {
-            code: filiere,
-            name: filiere,
-            branche: {
+            code: branchOption,
+            name: branchOption,
+            branch: {
               connectOrCreate: {
                 create: {
                   code: branch,
@@ -279,13 +286,13 @@ export function createUE(
             },
           },
           where: {
-            code: filiere,
+            code: branchOption,
           },
         },
       },
       info: {
         create: {
-          programme: 'What is going to be studied',
+          program: 'What is going to be studied',
           objectives: 'The objectives of the UE',
         },
       },
@@ -295,7 +302,7 @@ export function createUE(
           td: 20,
           tp: 16,
           the: 102,
-          projet: 48,
+          project: 48,
         },
       },
       openSemester: {
@@ -343,7 +350,7 @@ export function makeUserJoinUE(app: AppProvider, user: Partial<User>, ue: Partia
       .get(PrismaService)
       .userUESubscription.create({
         data: {
-          UE: {
+          ue: {
             connect: {
               code: ue.code,
             },
@@ -392,7 +399,7 @@ export function createUERating(
               id: user.id,
             },
           },
-          UE: {
+          ue: {
             connect: {
               code: ue.code,
             },
@@ -437,7 +444,7 @@ export function createComment(
       .get(PrismaService)
       .userUESubscription.findFirst({
         where: {
-          UE: {
+          ue: {
             code: onUE.code,
           },
           userId: user.id,
@@ -458,7 +465,7 @@ export function createComment(
                 where: { code: 'A24' },
               },
             },
-            UE: { connect: { code: onUE.code } },
+            ue: { connect: { code: onUE.code } },
             user: { connect: { id: user.id } },
           },
         });
@@ -504,11 +511,9 @@ export function createReply(app: AppProvider, user: Partial<User>, comment: Part
   beforeAll(async () => {
     Object.assign(
       lazyReply,
-      await app()
-        .get(UEService)
-        .replyComment(user as User, comment.id, {
-          body: "Bouboubou je suis pas d'accord",
-        }),
+      await app().get(UEService).replyComment(user.id, comment.id, {
+        body: "Bouboubou je suis pas d'accord",
+      }),
     );
   });
   return lazyReply;

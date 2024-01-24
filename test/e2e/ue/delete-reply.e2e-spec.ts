@@ -1,11 +1,11 @@
-import { e2eSuite, JsonLike } from '../../utils/test_utils';
 import { createUser, createUE, createComment, createReply } from '../../utils/fakedb';
+import { JsonLike, e2eSuite } from '../../utils/test_utils';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
 
 const DeleteCommentReply = e2eSuite('DELETE /ue/comments/reply/{replyId}', (app) => {
   const user = createUser(app);
-  const user2 = createUser(app);
+  const user2 = createUser(app, { login: 'user2' });
   const ue = createUE(app);
   const comment1 = createComment(app, ue, user);
   const reply = createReply(app, user, comment1);

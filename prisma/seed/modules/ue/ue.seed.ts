@@ -1,8 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 import { fakeUE } from './factories';
-import { branchesCode, filieresCode, translationsUuids } from '../../const';
-import { fakeUTTFiliere } from './factories/filiere';
-import { fakeUttBranche } from './factories/branche';
+import { branchesCode, branchOptionsCode, translationsUuids } from '../../const';
+import { fakeUTTBranchOption } from './factories/filiere';
+import { fakeUttBranch } from './factories/branche';
 import { fakeTranslation } from './factories/translation';
 import { faker } from '@faker-js/faker';
 
@@ -21,17 +21,17 @@ export async function ueSeed() {
   for (const code of branchesCode) {
     const uuid = faker.helpers.arrayElement(notUsedTranslationsUuids);
     notUsedTranslationsUuids.slice(notUsedTranslationsUuids.indexOf(uuid), 1);
-    await prisma.uTTBranche.create({
-      data: fakeUttBranche(code, uuid),
+    await prisma.uTTBranch.create({
+      data: fakeUttBranch(code, uuid),
     });
   }
   //In order to create UE we need to create first UTTFiliere
   notUsedTranslationsUuids = [...translationsUuids];
-  for (const filiere of filieresCode) {
+  for (const filiere of branchOptionsCode) {
     const uuid = faker.helpers.arrayElement(notUsedTranslationsUuids);
     notUsedTranslationsUuids.slice(notUsedTranslationsUuids.indexOf(uuid), 1);
-    await prisma.uTTFiliere.create({
-      data: fakeUTTFiliere(filiere, uuid),
+    await prisma.uTTBranchOption.create({
+      data: fakeUTTBranchOption(filiere, uuid),
     });
   }
   for (let i = 0; i < fakerRounds; i++) {
