@@ -1,12 +1,12 @@
-import { UTTFiliere } from '@prisma/client';
+import { UTTBranchOption } from '@prisma/client';
 import { faker } from '@faker-js/faker';
 import { branchesCode } from '../../../const';
 
-export function fakeUTTFiliere(code, translationId): UTTFiliere {
+export function fakeUTTBranchOption(code, translationId): UTTBranchOption {
   return {
     code: code,
     name: faker.name.jobTitle(),
-    brancheId: faker.helpers.arrayElement(branchesCode),
+    branchId: faker.helpers.arrayElement(branchesCode),
     descriptionTranslationId: translationId,
   };
 }

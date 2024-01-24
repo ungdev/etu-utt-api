@@ -1,7 +1,7 @@
-import { UTTBranche } from '@prisma/client';
+import { UTTBranch } from '@prisma/client';
 import { faker } from '@faker-js/faker';
 
-export function fakeUttBranche(code, translationId): UTTBranche {
+export function fakeUttBranch(code, translationId): UTTBranch {
   return {
     code: code,
     name: faker.name.jobTitle(),

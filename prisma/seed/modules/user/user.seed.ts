@@ -6,7 +6,7 @@ export async function userSeed() {
   console.log('Seeding users...');
   const fakerRounds = 100;
   for (let i = 0; i < fakerRounds; i++) {
-    await prisma.user.create({ data: fakeUser() });
+    await prisma.user.create({ data: await fakeUser() });
   }
   console.log('Seeding done.');
 }

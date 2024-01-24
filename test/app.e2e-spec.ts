@@ -1,11 +1,14 @@
+import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { AppModule } from '../src/app.module';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
-import { PrismaService } from '../src/prisma/prisma.service';
 import * as pactum from 'pactum';
+import { AppModule } from '../src/app.module';
+import { getValidationPipe } from '../src/validation';
+import { PrismaService } from '../src/prisma/prisma.service';
 import AuthE2ESpec from './e2e/auth/';
 import ProfileE2ESpec from './e2e/profile';
 import UsersE2ESpec from './e2e/users';
+import UEE2ESpec from './e2e/ue';
+import './declarations';
 
 describe('EtuUTT API e2e testing', () => {
   let app: INestApplication;
@@ -17,7 +20,7 @@ describe('EtuUTT API e2e testing', () => {
     }).compile();
     app = moduleRef.createNestApplication();
 
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+    app.useGlobalPipes(getValidationPipe());
     await app.init();
     await app.listen(3001);
 
@@ -33,4 +36,5 @@ describe('EtuUTT API e2e testing', () => {
   AuthE2ESpec(() => app);
   ProfileE2ESpec(() => app);
   UsersE2ESpec(() => app);
+  UEE2ESpec(() => app);
 });

@@ -3,11 +3,11 @@ import { PrismaService } from '../../../src/prisma/prisma.service';
 import { AuthService } from '../../../src/auth/auth.service';
 import * as pactum from 'pactum';
 import { suite } from '../../test_utils';
-import { User } from '../../../src/prisma/types';
+import { UserBase } from '../../../src/prisma/types';
 
 const includeInfos = { include: { infos: true } };
 
-function userToBodyUser(user: User) {
+function userToBodyUser(user: UserBase) {
   return {
     id: user.id,
     firstName: user.firstName,
@@ -24,6 +24,7 @@ const SearchE2ESpec = suite('Search', (app) => {
     studentId: 69,
     lastName: 'profile',
     firstName: 'profile',
+    role: 'STUDENT',
     birthday: new Date(Date.UTC(2000, 1, 1)),
   } as AuthSignUpDto;
 
@@ -34,6 +35,7 @@ const SearchE2ESpec = suite('Search', (app) => {
     studentId: 70,
     lastName: 'other',
     firstName: 'user',
+    role: 'STUDENT',
     birthday: new Date(Date.UTC(1998, 12, 4)),
   } as AuthSignUpDto;
 

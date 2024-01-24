@@ -4,9 +4,7 @@ import {
   Controller,
   Get,
   Post,
-  UseGuards,
 } from '@nestjs/common';
-import { JwtGuard } from '../auth/guard';
 import { GetUser } from '../auth/decorator';
 import { PrismaService } from '../prisma/prisma.service';
 import { User } from '../prisma/types';
@@ -17,7 +15,6 @@ export class ProfileController {
   constructor(private prisma: PrismaService) {}
 
   @Get()
-  @UseGuards(JwtGuard)
   async getProfile(@GetUser() user: User) {
     return {
       id: user.id,
@@ -34,7 +31,6 @@ export class ProfileController {
   }
 
   @Post()
-  @UseGuards(JwtGuard)
   async updateProfile(@GetUser() user: User, @Body() dto: ProfileUpdateDto) {
     if (
       dto.nickname === undefined &&

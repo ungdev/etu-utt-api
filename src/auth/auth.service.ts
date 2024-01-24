@@ -29,6 +29,7 @@ export class AuthService {
           infos: {
             create: { sex: dto.sex, birthday: dto.birthday },
           },
+          role: dto.role,
         },
       });
 

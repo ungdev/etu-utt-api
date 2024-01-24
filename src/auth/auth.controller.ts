@@ -10,11 +10,13 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthSignInDto, AuthSignUpDto } from './dto';
+import { IsPublic } from './decorator/public.decorator';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @IsPublic()
   @Post('signup')
   async signup(@Body() dto: AuthSignUpDto) {
     const token = await this.authService.signup(dto);
@@ -22,6 +24,7 @@ export class AuthController {
   }
 
   @HttpCode(HttpStatus.OK)
+  @IsPublic()
   @Post('signin')
   async signin(@Body() dto: AuthSignInDto) {
     const token = await this.authService.signin(dto);
@@ -29,6 +32,7 @@ export class AuthController {
   }
 
   @HttpCode(HttpStatus.OK)
+  @IsPublic()
   @Get('signin')
   isSignedIn(@Headers() headers: Record<string, string>) {
     const authorizationHeader = headers['authorization'];
