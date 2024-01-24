@@ -1,7 +1,8 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Headers, BadRequestException } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { AuthSignInDto, AuthSignUpDto } from './dto';
-import { IsPublic } from './decorator/public.decorator';
+import { BadRequestException, Body, Controller, Get, Headers, HttpCode, HttpStatus, Post } from "@nestjs/common";
+import { AuthService } from "./auth.service";
+import { AuthSignInDto, AuthSignUpDto } from "./dto";
+import { IsPublic } from "./decorator/public.decorator";
+import { AppException, ERROR_CODE } from "../exceptions";
 
 @Controller('auth')
 export class AuthController {
@@ -28,11 +29,11 @@ export class AuthController {
   isSignedIn(@Headers() headers: Record<string, string>) {
     const authorizationHeader = headers['authorization'];
     if (!authorizationHeader) {
-      throw new BadRequestException('No token provided');
+      throw new AppException(ERROR_CODE.NO_TOKEN);
     }
     const match = new RegExp(/^Bearer\s+(.*)$/).exec(authorizationHeader);
     if (!match) {
-      throw new BadRequestException('Token format is invalid');
+      throw new AppException(ERROR_CODE.INVALID_TOKEN_FORMAT);
     }
     return { valid: this.authService.isTokenValid(match[1]) };
   }

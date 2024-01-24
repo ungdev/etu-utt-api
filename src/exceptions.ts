@@ -15,25 +15,29 @@ export const enum ERROR_CODE {
   PARAM_TOO_LOW = 2011,
   PARAM_TOO_HIGH = 2012,
   NOT_AN_UUID = 2101,
+  PARAM_DOES_NOT_MATCH_REGEX = 2102,
+  NO_FIELD_PROVIDED = 2201,
   FORBIDDEN_NOT_ENOUGH_PERMISSIONS = 3001,
-  FORBIDDEN_NOT_LOGGED_IN = 3002,
+  NO_TOKEN = 3002,
+  INVALID_TOKEN_FORMAT = 3003,
+  INVALID_CREDENTIALS = 3004,
   FORBIDDEN_ALREADY_COMMENTED = 3101,
   NOT_COMMENT_AUTHOR = 4221,
   NOT_ALREADY_DONE_UE = 4222,
   NOT_REPLY_AUTHOR = 4223,
   IS_COMMENT_AUTHOR = 4224,
+  GROUP_NOT_PART_OF_ENTRY = 4225,
   NO_SUCH_UE = 4401,
   NO_SUCH_COMMENT = 4402,
   NO_SUCH_REPLY = 4403,
   NO_SUCH_CRITERION = 4404,
+  NO_SUCH_TIMETABLE_ENTRY = 4405,
+  NO_SUCH_TIMETABLE_GROUP = 4406,
+  NO_SUCH_USER = 4407,
+  CREDENTIALS_ALREADY_TAKEN = 5001,
 }
 
-export const ErrorData: Readonly<{
-  [error in ERROR_CODE]: {
-    message: string;
-    httpCode: HttpStatus;
-  };
-}> = Object.freeze({
+export const ErrorData = Object.freeze({
   [ERROR_CODE.NOT_LOGGED_IN]: {
     message: 'You must be logged in to access this resource',
     httpCode: HttpStatus.UNAUTHORIZED,
@@ -86,6 +90,14 @@ export const ErrorData: Readonly<{
     message: 'The following parameters must be lower: %',
     httpCode: HttpStatus.BAD_REQUEST,
   },
+  [ERROR_CODE.PARAM_DOES_NOT_MATCH_REGEX]: {
+    message: 'The following parameters must match the regex "%"',
+    httpCode: HttpStatus.BAD_REQUEST,
+  },
+  [ERROR_CODE.NO_FIELD_PROVIDED]: {
+    message: 'You must provide at least one field',
+    httpCode: HttpStatus.BAD_REQUEST,
+  },
   [ERROR_CODE.NOT_AN_UUID]: {
     message: 'The given id is not a valid UUID',
     httpCode: HttpStatus.BAD_REQUEST,
@@ -94,8 +106,16 @@ export const ErrorData: Readonly<{
     message: 'Missing permission %',
     httpCode: HttpStatus.FORBIDDEN,
   },
-  [ERROR_CODE.FORBIDDEN_NOT_LOGGED_IN]: {
-    message: 'You must be logged in to access this page',
+  [ERROR_CODE.NO_TOKEN]: {
+    message: 'No token provided',
+    httpCode: HttpStatus.UNAUTHORIZED,
+  },
+  [ERROR_CODE.INVALID_TOKEN_FORMAT]: {
+    message: 'Token format is invalid',
+    httpCode: HttpStatus.UNAUTHORIZED,
+  },
+  [ERROR_CODE.INVALID_CREDENTIALS]: {
+    message: 'Credentials incorrect',
     httpCode: HttpStatus.UNAUTHORIZED,
   },
   [ERROR_CODE.FORBIDDEN_ALREADY_COMMENTED]: {
@@ -118,6 +138,10 @@ export const ErrorData: Readonly<{
     message: 'You are the author of this comment',
     httpCode: HttpStatus.FORBIDDEN,
   },
+  [ERROR_CODE.GROUP_NOT_PART_OF_ENTRY]: {
+    message: 'The group % is not part of the timetable entry %',
+    httpCode: HttpStatus.CONFLICT,
+  },
   [ERROR_CODE.NO_SUCH_UE]: {
     message: 'The UE % does not exist',
     httpCode: HttpStatus.NOT_FOUND,
@@ -134,14 +158,48 @@ export const ErrorData: Readonly<{
     message: 'This criterion does not exist',
     httpCode: HttpStatus.NOT_FOUND,
   },
-});
+  [ERROR_CODE.NO_SUCH_TIMETABLE_ENTRY]: {
+    message: 'The timetable entry % does not exist',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
+  [ERROR_CODE.NO_SUCH_TIMETABLE_GROUP]: {
+    message: 'The timetable group % does not exist',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
+  [ERROR_CODE.NO_SUCH_USER]: {
+    message: 'The user % does not exist',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
+  [ERROR_CODE.CREDENTIALS_ALREADY_TAKEN]: {
+    message: 'The given credentials are already taken',
+    httpCode: HttpStatus.CONFLICT,
+  },
+} as const) satisfies Readonly<{
+  [error in ERROR_CODE]: {
+    message: string;
+    httpCode: HttpStatus;
+  };
+}>;
 
-export class AppException extends HttpException {
-  constructor(code: ERROR_CODE, extraMessage?: string) {
+/**
+ * Counts the number of occurrences of a string in another string. It the returns a string array type with that number of elements.
+ * @example
+ * type A = Counter<'hello', '%'>; // []
+ * type B = Counter<'%hel%lo%', '%'>; // [string, string, string]
+ */
+type ExtrasTypeBuilder<S extends string> = S extends `${infer Part1}%${infer Part2}`
+  ? [...ExtrasTypeBuilder<Part1>, ...ExtrasTypeBuilder<Part2>, string]
+  : [];
+
+export class AppException<ErrorCode extends ERROR_CODE> extends HttpException {
+  constructor(code: ErrorCode, ...extraMessages: ExtrasTypeBuilder<(typeof ErrorData)[ErrorCode]['message']>) {
     super(
       {
         errorCode: code,
-        error: ErrorData[code].message.replace('%', extraMessage || ''),
+        error: (extraMessages as string[]).reduce(
+          (message, extra) => message.replaceAll('%', extra),
+          ErrorData[code].message,
+        ),
       },
       ErrorData[code].httpCode,
     );

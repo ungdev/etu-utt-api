@@ -8,7 +8,7 @@ export function fakeUser(): User {
     lastName: faker.name.lastName(),
     studentId: faker.datatype.number(),
     login: faker.datatype.string(),
-    RGPDId: faker.datatype.uuid(),
+    rgpdId: faker.datatype.uuid(),
     role: 'STUDENT',
     hash: '', // TODO : find how to hash the password : etuutt
   };

@@ -1,10 +1,11 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthSignInDto, AuthSignUpDto } from './dto';
 import * as bcrypt from 'bcryptjs';
 import { Prisma } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { AppException, ERROR_CODE } from '../exceptions';
 
 @Injectable()
 export class AuthService {
@@ -30,7 +31,7 @@ export class AuthService {
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
-          throw new ForbiddenException('Credentials already taken');
+          throw new AppException(ERROR_CODE.CREDENTIALS_ALREADY_TAKEN);
         }
       }
       throw error;
@@ -45,14 +46,14 @@ export class AuthService {
       },
     });
     if (!user) {
-      throw new ForbiddenException('Credentials incorrect');
+      throw new AppException(ERROR_CODE.INVALID_CREDENTIALS);
     }
 
-    // compare password, if incorect, throw exeption
+    // compare password, if incorrect, throw exception
     const pwMatches = await bcrypt.compare(dto.password, user.hash);
 
     if (!pwMatches) {
-      throw new ForbiddenException('Credentials incorrect');
+      throw new AppException(ERROR_CODE.INVALID_CREDENTIALS);
     }
 
     return this.signToken(user.id, user.login);

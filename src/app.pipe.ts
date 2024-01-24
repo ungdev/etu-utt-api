@@ -1,4 +1,5 @@
-import { BadRequestException, PipeTransform } from '@nestjs/common';
+import { PipeTransform } from '@nestjs/common';
+import { AppException, ERROR_CODE } from './exceptions';
 
 /**
  * A validating pipe for regex.
@@ -13,7 +14,7 @@ export class RegexPipe implements PipeTransform<string, string> {
 
   transform(value: string) {
     if (!value.match(this.regex)) {
-      throw new BadRequestException(`Validation failed (match with regex ${this.regex} is expected)`);
+      throw new AppException(ERROR_CODE.PARAM_DOES_NOT_MATCH_REGEX, this.regex.toString());
     }
     return value;
   }

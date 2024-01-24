@@ -3,6 +3,7 @@ import { GetUser } from '../auth/decorator';
 import { PrismaService } from '../prisma/prisma.service';
 import { User } from '../users/interfaces/user.interface';
 import { ProfileUpdateDto } from './dto/profile-update.dto';
+import { AppException, ERROR_CODE } from "../exceptions";
 
 @Controller('profile')
 export class ProfileController {
@@ -27,7 +28,7 @@ export class ProfileController {
   @Post()
   async updateProfile(@GetUser() user: User, @Body() dto: ProfileUpdateDto) {
     if (dto.nickname === undefined && dto.website === undefined && dto.passions === undefined) {
-      throw new BadRequestException('You must provide at least one field to update');
+      throw new AppException(ERROR_CODE.NO_FIELD_PROVIDED);
     }
     await this.prisma.user.update({
       where: { id: user.id },

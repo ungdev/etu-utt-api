@@ -77,7 +77,7 @@ const TimetableServiceUnitSpec = unitSuite('Timetable.service', (app) => {
     expect(timetable[indexOfDefault].location).toEqual(entry.location);
   });
 
-  it('should return an for user2 but not user1, as the priority of this new override is smaller than the one for user1', async () => {
+  it('should return an occurrence of a new override for user2 but not user1, as the priority of this new override is smaller than the one for user1', async () => {
     const lessImportantOverride = await fakedb.createTimetableEntryOverride(
       app,
       entry,

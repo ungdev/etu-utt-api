@@ -7,6 +7,5 @@
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   },
-  "collectCoverage": true,
   "collectCoverageFrom": ["**/*.ts", "!main.ts"]
 }

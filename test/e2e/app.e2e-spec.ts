@@ -10,10 +10,10 @@ import TimetableE2ESpec from './timetable';
 import UEE2ESpec from './ue';
 import { getValidationPipe } from '../../src/validation';
 import '../declarations';
+import * as testUtils from '../utils/test_utils';
 
 describe('EtuUTT API e2e testing', () => {
   let app: INestApplication;
-  let prisma: PrismaService;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -25,8 +25,7 @@ describe('EtuUTT API e2e testing', () => {
     await app.init();
     await app.listen(3001);
 
-    prisma = app.get(PrismaService);
-    await prisma.cleanDb();
+    testUtils.init(() => app);
     pactum.request.setBaseUrl('http://localhost:3001');
   });
 

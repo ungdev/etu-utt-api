@@ -11,7 +11,7 @@ export class PermissionGuard implements CanActivate {
     const requiredPermissions = this.reflector.get(RequirePermission, context.getHandler());
     if (!requiredPermissions || !requiredPermissions.length) return true;
     const user = context.switchToHttp().getRequest().user as User;
-    if (!user) throw new AppException(ERROR_CODE.FORBIDDEN_NOT_LOGGED_IN);
+    if (!user) throw new AppException(ERROR_CODE.NOT_LOGGED_IN);
     for (const requiredPermission of requiredPermissions)
       if (user.permissions.includes(requiredPermission)) return true;
     throw new AppException(ERROR_CODE.FORBIDDEN_NOT_ENOUGH_PERMISSIONS, requiredPermissions[0]);

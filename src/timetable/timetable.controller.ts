@@ -1,18 +1,5 @@
-import {
-  Body,
-  ConflictException,
-  Controller,
-  Delete,
-  Get,
-  NotFoundException,
-  Param,
-  ParseIntPipe,
-  Patch,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
 import TimetableService from './timetable.service';
-import { JwtGuard } from '../auth/guard';
 import { GetUser } from '../auth/decorator';
 import { User } from '../users/interfaces/user.interface';
 import { regex, RegexPipe } from '../app.pipe';
@@ -20,13 +7,13 @@ import TimetableCreateEntryDto from './dto/timetable-create-entry.dto';
 import TimetableUpdateEntryDto from './dto/timetable-update-entry.dto';
 import { DetailedTimetableEntry, ResponseDetailedTimetableEntry } from './interfaces/timetable.interface';
 import TimetableDeleteOccurrencesDto from './dto/timetable-delete-occurrences.dto';
+import { AppException, ERROR_CODE } from '../exceptions';
 
 @Controller('/timetable')
 export class TimetableController {
   constructor(private timetableService: TimetableService) {}
 
   @Get('/current/daily/:date/:month/:year')
-  @UseGuards(JwtGuard)
   async getSelfDaily(
     @Param('date', ParseIntPipe) date: number,
     @Param('month', ParseIntPipe) month: number,
@@ -44,7 +31,6 @@ export class TimetableController {
   }
 
   @Get('/:entryId')
-  @UseGuards(JwtGuard)
   async getEntryDetails(
     @Param('entryId', new RegexPipe(regex.timetableOccurrenceId)) entryId: string,
     @GetUser() user: User,
@@ -56,20 +42,18 @@ export class TimetableController {
     }
     const entry = await this.timetableService.getEntryDetails(entryId, user.id);
     if (!entry) {
-      throw new NotFoundException(`No timetable event with id ${entryId}`);
+      throw new AppException(ERROR_CODE.NO_SUCH_TIMETABLE_ENTRY, entryId);
     }
     return this.formatEntryDetails(entry);
   }
 
   @Get('/current/groups')
-  @UseGuards(JwtGuard)
   async getGroups(@GetUser() user: User) {
     const groups = await this.timetableService.getTimetableGroups(user.id);
     return groups.map((group) => ({ id: group.id, name: group.name, priority: group.priority }));
   }
 
   @Post('/current')
-  @UseGuards(JwtGuard)
   async createEntry(@Body() body: TimetableCreateEntryDto) {
     const entry = await this.timetableService.createTimetableEntry(body);
     return {
@@ -86,24 +70,23 @@ export class TimetableController {
   }
 
   @Patch('/current/:entryId')
-  @UseGuards(JwtGuard)
   async updateEntry(
     @GetUser() user: User,
     @Param('entryId', new RegexPipe(regex.uuid)) entryId: string,
     @Body() body: TimetableUpdateEntryDto,
   ) {
     if (!(await this.timetableService.entryExists(entryId, user.id))) {
-      throw new NotFoundException(`No entry with id ${entryId}`);
+      throw new AppException(ERROR_CODE.NO_SUCH_TIMETABLE_ENTRY, entryId);
     }
     for (const groupId of body.for) {
       if (!(await this.timetableService.groupExists(groupId, user.id))) {
-        throw new NotFoundException(`No group with id ${groupId}`);
+        throw new AppException(ERROR_CODE.NO_SUCH_TIMETABLE_GROUP, groupId);
       }
     }
     const groups = await this.timetableService.getTimetableGroupsOfEntry(entryId, user.id);
     for (const groupId of body.for) {
       if (!groups.some((group) => group.id === groupId)) {
-        throw new ConflictException(`Group with id ${groupId} is not part of the timetable entry`);
+        throw new AppException(ERROR_CODE.GROUP_NOT_PART_OF_ENTRY, groupId, entryId);
       }
     }
     const entry = await this.timetableService.updateTimetableEntry(entryId, body, user.id);
@@ -111,24 +94,23 @@ export class TimetableController {
   }
 
   @Delete('/current/:entryId')
-  @UseGuards(JwtGuard)
   async deleteOccurrences(
     @GetUser() user: User,
     @Param('entryId', new RegexPipe(regex.uuid)) entryId: string,
     @Body() body: TimetableDeleteOccurrencesDto,
   ) {
     if (!(await this.timetableService.entryExists(entryId, user.id))) {
-      throw new NotFoundException(`No entry with id ${entryId}`);
+      throw new AppException(ERROR_CODE.NO_SUCH_TIMETABLE_ENTRY, entryId);
     }
     for (const groupId of body.for) {
       if (!(await this.timetableService.groupExists(groupId, user.id))) {
-        throw new NotFoundException(`No group with id ${groupId}`);
+        throw new AppException(ERROR_CODE.NO_SUCH_TIMETABLE_GROUP, groupId);
       }
     }
     const groups = await this.timetableService.getTimetableGroupsOfEntry(entryId, user.id);
     for (const groupId of body.for) {
       if (!groups.some((group) => group.id === groupId)) {
-        throw new ConflictException(`Group with id ${groupId} is not part of the timetable entry`);
+        throw new AppException(ERROR_CODE.GROUP_NOT_PART_OF_ENTRY, groupId, entryId);
       }
     }
     const entry = await this.timetableService.deleteOccurrences(entryId, body, user.id);

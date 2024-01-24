@@ -164,7 +164,7 @@ export default class TimetableService {
       // If the override is not applied for this occurrence yet, move to the first occurrence where it will be.
       if (occurrencesNoOverride[occurrencePosition].index < override.applyFrom) {
         occurrencePosition += override.applyFrom - occurrencesNoOverride[occurrencePosition].index;
-      } // If it was, we may not need to override the occurrence (can happen if repeatEvery is not 1). Then, move to the first overridable occurence.
+      } // If it was, we may not need to override the occurrence (can happen if repeatEvery is not 1). Then, move to the first overridable occurrence.
       else {
         const offsetFromLastOverrideOccurrence =
           (occurrencesNoOverride[occurrencePosition].index - override.applyFrom) % override.repeatEvery;

@@ -2,8 +2,16 @@ import { PrismaService } from '../../src/prisma/prisma.service';
 import { INestApplication } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { faker } from '@faker-js/faker';
+import { ConfigService } from '@nestjs/config';
 
-faker.seed(69);
+/**
+ * Initializes this file.
+ * Sets the seed for faker. This is useful to have deterministic tests.
+ * @param app The app to get the {@link ConfigService} from.
+ */
+export function init(app: AppProvider) {
+  faker.seed(Number.parseInt(app().get(ConfigService).get('FAKER_SEED')));
+}
 
 /**
  * A function returning the app, for e2e testing ({@link INestApplication}).

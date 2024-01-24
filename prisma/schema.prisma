@@ -166,7 +166,7 @@ model TimetableGroup {
 model TimetableEntry {
   id                 String             @id @default(uuid())
   eventStart         DateTime           @db.DateTime
-  occurrencesCount   Int? // The number of occurences, if null, it will be considered infinite
+  occurrencesCount   Int? // The number of occurrences, if null, it will be considered infinite
   repeatEvery        Int?               @db.UnsignedInt // In milliseconds
   occurrenceDuration Int                @db.UnsignedInt // In milliseconds
   type               TimetableEntryType
@@ -183,8 +183,8 @@ model TimetableEntry {
 
 model TimetableEntryOverride {
   id                       String   @id @default(uuid())
-  applyFrom                Int // The index of the first occurence of the event to apply the override to
-  applyUntil               Int // The index of the last occurence of the event to apply the override to
+  applyFrom                Int // The index of the first occurrence of the event to apply the override to
+  applyUntil               Int // The index of the last occurrence of the event to apply the override to
   repeatEvery              Int      @default(1) @db.UnsignedInt // In number of occurrences of parent entry
   occurrenceRelativeStart  Int      @default(0) @db.UnsignedInt // How many milliseconds after the default beginning of the event should this override start at ?
   occurrenceDuration       Int?     @db.UnsignedInt
@@ -490,12 +490,12 @@ model User {
   firstName String
   lastName  String
   role      UserRole
-  RGPDId    String?  @unique
+  rgpdId    String?  @unique
 
   timestamps            UserTimestamps?
   socialNetwork         UserSocialNetwork?
   bans                  UserBan[]
-  RGPD                  UserRGPD?
+  rgpd                  UserRGPD?
   BDEContributions      UserBDEContribution[]
   assoMembership        AssoMembership[]
   branche               UserBranche?
