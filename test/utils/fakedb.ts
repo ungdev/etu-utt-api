@@ -23,7 +23,7 @@ import { omit, pick } from '../../src/utils';
  * The fake entities can be used like normal entities in the <code>it(string, () => void)</code> functions.
  * They are what is returned by the functions in this file.
  */
-export type FakeUser = Partial<RawUser & RawUserInfos & { token: string }>;
+export type FakeUser = Partial<RawUser & RawUserInfos & { permissions: string[]; token: string }>;
 export type FakeTimetableGroup = Partial<RawTimetableGroup>;
 export type FakeTimetableEntry = Partial<RawTimetableEntry>;
 export type FakeTimetableEntryOverride = Partial<RawTimetableEntryOverride>;
@@ -34,8 +34,8 @@ export type FakeTimetableEntryOverride = Partial<RawTimetableEntryOverride>;
  * @param rawParams The parameters to use to create the user.
  * @returns {@link FakeUser}
  */
-export function createUser(app: AppProvider, rawParams: FakeUser & { password?: string } = {}): FakeUser {
-  const params = {
+export const createUser = entityFaker(
+  () => ({
     login: faker.internet.userName(),
     studentId: faker.datatype.number(),
     sex: 'OTHER' as Sex,
@@ -44,16 +44,14 @@ export function createUser(app: AppProvider, rawParams: FakeUser & { password?: 
     role: 'STUDENT' as UserRole,
     birthday: new Date(0),
     password: faker.internet.password(),
-    ...rawParams,
-  };
-  const userWithToken: Partial<User & { token: string }> = {};
-  beforeAll(async () => {
+  }),
+  async (app, params) => {
     const user = await app()
       .get(PrismaService)
       .user.create({
         data: {
-          hash: rawParams.hash ?? (await app().get(AuthService).getHash(params.password)),
-          ...pick(params, 'id', 'login', 'hash', 'studentId', 'firstName', 'lastName', 'role'),
+          hash: params.hash ?? (await app().get(AuthService).getHash(params.password)),
+          ...pick(params, 'id', 'login', 'studentId', 'firstName', 'lastName', 'role'),
           infos: { create: pick(params, 'birthday', 'sex', 'nickname') },
         },
         include: {
@@ -65,25 +63,19 @@ export function createUser(app: AppProvider, rawParams: FakeUser & { password?: 
           },
         },
       });
-    const permissions = user.permissions.map((perm) => perm.userPermissionId);
-    Object.assign(userWithToken, { ...omit(user, 'infos', 'permissions'), ...omit(user.infos, 'id') });
-    userWithToken.token = await app().get(AuthService).signToken(user.id, user.login);
-    userWithToken.permissions = permissions;
-  });
-  return userWithToken;
-}
+    return {
+      ...omit(user, 'infos', 'permissions'),
+      ...omit(user.infos, 'id'),
+      permissions: user.permissions.map((perm) => perm.userPermissionId),
+      token: await app().get(AuthService).signToken(user.id, user.login),
+    };
+  },
+  null as FakeUser,
+  null as FakeUser & { password?: string },
+  null as Record<string, never>,
+);
 
 export type CreateTimetableGroupParams = { users?: Array<{ user: FakeUser; priority: number }> };
-export function createTimetableGroup(
-  app: AppProvider,
-  params: CreateTimetableGroupParams,
-  onTheFly?: false,
-): FakeTimetableGroup;
-export function createTimetableGroup(
-  app: AppProvider,
-  params: CreateTimetableGroupParams,
-  onTheFly?: true,
-): Promise<FakeTimetableGroup>;
 /**
  * Creates a timetableGroup in the database.
  * @param app The function that returns the app.
@@ -91,18 +83,12 @@ export function createTimetableGroup(
  * @param onTheFly If false, the creation will be done in a beforeAll block.
  * @returns {@link FakeTimetableGroup}
  */
-export function createTimetableGroup(
-  app: AppProvider,
-  rawParams: CreateTimetableGroupParams,
-  onTheFly = false,
-): FakeTimetableGroup | Promise<FakeTimetableGroup> {
-  const params = {
+export const createTimetableGroup = entityFaker(
+  () => ({
     users: [],
-    ...rawParams,
-  };
-  const timetableGroup: FakeTimetableGroup = {};
-  const createTimetableGroup = async () => {
-    const createdGroup = await app()
+  }),
+  async (app, params) => {
+    return app()
       .get(PrismaService)
       .timetableGroup.create({
         data: {
@@ -114,23 +100,13 @@ export function createTimetableGroup(
           },
         },
       });
-    Object.assign(timetableGroup, createdGroup);
-  };
-  const promise = onTheFly ? createTimetableGroup() : (beforeAll(createTimetableGroup) as void);
-  return onTheFly ? (promise as Promise<void>).then(() => timetableGroup) : timetableGroup;
-}
+  },
+  null as FakeTimetableGroup,
+  null as CreateTimetableGroupParams,
+  null as Record<string, never>,
+);
 
 export type CreateTimetableEntryParameters = FakeTimetableEntry & { groups?: FakeTimetableGroup[] };
-export function createTimetableEntry(
-  app: AppProvider,
-  params?: CreateTimetableEntryParameters,
-  onTheFly?: false,
-): FakeTimetableEntry;
-export function createTimetableEntry(
-  app: AppProvider,
-  params?: CreateTimetableEntryParameters,
-  onTheFly?: true,
-): Promise<FakeTimetableEntry>;
 /**
  * Creates a timetableEntry in the database.
  * @param app The function that returns the app.
@@ -138,12 +114,8 @@ export function createTimetableEntry(
  * @param onTheFly If false, the creation will be done in a beforeAll block.
  * @returns {@link FakeTimetableEntry}
  */
-export function createTimetableEntry(
-  app: AppProvider,
-  rawParams: CreateTimetableEntryParameters = {},
-  onTheFly = false,
-): Promise<FakeTimetableEntry> | FakeTimetableEntry {
-  const params = {
+export const createTimetableEntry = entityFaker(
+  () => ({
     eventStart: new Date(0),
     occurrenceDuration: 0,
     occurrencesCount: 1,
@@ -151,74 +123,44 @@ export function createTimetableEntry(
     type: 'CUSTOM' as TimetableEntryType,
     location: faker.address.cityName(),
     groups: [],
-    ...rawParams,
-  };
-  const entry: FakeTimetableEntry = {};
-  const createTimetableEntry = async () => {
-    const createdEntry = await app()
+  }),
+  (app, params) =>
+    app()
       .get(PrismaService)
       .timetableEntry.create({
         data: {
           timetableGroups: { connect: params.groups.map((group) => ({ id: group.id })) },
           ...omit(params, 'groups', 'eventId', 'ueCourseId'),
         },
-      });
-    Object.assign(entry, createdEntry);
-  };
-  const promise = onTheFly ? createTimetableEntry() : (beforeAll(createTimetableEntry) as void);
-  return onTheFly ? (promise as Promise<void>).then(() => entry) : entry;
-}
+      }),
+  null as FakeTimetableEntry,
+  null as CreateTimetableEntryParameters,
+  null as Record<string, never>,
+);
 
 export type CreateTimetableEntryOverrideParameters = {
   groups?: FakeTimetableGroup[];
 } & Partial<FakeTimetableEntryOverride>;
-export function createTimetableEntryOverride(
-  app: AppProvider,
-  timetableEntry: FakeTimetableEntry,
-  params: CreateTimetableEntryOverrideParameters,
-  onTheFly?: false,
-): FakeTimetableEntryOverride;
-export function createTimetableEntryOverride(
-  app: AppProvider,
-  timetableEntry: FakeTimetableEntry,
-  params: CreateTimetableEntryOverrideParameters,
-  onTheFly?: true,
-): Promise<FakeTimetableEntryOverride>;
-/**
- * Creates a timetableEntryOverride in the database.
- * @param app The function that returns the app.
- * @param timetableEntry The timetableEntry to override.
- * @param rawParams The parameters to use to create the override.
- * @param onTheFly If false, the creation will be done in a beforeAll block.
- */
-export function createTimetableEntryOverride(
-  app: AppProvider,
-  timetableEntry: FakeTimetableEntry,
-  rawParams: CreateTimetableEntryOverrideParameters = {},
-  onTheFly = false,
-): FakeTimetableEntryOverride | Promise<FakeTimetableEntryOverride> {
-  const params = {
+export const createTimetableEntryOverride = entityFaker(
+  () => ({
     groups: [],
     applyFrom: 0,
     applyUntil: 0,
-    ...rawParams,
-  };
-  const override: FakeTimetableEntryOverride = {};
-  const createTimetableEntryOverride = async () => {
-    const createdOverride = await app()
+  }),
+  async (app, dependencies, params) =>
+    app()
       .get(PrismaService)
       .timetableEntryOverride.create({
         data: {
-          overrideTimetableEntry: { connect: { id: timetableEntry.id } },
+          overrideTimetableEntry: { connect: { id: dependencies.entry.id } },
           timetableGroups: { connect: params.groups.map((group) => ({ id: group.id })) },
           ...omit(params, 'groups', 'overrideTimetableEntryId'),
         },
-      });
-    Object.assign(override, createdOverride);
-  };
-  const promise = onTheFly ? createTimetableEntryOverride() : (beforeAll(createTimetableEntryOverride) as void);
-  return onTheFly ? (promise as Promise<void>).then(() => override) : override;
-}
+      }),
+  null as FakeTimetableEntryOverride,
+  null as CreateTimetableEntryOverrideParameters,
+  null as { entry: FakeTimetableEntry },
+);
 
 type UECreationOptions<T extends boolean> = {
   code?: string;
@@ -517,4 +459,179 @@ export function createReply(app: AppProvider, user: Partial<User>, comment: Part
     );
   });
   return lazyReply;
+}
+
+/**
+ * Represents a function to generate an entity, which may need dependencies or not.
+ * @see EntityFactoryWithoutDependencies
+ * @see EntityFactoryWithDependencies
+ */
+type EntityFactory<
+  FakeEntity extends Partial<object>,
+  Params extends object,
+  Keys extends keyof Params,
+  Dependencies extends object,
+> = Dependencies extends Record<string, never>
+  ? EntityFactoryWithoutDependencies<FakeEntity, Params, Keys>
+  : EntityFactoryWithDependencies<FakeEntity, Params, Keys, Dependencies>;
+/**
+ * Represents a function to generate an entity, which does not need dependencies to be executed.
+ */
+type EntityFactoryWithoutDependencies<
+  FakeEntity extends Partial<object>,
+  Params extends object,
+  Keys extends keyof Params,
+> = (app: AppProvider, params: UnpartialFields<Params, Keys>) => Promise<FakeEntity>;
+/**
+ * Represents a function to generate an entity, which needs dependencies to be executed.
+ */
+type EntityFactoryWithDependencies<
+  FakeEntity extends Partial<object>,
+  Params extends object,
+  Keys extends keyof Params,
+  Dependencies extends object,
+> = (app: AppProvider, dependencies: Dependencies, params: UnpartialFields<Params, Keys>) => Promise<FakeEntity>;
+
+/**
+ * A fake function which does not have dependencies.
+ */
+type FakeFunctionWithoutDependencies<FakeEntity extends Partial<object>, Params extends object> = <
+  OnTheFly extends boolean = false,
+>(
+  app: AppProvider,
+  rawParams?: Partial<Params>,
+  onTheFly?: OnTheFly,
+) => FakeFunctionReturn<FakeEntity, OnTheFly>;
+/**
+ * A fake function which has dependencies.
+ */
+type FakeFunctionWithDependencies<
+  FakeEntity extends Partial<object>,
+  Params extends object,
+  Dependencies extends object,
+> = <OnTheFly extends boolean = false>(
+  app: AppProvider,
+  dependencies: Dependencies,
+  rawParams?: Partial<Params>,
+  onTheFly?: OnTheFly,
+) => FakeFunctionReturn<FakeEntity, OnTheFly>;
+/**
+ * The return type of a fake function, either Promise<FakeEntity> or FakeEntity depending on whether OnTheFly is true or false
+ */
+type FakeFunctionReturn<FakeEntity extends Partial<object>, OnTheFly extends boolean> = OnTheFly extends true
+  ? Promise<FakeEntity>
+  : FakeEntity;
+/**
+ * Creates a function that permits creating fake data.
+ *
+ * The function can now be called with 1-3 or 2-4 arguments.
+ *
+ * The first argument is the {@link AppProvider}.
+ *
+ * The second argument does or does not exist depending on how the function has been created :
+ *   - If {@link _dependenciesType} is not an empty object (not {@code Record<string, never>}), you must pass an object of the same type as {@link _dependenciesType}.
+ *     This basically represents mandatory parameters to create the entity. This will often be other fake entities.
+ *     For example, if you want to create a Restaurant and the Restaurant must have a manager, you may pass an object of type { manager: FakeUser } (see usage example under)
+ *   - If {@link _dependenciesType} is an empty object ({@code Record<string, never>}), do not pass it.
+ *
+ * The last 2 arguments are optional.
+ *
+ * The second-to-last argument (2nd or 3rd depending on the above 2 points) is an object containing parameters that can be used to customize the object created.
+ * Taking back the example of the restaurant, it may be the menu.
+ * None of the parameters will be mandatory, which means you will always be able to pass an empty array.
+ *
+ * The last argument is a boolean, indicating whether to create the entity on the fly.
+ *   - If set to {@code true}, the function will return a {@code Promise<FakeEntity>} (where {@code FakeEntity} is the type that interests you, for example {@link FakeUser}).
+ *     This is useful when using the function in a it(), to create an entity for a specific test, that should not exist in any other test.
+ *   - If set to {@code false}, the function will return a {@code FakeEntity}.
+ *     This is useful in a describe for example, where you can't await, but also don't need to access the values directly.
+ *     Note that this should still be usable as a parameter / dependency for another function created with {@link entityFaker}, as they do not require to read the content of the entity outside a beforeAll.
+ *     This is the default behaviour.
+ * @param defaultParams A function that takes no arguments and returns the default values of the parameters. The type of the object returned should be a subset of the one of {@link _paramsType}.
+ * @param entityFactory A function that creates a new entity. It takes as parameter the application, the parameters (with the default value if they are empty) and if some with the dependencies.
+ * @param _fakeEntityType You can pass null to this value. Make it of the type of your fake entity.
+ * @param _paramsType You can pass null to this value. Make it of the type of the params you are expecting from the user. These parameters will all be optional.
+ * @param _dependenciesType You can pass null to this value. Make it of the type of the mandatory parameters, it will often be other fake entities.
+ * @example
+ * const createFakeRestaurant = entityFake(
+ *   () => ({ location: "@see Google Maps" }),
+ *   async (app, dependencies, params) =>
+ *     app().get(PrismaService)
+ *     .create({
+ *       data: {
+ *         location: params.location,
+ *         menu: params.menu,
+ *         manager: { connect: { id: dependencies.manager.id } }
+ *       }
+ *     }),
+ *   null as Partial<RawRestaurant>,
+ *   null as { location: string; menu: string }
+ *   null as { manager: FakeUser }
+ * );
+ * const user = createFakeUser(app); // createFakeUser() has been created the same way.
+ * const restaurant1 = createFakeRestaurant(app, { manager: user }, ); // This will be created in a beforeAll automatically. You will be able to use the fields of restaurant1 in the it().
+ *                                                                     // Note that user is not accessible yet, but you can still use it in dependencies and params
+ * const restaurant2 = await createFakeRestaurant(app, { manager: user }, { menu: "grenouilles" }, true); // Creates the restaurant on the fly, as soon as this line finishes executing, a restaurant will have been created in the database.
+ *                                                                                                        // You will be able to exploit the fields of the object right after.
+ *                                                                                                        // This usage is very useful in it() functions, to be able to create objects on the fly
+ */
+
+function entityFaker<
+  FakeEntity extends Partial<object>,
+  Params extends object,
+  Keys extends keyof Params,
+  Dependencies extends object,
+>(
+  defaultParams: () => { [K in Keys]: Params[Keys] },
+  entityFactory: EntityFactory<FakeEntity, Params, Keys, Dependencies>,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _fakeEntityType: FakeEntity,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _paramsType: Params,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _dependenciesType: Dependencies,
+): Dependencies extends Record<string, never>
+  ? FakeFunctionWithoutDependencies<FakeEntity, Params>
+  : FakeFunctionWithDependencies<FakeEntity, Params, Dependencies> {
+  const func: FakeFunctionWithDependencies<FakeEntity, Params, Dependencies> = <OnTheFly extends boolean = false>(
+    app: AppProvider,
+    dependencies: Dependencies,
+    rawParams: Partial<Params> = {},
+    onTheFly: OnTheFly = false as OnTheFly,
+  ): FakeFunctionReturn<FakeEntity, OnTheFly> => {
+    const params: UnpartialFields<Params, Keys> = {
+      ...defaultParams(),
+      ...rawParams,
+    } as UnpartialFields<Params, Keys>;
+    const lazyEntity: FakeEntity = {} as FakeEntity;
+    const factory =
+      entityFactory.length === 2
+        ? () =>
+            (entityFactory as EntityFactoryWithoutDependencies<FakeEntity, Params, Keys>)(app, params).then((res) =>
+              Object.assign(lazyEntity, res),
+            )
+        : () =>
+            (entityFactory as EntityFactoryWithDependencies<FakeEntity, Params, Keys, Dependencies>)(
+              app,
+              dependencies,
+              params,
+            ).then((res) => Object.assign(lazyEntity, res));
+    if (onTheFly === true) {
+      return factory() as OnTheFly extends true ? Promise<FakeEntity> : never;
+    }
+    beforeAll(factory);
+    return lazyEntity as OnTheFly extends true ? never : FakeEntity;
+  };
+  if (entityFactory.length === 2) {
+    return (<OnTheFly extends boolean = false>(
+      app: AppProvider,
+      rawParams: Partial<Params> = {},
+      onTheFly: OnTheFly = false as OnTheFly,
+    ) => func(app, {} as Dependencies, rawParams, onTheFly)) as Dependencies extends Record<string, never>
+      ? FakeFunctionWithoutDependencies<FakeEntity, Params>
+      : never;
+  }
+  return func as Dependencies extends Record<string, never>
+    ? never
+    : FakeFunctionWithDependencies<FakeEntity, Params, Dependencies>;
 }

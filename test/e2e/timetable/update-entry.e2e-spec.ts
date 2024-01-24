@@ -17,12 +17,16 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
     occurrencesCount: 3,
     repeatEvery: 10,
   });
-  const override = fakedb.createTimetableEntryOverride(app, entry, {
-    applyFrom: 1,
-    applyUntil: 2,
-    repeatEvery: 1,
-    groups: [userGroup, userOtherGroup],
-  });
+  const override = fakedb.createTimetableEntryOverride(
+    app,
+    { entry },
+    {
+      applyFrom: 1,
+      applyUntil: 2,
+      repeatEvery: 1,
+      groups: [userGroup, userOtherGroup],
+    },
+  );
   const otherEntry = fakedb.createTimetableEntry(app);
   const dummyPayload = (overrides: Partial<TimetableUpdateEntryDto> = {}): TimetableUpdateEntryDto => ({
     location: "bet you can't find it",

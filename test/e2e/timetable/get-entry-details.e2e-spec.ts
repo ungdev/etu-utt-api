@@ -10,10 +10,10 @@ const GetEntryDetailsE2ESpec = e2eSuite('GET /timetable/:entryId', (app) => {
   const user1OtherGroup = fakedb.createTimetableGroup(app, { users: [{ user: user1, priority: 2 }] });
   const user2Group = fakedb.createTimetableGroup(app, { users: [{ user: user2, priority: 1 }] });
   const entry = fakedb.createTimetableEntry(app, { groups: [user1Group] });
-  const override1 = fakedb.createTimetableEntryOverride(app, entry, { groups: [user1Group] });
-  const override2 = fakedb.createTimetableEntryOverride(app, entry, { groups: [user1OtherGroup] });
+  const override1 = fakedb.createTimetableEntryOverride(app, { entry }, { groups: [user1Group] });
+  const override2 = fakedb.createTimetableEntryOverride(app, { entry }, { groups: [user1OtherGroup] });
   // Create an override not for user1
-  fakedb.createTimetableEntryOverride(app, entry, { groups: [user2Group] });
+  fakedb.createTimetableEntryOverride(app, { entry }, { groups: [user2Group] });
 
   let entryDetails: object;
 

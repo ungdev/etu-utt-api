@@ -17,12 +17,16 @@ const DeleteEntryE2ESpec = e2eSuite('DELETE /timetable/current/:entryId', (app) 
     occurrencesCount: 3,
     repeatEvery: 10,
   });
-  const override = fakedb.createTimetableEntryOverride(app, entry, {
-    applyFrom: 1,
-    applyUntil: 2,
-    repeatEvery: 1,
-    groups: [userGroup, userOtherGroup],
-  });
+  const override = fakedb.createTimetableEntryOverride(
+    app,
+    { entry },
+    {
+      applyFrom: 1,
+      applyUntil: 2,
+      repeatEvery: 1,
+      groups: [userGroup, userOtherGroup],
+    },
+  );
   const otherEntry = fakedb.createTimetableEntry(app);
   const dummyPayload = (overrides: Partial<TimetableDeleteOccurrencesDto> = {}): TimetableDeleteOccurrencesDto => ({
     from: 0,
@@ -108,7 +112,12 @@ const DeleteEntryE2ESpec = e2eSuite('DELETE /timetable/current/:entryId', (app) 
         ],
       });
     await fakedb.createTimetableEntry(app, { ...entry, groups: [userGroup, userOtherGroup] }, true);
-    await fakedb.createTimetableEntryOverride(app, entry, { ...override, groups: [userGroup, userOtherGroup] }, true);
+    await fakedb.createTimetableEntryOverride(
+      app,
+      { entry },
+      { ...override, groups: [userGroup, userOtherGroup] },
+      true,
+    );
   });
 
   it('should convert the override to a deletion type', async () => {

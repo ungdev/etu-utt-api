@@ -24,12 +24,16 @@ const TimetableServiceUnitSpec = unitSuite('Timetable.service', (app) => {
     occurrencesCount: 4,
     eventStart: new Date(0),
   }); // for everyone
-  const overrideEntry = createTimetableEntryOverride(app, entry, {
-    groups: [user1Group],
-    applyFrom: 0,
-    applyUntil: 0,
-    location: faker.address.cityName(),
-  }); // for user 1
+  const overrideEntry = createTimetableEntryOverride(
+    app,
+    { entry },
+    {
+      groups: [user1Group],
+      applyFrom: 0,
+      applyUntil: 0,
+      location: faker.address.cityName(),
+    },
+  ); // for user 1
 
   beforeAll(() => {
     timetableService = app().get(TimetableService);
@@ -80,7 +84,7 @@ const TimetableServiceUnitSpec = unitSuite('Timetable.service', (app) => {
   it('should return an occurrence of a new override for user2 but not user1, as the priority of this new override is smaller than the one for user1', async () => {
     const lessImportantOverride = await fakedb.createTimetableEntryOverride(
       app,
-      entry,
+      { entry },
       { groups: [everyoneGroup], applyFrom: 0, applyUntil: 0 },
       true,
     );
@@ -98,7 +102,7 @@ const TimetableServiceUnitSpec = unitSuite('Timetable.service', (app) => {
   it('should have priority over the existing override of user 1, as the new override will be newer', async () => {
     const newerOverride = await fakedb.createTimetableEntryOverride(
       app,
-      entry,
+      { entry },
       { groups: [user1Group], applyFrom: 0, applyUntil: 0, location: faker.address.cityName() },
       true,
     );
