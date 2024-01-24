@@ -1,7 +1,10 @@
 import { User } from '@prisma/client';
 import { faker } from '@faker-js/faker';
+import bcrypt from 'bcryptjs';
 
-export function fakeUser(): User {
+export async function fakeUser(): Promise<User> {
+  const saltRounds = 10; // TODO: load it from the environment variables
+  const hash = await bcrypt.hash('etuutt', saltRounds); // TODO: write this in the docs
   return {
     id: faker.datatype.uuid(),
     firstName: faker.name.firstName(),
@@ -9,7 +12,7 @@ export function fakeUser(): User {
     studentId: faker.datatype.number(),
     login: faker.datatype.string(),
     RGPDId: faker.datatype.uuid(),
-    roles: {},
-    hash: '', // TODO : find how to hash the password : etuutt
+    role: 'STUDENT',
+    hash,
   };
 }

@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PrismaService } from '../../prisma/prisma.service';
+import { User } from '../../prisma/types';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -20,10 +21,20 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       },
       include: {
         infos: true,
+        permissions: {
+          select: {
+            userPermissionId: true,
+          },
+        },
       },
     });
 
     delete user.hash;
-    return user;
+    // Clear permissions
+    const storedUser: User = { ...user, permissions: undefined };
+    storedUser.permissions = user.permissions.map(
+      (permission) => permission.userPermissionId,
+    );
+    return storedUser;
   }
 }

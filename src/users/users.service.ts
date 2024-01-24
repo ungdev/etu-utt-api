@@ -55,11 +55,17 @@ export default class UsersService {
     });
   }
 
-  fetchUser(userId: string): Promise<User> {
-    return this.prisma.user.findUnique({
+  async fetchUser(userId: string): Promise<User> {
+    const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      include: { infos: true },
+      include: { infos: true, permissions: true },
     });
+    if (!user) return null;
+    const transformedUser: User = { ...user, permissions: undefined };
+    transformedUser.permissions = user.permissions.map(
+      (permssion) => permssion.userPermissionId,
+    );
+    return transformedUser;
   }
 
   filterPublicInfo(user: User) {
