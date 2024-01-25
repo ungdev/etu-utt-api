@@ -2,7 +2,7 @@ import { AuthSignUpDto } from '../../../src/auth/dto';
 import * as pactum from 'pactum';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { e2eSuite } from '../../utils/test_utils';
-import { HttpStatus } from '@nestjs/common';
+import { ERROR_CODE } from '../../../src/exceptions';
 
 const SignupE2ESpec = e2eSuite('POST /auth/signup', (app) => {
   const dto = {
@@ -21,70 +21,70 @@ const SignupE2ESpec = e2eSuite('POST /auth/signup', (app) => {
       .spec()
       .post('/auth/signup')
       .withBody({ ...dto, login: undefined })
-      .expectStatus(400);
+      .expectAppError(ERROR_CODE.PARAM_MISSING, 'login');
   });
   it('should return a 400 if login is not alphanumeric', async () => {
     return pactum
       .spec()
       .post('/auth/signup')
       .withBody({ ...dto, login: 'my/login_1' })
-      .expectStatus(400);
+      .expectAppError(ERROR_CODE.PARAM_NOT_ALPHANUMERIC, 'login');
   });
   it('should return a 400 if password is missing', async () => {
     return pactum
       .spec()
       .post('/auth/signup')
       .withBody({ ...dto, password: undefined })
-      .expectStatus(400);
+      .expectAppError(ERROR_CODE.PARAM_MISSING, 'password');
   });
   it('should return a 400 if lastName is missing', async () => {
     return pactum
       .spec()
       .post('/auth/signup')
       .withBody({ ...dto, lastName: undefined })
-      .expectStatus(400);
+      .expectAppError(ERROR_CODE.PARAM_MISSING, 'lastName');
   });
   it('should return a 400 if firstName is missing', async () => {
     return pactum
       .spec()
       .post('/auth/signup')
       .withBody({ ...dto, firstName: undefined })
-      .expectStatus(400);
+      .expectAppError(ERROR_CODE.PARAM_MISSING, 'firstName');
   });
   it('should return a 400 if studentId is not a number', async () => {
     return pactum
       .spec()
       .post('/auth/signup')
       .withBody({ ...dto, studentId: 'this is a string' })
-      .expectStatus(400);
+      .expectAppError(ERROR_CODE.PARAM_NOT_NUMBER, 'studentId');
   });
   it('should return a 400 if studentId is not positive', async () => {
     return pactum
       .spec()
       .post('/auth/signup')
       .withBody({ ...dto, studentId: -1 })
-      .expectStatus(400);
+      .expectAppError(ERROR_CODE.PARAM_NOT_POSITIVE, 'studentId');
   });
   it('should return a 400 if sex is not provided', async () => {
     return pactum
       .spec()
       .post('/auth/signup')
       .withBody({ ...dto, sex: undefined })
-      .expectStatus(400);
+      .expectAppError(ERROR_CODE.PARAM_MISSING, 'sex');
   });
   it('should return a 400 if sex is not one of MALE, FEMALE or OTHER is not provided', async () => {
     return pactum
       .spec()
       .post('/auth/signup')
       .withBody({ ...dto, sex: 'neither of these' })
-      .expectStatus(400);
+      .expectAppError(ERROR_CODE.PARAM_NOT_ENUM, 'sex');
   });
   it('should return a 400 if birthday is not provided', async () => {
     return pactum
       .spec()
       .post('/auth/signup')
       .withBody({ ...dto, birthday: undefined })
-      .expectStatus(400);
+      .expectAppError(ERROR_CODE.PARAM_MISSING, 'birthday');
   });
   it('should return a 400 if birthday is not a date', async () => {
     return pactum
@@ -94,10 +94,14 @@ const SignupE2ESpec = e2eSuite('POST /auth/signup', (app) => {
         ...dto,
         birthday: 'My birthday is on the 32nd of February',
       })
-      .expectStatus(400);
+      .expectAppError(ERROR_CODE.PARAM_NOT_DATE, 'birthday');
   });
   it('should return a 400 if no body is provided', async () => {
-    return pactum.spec().post('/auth/signup').withBody(undefined).expectStatus(400);
+    return pactum
+      .spec()
+      .post('/auth/signup')
+      .withBody(undefined)
+      .expectAppError(ERROR_CODE.PARAM_MISSING, 'birthday, firstName, lastName, login, password, role, sex');
   });
   it('should create a new user', async () => {
     await pactum.spec().post('/auth/signup').withBody(dto).expectBodyContains('access_token').expectStatus(201);
@@ -118,7 +122,7 @@ const SignupE2ESpec = e2eSuite('POST /auth/signup', (app) => {
   });
 
   it('should fail as the credentials are already used', async () => {
-    await pactum.spec().post('/auth/signup').withBody(dto).expectStatus(HttpStatus.CONFLICT);
+    await pactum.spec().post('/auth/signup').withBody(dto).expectAppError(ERROR_CODE.CREDENTIALS_ALREADY_TAKEN);
   });
 });
 

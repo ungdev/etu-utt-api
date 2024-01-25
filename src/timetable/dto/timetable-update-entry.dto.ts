@@ -1,4 +1,14 @@
-import { ArrayNotEmpty, IsArray, IsInt, IsNotEmpty, IsOptional, IsPositive, IsString, IsUUID } from 'class-validator';
+import {
+  ArrayNotEmpty,
+  IsArray,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsPositive,
+  IsString,
+  IsUUID,
+  Min,
+} from 'class-validator';
 
 export default class TimetableUpdateEntryDto {
   @IsString()
@@ -6,10 +16,21 @@ export default class TimetableUpdateEntryDto {
   location?: string;
 
   @IsInt()
+  @IsOptional()
+  relativeStart?: number;
+
+  @IsInt()
+  @IsPositive()
+  @IsOptional()
+  occurrenceDuration?: number;
+
+  @IsInt()
+  @Min(0)
   @IsNotEmpty()
   updateFrom: number;
 
   @IsInt()
+  @Min(0)
   @IsNotEmpty()
   updateUntil: number;
 

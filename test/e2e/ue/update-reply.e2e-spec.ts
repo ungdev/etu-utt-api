@@ -1,7 +1,7 @@
 import { createUser, createUE, createComment, createReply } from '../../utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
-import { e2eSuite, JsonLike } from '../../utils/test_utils';
+import { Dummies, e2eSuite, JsonLike } from '../../utils/test_utils';
 
 const UpdateCommentReply = e2eSuite('PATCH /ue/comments/reply/{replyId}', (app) => {
   const user = createUser(app);
@@ -61,14 +61,14 @@ const UpdateCommentReply = e2eSuite('PATCH /ue/comments/reply/{replyId}', (app) 
       .withBody({
         body: 'heyhey',
       })
-      .expectAppError(ERROR_CODE.NOT_AN_UUID);
+      .expectAppError(ERROR_CODE.PARAM_NOT_UUID, 'replyId');
   });
 
   it('should return a 404 because reply does not exist', () => {
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .patch(`/ue/comments/reply/00000000-0000-0000-0000-000000000000`)
+      .patch(`/ue/comments/reply/${Dummies.UUID}`)
       .withBody({
         body: 'heyhey',
       })

@@ -1,14 +1,11 @@
 import * as pactum from 'pactum';
 import { e2eSuite } from '../../utils/test_utils';
 import * as fakedb from '../../utils/fakedb';
+import { pick } from '../../../src/utils';
+import { ERROR_CODE } from '../../../src/exceptions';
 
 function userToBodyUser(user: fakedb.FakeUser) {
-  return {
-    id: user.id,
-    firstName: user.firstName,
-    lastName: user.lastName,
-    nickname: user.nickname,
-  };
+  return pick(user, 'id', 'firstName', 'lastName', 'nickname');
 }
 
 const SearchE2ESpec = e2eSuite('GET /users', (app) => {
@@ -33,7 +30,7 @@ const SearchE2ESpec = e2eSuite('GET /users', (app) => {
   });
 
   it('should return a 401 because user is not authenticated', async () => {
-    return pactum.spec().get('/users').expectStatus(401);
+    return pactum.spec().get('/users').expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
   it('should return both users by searching by their firstName', async () => {
@@ -42,8 +39,7 @@ const SearchE2ESpec = e2eSuite('GET /users', (app) => {
       .get('/users?firstName=e')
       .withBearerToken(user.token)
       .expectStatus(200)
-      .expectBodyContains(userToBodyUser(user))
-      .expectBodyContains(userToBodyUser(otherUser));
+      .expectBody([userToBodyUser(otherUser), userToBodyUser(user)]);
   });
 
   it('should return a user by searching by their last name', async () =>

@@ -61,7 +61,7 @@ export class UEController {
     @Param(
       'commentId',
       new ParseUUIDPipe({
-        exceptionFactory: () => new AppException(ERROR_CODE.NOT_AN_UUID),
+        exceptionFactory: () => new AppException(ERROR_CODE.PARAM_NOT_UUID, 'commentId'),
       }),
     )
     commentId: string,
@@ -69,8 +69,8 @@ export class UEController {
     @Body() body: UeCommentUpdateDto,
   ) {
     if (!(await this.ueService.doesCommentExist(commentId))) throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
-    if (await this.ueService.isUserCommentAuthor(user, commentId))
-      return this.ueService.updateComment(body, commentId, user);
+    if (await this.ueService.isUserCommentAuthor(user.id, commentId))
+      return this.ueService.updateComment(body, commentId, user.id);
     throw new AppException(ERROR_CODE.NOT_COMMENT_AUTHOR);
   }
 
@@ -79,14 +79,15 @@ export class UEController {
     @Param(
       'commentId',
       new ParseUUIDPipe({
-        exceptionFactory: () => new AppException(ERROR_CODE.NOT_AN_UUID),
+        exceptionFactory: () => new AppException(ERROR_CODE.PARAM_NOT_UUID, 'commentId'),
       }),
     )
     commentId: string,
     @GetUser() user: User,
   ) {
     if (!(await this.ueService.doesCommentExist(commentId))) throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
-    if (await this.ueService.isUserCommentAuthor(user, commentId)) return this.ueService.deleteComment(commentId, user);
+    if (await this.ueService.isUserCommentAuthor(user.id, commentId))
+      return this.ueService.deleteComment(commentId, user.id);
     throw new AppException(ERROR_CODE.NOT_COMMENT_AUTHOR);
   }
 
@@ -96,17 +97,18 @@ export class UEController {
     @Param(
       'commentId',
       new ParseUUIDPipe({
-        exceptionFactory: () => new AppException(ERROR_CODE.NOT_AN_UUID),
+        exceptionFactory: () => new AppException(ERROR_CODE.PARAM_NOT_UUID, 'commentId'),
       }),
     )
     commentId: string,
     @GetUser() user: User,
   ) {
     if (!(await this.ueService.doesCommentExist(commentId))) throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
-    if (await this.ueService.isUserCommentAuthor(user, commentId)) throw new AppException(ERROR_CODE.IS_COMMENT_AUTHOR);
-    if (await this.ueService.hasAlreadyUpvoted(user, commentId))
+    if (await this.ueService.isUserCommentAuthor(user.id, commentId))
+      throw new AppException(ERROR_CODE.IS_COMMENT_AUTHOR);
+    if (await this.ueService.hasAlreadyUpvoted(user.id, commentId))
       throw new AppException(ERROR_CODE.FORBIDDEN_ALREADY_UPVOTED);
-    await this.ueService.upvoteComment(user, commentId);
+    await this.ueService.upvoteComment(user.id, commentId);
   }
 
   @Delete('/comments/:commentId/upvote')
@@ -115,17 +117,18 @@ export class UEController {
     @Param(
       'commentId',
       new ParseUUIDPipe({
-        exceptionFactory: () => new AppException(ERROR_CODE.NOT_AN_UUID),
+        exceptionFactory: () => new AppException(ERROR_CODE.PARAM_NOT_UUID, 'commentId'),
       }),
     )
     commentId: string,
     @GetUser() user: User,
   ) {
     if (!(await this.ueService.doesCommentExist(commentId))) throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
-    if (await this.ueService.isUserCommentAuthor(user, commentId)) throw new AppException(ERROR_CODE.IS_COMMENT_AUTHOR);
-    if (!(await this.ueService.hasAlreadyUpvoted(user, commentId)))
+    if (await this.ueService.isUserCommentAuthor(user.id, commentId))
+      throw new AppException(ERROR_CODE.IS_COMMENT_AUTHOR);
+    if (!(await this.ueService.hasAlreadyUpvoted(user.id, commentId)))
       throw new AppException(ERROR_CODE.FORBIDDEN_ALREADY_UNUPVOTED);
-    await this.ueService.deUpvoteComment(user, commentId);
+    await this.ueService.deUpvoteComment(user.id, commentId);
   }
 
   @Post('/comments/:commentId/reply')
@@ -134,7 +137,7 @@ export class UEController {
     @Param(
       'commentId',
       new ParseUUIDPipe({
-        exceptionFactory: () => new AppException(ERROR_CODE.NOT_AN_UUID),
+        exceptionFactory: () => new AppException(ERROR_CODE.PARAM_NOT_UUID, 'commentId'),
       }),
     )
     commentId: string,
@@ -150,14 +153,14 @@ export class UEController {
     @Param(
       'replyId',
       new ParseUUIDPipe({
-        exceptionFactory: () => new AppException(ERROR_CODE.NOT_AN_UUID),
+        exceptionFactory: () => new AppException(ERROR_CODE.PARAM_NOT_UUID, 'replyId'),
       }),
     )
     replyId: string,
     @Body() body: CommentReplyDto,
   ) {
     if (!(await this.ueService.doesReplyExist(replyId))) throw new AppException(ERROR_CODE.NO_SUCH_REPLY);
-    if (await this.ueService.isUserCommentReplyAuthor(user, replyId)) return this.ueService.editReply(replyId, body);
+    if (await this.ueService.isUserCommentReplyAuthor(user.id, replyId)) return this.ueService.editReply(replyId, body);
     throw new AppException(ERROR_CODE.NOT_REPLY_AUTHOR);
   }
 
@@ -167,13 +170,13 @@ export class UEController {
     @Param(
       'replyId',
       new ParseUUIDPipe({
-        exceptionFactory: () => new AppException(ERROR_CODE.NOT_AN_UUID),
+        exceptionFactory: () => new AppException(ERROR_CODE.PARAM_NOT_UUID, 'replyId'),
       }),
     )
     replyId: string,
   ) {
     if (!(await this.ueService.doesReplyExist(replyId))) throw new AppException(ERROR_CODE.NO_SUCH_REPLY);
-    if (await this.ueService.isUserCommentReplyAuthor(user, replyId)) return this.ueService.deleteReply(replyId);
+    if (await this.ueService.isUserCommentReplyAuthor(user.id, replyId)) return this.ueService.deleteReply(replyId);
     throw new AppException(ERROR_CODE.NOT_REPLY_AUTHOR);
   }
 
@@ -186,7 +189,7 @@ export class UEController {
   @Get('/:ueCode/rate')
   async GetRateUE(@Param('ueCode') ueCode: string, @GetUser() user: User) {
     if (!(await this.ueService.doesUEExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
-    return this.ueService.getRateUE(user, ueCode);
+    return this.ueService.getRateUE(user.id, ueCode);
   }
 
   @Put('/:ueCode/rate')

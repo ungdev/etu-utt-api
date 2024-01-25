@@ -1,5 +1,6 @@
 import { PipeTransform } from '@nestjs/common';
 import { AppException, ERROR_CODE } from './exceptions';
+import { ArgumentMetadata } from '@nestjs/common/interfaces/features/pipe-transform.interface';
 
 /**
  * A validating pipe for regex.
@@ -12,9 +13,9 @@ import { AppException, ERROR_CODE } from './exceptions';
 export class RegexPipe implements PipeTransform<string, string> {
   constructor(private regex: RegExp) {}
 
-  transform(value: string) {
+  transform(value: string, metadata: ArgumentMetadata) {
     if (!value.match(this.regex)) {
-      throw new AppException(ERROR_CODE.PARAM_DOES_NOT_MATCH_REGEX, this.regex.toString());
+      throw new AppException(ERROR_CODE.PARAM_DOES_NOT_MATCH_REGEX, this.regex.toString(), metadata.data);
     }
     return value;
   }

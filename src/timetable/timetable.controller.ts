@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import TimetableService from './timetable.service';
 import { GetUser } from '../auth/decorator';
 import { User } from '../users/interfaces/user.interface';
@@ -54,7 +54,12 @@ export class TimetableController {
   }
 
   @Post('/current')
-  async createEntry(@Body() body: TimetableCreateEntryDto) {
+  async createEntry(@GetUser('id') userId: string, @Body() body: TimetableCreateEntryDto) {
+    for (const groupId of body.groups) {
+      if (!(await this.timetableService.groupExists(groupId, userId))) {
+        throw new AppException(ERROR_CODE.NO_SUCH_TIMETABLE_GROUP, groupId);
+      }
+    }
     const entry = await this.timetableService.createTimetableEntry(body);
     return {
       id: entry.id,
@@ -72,7 +77,11 @@ export class TimetableController {
   @Patch('/current/:entryId')
   async updateEntry(
     @GetUser() user: User,
-    @Param('entryId', new RegexPipe(regex.uuid)) entryId: string,
+    @Param(
+      'entryId',
+      new ParseUUIDPipe({ exceptionFactory: () => new AppException(ERROR_CODE.PARAM_NOT_UUID, 'entryId') }),
+    )
+    entryId: string,
     @Body() body: TimetableUpdateEntryDto,
   ) {
     if (!(await this.timetableService.entryExists(entryId, user.id))) {
@@ -96,7 +105,11 @@ export class TimetableController {
   @Delete('/current/:entryId')
   async deleteOccurrences(
     @GetUser() user: User,
-    @Param('entryId', new RegexPipe(regex.uuid)) entryId: string,
+    @Param(
+      'entryId',
+      new ParseUUIDPipe({ exceptionFactory: () => new AppException(ERROR_CODE.PARAM_NOT_UUID, 'entryId') }),
+    )
+    entryId: string,
     @Body() body: TimetableDeleteOccurrencesDto,
   ) {
     if (!(await this.timetableService.entryExists(entryId, user.id))) {

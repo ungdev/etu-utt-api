@@ -80,8 +80,6 @@ model AssoMessage {
 
 model Event {
   id                       String   @id @default(uuid())
-  isAllDay                 Boolean
-  location                 String?  @db.VarChar(255)
   createdAt                DateTime @default(now())
   updatedAt                DateTime @updatedAt
   deletedAt                DateTime
@@ -95,7 +93,6 @@ model Event {
   categories             EventCategory[]
   eventAnswers           EventAnswer[]
   eventPrivacy           EventPrivacy[]
-  timetableEntryId       String
 }
 
 model EventAnswer {
@@ -166,7 +163,7 @@ model TimetableGroup {
 model TimetableEntry {
   id                 String             @id @default(uuid())
   eventStart         DateTime           @db.DateTime
-  occurrencesCount   Int? // The number of occurrences, if null, it will be considered infinite
+  occurrencesCount   Int?               @db.UnsignedInt // The number of occurrences, if null, it will be considered infinite
   repeatEvery        Int?               @db.UnsignedInt // In milliseconds
   occurrenceDuration Int                @db.UnsignedInt // In milliseconds
   type               TimetableEntryType
@@ -193,7 +190,7 @@ model TimetableEntryOverride {
   createdAt                DateTime @default(now())
   overrideTimetableEntryId String
 
-  overrideTimetableEntry TimetableEntry?  @relation(name: "overrideTimetableEntry", fields: [overrideTimetableEntryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  overrideTimetableEntry TimetableEntry   @relation(name: "overrideTimetableEntry", fields: [overrideTimetableEntryId], references: [id], onDelete: Cascade)
   timetableGroups        TimetableGroup[]
 }
 
@@ -488,13 +485,13 @@ model UserPermissionAssignement {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  login     String   @unique @db.VarChar(50)
+  id        String  @id @default(uuid())
+  login     String  @unique @db.VarChar(50)
   hash      String
   studentId Int?
   firstName String
   lastName  String
-  rgpdId    String?  @unique
+  rgpdId    String? @unique
 
   role                  UserRole
   timestamps            UserTimestamps?
@@ -573,10 +570,10 @@ model UserBranch {
   branchOptionId String
   semesterId     String
 
-  user         User             @relation(fields: [userId], references: [id])
-  branch       UTTBranch        @relation(fields: [branchId], references: [code])
-  branchOption UTTBranchOption  @relation(fields: [branchOptionId], references: [code])
-  semester     Semester         @relation(fields: [semesterId], references: [code])
+  user         User            @relation(fields: [userId], references: [id])
+  branch       UTTBranch       @relation(fields: [branchId], references: [code])
+  branchOption UTTBranchOption @relation(fields: [branchOptionId], references: [code])
+  semester     Semester        @relation(fields: [semesterId], references: [code])
 }
 
 model UserEtuUTTTeam {

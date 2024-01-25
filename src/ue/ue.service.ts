@@ -13,7 +13,7 @@ import { SelectComment, UEComment, UERawComment } from './interfaces/comment.int
 import { SelectCommentReply, UECommentReply } from './interfaces/comment-reply.interface';
 import { Criterion, SelectCriterion } from './interfaces/criterion.interface';
 import { SelectRate, UERating } from './interfaces/rate.interface';
-import { User } from '../users/interfaces/user.interface';
+import { RawUserUESubscription } from '../prisma/types';
 
 @Injectable()
 export class UEService {
@@ -233,17 +233,17 @@ export class UEService {
   /**
    * Checks whether a user is the author of a comment
    * @remarks The comment must exist and user must not be null
-   * @param user the user to check
+   * @param userId the user to check
    * @param commentId the comment to check
-   * @returns whether the {@link user} is the author of the {@link commentId | comment}
+   * @returns whether the user is the author of the {@link commentId | comment}
    */
-  async isUserCommentAuthor(user: User, commentId: string) {
+  async isUserCommentAuthor(userId: string, commentId: string) {
     const comment = await this.prisma.uEComment.findUnique({
       where: {
         id: commentId,
       },
     });
-    return comment.authorId == user.id;
+    return comment.authorId == userId;
   }
 
   /**
@@ -251,7 +251,7 @@ export class UEService {
    * @param replyId the id of the reply to check
    * @returns whether the {@link replyId | reply} exists
    */
-  async doesReplyExist(replyId: string) {
+  async doesReplyExist(replyId: string): Promise<boolean> {
     return (
       (await this.prisma.uECommentReply.count({
         where: {
@@ -264,17 +264,19 @@ export class UEService {
   /**
    * Checks whether a user is the author of a reply
    * @remarks The reply must exist and user must not be null
-   * @param user the user to check
+   * @param userId the user to check
    * @param replyId the reply to check
-   * @returns whether the {@link user} is the author of the {@link replyId | reply}
+   * @returns whether the user is the author of the {@link replyId | reply}
    */
-  async isUserCommentReplyAuthor(user: User, replyId: string) {
-    const reply = await this.prisma.uECommentReply.findUnique({
-      where: {
-        id: replyId,
-      },
-    });
-    return reply.authorId == user.id;
+  async isUserCommentReplyAuthor(userId: string, replyId: string): Promise<boolean> {
+    return (
+      (await this.prisma.uECommentReply.count({
+        where: {
+          id: replyId,
+          authorId: userId,
+        },
+      })) > 0
+    );
   }
 
   /**
@@ -284,13 +286,13 @@ export class UEService {
    * @param ueCode the code of the UE
    * @returns the last semester done by the {@link user} for the {@link ueCode | ue}
    */
-  async getLastSemesterDoneByUser(userId: string, ueCode: string) {
+  async getLastSemesterDoneByUser(userId: string, ueCode: string): Promise<RawUserUESubscription> {
     return this.prisma.userUESubscription.findFirst({
       where: {
         ue: {
           code: ueCode,
         },
-        userId: userId,
+        userId,
       },
       orderBy: {
         semester: {
@@ -398,10 +400,10 @@ export class UEService {
    * @remaks The comment must exist and the user must not be null
    * @param body the updates to apply to the comment
    * @param commentId the id of the comment
-   * @param user the user updating the comment
+   * @param userId the user updating the comment
    * @returns the updated comment
    */
-  async updateComment(body: UeCommentUpdateDto, commentId: string, user: User): Promise<UEComment> {
+  async updateComment(body: UeCommentUpdateDto, commentId: string, userId: string): Promise<UEComment> {
     const comment = await this.prisma.uEComment.update(
       SelectComment({
         where: {
@@ -416,22 +418,22 @@ export class UEService {
     return {
       ...comment,
       upvotes: comment.upvotes.length,
-      upvoted: comment.upvotes.some((upvote) => upvote.userId == user.id),
+      upvoted: comment.upvotes.some((upvote) => upvote.userId == userId),
     };
   }
 
   /**
    * Checks whether a user has already upvoted a comment
    * @remarks The user must not be null
-   * @param user the user to check
+   * @param userId the user to check
    * @param commentId the id of the comment to check
-   * @returns whether the {@link user} has already upvoted the {@link commentId | comment}
+   * @returns whether the user has already upvoted the {@link commentId | comment}
    */
-  async hasAlreadyUpvoted(user: User, commentId: string) {
+  async hasAlreadyUpvoted(userId: string, commentId: string) {
     const commentUpvote = await this.prisma.uECommentUpvote.findFirst({
       where: {
         commentId,
-        userId: user.id,
+        userId,
       },
     });
     return commentUpvote != null;
@@ -511,14 +513,14 @@ export class UEService {
   /**
    * Upvote a comment for a specific user
    * @remarks The user must not be null and the comment must exist
-   * @param user the user upvoting the comment
+   * @param userId the user upvoting the comment
    * @param commentId the id of the comment to upvote
    */
-  async upvoteComment(user: User, commentId: string) {
+  async upvoteComment(userId: string, commentId: string) {
     await this.prisma.uECommentUpvote.create({
       data: {
         commentId,
-        userId: user.id,
+        userId,
       },
     });
   }
@@ -526,14 +528,14 @@ export class UEService {
   /**
    * Un-upvote a comment for a specific user
    * @remarks The user must not be null and the comment must exist
-   * @param user the user un-upvoting the comment
+   * @param userId the user un-upvoting the comment
    * @param commentId the id of the comment to un-upvote
    */
-  async deUpvoteComment(user: User, commentId: string) {
+  async deUpvoteComment(userId: string, commentId: string) {
     await this.prisma.uECommentUpvote.deleteMany({
       where: {
         commentId,
-        userId: user.id,
+        userId,
       },
     });
   }
@@ -542,10 +544,10 @@ export class UEService {
    * Deletes a comment
    * @remarks The {@link commentId | comment} must exist
    * @param commentId the if of the comment to delete
-   * @param user the user deleting the comment
+   * @param userId the user deleting the comment
    * @returns the deleted {@link UEComment}
    */
-  async deleteComment(commentId: string, user: User): Promise<UEComment> {
+  async deleteComment(commentId: string, userId: string): Promise<UEComment> {
     const comment = await this.prisma.uEComment.delete(
       SelectComment({
         where: {
@@ -556,7 +558,7 @@ export class UEService {
     return {
       ...comment,
       upvotes: comment.upvotes.length,
-      upvoted: comment.upvotes.some((upvote) => upvote.userId == user.id),
+      upvoted: comment.upvotes.some((upvote) => upvote.userId == userId),
     };
   }
 
@@ -592,11 +594,11 @@ export class UEService {
   /**
    * Retrieves the user ratings of a given ue
    * @remarks The user must not be null and the ue must exist
-   * @param user the user fetching his ratings
+   * @param userId the user fetching his ratings
    * @param ueCode the code of the ue to fetch the rates of
    * @returns the rates of the {@link ueCode | ue} for the {@link user}
    */
-  async getRateUE(user: User, ueCode: string): Promise<UERating[]> {
+  async getRateUE(userId: string, ueCode: string): Promise<UERating[]> {
     const UE = await this.prisma.uE.findUnique({
       where: {
         code: ueCode,
@@ -605,7 +607,7 @@ export class UEService {
     return this.prisma.uEStarVote.findMany(
       SelectRate({
         where: {
-          userId: user.id,
+          userId: userId,
           ueId: UE.id,
         },
         orderBy: {
@@ -636,7 +638,7 @@ export class UEService {
         where: {
           ueId_userId_criterionId: {
             ueId: UE.id,
-            userId: userId,
+            userId,
             criterionId: dto.criterion,
           },
         },
@@ -644,7 +646,7 @@ export class UEService {
           value: dto.value,
           criterionId: dto.criterion,
           ueId: UE.id,
-          userId: userId,
+          userId,
         },
         update: {
           value: dto.value,

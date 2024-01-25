@@ -1,17 +1,9 @@
-import {
-  ArrayMinSize,
-  ArrayNotEmpty,
-  IsArray,
-  IsDate,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { ArrayNotEmpty, IsArray, IsDate, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export default class TimetableCreateEntryDto {
   @IsString()
+  @IsNotEmpty()
   location: string;
 
   @IsNumber()
@@ -32,7 +24,8 @@ export default class TimetableCreateEntryDto {
   repetitions?: number = 1;
 
   @IsArray()
+  @IsNotEmpty()
   @ArrayNotEmpty()
-  @ArrayMinSize(1)
+  @IsUUID(4, { each: true })
   groups: string[];
 }

@@ -1,5 +1,5 @@
 import { createUser, createUE, createComment, upvoteComment } from '../../utils/fakedb';
-import { e2eSuite, JsonLike } from '../../utils/test_utils';
+import { Dummies, e2eSuite, JsonLike } from '../../utils/test_utils';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
 
@@ -27,14 +27,14 @@ const DeleteComment = e2eSuite('DELETE /ue/comments/{commentId}', (app) => {
       .spec()
       .withBearerToken(user.token)
       .delete(`/ue/comments/${comment1.id.slice(0, 31)}`)
-      .expectAppError(ERROR_CODE.NOT_AN_UUID);
+      .expectAppError(ERROR_CODE.PARAM_NOT_UUID, 'commentId');
   });
 
   it('should return a 404 because comment does not exist', () => {
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .delete(`/ue/comments/00000000-0000-0000-0000-000000000000`)
+      .delete(`/ue/comments/${Dummies.UUID}`)
       .expectAppError(ERROR_CODE.NO_SUCH_COMMENT);
   });
 

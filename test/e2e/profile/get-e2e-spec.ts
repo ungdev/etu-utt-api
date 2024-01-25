@@ -3,6 +3,7 @@ import { e2eSuite } from '../../utils/test_utils';
 import { AuthSignUpDto } from '../../../src/auth/dto';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { AuthService } from '../../../src/auth/auth.service';
+import { ERROR_CODE } from '../../../src/exceptions';
 
 const GetE2ESpec = e2eSuite('Get', (app) => {
   const userInfos = {
@@ -19,7 +20,6 @@ const GetE2ESpec = e2eSuite('Get', (app) => {
   let id: string;
 
   beforeAll(async () => {
-    await app().get(PrismaService).cleanDb();
     token = await app().get(AuthService).signup(userInfos);
     id = (
       await app()
@@ -29,7 +29,7 @@ const GetE2ESpec = e2eSuite('Get', (app) => {
   });
 
   it('should return a 401 if we are not logged in', async () => {
-    return pactum.spec().get('/profile').expectStatus(401);
+    return pactum.spec().get('/profile').expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
   it('should return the user if we are logged in', async () => {

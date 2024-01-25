@@ -1,6 +1,6 @@
 /**
  * Sorts an array in place and returns it.
- * Array is sorted based a mapper function, that returns in order the values by which to sort the array.
+ * Array is sorted based on a mapper function, that returns in order the values by which to sort the array.
  * @example
  * const array = [
  *   { a: 3, b: 'early into the alphabet' },
@@ -24,7 +24,8 @@ export function sortArray<T>(array: T[], mapper: (e: T) => any[] | any): T[] {
     const bMapped = mapper(b);
     const aValues = aMapped instanceof Array ? aMapped : [aMapped];
     const bValues = bMapped instanceof Array ? bMapped : [bMapped];
-    for (let i = 0; i < aValues.length; i++) {
+    for (let i = 0; i < Math.min(aValues.length, bValues.length); i++) {
+      // TODO : add a sentry error if this happens
       if (aValues[i] < bValues[i]) {
         return -1;
       }

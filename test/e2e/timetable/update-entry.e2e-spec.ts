@@ -1,4 +1,4 @@
-import { e2eSuite } from '../../utils/test_utils';
+import { Dummies, e2eSuite } from '../../utils/test_utils';
 import * as fakedb from '../../utils/fakedb';
 import * as pactum from 'pactum';
 import { HttpStatus } from '@nestjs/common';
@@ -6,6 +6,7 @@ import { uuid } from 'pactum-matchers';
 import { faker } from '@faker-js/faker';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import TimetableUpdateEntryDto from '../../../src/timetable/dto/timetable-update-entry.dto';
+import { ERROR_CODE } from '../../../src/exceptions';
 
 const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) => {
   const user = fakedb.createUser(app);
@@ -38,18 +39,23 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
   });
 
   it('should fail as user is not authenticated', () =>
-    pactum.spec().patch(`/timetable/current/aaa`).expectStatus(HttpStatus.UNAUTHORIZED));
+    pactum.spec().patch(`/timetable/current/aaa`).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
 
   it('should fail as entry id is invalid', () =>
-    pactum.spec().patch(`/timetable/current/aaa`).withBearerToken(user.token).expectStatus(HttpStatus.BAD_REQUEST));
+    pactum
+      .spec()
+      .patch(`/timetable/current/aaa`)
+      .withBearerToken(user.token)
+      .withJson(dummyPayload())
+      .expectAppError(ERROR_CODE.PARAM_NOT_UUID, 'entryId'));
 
   it('should fail as entry does not exist', () =>
     pactum
       .spec()
-      .patch(`/timetable/current/${faker.datatype.uuid()}`)
+      .patch(`/timetable/current/${Dummies.UUID}`)
       .withBearerToken(user.token)
       .withJson(dummyPayload())
-      .expectStatus(HttpStatus.NOT_FOUND));
+      .expectAppError(ERROR_CODE.NO_SUCH_TIMETABLE_ENTRY, Dummies.UUID));
 
   it('should fail as entry does not belong to user', () =>
     pactum
@@ -57,16 +63,19 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
       .patch(`/timetable/current/${otherEntry.id}`)
       .withBearerToken(user.token)
       .withJson(dummyPayload())
-      .expectStatus(HttpStatus.NOT_FOUND));
+      .expectAppError(ERROR_CODE.NO_SUCH_TIMETABLE_ENTRY, otherEntry.id));
 
   it('should fail as user is not in group', async () => {
     const emptyGroup = await fakedb.createTimetableGroup(app, {}, true);
     await pactum
       .spec()
-      .patch(`/timetable/current/${otherEntry.id}`)
+      .patch(`/timetable/current/${entry.id}`)
       .withBearerToken(user.token)
       .withJson(dummyPayload({ for: [emptyGroup.id] }))
-      .expectStatus(HttpStatus.NOT_FOUND);
+      .expectAppError(ERROR_CODE.NO_SUCH_TIMETABLE_GROUP, emptyGroup.id);
+    await app()
+      .get(PrismaService)
+      .timetableGroup.delete({ where: { id: emptyGroup.id } });
   });
 
   it('should fail as we are trying to create an override with a group that is not in the entry', () =>
@@ -75,7 +84,7 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
       .patch(`/timetable/current/${entry.id}`)
       .withBearerToken(user.token)
       .withJson(dummyPayload({ for: [userGroup.id, userThirdGroup.id] }))
-      .expectStatus(HttpStatus.CONFLICT));
+      .expectAppError(ERROR_CODE.GROUP_NOT_PART_OF_ENTRY, userThirdGroup.id, entry.id));
 
   it('should update the whole entry', async () => {
     const newLocation = faker.address.cityName();
@@ -85,6 +94,8 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
       .withBearerToken(user.token)
       .withJson({
         location: newLocation,
+        relativeStart: 1000,
+        occurrenceDuration: 100,
         updateFrom: 0,
         updateUntil: 2,
         applyEvery: 1,
@@ -94,9 +105,9 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
       .expectJson({
         id: entry.id,
         location: newLocation,
-        duration: entry.occurrenceDuration,
-        firstRepetitionDate: new Date(0).toISOString(),
-        lastRepetitionDate: new Date(20).toISOString(),
+        duration: 100,
+        firstRepetitionDate: new Date(1000).toISOString(),
+        lastRepetitionDate: new Date(20 + 1000).toISOString(),
         repetitionFrequency: 10,
         repetitions: 3,
         groups: [userOtherGroup.id, userGroup.id],
@@ -104,8 +115,8 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
           {
             id: override.id,
             location: override.location,
-            firstRepetitionDate: new Date(10).toISOString(),
-            lastRepetitionDate: new Date(20).toISOString(),
+            firstRepetitionDate: new Date(10 + 1000).toISOString(),
+            lastRepetitionDate: new Date(20 + 1000).toISOString(),
             firstOccurrenceOverride: 1,
             lastOccurrenceOverride: 2,
             overrideFrequency: 1,
@@ -115,6 +126,12 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
         ],
       });
     entry.location = newLocation;
+    await app()
+      .get(PrismaService)
+      .timetableEntry.update({
+        where: { id: entry.id },
+        data: { eventStart: entry.eventStart, occurrenceDuration: entry.occurrenceDuration },
+      });
   });
 
   it('should create a new override because the modification is not applied to all occurrences', async () => {

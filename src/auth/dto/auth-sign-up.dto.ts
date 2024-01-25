@@ -1,10 +1,17 @@
-import { IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
-import { AuthSignInDto } from './auth-sign-in.dto';
+import { IsAlphanumeric, IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 import { IsPositive } from 'class-validator';
 import { Type } from 'class-transformer';
 import { Sex, UserRole } from '@prisma/client';
 
-export class AuthSignUpDto extends AuthSignInDto {
+export class AuthSignUpDto {
+  @IsNotEmpty()
+  @IsAlphanumeric()
+  login: string;
+
+  @IsString()
+  @IsNotEmpty()
+  password: string;
+
   @IsString()
   @IsNotEmpty()
   lastName: string;

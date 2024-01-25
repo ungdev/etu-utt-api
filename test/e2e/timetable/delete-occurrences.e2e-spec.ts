@@ -1,11 +1,11 @@
-import { e2eSuite } from '../../utils/test_utils';
+import { Dummies, e2eSuite } from '../../utils/test_utils';
 import * as fakedb from '../../utils/fakedb';
 import * as pactum from 'pactum';
 import { HttpStatus } from '@nestjs/common';
 import { uuid } from 'pactum-matchers';
-import { faker } from '@faker-js/faker';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import TimetableDeleteOccurrencesDto from '../../../src/timetable/dto/timetable-delete-occurrences.dto';
+import { ERROR_CODE } from '../../../src/exceptions';
 
 const DeleteEntryE2ESpec = e2eSuite('DELETE /timetable/current/:entryId', (app) => {
   const user = fakedb.createUser(app);
@@ -37,18 +37,23 @@ const DeleteEntryE2ESpec = e2eSuite('DELETE /timetable/current/:entryId', (app) 
   });
 
   it('should fail as user is not authenticated', () =>
-    pactum.spec().delete(`/timetable/current/aaa`).expectStatus(HttpStatus.UNAUTHORIZED));
+    pactum.spec().delete(`/timetable/current/aaa`).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
 
   it('should fail as entry id is invalid', () =>
-    pactum.spec().delete(`/timetable/current/aaa`).withBearerToken(user.token).expectStatus(HttpStatus.BAD_REQUEST));
+    pactum
+      .spec()
+      .delete(`/timetable/current/aaa`)
+      .withBearerToken(user.token)
+      .withJson(dummyPayload())
+      .expectAppError(ERROR_CODE.PARAM_NOT_UUID, 'entryId'));
 
   it('should fail as entry does not exist', () =>
     pactum
       .spec()
-      .delete(`/timetable/current/${faker.datatype.uuid()}`)
+      .delete(`/timetable/current/${Dummies.UUID}`)
       .withBearerToken(user.token)
       .withJson(dummyPayload())
-      .expectStatus(HttpStatus.NOT_FOUND));
+      .expectAppError(ERROR_CODE.NO_SUCH_TIMETABLE_ENTRY, Dummies.UUID));
 
   it('should fail as entry does not belong to user', () =>
     pactum
@@ -56,16 +61,19 @@ const DeleteEntryE2ESpec = e2eSuite('DELETE /timetable/current/:entryId', (app) 
       .delete(`/timetable/current/${otherEntry.id}`)
       .withBearerToken(user.token)
       .withJson(dummyPayload())
-      .expectStatus(HttpStatus.NOT_FOUND));
+      .expectAppError(ERROR_CODE.NO_SUCH_TIMETABLE_ENTRY, otherEntry.id));
 
   it('should fail as user is not in group', async () => {
     const emptyGroup = await fakedb.createTimetableGroup(app, {}, true);
     await pactum
       .spec()
-      .delete(`/timetable/current/${otherEntry.id}`)
+      .delete(`/timetable/current/${entry.id}`)
       .withBearerToken(user.token)
       .withJson(dummyPayload({ for: [emptyGroup.id] }))
-      .expectStatus(HttpStatus.NOT_FOUND);
+      .expectAppError(ERROR_CODE.NO_SUCH_TIMETABLE_GROUP, emptyGroup.id);
+    await app()
+      .get(PrismaService)
+      .timetableGroup.delete({ where: { id: emptyGroup.id } });
   });
 
   it('should fail as we are trying to delete an occurrence for a group the user is not in', () =>
@@ -74,7 +82,7 @@ const DeleteEntryE2ESpec = e2eSuite('DELETE /timetable/current/:entryId', (app) 
       .delete(`/timetable/current/${entry.id}`)
       .withBearerToken(user.token)
       .withJson(dummyPayload({ for: [userGroup.id, userThirdGroup.id] }))
-      .expectStatus(HttpStatus.CONFLICT));
+      .expectAppError(ERROR_CODE.GROUP_NOT_PART_OF_ENTRY, userThirdGroup.id, entry.id));
 
   it('should delete the whole entry', async () => {
     await pactum

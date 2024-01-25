@@ -52,7 +52,7 @@ export default class UsersService {
         ],
       },
       include: { infos: true },
-      orderBy: { id: 'asc' },
+      orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
     });
   }
 

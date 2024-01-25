@@ -1,7 +1,7 @@
 import { createUser, createUE, makeUserJoinUE, createComment } from '../../utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
-import { e2eSuite, JsonLike } from '../../utils/test_utils';
+import { Dummies, e2eSuite, JsonLike } from '../../utils/test_utils';
 
 const PostCommmentReply = e2eSuite('POST /ue/comments/{commentId}/reply', (app) => {
   const user = createUser(app);
@@ -53,7 +53,7 @@ const PostCommmentReply = e2eSuite('POST /ue/comments/{commentId}/reply', (app) 
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .post(`/ue/comments/00000000-0000-0000-0000-000000000000/reply`)
+      .post(`/ue/comments/${Dummies.UUID}/reply`)
       .withBody({
         body: 'heyhey',
       })
@@ -68,7 +68,7 @@ const PostCommmentReply = e2eSuite('POST /ue/comments/{commentId}/reply', (app) 
       .withBody({
         body: 'heyhey',
       })
-      .expectAppError(ERROR_CODE.NOT_AN_UUID);
+      .expectAppError(ERROR_CODE.PARAM_NOT_UUID, 'commentId');
   });
 
   it('should return the posted comment', () => {
