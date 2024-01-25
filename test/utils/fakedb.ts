@@ -71,7 +71,7 @@ export const createUser = entityFaker(
     };
   },
   null as FakeUser,
-  null as FakeUser & { password?: string },
+  null as Required<FakeUser & { password?: string }>,
   null as Record<string, never>,
 );
 
@@ -102,7 +102,7 @@ export const createTimetableGroup = entityFaker(
       });
   },
   null as FakeTimetableGroup,
-  null as CreateTimetableGroupParams,
+  null as Required<CreateTimetableGroupParams>,
   null as Record<string, never>,
 );
 
@@ -134,7 +134,7 @@ export const createTimetableEntry = entityFaker(
         },
       }),
   null as FakeTimetableEntry,
-  null as CreateTimetableEntryParameters,
+  null as Required<CreateTimetableEntryParameters>,
   null as Record<string, never>,
 );
 
@@ -158,7 +158,7 @@ export const createTimetableEntryOverride = entityFaker(
         },
       }),
   null as FakeTimetableEntryOverride,
-  null as CreateTimetableEntryOverrideParameters,
+  null as Required<CreateTimetableEntryOverrideParameters>,
   null as { entry: FakeTimetableEntry },
 );
 
@@ -565,25 +565,24 @@ type FakeFunctionReturn<FakeEntity extends Partial<object>, OnTheFly extends boo
  *       }
  *     }),
  *   null as Partial<RawRestaurant>,
- *   null as { location: string; menu: string }
+ *   null as Required<{ location: string; menu: string }>
  *   null as { manager: FakeUser }
  * );
  * const user = createFakeUser(app); // createFakeUser() has been created the same way.
- * const restaurant1 = createFakeRestaurant(app, { manager: user }, ); // This will be created in a beforeAll automatically. You will be able to use the fields of restaurant1 in the it().
+ * const restaurant1 = createFakeRestaurant(app, { manager: user }); // This will be created in a beforeAll automatically. You will be able to use the fields of restaurant1 in the it().
  *                                                                     // Note that user is not accessible yet, but you can still use it in dependencies and params
  * const restaurant2 = await createFakeRestaurant(app, { manager: user }, { menu: "grenouilles" }, true); // Creates the restaurant on the fly, as soon as this line finishes executing, a restaurant will have been created in the database.
  *                                                                                                        // You will be able to exploit the fields of the object right after.
  *                                                                                                        // This usage is very useful in it() functions, to be able to create objects on the fly
  */
-
 function entityFaker<
   FakeEntity extends Partial<object>,
-  Params extends object,
-  Keys extends keyof Params,
+  Params extends DefaultParams,
+  DefaultParams extends Required<object>,
   Dependencies extends object,
 >(
-  defaultParams: () => { [K in Keys]: Params[Keys] },
-  entityFactory: EntityFactory<FakeEntity, Params, Keys, Dependencies>,
+  defaultParams: () => DefaultParams,
+  entityFactory: EntityFactory<FakeEntity, Params, keyof DefaultParams, Dependencies>,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _fakeEntityType: FakeEntity,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -599,19 +598,20 @@ function entityFaker<
     rawParams: Partial<Params> = {},
     onTheFly: OnTheFly = false as OnTheFly,
   ): FakeFunctionReturn<FakeEntity, OnTheFly> => {
-    const params: UnpartialFields<Params, Keys> = {
+    const params: UnpartialFields<Params, keyof DefaultParams> = {
       ...defaultParams(),
       ...rawParams,
-    } as UnpartialFields<Params, Keys>;
+    } as UnpartialFields<Params, keyof DefaultParams>;
     const lazyEntity: FakeEntity = {} as FakeEntity;
     const factory =
       entityFactory.length === 2
         ? () =>
-            (entityFactory as EntityFactoryWithoutDependencies<FakeEntity, Params, Keys>)(app, params).then((res) =>
-              Object.assign(lazyEntity, res),
-            )
+            (entityFactory as EntityFactoryWithoutDependencies<FakeEntity, Params, keyof DefaultParams>)(
+              app,
+              params,
+            ).then((res) => Object.assign(lazyEntity, res))
         : () =>
-            (entityFactory as EntityFactoryWithDependencies<FakeEntity, Params, Keys, Dependencies>)(
+            (entityFactory as EntityFactoryWithDependencies<FakeEntity, Params, keyof DefaultParams, Dependencies>)(
               app,
               dependencies,
               params,
