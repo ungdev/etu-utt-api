@@ -1,6 +1,6 @@
+import { INestApplication, VersioningType } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { AppModule } from '../../src/app.module';
-import { INestApplication } from '@nestjs/common';
 import * as pactum from 'pactum';
 import AuthE2ESpec from './auth';
 import ProfileE2ESpec from './profile';
@@ -19,13 +19,17 @@ describe('EtuUTT API e2e testing', () => {
       imports: [AppModule],
     }).compile();
     app = moduleRef.createNestApplication();
+    app.enableVersioning({
+      type: VersioningType.URI,
+      defaultVersion: '1',
+    });
 
     app.useGlobalPipes(getValidationPipe());
     await app.init();
     await app.listen(3001);
 
     testUtils.init(() => app);
-    pactum.request.setBaseUrl('http://localhost:3001');
+    pactum.request.setBaseUrl('http://localhost:3001/v1');
   });
 
   afterAll(() => {
