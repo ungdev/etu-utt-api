@@ -7,9 +7,7 @@ const RATE_SELECT_FILTER = {
   },
 } as const;
 
-export type UERating = DeepWritable<
-  Prisma.UEStarVoteGetPayload<typeof RATE_SELECT_FILTER>
->;
+export type UERating = DeepWritable<Prisma.UEStarVoteGetPayload<typeof RATE_SELECT_FILTER>>;
 
 /**
  * Generates the argument to use in prisma function to retrieve an object containing the necessary

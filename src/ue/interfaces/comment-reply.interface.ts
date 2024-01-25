@@ -17,9 +17,7 @@ const REPLY_SELECT_FILTER = {
   },
 } as const;
 
-export type UECommentReply = DeepWritable<
-  Prisma.UECommentReplyGetPayload<typeof REPLY_SELECT_FILTER>
->;
+export type UECommentReply = DeepWritable<Prisma.UECommentReplyGetPayload<typeof REPLY_SELECT_FILTER>>;
 
 /**
  * Generates the argument to use in prisma function to retrieve an object containing the necessary

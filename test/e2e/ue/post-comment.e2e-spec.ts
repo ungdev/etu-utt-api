@@ -1,14 +1,9 @@
-import {
-  createUser,
-  suite,
-  createUE,
-  makeUserJoinUE,
-  JsonLike,
-} from '../../test_utils';
+import { createUser, createUE, makeUserJoinUE } from '../../utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
+import { e2eSuite, JsonLike } from '../../utils/test_utils';
 
-const PostCommment = suite('POST /ue/{ueCode}/comments', (app) => {
+const PostCommment = e2eSuite('POST /ue/{ueCode}/comments', (app) => {
   const user = createUser(app);
   const user2 = createUser(app, { login: 'user2' });
   const user3 = createUser(app, { login: 'user3' });

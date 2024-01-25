@@ -1,12 +1,5 @@
 import { Type } from 'class-transformer';
-import {
-  IsNumber,
-  IsPositive,
-  IsString,
-  MaxLength,
-  MinLength,
-  IsOptional,
-} from 'class-validator';
+import { IsNumber, IsPositive, IsString, MaxLength, MinLength, IsOptional } from 'class-validator';
 
 /**
  * Query parameters of the request to search UEs.

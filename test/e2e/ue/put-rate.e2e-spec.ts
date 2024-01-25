@@ -1,14 +1,9 @@
-import {
-  createUser,
-  suite,
-  createUE,
-  makeUserJoinUE,
-  createCriterion,
-} from '../../test_utils';
+import { createUser, createUE, makeUserJoinUE, createCriterion } from '../../utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from 'src/exceptions';
+import { e2eSuite } from '../../utils/test_utils';
 
-const PutRate = suite('PUT /ue/{ueCode}/rate', (app) => {
+const PutRate = e2eSuite('PUT /ue/{ueCode}/rate', (app) => {
   const user = createUser(app);
   const user2 = createUser(app, { login: 'user2' });
   const ue = createUE(app);
@@ -16,10 +11,7 @@ const PutRate = suite('PUT /ue/{ueCode}/rate', (app) => {
   const criterion = createCriterion(app, 'etAlors');
 
   it('should return a 401 as user is not authenticated', () => {
-    return pactum
-      .spec()
-      .put(`/ue/${ue.code}/rate`)
-      .expectAppError(ERROR_CODE.NOT_LOGGED_IN);
+    return pactum.spec().put(`/ue/${ue.code}/rate`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
   it('should return a 403 as user has not done the UE', () => {

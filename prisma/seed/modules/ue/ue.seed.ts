@@ -1,10 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { fakeUE } from './factories';
-import {
-  branchesCode,
-  branchOptionsCode,
-  translationsUuids,
-} from '../../const';
+import { branchesCode, branchOptionsCode, translationsUuids } from '../../const';
 import { fakeUTTBranchOption } from './factories/filiere';
 import { fakeUttBranch } from './factories/branche';
 import { fakeTranslation } from './factories/translation';

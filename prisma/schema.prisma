@@ -80,18 +80,15 @@ model AssoMessage {
 
 model Event {
   id                       String   @id @default(uuid())
-  startAt                  DateTime
-  endAt                    DateTime
-  isAllDay                 Boolean
-  location                 String?  @db.VarChar(255)
   createdAt                DateTime @default(now())
   updatedAt                DateTime @updatedAt
   deletedAt                DateTime
   titleTranslationId       String   @unique
   descriptionTranslationId String   @unique
 
-  titleTranslation       Translation     @relation(name: "titleTranslation", fields: [titleTranslationId], references: [id], onDelete: Cascade)
-  descriptionTranslation Translation     @relation(name: "descriptionTranslation", fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
+  titleTranslation       Translation      @relation(name: "titleTranslation", fields: [titleTranslationId], references: [id], onDelete: Cascade)
+  descriptionTranslation Translation      @relation(name: "descriptionTranslation", fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
+  timetableEntries       TimetableEntry[]
   assos                  Asso[]
   categories             EventCategory[]
   eventAnswers           EventAnswer[]
@@ -151,6 +148,50 @@ model Semester {
   branches              UserBranch[]
   UESubscriptions       UserUESubscription[]
   etuUTTTeams           UserEtuUTTTeam[]
+}
+
+model TimetableGroup {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+
+  userTimetableGroups     UserTimetableGroup[]
+  timetableEntries        TimetableEntry[]
+  timetableEntryOverrides TimetableEntryOverride[]
+}
+
+model TimetableEntry {
+  id                 String             @id @default(uuid())
+  eventStart         DateTime           @db.DateTime
+  occurrencesCount   Int?               @db.UnsignedInt // The number of occurrences, if null, it will be considered infinite
+  repeatEvery        Int?               @db.UnsignedInt // In milliseconds
+  occurrenceDuration Int                @db.UnsignedInt // In milliseconds
+  type               TimetableEntryType
+  location           String
+  eventId            String?
+  ueCourseId         String?
+  createdAt          DateTime           @default(now())
+
+  ueCourse        UECourse?                @relation(fields: [ueCourseId], references: [id])
+  event           Event?                   @relation(fields: [eventId], references: [id])
+  overwrittenBy   TimetableEntryOverride[] @relation(name: "overrideTimetableEntry")
+  timetableGroups TimetableGroup[]
+}
+
+model TimetableEntryOverride {
+  id                       String   @id @default(uuid())
+  applyFrom                Int // The index of the first occurrence of the event to apply the override to
+  applyUntil               Int // The index of the last occurrence of the event to apply the override to
+  repeatEvery              Int      @default(1) @db.UnsignedInt // In number of occurrences of parent entry
+  occurrenceRelativeStart  Int      @default(0) @db.UnsignedInt // How many milliseconds after the default beginning of the event should this override start at ?
+  occurrenceDuration       Int?     @db.UnsignedInt
+  delete                   Boolean  @default(false)
+  location                 String?
+  createdAt                DateTime @default(now())
+  overrideTimetableEntryId String
+
+  overrideTimetableEntry TimetableEntry   @relation(name: "overrideTimetableEntry", fields: [overrideTimetableEntryId], references: [id], onDelete: Cascade)
+  timetableGroups        TimetableGroup[]
 }
 
 model Translation {
@@ -309,10 +350,6 @@ model UECommentUpvote {
 
 model UECourse {
   id         String     @id @default(uuid())
-  day        Day
-  startHour  DateTime   @db.Time
-  endHour    DateTime   @db.Time
-  week       Week
   type       CourseType
   room       String     @db.VarChar(50)
   createdAt  DateTime   @default(now())
@@ -324,6 +361,7 @@ model UECourse {
   semester            Semester           @relation(fields: [semesterId], references: [code])
   courseExchangesFrom UECourseExchange[] @relation(name: "courseFrom")
   courseExchangesTo   UECourseExchange[] @relation(name: "courseTo")
+  timetableEntries    TimetableEntry[]
 }
 
 model UECourseExchange {
@@ -453,13 +491,13 @@ model User {
   studentId Int?
   firstName String
   lastName  String
-  RGPDId    String? @unique
+  rgpdId    String? @unique
 
   role                  UserRole
   timestamps            UserTimestamps?
   socialNetwork         UserSocialNetwork?
   bans                  UserBan[]
-  RGPD                  UserRGPD?
+  rgpd                  UserRGPD?
   BDEContributions      UserBDEContribution[]
   assoMembership        AssoMembership[]
   branch                UserBranch?
@@ -487,6 +525,7 @@ model User {
   courseExchanges       UECourseExchange[]
   courseExchangeReplies UECourseExchangeReply[]
   commentUpvotes        UECommentUpvote[]
+  userTimetableGroup    UserTimetableGroup[]
 }
 
 model UserAddress {
@@ -531,10 +570,10 @@ model UserBranch {
   branchOptionId String
   semesterId     String
 
-  user         User             @relation(fields: [userId], references: [id])
-  branch       UTTBranch        @relation(fields: [branchId], references: [code])
-  branchOption UTTBranchOption  @relation(fields: [branchOptionId], references: [code])
-  semester     Semester         @relation(fields: [semesterId], references: [code])
+  user         User            @relation(fields: [userId], references: [id])
+  branch       UTTBranch       @relation(fields: [branchId], references: [code])
+  branchOption UTTBranchOption @relation(fields: [branchOptionId], references: [code])
+  semester     Semester        @relation(fields: [semesterId], references: [code])
 }
 
 model UserEtuUTTTeam {
@@ -644,6 +683,18 @@ model UserTimestamps {
   user User @relation(fields: [userId], references: [id])
 }
 
+model UserTimetableGroup {
+  id               String @id @default(uuid())
+  timetableGroupId String
+  userId           String
+  priority         Int
+
+  user           User           @relation(fields: [userId], references: [id])
+  timetableGroup TimetableGroup @relation(fields: [timetableGroupId], references: [id])
+
+  @@unique([timetableGroupId, userId])
+}
+
 model UserUESubscription {
   id         String   @id @default(uuid())
   createdAt  DateTime @default(now())
@@ -722,15 +773,6 @@ enum CourseType {
   TP
 }
 
-enum Day {
-  Monday
-  Tuesday
-  Wednesday
-  Thursday
-  Friday
-  Saturday
-}
-
 enum Language {
   FR
   EN
@@ -748,4 +790,11 @@ enum Sex {
 enum Week {
   A
   B
+}
+
+enum TimetableEntryType {
+  COURSE
+  ASSO
+  DELETE
+  CUSTOM
 }

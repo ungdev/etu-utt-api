@@ -1,9 +1,8 @@
-import { User as UserModel, UserInfos as UserInfosModel } from '@prisma/client';
-
-export type UserBase = UserModel & {
-  infos: UserInfosModel;
-};
-
-export type User = UserBase & {
-  permissions: string[];
-};
+export {
+  User as RawUser,
+  UserInfos as RawUserInfos,
+  TimetableEntry as RawTimetableEntry,
+  TimetableGroup as RawTimetableGroup,
+  TimetableEntryOverride as RawTimetableEntryOverride,
+  UserUESubscription as RawUserUESubscription,
+} from '@prisma/client';

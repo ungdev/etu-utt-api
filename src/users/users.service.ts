@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { User } from '../prisma/types';
+import { User } from './interfaces/user.interface';
 import { UsersSearchDto } from './dto/users-search.dto';
 
 @Injectable()
@@ -52,6 +52,7 @@ export default class UsersService {
         ],
       },
       include: { infos: true },
+      orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
     });
   }
 
@@ -62,9 +63,7 @@ export default class UsersService {
     });
     if (!user) return null;
     const transformedUser: User = { ...user, permissions: undefined };
-    transformedUser.permissions = user.permissions.map(
-      (permssion) => permssion.userPermissionId,
-    );
+    transformedUser.permissions = user.permissions.map((permssion) => permssion.userPermissionId);
     return transformedUser;
   }
 

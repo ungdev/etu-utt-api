@@ -7,9 +7,7 @@ const CRITERION_SELECT_FILTER = {
   },
 } as const;
 
-export type Criterion = DeepWritable<
-  Prisma.UEStarCriterionGetPayload<typeof CRITERION_SELECT_FILTER>
->;
+export type Criterion = DeepWritable<Prisma.UEStarCriterionGetPayload<typeof CRITERION_SELECT_FILTER>>;
 
 /**
  * Generates the argument to use in prisma function to retrieve an object containing the necessary

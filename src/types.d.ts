@@ -15,3 +15,7 @@ declare interface Pagination<T> {
 declare type DeepWritable<T> = {
   -readonly [key in keyof T]: DeepWritable<T[key]>;
 };
+
+declare type UnpartialFields<T, K extends keyof T> = { [P in K]-?: T[P] } & {
+  [P in keyof T]: P extends T ? never : T[P];
+};
