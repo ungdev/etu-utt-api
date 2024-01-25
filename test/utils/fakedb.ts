@@ -71,7 +71,7 @@ export const createUser = entityFaker(
     };
   },
   null as FakeUser,
-  null as Required<FakeUser & { password?: string }>,
+  null as FakeUser & { password?: string },
   null as Record<string, never>,
 );
 
@@ -134,7 +134,7 @@ export const createTimetableEntry = entityFaker(
         },
       }),
   null as FakeTimetableEntry,
-  null as Required<CreateTimetableEntryParameters>,
+  null as CreateTimetableEntryParameters,
   null as Record<string, never>,
 );
 
@@ -158,7 +158,7 @@ export const createTimetableEntryOverride = entityFaker(
         },
       }),
   null as FakeTimetableEntryOverride,
-  null as Required<CreateTimetableEntryOverrideParameters>,
+  null as CreateTimetableEntryOverrideParameters,
   null as { entry: FakeTimetableEntry },
 );
 
@@ -467,35 +467,39 @@ export function createReply(app: AppProvider, user: Partial<User>, comment: Part
  * @see EntityFactoryWithDependencies
  */
 type EntityFactory<
-  FakeEntity extends Partial<object>,
-  Params extends object,
-  Keys extends keyof Params,
-  Dependencies extends object,
+  FakeEntity extends Partial<FakeEntity>,
+  Params extends Partial<Params>,
+  DefaultParamsKeys extends keyof Params,
+  Dependencies extends Required<Dependencies>,
 > = Dependencies extends Record<string, never>
-  ? EntityFactoryWithoutDependencies<FakeEntity, Params, Keys>
-  : EntityFactoryWithDependencies<FakeEntity, Params, Keys, Dependencies>;
+  ? EntityFactoryWithoutDependencies<FakeEntity, Params, DefaultParamsKeys>
+  : EntityFactoryWithDependencies<FakeEntity, Params, DefaultParamsKeys, Dependencies>;
 /**
  * Represents a function to generate an entity, which does not need dependencies to be executed.
  */
 type EntityFactoryWithoutDependencies<
-  FakeEntity extends Partial<object>,
-  Params extends object,
-  Keys extends keyof Params,
-> = (app: AppProvider, params: UnpartialFields<Params, Keys>) => Promise<FakeEntity>;
+  FakeEntity extends Partial<FakeEntity>,
+  Params extends Partial<Params>,
+  DefaultParamsKeys extends keyof Params,
+> = (app: AppProvider, params: UnpartialFields<Params, DefaultParamsKeys>) => Promise<FakeEntity>;
 /**
  * Represents a function to generate an entity, which needs dependencies to be executed.
  */
 type EntityFactoryWithDependencies<
-  FakeEntity extends Partial<object>,
-  Params extends object,
-  Keys extends keyof Params,
-  Dependencies extends object,
-> = (app: AppProvider, dependencies: Dependencies, params: UnpartialFields<Params, Keys>) => Promise<FakeEntity>;
+  FakeEntity extends Partial<FakeEntity>,
+  Params extends Partial<Params>,
+  DefaultParamsKeys extends keyof Params,
+  Dependencies extends Required<Dependencies>,
+> = (
+  app: AppProvider,
+  dependencies: Dependencies,
+  params: UnpartialFields<Params, DefaultParamsKeys>,
+) => Promise<FakeEntity>;
 
 /**
  * A fake function which does not have dependencies.
  */
-type FakeFunctionWithoutDependencies<FakeEntity extends Partial<object>, Params extends object> = <
+type FakeFunctionWithoutDependencies<FakeEntity extends Partial<FakeEntity>, Params extends Partial<Params>> = <
   OnTheFly extends boolean = false,
 >(
   app: AppProvider,
@@ -506,9 +510,9 @@ type FakeFunctionWithoutDependencies<FakeEntity extends Partial<object>, Params 
  * A fake function which has dependencies.
  */
 type FakeFunctionWithDependencies<
-  FakeEntity extends Partial<object>,
-  Params extends object,
-  Dependencies extends object,
+  FakeEntity extends Partial<FakeEntity>,
+  Params extends Partial<Params>,
+  Dependencies extends Required<Dependencies>,
 > = <OnTheFly extends boolean = false>(
   app: AppProvider,
   dependencies: Dependencies,
@@ -518,7 +522,7 @@ type FakeFunctionWithDependencies<
 /**
  * The return type of a fake function, either Promise<FakeEntity> or FakeEntity depending on whether OnTheFly is true or false
  */
-type FakeFunctionReturn<FakeEntity extends Partial<object>, OnTheFly extends boolean> = OnTheFly extends true
+type FakeFunctionReturn<FakeEntity extends Partial<FakeEntity>, OnTheFly extends boolean> = OnTheFly extends true
   ? Promise<FakeEntity>
   : FakeEntity;
 /**
@@ -576,13 +580,14 @@ type FakeFunctionReturn<FakeEntity extends Partial<object>, OnTheFly extends boo
  *                                                                                                        // This usage is very useful in it() functions, to be able to create objects on the fly
  */
 function entityFaker<
-  FakeEntity extends Partial<object>,
-  Params extends DefaultParams,
-  DefaultParams extends Required<object>,
-  Dependencies extends object,
+  FakeEntity extends Partial<FakeEntity>,
+  Params extends Partial<Params>,
+  DefaultParams extends { [K in keyof DefaultParams]: K extends keyof Params ? Params[K] : never } & Params,
+  Dependencies extends Required<Dependencies>,
+  DefaultParamsKeys extends keyof Params = keyof DefaultParams extends keyof Params ? keyof DefaultParams : never,
 >(
   defaultParams: () => DefaultParams,
-  entityFactory: EntityFactory<FakeEntity, Params, keyof DefaultParams, Dependencies>,
+  entityFactory: EntityFactory<FakeEntity, Params, DefaultParamsKeys, Dependencies>,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _fakeEntityType: FakeEntity,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -598,20 +603,20 @@ function entityFaker<
     rawParams: Partial<Params> = {},
     onTheFly: OnTheFly = false as OnTheFly,
   ): FakeFunctionReturn<FakeEntity, OnTheFly> => {
-    const params: UnpartialFields<Params, keyof DefaultParams> = {
+    const params: UnpartialFields<Params, DefaultParamsKeys> = {
       ...defaultParams(),
       ...rawParams,
-    } as UnpartialFields<Params, keyof DefaultParams>;
+    } as UnpartialFields<Params, DefaultParamsKeys>;
     const lazyEntity: FakeEntity = {} as FakeEntity;
     const factory =
       entityFactory.length === 2
         ? () =>
-            (entityFactory as EntityFactoryWithoutDependencies<FakeEntity, Params, keyof DefaultParams>)(
+            (entityFactory as EntityFactoryWithoutDependencies<FakeEntity, Params, DefaultParamsKeys>)(
               app,
               params,
             ).then((res) => Object.assign(lazyEntity, res))
         : () =>
-            (entityFactory as EntityFactoryWithDependencies<FakeEntity, Params, keyof DefaultParams, Dependencies>)(
+            (entityFactory as EntityFactoryWithDependencies<FakeEntity, Params, DefaultParamsKeys, Dependencies>)(
               app,
               dependencies,
               params,
