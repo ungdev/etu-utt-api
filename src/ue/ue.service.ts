@@ -3,27 +3,17 @@ import { UESearchDto } from './dto/ue-search.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { UeCommentPostDto } from './dto/ue-comment-post.dto';
-import { User } from '../prisma/types';
 import { UERateDto } from './dto/ue-rate.dto';
 import { UeCommentUpdateDto } from './dto/ue-comment-update.dto';
 import { CommentReplyDto } from './dto/ue-comment-reply.dto';
 import { GetUECommentsDto } from './dto/ue-get-comments.dto';
-import {
-  SelectUEOverview,
-  UEOverView,
-} from './interfaces/ue-overview.interface';
+import { SelectUEOverview, UEOverView } from './interfaces/ue-overview.interface';
 import { SelectUEDetail, UEDetail } from './interfaces/ue-detail.interface';
-import {
-  SelectComment,
-  UEComment,
-  UERawComment,
-} from './interfaces/comment.interface';
-import {
-  SelectCommentReply,
-  UECommentReply,
-} from './interfaces/comment-reply.interface';
+import { SelectComment, UEComment, UERawComment } from './interfaces/comment.interface';
+import { SelectCommentReply, UECommentReply } from './interfaces/comment-reply.interface';
 import { Criterion, SelectCriterion } from './interfaces/criterion.interface';
 import { SelectRate, UERating } from './interfaces/rate.interface';
+import { RawUserUESubscription } from '../prisma/types';
 
 @Injectable()
 export class UEService {
@@ -63,11 +53,7 @@ export class UEService {
               },
               {
                 info: {
-                  OR: [
-                    { comment: query.q },
-                    { objectives: query.q },
-                    { program: query.q },
-                  ],
+                  OR: [{ comment: query.q }, { objectives: query.q }, { program: query.q }],
                 },
               },
             ],
@@ -112,9 +98,7 @@ export class UEService {
         SelectUEOverview({
           where,
           take: Number(this.config.get('PAGINATION_PAGE_SIZE')),
-          skip:
-            ((query.page ?? 1) - 1) *
-            Number(this.config.get<number>('PAGINATION_PAGE_SIZE')),
+          skip: ((query.page ?? 1) - 1) * Number(this.config.get<number>('PAGINATION_PAGE_SIZE')),
           orderBy: {
             code: 'asc',
           },
@@ -177,10 +161,7 @@ export class UEService {
           let coefficients = 0;
           let ponderation = 0;
           for (const { value, createdAt } of entry) {
-            const dt =
-              (starVoteCriteria[key][0].createdAt.getTime() -
-                createdAt.getTime()) /
-              1000;
+            const dt = (starVoteCriteria[key][0].createdAt.getTime() - createdAt.getTime()) / 1000;
             const dp = Math.exp(-dt / 10e7);
             ponderation += dp * value;
             coefficients += dp;
@@ -194,14 +175,14 @@ export class UEService {
   /**
    * Retrieves a page of {@link UEComment} matching the user query
    * @param ueCode the code of the UE
-   * @param user the user fetching the comments. Used to determine if an anonymous comment should include its author
+   * @param userId the user fetching the comments. Used to determine if an anonymous comment should include its author
    * @param dto the query parameters of this route
    * @param bypassAnonymousData if true, the author of an anonymous comment will be included in the response (this is the case if the user is a moderator)
    * @returns a page of {@link UEComment} matching the user query
    */
   async getComments(
     ueCode: string,
-    user: User,
+    userId: string,
     dto: GetUECommentsDto,
     bypassAnonymousData: boolean,
   ): Promise<Pagination<UEComment>> {
@@ -226,9 +207,7 @@ export class UEService {
             },
           ],
           take: Number(this.config.get('PAGINATION_PAGE_SIZE')),
-          skip:
-            ((dto.page ?? 1) - 1) *
-            Number(this.config.get('PAGINATION_PAGE_SIZE')),
+          skip: ((dto.page ?? 1) - 1) * Number(this.config.get('PAGINATION_PAGE_SIZE')),
         }),
       ),
       this.prisma.uEComment.count({
@@ -238,18 +217,13 @@ export class UEService {
     // If the user is neither a moderator or the comment author, and the comment is anonymous,
     // we remove the author from the response
     for (const comment of comments)
-      if (
-        comment.isAnonymous &&
-        !bypassAnonymousData &&
-        comment.author?.id !== user.id
-      )
-        delete comment.author;
+      if (comment.isAnonymous && !bypassAnonymousData && comment.author?.id !== userId) delete comment.author;
     // Data pagination
     return {
       items: comments.map((comment) => ({
         ...comment,
         upvotes: comment.upvotes.length,
-        upvoted: comment.upvotes.some((upvote) => upvote.userId == user.id),
+        upvoted: comment.upvotes.some((upvote) => upvote.userId == userId),
       })),
       itemCount: commentCount,
       itemsPerPage: Number(this.config.get('PAGINATION_PAGE_SIZE')),
@@ -259,17 +233,17 @@ export class UEService {
   /**
    * Checks whether a user is the author of a comment
    * @remarks The comment must exist and user must not be null
-   * @param user the user to check
+   * @param userId the user to check
    * @param commentId the comment to check
-   * @returns whether the {@link user} is the author of the {@link commentId | comment}
+   * @returns whether the user is the author of the {@link commentId | comment}
    */
-  async isUserCommentAuthor(user: User, commentId: string) {
+  async isUserCommentAuthor(userId: string, commentId: string) {
     const comment = await this.prisma.uEComment.findUnique({
       where: {
         id: commentId,
       },
     });
-    return comment.authorId == user.id;
+    return comment.authorId == userId;
   }
 
   /**
@@ -277,7 +251,7 @@ export class UEService {
    * @param replyId the id of the reply to check
    * @returns whether the {@link replyId | reply} exists
    */
-  async doesReplyExist(replyId: string) {
+  async doesReplyExist(replyId: string): Promise<boolean> {
     return (
       (await this.prisma.uECommentReply.count({
         where: {
@@ -290,33 +264,35 @@ export class UEService {
   /**
    * Checks whether a user is the author of a reply
    * @remarks The reply must exist and user must not be null
-   * @param user the user to check
+   * @param userId the user to check
    * @param replyId the reply to check
-   * @returns whether the {@link user} is the author of the {@link replyId | reply}
+   * @returns whether the user is the author of the {@link replyId | reply}
    */
-  async isUserCommentReplyAuthor(user: User, replyId: string) {
-    const reply = await this.prisma.uECommentReply.findUnique({
-      where: {
-        id: replyId,
-      },
-    });
-    return reply.authorId == user.id;
+  async isUserCommentReplyAuthor(userId: string, replyId: string): Promise<boolean> {
+    return (
+      (await this.prisma.uECommentReply.count({
+        where: {
+          id: replyId,
+          authorId: userId,
+        },
+      })) > 0
+    );
   }
 
   /**
    * Retrieves the last semester done by a user for a given ue
    * @remarks The user must not be null
-   * @param user the user to retrieve semesters of
+   * @param userId the user to retrieve semesters of
    * @param ueCode the code of the UE
    * @returns the last semester done by the {@link user} for the {@link ueCode | ue}
    */
-  async getLastSemesterDoneByUser(user: User, ueCode: string) {
+  async getLastSemesterDoneByUser(userId: string, ueCode: string): Promise<RawUserUESubscription> {
     return this.prisma.userUESubscription.findFirst({
       where: {
         ue: {
           code: ueCode,
         },
-        userId: user.id,
+        userId,
       },
       orderBy: {
         semester: {
@@ -344,22 +320,22 @@ export class UEService {
   /**
    * Checks whether a user has already done an ue
    * @remarks The user must not be null
-   * @param user the user to check
+   * @param userId the user to check
    * @param ueCode the code of the ue to check
    * @returns whether the {@link user} has already done the {@link ueCode | ue}
    */
-  async hasAlreadyDoneThisUE(user: User, ueCode: string) {
-    return (await this.getLastSemesterDoneByUser(user, ueCode)) != null;
+  async hasAlreadyDoneThisUE(userId: string, ueCode: string) {
+    return (await this.getLastSemesterDoneByUser(userId, ueCode)) != null;
   }
 
   /**
    * Checks whether a user has already posted a comment for an ue
    * @remarks The user must not be null and UE must exist
-   * @param user the user to check
+   * @param userId the user to check
    * @param ueCode the code of the ue to check
    * @returns whether the {@link user} has already posted a comment for the {@link ueCode | ue}
    */
-  async hasAlreadyPostedAComment(user: User, ueCode: string) {
+  async hasAlreadyPostedAComment(userId: string, ueCode: string) {
     // Find the UE
     const ue = await this.prisma.uE.findUnique({
       where: {
@@ -370,7 +346,7 @@ export class UEService {
     const comment = await this.prisma.uEComment.findUnique({
       where: {
         ueId_authorId: {
-          authorId: user.id,
+          authorId: userId,
           ueId: ue.id,
         },
       },
@@ -382,15 +358,11 @@ export class UEService {
    * Creates a comment for an ue
    * @remarks The user must not be null and UE must exist
    * @param body the body of the request
-   * @param user the user posting the comment
+   * @param userId the user posting the comment
    * @param ueCode the code of the ue to post the comment to
    * @returns the created {@link UEComment}
    */
-  async createComment(
-    body: UeCommentPostDto,
-    user: User,
-    ueCode: string,
-  ): Promise<UEComment> {
+  async createComment(body: UeCommentPostDto, userId: string, ueCode: string): Promise<UEComment> {
     return {
       ...(await this.prisma.uEComment.create(
         SelectComment({
@@ -400,7 +372,7 @@ export class UEService {
             updatedAt: new Date(),
             author: {
               connect: {
-                id: user.id,
+                id: userId,
               },
             },
             ue: {
@@ -411,9 +383,7 @@ export class UEService {
             semester: {
               connect: {
                 // Use last semester done when creating the comment
-                code: (
-                  await this.getLastSemesterDoneByUser(user, ueCode)
-                ).semesterId,
+                code: (await this.getLastSemesterDoneByUser(userId, ueCode)).semesterId,
               },
             },
           },
@@ -430,14 +400,10 @@ export class UEService {
    * @remaks The comment must exist and the user must not be null
    * @param body the updates to apply to the comment
    * @param commentId the id of the comment
-   * @param user the user updating the comment
+   * @param userId the user updating the comment
    * @returns the updated comment
    */
-  async updateComment(
-    body: UeCommentUpdateDto,
-    commentId: string,
-    user: User,
-  ): Promise<UEComment> {
+  async updateComment(body: UeCommentUpdateDto, commentId: string, userId: string): Promise<UEComment> {
     const comment = await this.prisma.uEComment.update(
       SelectComment({
         where: {
@@ -452,22 +418,22 @@ export class UEService {
     return {
       ...comment,
       upvotes: comment.upvotes.length,
-      upvoted: comment.upvotes.some((upvote) => upvote.userId == user.id),
+      upvoted: comment.upvotes.some((upvote) => upvote.userId == userId),
     };
   }
 
   /**
    * Checks whether a user has already upvoted a comment
    * @remarks The user must not be null
-   * @param user the user to check
+   * @param userId the user to check
    * @param commentId the id of the comment to check
-   * @returns whether the {@link user} has already upvoted the {@link commentId | comment}
+   * @returns whether the user has already upvoted the {@link commentId | comment}
    */
-  async hasAlreadyUpvoted(user: User, commentId: string) {
+  async hasAlreadyUpvoted(userId: string, commentId: string) {
     const commentUpvote = await this.prisma.uECommentUpvote.findFirst({
       where: {
         commentId,
-        userId: user.id,
+        userId,
       },
     });
     return commentUpvote != null;
@@ -491,22 +457,18 @@ export class UEService {
   /**
    * Creates a reply to a comment
    * @remarks The user must not be null and the comment must exist
-   * @param user the user posting the reply
+   * @param userId the user posting the reply
    * @param commentId the id of the comment to reply to
    * @param reply the reply to post
    * @returns the created {@link UECommentReply}
    */
-  async replyComment(
-    user: User,
-    commentId: string,
-    reply: CommentReplyDto,
-  ): Promise<UECommentReply> {
+  async replyComment(userId: string, commentId: string, reply: CommentReplyDto): Promise<UECommentReply> {
     return this.prisma.uECommentReply.create(
       SelectCommentReply({
         data: {
           body: reply.body,
           commentId,
-          authorId: user.id,
+          authorId: userId,
         },
       }),
     );
@@ -519,10 +481,7 @@ export class UEService {
    * @param reply the modifications to apply to the reply
    * @returns the updated {@link UECommentReply}
    */
-  async editReply(
-    replyId: string,
-    reply: CommentReplyDto,
-  ): Promise<UECommentReply> {
+  async editReply(replyId: string, reply: CommentReplyDto): Promise<UECommentReply> {
     return this.prisma.uECommentReply.update(
       SelectCommentReply({
         data: {
@@ -554,14 +513,14 @@ export class UEService {
   /**
    * Upvote a comment for a specific user
    * @remarks The user must not be null and the comment must exist
-   * @param user the user upvoting the comment
+   * @param userId the user upvoting the comment
    * @param commentId the id of the comment to upvote
    */
-  async upvoteComment(user: User, commentId: string) {
+  async upvoteComment(userId: string, commentId: string) {
     await this.prisma.uECommentUpvote.create({
       data: {
         commentId,
-        userId: user.id,
+        userId,
       },
     });
   }
@@ -569,14 +528,14 @@ export class UEService {
   /**
    * Un-upvote a comment for a specific user
    * @remarks The user must not be null and the comment must exist
-   * @param user the user un-upvoting the comment
+   * @param userId the user un-upvoting the comment
    * @param commentId the id of the comment to un-upvote
    */
-  async deUpvoteComment(user: User, commentId: string) {
+  async deUpvoteComment(userId: string, commentId: string) {
     await this.prisma.uECommentUpvote.deleteMany({
       where: {
         commentId,
-        userId: user.id,
+        userId,
       },
     });
   }
@@ -585,10 +544,10 @@ export class UEService {
    * Deletes a comment
    * @remarks The {@link commentId | comment} must exist
    * @param commentId the if of the comment to delete
-   * @param user the user deleting the comment
+   * @param userId the user deleting the comment
    * @returns the deleted {@link UEComment}
    */
-  async deleteComment(commentId: string, user: User): Promise<UEComment> {
+  async deleteComment(commentId: string, userId: string): Promise<UEComment> {
     const comment = await this.prisma.uEComment.delete(
       SelectComment({
         where: {
@@ -599,7 +558,7 @@ export class UEService {
     return {
       ...comment,
       upvotes: comment.upvotes.length,
-      upvoted: comment.upvotes.some((upvote) => upvote.userId == user.id),
+      upvoted: comment.upvotes.some((upvote) => upvote.userId == userId),
     };
   }
 
@@ -635,11 +594,11 @@ export class UEService {
   /**
    * Retrieves the user ratings of a given ue
    * @remarks The user must not be null and the ue must exist
-   * @param user the user fetching his ratings
+   * @param userId the user fetching his ratings
    * @param ueCode the code of the ue to fetch the rates of
    * @returns the rates of the {@link ueCode | ue} for the {@link user}
    */
-  async getRateUE(user: User, ueCode: string): Promise<UERating[]> {
+  async getRateUE(userId: string, ueCode: string): Promise<UERating[]> {
     const UE = await this.prisma.uE.findUnique({
       where: {
         code: ueCode,
@@ -648,7 +607,7 @@ export class UEService {
     return this.prisma.uEStarVote.findMany(
       SelectRate({
         where: {
-          userId: user.id,
+          userId: userId,
           ueId: UE.id,
         },
         orderBy: {
@@ -663,16 +622,12 @@ export class UEService {
   /**
    * Creates or updates a rating for a given ue
    * @remarks The user must not be null and the ue must exist
-   * @param user the user rating the ue
+   * @param userId the user rating the ue
    * @param ueCode the code of the ue to rate
    * @param dto the rating to apply
    * @returns the new rate of the {@link ueCode | ue} for the {@link user}
    */
-  async doRateUE(
-    user: User,
-    ueCode: string,
-    dto: UERateDto,
-  ): Promise<UERating> {
+  async doRateUE(userId: string, ueCode: string, dto: UERateDto): Promise<UERating> {
     const UE = await this.prisma.uE.findUnique({
       where: {
         code: ueCode,
@@ -683,7 +638,7 @@ export class UEService {
         where: {
           ueId_userId_criterionId: {
             ueId: UE.id,
-            userId: user.id,
+            userId,
             criterionId: dto.criterion,
           },
         },
@@ -691,7 +646,7 @@ export class UEService {
           value: dto.value,
           criterionId: dto.criterion,
           ueId: UE.id,
-          userId: user.id,
+          userId,
         },
         update: {
           value: dto.value,

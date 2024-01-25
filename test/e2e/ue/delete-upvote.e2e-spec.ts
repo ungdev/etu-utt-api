@@ -1,19 +1,17 @@
-import { createUser, suite, createUE, createComment } from '../../test_utils';
+import { createUser, createUE, createComment } from '../../utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
 import { HttpStatus } from '@nestjs/common';
+import { Dummies, e2eSuite } from '../../utils/test_utils';
 
-const DeleteUpvote = suite('DELETE /ue/comments/{commentId}/upvote', (app) => {
+const DeleteUpvote = e2eSuite('DELETE /ue/comments/{commentId}/upvote', (app) => {
   const user = createUser(app);
   const user2 = createUser(app, { login: 'user2' });
   const ue = createUE(app);
   const comment1 = createComment(app, ue, user);
 
   it('should return a 401 as user is not authenticated', () => {
-    return pactum
-      .spec()
-      .delete(`/ue/comments/${comment1.id}/upvote`)
-      .expectAppError(ERROR_CODE.NOT_LOGGED_IN);
+    return pactum.spec().delete(`/ue/comments/${comment1.id}/upvote`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
   it('should return a 403 because user is the author', () => {
@@ -29,14 +27,14 @@ const DeleteUpvote = suite('DELETE /ue/comments/{commentId}/upvote', (app) => {
       .spec()
       .withBearerToken(user2.token)
       .delete(`/ue/comments/${comment1.id.slice(0, 31)}/upvote`)
-      .expectAppError(ERROR_CODE.NOT_AN_UUID);
+      .expectAppError(ERROR_CODE.PARAM_NOT_UUID, 'commentId');
   });
 
   it('should return a 404 because reply does not exist', () => {
     return pactum
       .spec()
       .withBearerToken(user2.token)
-      .delete(`/ue/comments/00000000-0000-0000-0000-000000000000/upvote`)
+      .delete(`/ue/comments/${Dummies.UUID}/upvote`)
       .expectAppError(ERROR_CODE.NO_SUCH_COMMENT);
   });
 

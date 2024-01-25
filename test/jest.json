@@ -3,11 +3,9 @@
   "roots": [".", "../test"],
   "rootDir": "../src",
   "testEnvironment": "node",
-  "testRegex": ".e2e-spec.ts$",
-  "testPathIgnorePatterns": ["/test/e2e"],
+  "testRegex": ["e2e/app\\.e2e-spec\\.ts$", "unit/app\\.spec\\.ts$"],
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   },
-  "collectCoverage": true,
   "collectCoverageFrom": ["**/*.ts", "!main.ts"]
 }

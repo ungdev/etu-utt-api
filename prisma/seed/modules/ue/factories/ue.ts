@@ -4,9 +4,7 @@ import { baseUesCode } from '../../../const';
 
 export function fakeUE(): UE {
   const date: Date = faker.date.past();
-  const code =
-    faker.helpers.arrayElement(baseUesCode) +
-    faker.datatype.number({ min: 1, max: 13 });
+  const code = faker.helpers.arrayElement(baseUesCode) + faker.datatype.number({ min: 1, max: 13 });
   return {
     id: faker.datatype.uuid(),
     //Purely arbitrary values, if you wish to change do not hesitate!

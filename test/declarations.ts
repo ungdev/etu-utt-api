@@ -1,7 +1,7 @@
 import { HttpStatus } from '@nestjs/common';
 import Spec, { prototype as SpecProto } from 'pactum/src/models/Spec';
 import { JsonLikeVariant } from './declarations.d';
-import { ERROR_CODE, ErrorData } from '../src/exceptions';
+import { ERROR_CODE, ErrorData, ExtrasTypeBuilder } from '../src/exceptions';
 import { UEComment } from '../src/ue/interfaces/comment.interface';
 import { UECommentReply } from '../src/ue/interfaces/comment-reply.interface';
 import { UEOverView } from 'src/ue/interfaces/ue-overview.interface';
@@ -15,15 +15,16 @@ function expect<T>(obj: JsonLikeVariant<T>) {
 }
 /** Shortcut function for `this.expectStatus(200|204).expectJsonLike` */
 function expectOkOrCreate<T>(obj: JsonLikeVariant<T>, created = false) {
-  return (<Spec>this)
-    .expectStatus(created ? HttpStatus.CREATED : HttpStatus.OK)
-    .expectJsonLike(obj);
+  return (<Spec>this).expectStatus(created ? HttpStatus.CREATED : HttpStatus.OK).expectJsonLike(obj);
 }
 
-SpecProto.expectAppError = function (errorCode: ERROR_CODE, arg?: string) {
+SpecProto.expectAppError = function <ErrorCode extends ERROR_CODE>(
+  errorCode: ErrorCode,
+  ...args: ExtrasTypeBuilder<(typeof ErrorData)[ErrorCode]['message']>
+) {
   return (<Spec>this).expectStatus(ErrorData[errorCode].httpCode).expectJson({
     errorCode,
-    error: ErrorData[errorCode].message.replace('%', arg || ''),
+    error: (args as string[]).reduce((arg, extra) => arg.replaceAll('%', extra), ErrorData[errorCode].message),
   });
 };
 SpecProto.expectUE = expect<UEDetail>;

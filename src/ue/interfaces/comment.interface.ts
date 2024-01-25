@@ -44,9 +44,7 @@ const COMMENT_SELECT_FILTER = {
   },
 } as const;
 
-export type UERawComment = DeepWritable<
-  Prisma.UECommentGetPayload<typeof COMMENT_SELECT_FILTER>
->;
+export type UERawComment = DeepWritable<Prisma.UECommentGetPayload<typeof COMMENT_SELECT_FILTER>>;
 export type UEComment = Omit<UERawComment, 'upvotes'> & {
   upvotes: number;
   upvoted: boolean;

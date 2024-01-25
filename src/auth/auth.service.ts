@@ -1,28 +1,22 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthSignInDto, AuthSignUpDto } from './dto';
 import * as bcrypt from 'bcryptjs';
 import { Prisma } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { AppException, ERROR_CODE } from '../exceptions';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private prisma: PrismaService,
-    private jwt: JwtService,
-    private config: ConfigService,
-  ) {}
+  constructor(private prisma: PrismaService, private jwt: JwtService, private config: ConfigService) {}
 
   async signup(dto: AuthSignUpDto): Promise<string> {
-    const saltRounds = 10;
-    const hash = await bcrypt.hash(dto.password, saltRounds);
-
     try {
       const user = await this.prisma.user.create({
         data: {
           login: dto.login,
-          hash,
+          hash: await this.getHash(dto.password),
           firstName: dto.firstName,
           lastName: dto.lastName,
           studentId: dto.studentId,
@@ -37,7 +31,7 @@ export class AuthService {
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
-          throw new ForbiddenException('Credentials already taken');
+          throw new AppException(ERROR_CODE.CREDENTIALS_ALREADY_TAKEN);
         }
       }
       throw error;
@@ -45,21 +39,21 @@ export class AuthService {
   }
 
   async signin(dto: AuthSignInDto): Promise<string> {
-    // find the user by login, if does not exist, throw exeption
+    // find the user by login, if it does not exist, throw exception
     const user = await this.prisma.user.findUnique({
       where: {
         login: dto.login,
       },
     });
     if (!user) {
-      throw new ForbiddenException('Credentials incorrect');
+      throw new AppException(ERROR_CODE.INVALID_CREDENTIALS);
     }
 
-    // compare password, if incorect, throw exeption
+    // compare password, if incorrect, throw exception
     const pwMatches = await bcrypt.compare(dto.password, user.hash);
 
     if (!pwMatches) {
-      throw new ForbiddenException('Credentials incorrect');
+      throw new AppException(ERROR_CODE.INVALID_CREDENTIALS);
     }
 
     return this.signToken(user.id, user.login);
@@ -85,5 +79,10 @@ export class AuthService {
       expiresIn: this.config.get('JWT_EXPIRES_IN'),
       secret: secret,
     });
+  }
+
+  getHash(password: string): Promise<string> {
+    const saltRounds = 10;
+    return bcrypt.hash(password, saltRounds);
   }
 }

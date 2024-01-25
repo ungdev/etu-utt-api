@@ -1,18 +1,19 @@
 import * as pactum from 'pactum';
-import { suite } from '../../test_utils';
+import { e2eSuite } from '../../utils/test_utils';
 import { AuthService } from '../../../src/auth/auth.service';
 import { ConfigService } from '@nestjs/config';
+import { ERROR_CODE } from '../../../src/exceptions';
 
-const SignupE2ESpec = suite('Verify token', (app) => {
+const VerifyE2ESpec = e2eSuite('GET /token/signin', (app) => {
   it('should return a 400 if the token is missing', async () =>
-    pactum.spec().get('/auth/signin').expectStatus(400));
+    pactum.spec().get('/auth/signin').expectAppError(ERROR_CODE.NO_TOKEN));
 
   it('should return a 400 as the header is miss formatted', async () =>
     pactum
       .spec()
       .get('/auth/signin')
       .withHeaders('Authorization', 'this is definitely not the right format')
-      .expectStatus(400));
+      .expectAppError(ERROR_CODE.INVALID_TOKEN_FORMAT));
 
   it('should return that the token is not valid', async () =>
     pactum
@@ -27,33 +28,17 @@ const SignupE2ESpec = suite('Verify token', (app) => {
     const originalMethod = config.get.bind(config);
     const spy = jest
       .spyOn(app().get(ConfigService), 'get')
-      .mockImplementation((key: string) =>
-        key === 'JWT_EXPIRES_IN' ? 0 : originalMethod(key),
-      );
-    const token = await app()
-      .get(AuthService)
-      .signToken('abcdef', "it's me, mario");
-    await pactum
-      .spec()
-      .get('/auth/signin')
-      .withBearerToken(token)
-      .expectStatus(200)
-      .expectBody({ valid: false });
+      .mockImplementation((key: string) => (key === 'JWT_EXPIRES_IN' ? 0 : originalMethod(key)));
+    const token = await app().get(AuthService).signToken('abcdef', "it's me, mario");
+    await pactum.spec().get('/auth/signin').withBearerToken(token).expectStatus(200).expectBody({ valid: false });
     spy.mockRestore();
   });
 
   it('should return that the token is valid', async () => {
-    const token = await app()
-      .get(AuthService)
-      .signToken('abcdef', "it's me, mario");
+    const token = await app().get(AuthService).signToken('abcdef', "it's me, mario");
 
-    return pactum
-      .spec()
-      .get('/auth/signin')
-      .withBearerToken(token)
-      .expectStatus(200)
-      .expectBody({ valid: true });
+    return pactum.spec().get('/auth/signin').withBearerToken(token).expectStatus(200).expectBody({ valid: true });
   });
 });
 
-export default SignupE2ESpec;
+export default VerifyE2ESpec;

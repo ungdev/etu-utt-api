@@ -53,9 +53,7 @@ const UE_OVERVIEW_SELECT_FILTER = {
   },
 } as const;
 
-export type UEOverView = DeepWritable<
-  Prisma.UEGetPayload<typeof UE_OVERVIEW_SELECT_FILTER>
->;
+export type UEOverView = DeepWritable<Prisma.UEGetPayload<typeof UE_OVERVIEW_SELECT_FILTER>>;
 
 /**
  * Generates the argument to use in prisma function to retrieve an object containing the necessary
@@ -82,9 +80,7 @@ export type UEOverView = DeepWritable<
  *   }),
  * );
  */
-export function SelectUEOverview<T>(
-  arg: T,
-): T & typeof UE_OVERVIEW_SELECT_FILTER {
+export function SelectUEOverview<T>(arg: T): T & typeof UE_OVERVIEW_SELECT_FILTER {
   return {
     ...arg,
     ...UE_OVERVIEW_SELECT_FILTER,

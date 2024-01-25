@@ -11,7 +11,7 @@ export async function fakeUser(): Promise<User> {
     lastName: faker.name.lastName(),
     studentId: faker.datatype.number(),
     login: faker.datatype.string(),
-    RGPDId: faker.datatype.uuid(),
+    rgpdId: faker.datatype.uuid(),
     role: 'STUDENT',
     hash,
   };

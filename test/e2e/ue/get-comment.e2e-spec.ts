@@ -1,18 +1,13 @@
 import * as pactum from 'pactum';
-import {
-  createComment,
-  createUE,
-  createUser,
-  suite,
-  upvoteComment,
-} from '../../test_utils';
+import { createComment, createUE, createUser, upvoteComment } from '../../utils/fakedb';
+import { e2eSuite } from '../../utils/test_utils';
 import { ConfigService } from '@nestjs/config';
 import { UEComment } from '../../../src/ue/interfaces/comment.interface';
 import { UEService } from '../../../src/ue/ue.service';
 import { UECommentReply } from '../../../src/ue/interfaces/comment-reply.interface';
 import { ERROR_CODE } from 'src/exceptions';
 
-const GetCommentsE2ESpec = suite('GET /ue/{ueCode}/comments', (app) => {
+const GetCommentsE2ESpec = e2eSuite('GET /ue/{ueCode}/comments', (app) => {
   const user = createUser(app);
   const user2 = createUser(app, { login: 'user2', studentId: 3 });
   const ue = createUE(app, {
@@ -27,24 +22,19 @@ const GetCommentsE2ESpec = suite('GET /ue/{ueCode}/comments', (app) => {
       login: `user${i + 10}`,
       studentId: i + 10,
     });
-    comments.push(
-      createComment(app, ue, commentAuthor, i % 2 === 0) as UEComment,
-    );
+    comments.push(createComment(app, ue, commentAuthor, i % 2 === 0) as UEComment);
   }
 
   beforeAll(async () => {
     comments[0].answers.push(
-      (await app().get(UEService).replyComment(user, comments[0].id, {
+      (await app().get(UEService).replyComment(user.id, comments[0].id, {
         body: 'HelloWorld',
       })) as UECommentReply,
     );
   });
 
   it('should return a 401 as user is not authenticated', () => {
-    return pactum
-      .spec()
-      .get(`/ue/${ue.code}/comments`)
-      .expectAppError(ERROR_CODE.NOT_LOGGED_IN);
+    return pactum.spec().get(`/ue/${ue.code}/comments`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
   it('should return a 400 as user uses a wrong page', () => {
@@ -76,12 +66,7 @@ const GetCommentsE2ESpec = suite('GET /ue/{ueCode}/comments', (app) => {
               ? (<Date>b.createdAt).getTime() - (<Date>a.createdAt).getTime()
               : b.upvotes - a.upvotes,
           )
-          .slice(
-            0,
-            Number(
-              app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE'),
-            ),
-          )
+          .slice(0, Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')))
           .map((comment) => ({
             ...comment,
             answers: comment.answers.map((answer) => ({
@@ -93,14 +78,11 @@ const GetCommentsE2ESpec = suite('GET /ue/{ueCode}/comments', (app) => {
             createdAt: `${(<Date>comment.createdAt).toISOString()}`,
           }))
           .map((comment) => {
-            if (comment.isAnonymous && comment.author.id !== user.id)
-              delete comment.author;
+            if (comment.isAnonymous && comment.author.id !== user.id) delete comment.author;
             return comment;
           }),
         itemCount: comments.length,
-        itemsPerPage: Number(
-          app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE'),
-        ),
+        itemsPerPage: Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')),
       });
   });
 
@@ -118,12 +100,8 @@ const GetCommentsE2ESpec = suite('GET /ue/{ueCode}/comments', (app) => {
               : b.upvotes - a.upvotes,
           )
           .slice(
-            Number(
-              app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE'),
-            ),
-            Number(
-              app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE'),
-            ) * 2,
+            Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')),
+            Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')) * 2,
           )
           .map((comment) => ({
             ...comment,
@@ -136,14 +114,11 @@ const GetCommentsE2ESpec = suite('GET /ue/{ueCode}/comments', (app) => {
             createdAt: `${(<Date>comment.createdAt).toISOString()}`,
           }))
           .map((comment) => {
-            if (comment.isAnonymous && comment.author.id !== user.id)
-              delete comment.author;
+            if (comment.isAnonymous && comment.author.id !== user.id) delete comment.author;
             return comment;
           }),
         itemCount: comments.length,
-        itemsPerPage: Number(
-          app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE'),
-        ),
+        itemsPerPage: Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')),
       });
   });
 });

@@ -17,11 +17,7 @@ export class JwtGuard extends AuthGuard('jwt') {
     try {
       // Check whether the user is logged in
       const result = await super.canActivate(context);
-      if (
-        !result ||
-        (result instanceof Observable && !(await firstValueFrom(result)))
-      )
-        throw new Error();
+      if (!result || (result instanceof Observable && !(await firstValueFrom(result)))) throw new Error();
       // The user is logged in, we can serve the request
       return true;
     } catch {

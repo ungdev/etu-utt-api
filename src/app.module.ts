@@ -8,6 +8,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { PermissionGuard } from './auth/guard/permission.guard';
 import { UEModule } from './ue/ue.module';
 import { JwtGuard } from './auth/guard';
+import { TimetableModule } from './timetable/timetable.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { JwtGuard } from './auth/guard';
     ProfileModule,
     UsersModule,
     UEModule,
+    TimetableModule,
   ],
   // The providers below are used for all the routes of the api.
   // For example, the JwtGuard is used for all the routes and checks whether the user is authentified.

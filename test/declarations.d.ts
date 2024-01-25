@@ -1,4 +1,4 @@
-import { ERROR_CODE } from '../src/exceptions';
+import { ERROR_CODE, ErrorData, ExtrasTypeBuilder } from '../src/exceptions';
 import { UEComment } from 'src/ue/interfaces/comment.interface';
 import { UECommentReply } from 'src/ue/interfaces/comment-reply.interface';
 import { UEOverView } from 'src/ue/interfaces/ue-overview.interface';
@@ -7,9 +7,7 @@ import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { UERating } from 'src/ue/interfaces/rate.interface';
 
 export type JsonLikeVariant<T> = {
-  [K in keyof T]: T[K] extends string | Date | DeepWritable<Date>
-    ? string | RegExp
-    : JsonLikeVariant<T[K]>;
+  [K in keyof T]: T[K] extends string | Date | DeepWritable<Date> ? string | RegExp : JsonLikeVariant<T[K]>;
 };
 
 /**
@@ -24,7 +22,10 @@ declare module './declarations' {
      * expects an `AppError`, with the proper {@link ERROR_CODE} and the matching message
      * (this message may have an argument, provided in {@link customMessage})
      */
-    expectAppError(errorCode: ERROR_CODE, customMessage?: string): this;
+    expectAppError<ErrorCode extends ERROR_CODE>(
+      errorCode: ErrorCode,
+      ...customMessage: ExtrasTypeBuilder<(typeof ErrorData)[ErrorCode]['message']>
+    ): this;
     /** expects to return the given {@link UEDetail} */
     expectUE(ue: JsonLikeVariant<UEDetail>): this;
     /** expects to return the given {@link page | page of UEOverView} */
@@ -40,10 +41,7 @@ declare module './declarations' {
      * expects to return the given {@link reply}
      * The HTTP Status code may be 200 or 204, depending on the {@link created} property.
      */
-    expectUECommentReply(
-      reply: JsonLikeVariant<UECommentReply>,
-      created = false,
-    ): this;
+    expectUECommentReply(reply: JsonLikeVariant<UECommentReply>, created = false): this;
     /** expects to return the given {@link criterion} list */
     expectUECriteria(criterion: JsonLikeVariant<Criterion[]>): this;
     /** expects to return the given {@link rate} */
