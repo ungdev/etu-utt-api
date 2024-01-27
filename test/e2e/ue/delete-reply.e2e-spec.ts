@@ -1,14 +1,25 @@
-import { createUser, createUE, createComment, createReply } from '../../utils/fakedb';
-import { JsonLike, e2eSuite, Dummies } from '../../utils/test_utils';
+import {
+  createUser,
+  createUE,
+  createComment,
+  createBranch,
+  createBranchOption,
+  createSemester,
+  createCommentReply,
+} from '../../utils/fakedb';
+import { e2eSuite, Dummies } from '../../utils/test_utils';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
 
 const DeleteCommentReply = e2eSuite('DELETE /ue/comments/reply/{replyId}', (app) => {
   const user = createUser(app);
   const user2 = createUser(app, { login: 'user2' });
-  const ue = createUE(app);
-  const comment1 = createComment(app, ue, user);
-  const reply = createReply(app, user, comment1);
+  const semester = createSemester(app);
+  const branch = createBranch(app);
+  const branchOption = createBranchOption(app, { branch });
+  const ue = createUE(app, { semesters: [semester], branchOption });
+  const comment1 = createComment(app, { user, ue, semester });
+  const reply = createCommentReply(app, { user, comment: comment1 });
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum.spec().delete(`/ue/comments/reply/${reply.id}`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
@@ -38,23 +49,24 @@ const DeleteCommentReply = e2eSuite('DELETE /ue/comments/reply/{replyId}', (app)
       .expectAppError(ERROR_CODE.NO_SUCH_REPLY);
   });
 
-  it('should return the deleted comment', () => {
-    return pactum
+  it('should return the deleted reply', async () => {
+    await pactum
       .spec()
       .withBearerToken(user.token)
       .delete(`/ue/comments/reply/${reply.id}`)
       .expectUECommentReply({
-        id: JsonLike.ANY_UUID,
+        id: reply.id,
         author: {
-          id: user.id,
+          id: reply.authorId,
           firstName: user.firstName,
           lastName: user.lastName,
           studentId: user.studentId,
         },
-        createdAt: JsonLike.ANY_DATE,
-        updatedAt: JsonLike.ANY_DATE,
-        body: "Bouboubou je suis pas d'accord",
+        createdAt: reply.createdAt.toISOString(),
+        updatedAt: reply.updatedAt.toISOString(),
+        body: reply.body,
       });
+    return createCommentReply(app, { user, comment: comment1 }, reply, true);
   });
 });
 

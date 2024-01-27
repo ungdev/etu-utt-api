@@ -1,8 +1,18 @@
-import { createCriterion, createUE, createUERating, createUser, makeUserJoinUE } from '../../utils/fakedb';
+import {
+  FakeUE,
+  createBranch,
+  createBranchOption,
+  createCriterion,
+  createSemester,
+  createUE,
+  createUERating,
+  createUESubscription,
+  createUser,
+} from '../../utils/fakedb';
 import { e2eSuite } from '../../utils/test_utils';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from 'src/exceptions';
-import { UEDetail } from 'src/ue/interfaces/ue-detail.interface';
+import { ERROR_CODE } from '../../../src/exceptions';
+import { omit } from '../../../src/utils';
 
 const GetE2ESpec = e2eSuite('GET /ue/{ueCode}', (app) => {
   const user = createUser(app);
@@ -10,25 +20,54 @@ const GetE2ESpec = e2eSuite('GET /ue/{ueCode}', (app) => {
     login: 'user2',
     studentId: 2,
   });
-  const ues = [];
+  const semesters = [createSemester(app), createSemester(app)];
+  const branches = [createBranch(app), createBranch(app)];
+  const branchOptions = [
+    createBranchOption(app, {
+      branch: branches[0],
+    }),
+    createBranchOption(app, {
+      branch: branches[0],
+    }),
+    createBranchOption(app, {
+      branch: branches[1],
+    }),
+    createBranchOption(app, {
+      branch: branches[1],
+    }),
+  ];
+  const ues: FakeUE[] = [];
   for (let i = 0; i < 30; i++)
     ues.push(
-      createUE(app, {
-        code: `XX${`${i}`.padStart(2, '0')}`,
-        semester: i % 2 == 1 ? 'A24' : 'P24',
-        category: i % 3 == 0 ? 'CS' : 'TM',
-        branchOption: i % 4 == 0 ? 'T1' : 'T2',
-        branch: i % 5 == 0 ? 'B1' : 'B2',
-      }),
+      createUE(
+        app,
+        { semesters: [semesters[i % 2]], branchOption: branchOptions[(i * 3) % 4] },
+        {
+          code: `XX${`${i}`.padStart(2, '0')}`,
+          credits: [
+            {
+              category: {
+                code: i % 3 == 0 ? 'CS' : 'TM',
+                name: i % 3 == 0 ? 'CS' : 'TM',
+              },
+              credits: 6,
+            },
+          ],
+        },
+      ),
     );
-  const ueWithRating = createUE(app, {
-    code: `XX30`,
-  });
-  const criterion = createCriterion(app, 'test');
-  makeUserJoinUE(app, user, ueWithRating);
-  makeUserJoinUE(app, user2, ueWithRating);
-  createUERating(app, user, criterion, ueWithRating);
-  createUERating(app, user2, criterion, ueWithRating, 5);
+  const ueWithRating = createUE(
+    app,
+    { semesters, branchOption: branchOptions[0] },
+    {
+      code: `XX30`,
+    },
+  );
+  const criterion = createCriterion(app);
+  createUESubscription(app, { user, ue: ueWithRating, semester: semesters[0] });
+  createUESubscription(app, { user: user2, ue: ueWithRating, semester: semesters[0] });
+  createUERating(app, { user, criterion, ue: ueWithRating }, { value: 3 });
+  createUERating(app, { user: user2, criterion, ue: ueWithRating }, { value: 5 });
 
   it('should return an error if the ue does not exist', () => {
     return pactum.spec().withBearerToken(user.token).get('/ue/AA01').expectAppError(ERROR_CODE.NO_SUCH_UE, 'AA01');
@@ -39,7 +78,36 @@ const GetE2ESpec = e2eSuite('GET /ue/{ueCode}', (app) => {
       .spec()
       .withBearerToken(user.token)
       .get('/ue/XX01')
-      .expectUE(ues.find((ue) => ue.code === 'XX01'));
+      .expectUE({
+        name: ues[1].name,
+        code: ues[1].code,
+        inscriptionCode: ues[1].inscriptionCode,
+        info: {
+          ...omit(ues[1].info as Required<FakeUE['info']>, 'requirements', 'id', 'ueId'),
+          requirements: ues[1].info.requirements.map((r) => ({
+            code: r.code,
+          })),
+        },
+        branchOption: [
+          {
+            code: branchOptions[3].code,
+            name: branchOptions[3].name,
+            branch: {
+              code: branches[1].code,
+              name: branches[1].name,
+            },
+          },
+        ],
+        credits: [
+          {
+            credits: ues[1].credits[0].credits,
+            category: ues[1].credits[0].category,
+          },
+        ],
+        openSemester: [semesters[1].code],
+        starVotes: {},
+        workTime: omit(ues[1].workTime, 'ueId', 'id') as Required<Omit<FakeUE['workTime'], 'ueId'>>,
+      });
   });
 
   it('should return the UE XX30 with rating', () => {
@@ -48,7 +116,33 @@ const GetE2ESpec = e2eSuite('GET /ue/{ueCode}', (app) => {
       .withBearerToken(user.token)
       .get('/ue/XX30')
       .expectUE({
-        ...(ueWithRating as Required<UEDetail>),
+        name: ueWithRating.name,
+        code: ueWithRating.code,
+        inscriptionCode: ueWithRating.inscriptionCode,
+        info: {
+          ...omit(ueWithRating.info as Required<FakeUE['info']>, 'requirements', 'id', 'ueId'),
+          requirements: ueWithRating.info.requirements.map((r) => ({
+            code: r.code,
+          })),
+        },
+        branchOption: [
+          {
+            code: branchOptions[0].code,
+            name: branchOptions[0].name,
+            branch: {
+              code: branches[0].code,
+              name: branches[0].name,
+            },
+          },
+        ],
+        credits: [
+          {
+            credits: ueWithRating.credits[0].credits,
+            category: ueWithRating.credits[0].category,
+          },
+        ],
+        openSemester: [semesters[0].code, semesters[1].code],
+        workTime: omit(ueWithRating.workTime, 'ueId', 'id') as Required<Omit<FakeUE['workTime'], 'ueId'>>,
         starVotes: {
           [criterion.id]: 4.0,
         },

@@ -1,14 +1,25 @@
-import { createUser, createCriterion } from '../../utils/fakedb';
+import { omit } from '../../../src/utils';
+import { createUser, createCriterion, FakeUEStarCriterion } from '../../utils/fakedb';
 import { e2eSuite } from '../../utils/test_utils';
 import * as pactum from 'pactum';
 
 const GetRateCriteria = e2eSuite('GET /ue/rate/criteria', (app) => {
   const user = createUser(app);
-  const criteria = [];
-  for (let i = 0; i < 30; i++) criteria.push(createCriterion(app, `criterion-${`${i}`.padStart(2, '0')}`));
+  const criteria: FakeUEStarCriterion[] = [];
+  for (let i = 0; i < 30; i++) criteria.push(createCriterion(app));
 
   it('should return all the criteria', () => {
-    return pactum.spec().get('/ue/rate/criteria').withBearerToken(user.token).expectUECriteria(criteria);
+    return pactum
+      .spec()
+      .get('/ue/rate/criteria')
+      .withBearerToken(user.token)
+      .expectUECriteria(
+        criteria
+          .map((criteria) => omit(criteria, 'descriptionTranslationId'))
+          .sort((a, b) => (a.name < b.name ? -1 : 1)) as Required<
+          Omit<FakeUEStarCriterion, 'descriptionTranslationId'>
+        >[],
+      );
   });
 });
 

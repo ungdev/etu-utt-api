@@ -36,4 +36,4 @@ SpecProto.expectUECriteria = expect<Criterion[]>;
 SpecProto.expectUERate = expect<UERating>;
 SpecProto.expectUERates = expect<UERating[]>;
 
-export { Spec };
+export { Spec, JsonLikeVariant };

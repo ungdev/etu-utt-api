@@ -5,7 +5,6 @@ const UE_DETAIL_SELECT_FILTER = {
     code: true,
     inscriptionCode: true,
     name: true,
-    validationRate: true,
     info: {
       select: {
         requirements: {
