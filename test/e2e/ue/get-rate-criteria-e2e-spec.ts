@@ -14,9 +14,7 @@ const GetRateCriteria = e2eSuite('GET /ue/rate/criteria', (app) => {
       .get('/ue/rate/criteria')
       .withBearerToken(user.token)
       .expectUECriteria(
-        criteria
-          .map((criteria) => omit(criteria, 'descriptionTranslationId'))
-          .sort((a, b) => (a.name < b.name ? -1 : 1)) as Required<
+        criteria.map(omit('descriptionTranslationId')).sort((a, b) => (a.name < b.name ? -1 : 1)) as Required<
           Omit<FakeUEStarCriterion, 'descriptionTranslationId'>
         >[],
       );
