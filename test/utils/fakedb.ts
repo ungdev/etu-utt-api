@@ -19,7 +19,6 @@ import {
   RawUserInfos,
   RawUserUESubscription,
 } from '../../src/prisma/types';
-import { baseUesCode, branchOptionsCode, branchesCode, creditType } from '../../prisma/seed/const';
 import { faker } from '@faker-js/faker';
 import { AuthService } from '../../src/auth/auth.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
@@ -51,8 +50,9 @@ export type FakeUEStarVote = Partial<RawUEStarVote>;
 export type FakeComment = Partial<RawUEComment>;
 export type FakeCommentUpvote = Partial<RawUECommentUpvote>;
 export type FakeCommentReply = Partial<RawUECommentReply>;
+export type FakeUECreditCategory = Partial<RawUECreditCategory>;
 
-interface FakeEntityMap {
+export interface FakeEntityMap {
   timetableEntryOverride: {
     entity: Partial<FakeTimetableEntryOverride>;
     params: CreateTimetableEntryOverrideParameters;
@@ -117,6 +117,10 @@ interface FakeEntityMap {
     params: CreateCommentReplyParameters;
     deps: { user: FakeUser; comment: FakeComment };
   };
+  ueCreditCategory: {
+    entity: FakeUECreditCategory;
+    params: CreateUECreditCategoryParameters;
+  };
 }
 
 /**
@@ -127,16 +131,16 @@ interface FakeEntityMap {
  */
 export const createUser = entityFaker(
   'user',
-  () => ({
-    login: faker.internet.userName(),
-    studentId: faker.datatype.number(),
+  {
+    login: faker.internet.userName,
+    studentId: faker.datatype.number,
     sex: 'OTHER' as Sex,
-    lastName: faker.name.lastName(),
-    firstName: faker.name.firstName(),
+    lastName: faker.name.lastName,
+    firstName: faker.name.firstName,
     role: 'STUDENT' as UserRole,
     birthday: new Date(0),
-    password: faker.internet.password(),
-  }),
+    password: faker.internet.password,
+  },
   async (app, params) => {
     const user = await app()
       .get(PrismaService)
@@ -174,9 +178,9 @@ export type CreateTimetableGroupParams = { users?: Array<{ user: FakeUser; prior
  */
 export const createTimetableGroup = entityFaker(
   'timetableGroup',
-  () => ({
+  {
     users: [],
-  }),
+  },
   async (app, params) => {
     return app()
       .get(PrismaService)
@@ -203,15 +207,15 @@ export type CreateTimetableEntryParameters = FakeTimetableEntry & { groups?: Fak
  */
 export const createTimetableEntry = entityFaker(
   'timetableEntry',
-  () => ({
+  {
     eventStart: new Date(0),
     occurrenceDuration: 0,
     occurrencesCount: 1,
     repeatEvery: 0,
     type: 'CUSTOM' as TimetableEntryType,
-    location: faker.address.cityName(),
+    location: faker.address.cityName,
     groups: [],
-  }),
+  },
   (app, params) =>
     app()
       .get(PrismaService)
@@ -228,11 +232,11 @@ export type CreateTimetableEntryOverrideParameters = {
 } & Partial<FakeTimetableEntryOverride>;
 export const createTimetableEntryOverride = entityFaker(
   'timetableEntryOverride',
-  () => ({
+  {
     groups: [],
     applyFrom: 0,
     applyUntil: 0,
-  }),
+  },
   async (app, dependencies, params) =>
     app()
       .get(PrismaService)
@@ -248,10 +252,10 @@ export const createTimetableEntryOverride = entityFaker(
 export type CreateBranchParameters = FakeBranch;
 export const createBranch = entityFaker(
   'branch',
-  () => ({
-    code: fakeUTTBranchCode(),
-    name: faker.name.jobTitle(),
-  }),
+  {
+    code: faker.db.branch.code,
+    name: faker.name.jobTitle,
+  },
   async (app, params) =>
     app()
       .get(PrismaService)
@@ -270,10 +274,10 @@ export const createBranch = entityFaker(
 export type CreateBranchOptionParameters = FakeBranchOption;
 export const createBranchOption = entityFaker(
   'branchOption',
-  () => ({
-    code: fakeUTTBranchOptionCode(),
-    name: faker.name.jobTitle(),
-  }),
+  {
+    code: faker.db.branchOption.code,
+    name: faker.name.jobTitle,
+  },
   async (app, dependencies, params) =>
     app()
       .get(PrismaService)
@@ -298,48 +302,45 @@ export const createBranchOption = entityFaker(
 export type CreateSemesterParameters = FakeSemester;
 export const createSemester = entityFaker(
   'semester',
-  () => ({
-    code: fakeSemesterCode(),
-    start: faker.date.past(),
-    end: faker.date.past(),
-  }),
-  async (app, params) =>
-    app().get(PrismaService).semester.create({
+  {
+    code: faker.db.semester.code,
+    start: faker.date.past,
+    end: faker.date.past,
+  },
+  async (app, params) => {
+    return app().get(PrismaService).semester.create({
       data: params,
-    }),
+    });
+  },
 );
 
 export type CreateUEParameters = FakeUE;
 export const createUE = entityFaker(
   'ue',
-  () => {
-    const code = fakeUECode();
-    return {
-      code,
-      inscriptionCode: undefined,
-      name: faker.name.jobTitle(),
-      credits: [
-        {
-          category: {
-            code: fakeCreditType(),
-            name: faker.name.jobTitle(),
-          },
-          credits: faker.datatype.number({ min: 1, max: 6 }),
+  {
+    code: faker.db.ue.code,
+    name: faker.name.jobTitle,
+    credits: [
+      {
+        category: {
+          code: faker.db.ueCreditCategory.code,
+          name: faker.name.jobTitle,
         },
-      ],
-      info: {
-        program: faker.random.words(),
-        objectives: faker.random.words(),
+        credits: () => faker.datatype.number({ min: 1, max: 6 }),
       },
-      workTime: {
-        cm: faker.datatype.number({ min: 0, max: 100 }),
-        td: faker.datatype.number({ min: 0, max: 100 }),
-        tp: faker.datatype.number({ min: 0, max: 100 }),
-        the: faker.datatype.number({ min: 0, max: 100 }),
-        project: faker.datatype.number({ min: 0, max: 100 }),
-        internship: faker.datatype.number({ min: 0, max: 100 }),
-      },
-    };
+    ],
+    info: {
+      program: faker.random.words,
+      objectives: faker.random.words,
+    },
+    workTime: {
+      cm: () => faker.datatype.number({ min: 0, max: 100 }),
+      td: () => faker.datatype.number({ min: 0, max: 100 }),
+      tp: () => faker.datatype.number({ min: 0, max: 100 }),
+      the: () => faker.datatype.number({ min: 0, max: 100 }),
+      project: () => faker.datatype.number({ min: 0, max: 100 }),
+      internship: () => faker.datatype.number({ min: 0, max: 100 }),
+    },
   },
   async (app, dependencies, params) =>
     app()
@@ -407,40 +408,37 @@ export const createUE = entityFaker(
 );
 
 export type CreateUserSubscriptionParameters = FakeUserUESubscription;
-export const createUESubscription = entityFaker(
-  'userUESubscription',
-  () => ({}),
-  async (app, dependencies, params) =>
-    app()
-      .get(PrismaService)
-      .userUESubscription.create({
-        data: {
-          ...omit(params, 'semesterId', 'ueId', 'userId'),
-          semester: {
-            connect: {
-              code: dependencies.semester.code,
-            },
-          },
-          ue: {
-            connect: {
-              code: dependencies.ue.code,
-            },
-          },
-          user: {
-            connect: {
-              id: dependencies.user.id,
-            },
+export const createUESubscription = entityFaker('userUESubscription', {}, async (app, dependencies, params) =>
+  app()
+    .get(PrismaService)
+    .userUESubscription.create({
+      data: {
+        ...omit(params, 'semesterId', 'ueId', 'userId'),
+        semester: {
+          connect: {
+            code: dependencies.semester.code,
           },
         },
-      }),
+        ue: {
+          connect: {
+            code: dependencies.ue.code,
+          },
+        },
+        user: {
+          connect: {
+            id: dependencies.user.id,
+          },
+        },
+      },
+    }),
 );
 
 export type CreateCriterionParameters = FakeUEStarCriterion;
 export const createCriterion = entityFaker(
   'ueCriterion',
-  () => ({
-    name: faker.word.adjective(),
-  }),
+  {
+    name: faker.word.adjective,
+  },
   async (app, params) =>
     app()
       .get(PrismaService)
@@ -459,9 +457,9 @@ export const createCriterion = entityFaker(
 export type CreateUERatingParameters = FakeUEStarVote;
 export const createUERating = entityFaker(
   'ueStarVote',
-  () => ({
-    value: faker.datatype.number({ min: 1, max: 5 }),
-  }),
+  {
+    value: faker.db.ueStarVote.value,
+  },
   async (app, dependencies, params) =>
     app()
       .get(PrismaService)
@@ -490,10 +488,10 @@ export const createUERating = entityFaker(
 export type CreateCommentParameters = FakeComment;
 export const createComment = entityFaker(
   'comment',
-  () => ({
-    body: faker.random.words(),
-    isAnonymous: faker.datatype.boolean(),
-  }),
+  {
+    body: faker.random.words,
+    isAnonymous: faker.datatype.boolean,
+  },
   async (app, dependencies, params) =>
     app()
       .get(PrismaService)
@@ -520,35 +518,32 @@ export const createComment = entityFaker(
 );
 
 export type CreateCommentUpvoteParameters = FakeCommentUpvote;
-export const createCommentUpvote = entityFaker(
-  'commentUpvote',
-  () => ({}),
-  async (app, dependencies, params) =>
-    app()
-      .get(PrismaService)
-      .uECommentUpvote.create({
-        data: {
-          ...omit(params, 'commentId', 'userId'),
-          comment: {
-            connect: {
-              id: dependencies.comment.id,
-            },
-          },
-          user: {
-            connect: {
-              id: dependencies.user.id,
-            },
+export const createCommentUpvote = entityFaker('commentUpvote', {}, async (app, dependencies, params) =>
+  app()
+    .get(PrismaService)
+    .uECommentUpvote.create({
+      data: {
+        ...omit(params, 'commentId', 'userId'),
+        comment: {
+          connect: {
+            id: dependencies.comment.id,
           },
         },
-      }),
+        user: {
+          connect: {
+            id: dependencies.user.id,
+          },
+        },
+      },
+    }),
 );
 
 export type CreateCommentReplyParameters = FakeCommentReply;
 export const createCommentReply = entityFaker(
   'commentReply',
-  () => ({
-    body: faker.random.words(),
-  }),
+  {
+    body: faker.random.words,
+  },
   async (app, dependencies, params) =>
     app()
       .get(PrismaService)
@@ -569,6 +564,16 @@ export const createCommentReply = entityFaker(
       }),
 );
 
+export type CreateUECreditCategoryParameters = FakeUECreditCategory;
+export const createUECreditCategory = entityFaker(
+  'ueCreditCategory',
+  {
+    name: faker.name.jobTitle,
+    code: faker.db.ueCreditCategory.code,
+  },
+  async (app, params) => app().get(PrismaService).uECreditCategory.create({ data: params }),
+);
+
 /**
  * The return type of a fake function, either Promise<FakeEntity> or FakeEntity depending on whether OnTheFly is true or false
  */
@@ -576,7 +581,7 @@ type FakeFunctionReturn<FakeEntity extends Partial<FakeEntity>, OnTheFly extends
   ? Promise<FakeEntity>
   : FakeEntity;
 /** Retrieves the return type of the generator of the given fakerFunction */
-type Entity<T extends keyof FakeEntityMap> = FakeEntityMap[T]['entity'];
+export type Entity<T extends keyof FakeEntityMap> = FakeEntityMap[T]['entity'];
 /** Retrieves the type of parameters of the generator of the given fakerFunction */
 type Params<T extends keyof FakeEntityMap> = FakeEntityMap[T]['params'];
 /** Retrieves the type of dependencies of the generator of the given fakerFunction */
@@ -612,6 +617,20 @@ type ExclusiveProperties<This, Model> = {
   [K in keyof This]: K extends keyof Model ? Model[K] : never;
 } & Model;
 
+type DefaultParams<OptionalParams> = {
+  [K in keyof OptionalParams]: (() => OptionalParams[K]) | DefaultParams<OptionalParams[K]>;
+};
+
+function deeplyCallFunctions<T>(params: T) {
+  for (const key in params) {
+    if (typeof params[key] === 'function') {
+      params[key] = (params[key] as () => T[Extract<keyof T, string>])();
+    } else if (typeof params[key] === 'object') {
+      deeplyCallFunctions(params[key]);
+    }
+  }
+}
+
 /**
  * Creates a function that permits creating fake data.
  *
@@ -638,7 +657,8 @@ type ExclusiveProperties<This, Model> = {
  *     This is useful in a describe for example, where you can't await, but also don't need to access the values directly.
  *     Note that this should still be usable as a parameter / dependency for another function created with {@link entityFaker}, as they do not require to read the content of the entity outside a beforeAll.
  *     This is the default behaviour.
- * @param kind The kind of entity to create. This is the key in {@link FakeEntityMap} that represents the entity. Any record in {@link FakeEntityMap} must contain:
+ *
+ * @param _kind The kind of entity to create. This is the key in {@link FakeEntityMap} that represents the entity. Any record in {@link FakeEntityMap} must contain:
  * an `entity` field, used to represent the type generated by this faker function;
  * a `params` field, used to represent all the parameters that can be given to the {@link EntityFactory generator function}.
  * A record may also include a `deps` field, used to represent all the dependencies that shall be given to the {@link EntityFactory generator function}.
@@ -675,7 +695,11 @@ type ExclusiveProperties<This, Model> = {
 function entityFaker<
   T extends keyof FakeEntityMap,
   OptionalParams extends ExclusiveProperties<OptionalParams, Params<T>>,
->(kind: T, defaultParams: () => OptionalParams, entityFactory: EntityFactory<T, OptionalParams>): FakeFunction<T> {
+>(
+  _kind: T,
+  defaultParams: DefaultParams<OptionalParams>,
+  entityFactory: EntityFactory<T, OptionalParams>,
+): FakeFunction<T> {
   const func = <OnTheFly extends boolean = false>(
     app: AppProvider,
     dependencies: Deps<T>,
@@ -688,18 +712,11 @@ function entityFaker<
     const factory = async () => {
       // We concatenate default params with params to ensure we have all the params
       const params = {
-        ...defaultParams(),
+        ...defaultParams,
         ...rawParams,
       } as Params<T>;
-      // If `defaultParams` values are used and if these values are unique, they are prefixed with a '!'
-      // (this system only supports string unique values, numbers are considered as numerous enough)
-      for (const key in params)
-        if (typeof params[key] === 'string' && params[key][0] === '!') {
-          // Remove prefix from `params`
-          params[key] = (<string>params[key]).slice(1) as Params<T>[Extract<keyof Params<T>, string>];
-          // Register unique value was used
-          registerUniqueValue(kind, key, params[key]);
-        }
+      // If a default param is a function, call it. We need to do it recursively to support nested objects.
+      deeplyCallFunctions(params);
       // We generate the parameters of the entity generator (`entityFactory` in the code below)
       const factoryDepsParams = (
         entityFactory.length !== 2 ? [dependencies, params] : [params]
@@ -722,102 +739,3 @@ function entityFaker<
   }
   return func as FakeFunction<T>;
 }
-
-/**
- * Stores all values that should be unique and shall not be used multiple times by faker
- * The values of this object are reset using {@link clearUniqueValues} in beforeAll blocks.
- */
-const registeredUniqueValues: {
-  [Type in keyof FakeEntityMap]?: {
-    [property in keyof Entity<Type> & string]?: Entity<Type>[property][];
-  };
-} = {};
-
-/**
- * Checks whether using a value preserved uniqueness of this value.
- * @param entityType the scope of the unique value. For example, if you want to generate a unique value for a UE, you should pass 'ue' as the first parameter.
- * @param property the name of the property that should be unique.
- * @param value the value that should be unique.
- * @returns whether the value can be used or not.
- */
-const canUseValue = <T extends keyof FakeEntityMap, K extends keyof Entity<T> & string>(
-  entityType: T,
-  property: K,
-  value: Entity<T>[K],
-) => {
-  if (!(entityType in registeredUniqueValues)) return true;
-  if (!(property in registeredUniqueValues[entityType])) return true;
-  return !registeredUniqueValues[entityType][property].includes(value);
-};
-
-/**
- * Registers a value as used, so that it is not used again by faker.
- * @param entityType the scope of the unique value. For example, if you generated a unique value for a UE, you should pass 'ue' as the first parameter.
- * @param property the name of the unique property.
- * @param value the value of the unique property.
- */
-const registerUniqueValue = <T extends keyof FakeEntityMap, K extends keyof Entity<T> & string>(
-  entityType: T,
-  property: K,
-  value: Entity<T>[K],
-) => {
-  if (!(entityType in registeredUniqueValues))
-    registeredUniqueValues[entityType] = {
-      [property]: [value],
-    };
-  else if (!(property in registeredUniqueValues[entityType]))
-    registeredUniqueValues[entityType][property] = [value] as any;
-  else registeredUniqueValues[entityType][property].push(value);
-};
-
-/**
- * Clears all unique values that have been registered and makes all values available again.
- * This function is called automatically in beforeAll blocks when database is cleared.
- */
-export const clearUniqueValues = () => {
-  for (const key in registeredUniqueValues) delete registeredUniqueValues[key];
-};
-
-// ------------------ Fake values ------------------
-
-const fakeUECode = () => {
-  let ueCode: string;
-  do {
-    ueCode = faker.helpers.arrayElement(baseUesCode) + `${faker.datatype.number({ min: 1, max: 13 })}`.padStart(2, '0');
-  } while (!canUseValue('ue', 'code', ueCode));
-  return `!${ueCode}`;
-};
-
-const fakeCreditType = () => faker.helpers.arrayElement(creditType);
-
-const fakeSemesterCode = () => {
-  let semesterCode: string;
-  if ((registeredUniqueValues.semester?.code?.length ?? 0) >= 2 * (24 - 10))
-    throw new Error(
-      'FakerError: All semester codes are used. Clear the unique values with `clearUniqueValues()` before',
-    );
-  do {
-    semesterCode = `${faker.helpers.arrayElement(['P', 'A'])}${faker.datatype.number({ min: 10, max: 24 })}`;
-  } while (!canUseValue('semester', 'code', semesterCode));
-  return `!${semesterCode}`;
-};
-
-const fakeUTTBranchOptionCode = () => {
-  let branchOptionCode: string;
-  if ((registeredUniqueValues.branchOption?.code?.length ?? 0) >= branchOptionsCode.length)
-    throw new Error('FakerError: All BranchOption codes are used. Clear the unique values with `clearUniqueValues()`');
-  do {
-    branchOptionCode = faker.helpers.arrayElement(branchOptionsCode);
-  } while (!canUseValue('branchOption', 'code', branchOptionCode));
-  return `!${branchOptionCode}`;
-};
-
-const fakeUTTBranchCode = () => {
-  let branchCode: string;
-  if ((registeredUniqueValues.branch?.code?.length ?? 0) >= branchesCode.length)
-    throw new Error('FakerError: All Branch codes are used. Clear the unique values with `clearUniqueValues()` before');
-  do {
-    branchCode = faker.helpers.arrayElement(branchesCode);
-  } while (!canUseValue('branch', 'code', branchCode));
-  return `!${branchCode}`;
-};

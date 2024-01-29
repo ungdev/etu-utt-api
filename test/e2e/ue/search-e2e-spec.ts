@@ -6,10 +6,14 @@ import { e2eSuite } from '../../utils/test_utils';
 import { UEOverView } from '../../../src/ue/interfaces/ue-overview.interface';
 import { omit } from '../../../src/utils';
 import { JsonLikeVariant } from '../../declarations';
+import { registerUniqueValue } from '../../../prisma/seed/utils';
 
 const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
   const user = createUser(app);
-  const semesters = [createSemester(app, { code: '!A24' }), createSemester(app)];
+  const semesters = [
+    createSemester(app, { code: registerUniqueValue('semester', 'code', 'A24') }),
+    createSemester(app),
+  ];
   const branches = [createBranch(app), createBranch(app)];
   const branchOptions = [
     createBranchOption(app, {
@@ -30,7 +34,7 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
     ues.push(
       createUE(
         app,
-        { semesters: [semesters[i % 2]], branchOption: branchOptions[(i * 3) % 4] },
+        { semesters: [semesters[i % 2]], branchOption: branchOptions[i % 4] },
         {
           code: `XX${`${i}`.padStart(2, '0')}`,
           credits: [

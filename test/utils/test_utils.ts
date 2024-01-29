@@ -4,7 +4,7 @@ import { TestingModule } from '@nestjs/testing';
 import { faker } from '@faker-js/faker';
 import { ConfigService } from '@nestjs/config';
 import { DMMF } from '@prisma/client/runtime/library';
-import { clearUniqueValues } from './fakedb';
+import { clearUniqueValues } from '../../prisma/seed/utils';
 
 /**
  * Initializes this file.
