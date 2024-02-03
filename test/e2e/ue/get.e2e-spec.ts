@@ -141,7 +141,7 @@ const GetE2ESpec = e2eSuite('GET /ue/{ueCode}', (app) => {
             category: ueWithRating.credits[0].category,
           },
         ],
-        openSemester: [semesters[0].code, semesters[1].code],
+        openSemester: semesters.sort((a, b) => a.start.getTime() - b.start.getTime()).map((s) => s.code),
         workTime: omit(ueWithRating.workTime, 'ueId', 'id') as Required<Omit<FakeUE['workTime'], 'ueId'>>,
         starVotes: {
           [criterion.id]: 4.0,

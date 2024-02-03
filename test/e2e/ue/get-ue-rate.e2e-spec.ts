@@ -42,16 +42,23 @@ const GetRateE2ESpec = e2eSuite('GET /ue/{ueCode}/rate', (app) => {
       .spec()
       .withBearerToken(user.token)
       .get(`/ue/${ue.code}/rate`)
-      .expectUERates([
-        {
-          criterionId: c1.id,
-          value: 1,
-        },
-        {
-          criterionId: c2.id,
-          value: 5,
-        },
-      ]);
+      .expectUERates(
+        [
+          {
+            criterion: c1,
+            value: 1,
+          },
+          {
+            criterion: c2,
+            value: 5,
+          },
+        ]
+          .sort((a, b) => a.criterion.name.localeCompare(b.criterion.name))
+          .map((rate) => ({
+            criterionId: rate.criterion.id,
+            value: rate.value,
+          })),
+      );
   });
 
   it('should return the user rate for the UE (partial rating)', () => {
