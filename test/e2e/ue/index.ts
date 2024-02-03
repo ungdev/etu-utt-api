@@ -13,6 +13,7 @@ import DeleteComment from './delete-comment.e2e-spec';
 import PostUpvote from './post-upvote.e2e-spec';
 import PutRate from './put-rate.e2e-spec';
 import DeleteUpvote from './delete-upvote.e2e-spec';
+import DeleteRate from './delete-rate.e2e-spec';
 
 export default function UEE2ESpec(app: () => INestApplication) {
   describe('UE', () => {
@@ -30,5 +31,6 @@ export default function UEE2ESpec(app: () => INestApplication) {
     PostUpvote(app);
     DeleteUpvote(app);
     PutRate(app);
+    DeleteRate(app);
   });
 }
