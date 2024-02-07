@@ -82,7 +82,7 @@ export class AuthService {
   }
 
   getHash(password: string): Promise<string> {
-    const saltRounds = 10;
+    const saltRounds = Number.parseInt(this.config.get('SALT_ROUNDS'));
     return bcrypt.hash(password, saltRounds);
   }
 }

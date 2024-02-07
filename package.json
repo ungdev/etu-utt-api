@@ -14,7 +14,7 @@
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test,prisma}/**/*.ts\" --fix",
     "db:reset": "pnpm dev:db:reset && pnpm test:db:reset",
-    "db:editor": "env-cmd -f .env.dev --pnpm prisma studio",
+    "db:editor": "env-cmd -f .env.dev -- pnpm prisma studio",
     "db:seed": "env-cmd -f .env.dev -- ts-node prisma/seed/seed.ts",
     "dev:db:reset": "env-cmd -f .env.dev --use-shell \"pnpm prisma migrate reset --force && pnpm prisma db push\"",
     "test": "jest --config test/jest.json --runInBand --testNamePattern",
