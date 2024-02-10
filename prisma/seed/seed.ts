@@ -1,12 +1,13 @@
 import { PrismaClient } from '@prisma/client';
-import { ueSeed } from './modules/ue.seed';
+import ueSeed from './modules/ue.seed';
 import { userSeed } from './modules/user.seed';
 import { faker } from '@faker-js/faker';
-import { semesterSeed } from './modules/semester.seed';
-import { branchSeed } from './modules/branch.seed';
-import { branchOptionSeed } from './modules/branchOption.seed';
+import semesterSeed from './modules/semester.seed';
+import branchSeed from './modules/branch.seed';
+import branchOptionSeed from './modules/branchOption.seed';
 import creditCategorySeed from './modules/creditCategory.seed';
 import { cleanDb } from '../../test/utils/test_utils';
+import ueCommentSeed from "./modules/ueComment.seed";
 
 const prisma = new PrismaClient();
 async function main() {
@@ -15,12 +16,13 @@ async function main() {
   //Set custom seed
   faker.seed(parseInt(process.env.FAKER_SEED));
 
-  const semesters = await semesterSeed();
-  const branches = await branchSeed();
-  const branchOptions = await branchOptionSeed(branches);
-  const creditCategories = await creditCategorySeed();
-  await ueSeed(semesters, branchOptions, creditCategories);
-  await userSeed();
+  const semesters = await semesterSeed(prisma);
+  const branches = await branchSeed(prisma);
+  const branchOptions = await branchOptionSeed(prisma, branches);
+  const creditCategories = await creditCategorySeed(prisma);
+  const ues = await ueSeed(prisma, semesters, branchOptions, creditCategories);
+  const users = await userSeed(prisma);
+  await ueCommentSeed(prisma, users, ues, semesters);
 
   console.log('Seeding done.');
 }

@@ -2,9 +2,8 @@ import { faker } from '@faker-js/faker';
 import { RawBranch, RawBranchOption } from '../../../src/prisma/types';
 import { PrismaClient } from '@prisma/client';
 
-export function branchOptionSeed(branches: RawBranch[]): Promise<RawBranchOption[]> {
+export default function branchOptionSeed(prisma: PrismaClient, branches: RawBranch[]): Promise<RawBranchOption[]> {
   console.log('Seeding branch options...');
-  const prisma = new PrismaClient();
   const branchOptions: Promise<RawBranchOption>[] = [];
   for (const branch of branches) {
     branchOptions.push(

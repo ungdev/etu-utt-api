@@ -155,7 +155,6 @@ export class UEService {
     // And turn semester into their respective code.
     return {
       ...ue,
-      openSemester: ue.openSemester.map((semester) => semester.code),
       starVotes: Object.fromEntries(
         Object.entries(starVoteCriteria).map(([key, entry]) => {
           let coefficients = 0;

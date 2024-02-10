@@ -1,10 +1,9 @@
-import { Prisma, PrismaClient, UTTBranch } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { faker } from '@faker-js/faker';
 import { RawBranch } from '../../../src/prisma/types';
 
-export async function branchSeed(): Promise<RawBranch[]> {
+export default function branchSeed(prisma: PrismaClient): Promise<RawBranch[]> {
   console.log('Seeding branches');
-  const prisma = new PrismaClient();
   const branches: Promise<RawBranch>[] = [];
   branches.push(
     prisma.uTTBranch.create({
@@ -13,7 +12,7 @@ export async function branchSeed(): Promise<RawBranch[]> {
         name: 'Tronc commun',
         descriptionTranslation: {
           create: {
-            fr: "2 année de cycle préparatoire au cycle ingénieur (aucune idée de si c'est la vraie description :eyes:)",
+            fr: "2 années de cycle préparatoire au cycle ingénieur (aucune idée de si c'est la vraie description :eyes:)",
           },
         },
       },

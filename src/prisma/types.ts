@@ -9,4 +9,6 @@ export {
   UTTBranch as RawBranch,
   UTTBranchOption as RawBranchOption,
   UECreditCategory as RawCreditCategory,
+  UE as RawUE,
+  UEComment as RawUEComment,
 } from '@prisma/client';
