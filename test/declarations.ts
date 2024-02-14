@@ -4,10 +4,11 @@ import { JsonLikeVariant } from './declarations.d';
 import { ERROR_CODE, ErrorData, ExtrasTypeBuilder } from '../src/exceptions';
 import { UEComment } from '../src/ue/interfaces/comment.interface';
 import { UECommentReply } from '../src/ue/interfaces/comment-reply.interface';
-import { UEOverView } from 'src/ue/interfaces/ue-overview.interface';
-import { UEDetail } from 'src/ue/interfaces/ue-detail.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { UERating } from 'src/ue/interfaces/rate.interface';
+import { FakeUE } from './utils/fakedb';
+import { ConfigService } from '@nestjs/config';
+import { AppProvider } from './utils/test_utils';
 
 /** Shortcut function for `this.expectStatus(200).expectJsonLike` */
 function expect<T>(obj: JsonLikeVariant<T>) {
@@ -27,9 +28,31 @@ SpecProto.expectAppError = function <ErrorCode extends ERROR_CODE>(
     error: (args as string[]).reduce((arg, extra) => arg.replaceAll('%', extra), ErrorData[errorCode].message),
   });
 };
-SpecProto.expectUE = expect<UEDetail>;
-SpecProto.expectUEs = expect<Pagination<UEOverView>>;
-SpecProto.expectUEComment = expectOkOrCreate<UEComment>;
+SpecProto.expectUE = function (ue: FakeUE) {
+  return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonLike({
+    ...ue,
+    openSemester: ue.openSemester.map((semester) => ({
+      ...semester,
+      start: semester.start.toISOString(),
+      end: semester.end.toISOString(),
+    })),
+  });
+};
+SpecProto.expectUEs = function (app: AppProvider, ues: FakeUE[], count: number) {
+  return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonLike({
+    items: ues.map((ue) => ({
+      ...ue,
+      openSemester: ue.openSemester.map((semester) => ({
+        ...semester,
+        start: semester.start.toISOString(),
+        end: semester.end.toISOString(),
+      })),
+    })),
+    itemCount: count,
+    itemsPerPage: Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')),
+  });
+};
+SpecProto.expectUEComment = expectOkOrCreate<PartiallyPartial<UEComment, 'author'>>;
 SpecProto.expectUEComments = expect<Pagination<UEComment>>;
 SpecProto.expectUECommentReply = expectOkOrCreate<UECommentReply>;
 SpecProto.expectUECriteria = expect<Criterion[]>;

@@ -5,6 +5,8 @@ import { UEOverView } from 'src/ue/interfaces/ue-overview.interface';
 import { UEDetail } from 'src/ue/interfaces/ue-detail.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { UERating } from 'src/ue/interfaces/rate.interface';
+import { FakeUE } from "./utils/fakedb";
+import { AppProvider } from "./utils/test_utils";
 
 export type JsonLikeVariant<T> = {
   [K in keyof T]: T[K] extends string | Date | DeepWritable<Date> ? string | RegExp : JsonLikeVariant<T[K]>;
@@ -27,14 +29,14 @@ declare module './declarations' {
       ...customMessage: ExtrasTypeBuilder<(typeof ErrorData)[ErrorCode]['message']>
     ): this;
     /** expects to return the given {@link UEDetail} */
-    expectUE(ue: JsonLikeVariant<UEDetail>): this;
+    expectUE(ue: FakeUE): this;
     /** expects to return the given {@link page | page of UEOverView} */
-    expectUEs(page: JsonLikeVariant<Pagination<UEOverView>>): this;
+    expectUEs(app: AppProvider, ues: FakeUE[], count: number): this;
     /**
      * expects to return the given {@link comment}. The HTTP Status code may be 200 or 204,
      * depending on the {@link created} property.
      */
-    expectUEComment(comment: JsonLikeVariant<UEComment>, created = false): this;
+    expectUEComment(comment: JsonLikeVariant<PartiallyPartial<UEComment, 'author'>>, created = false): this;
     /** expects to return the given {@link commentPage | page of comments} */
     expectUEComments(commentPage: JsonLikeVariant<Pagination<UEComment>>): this;
     /**

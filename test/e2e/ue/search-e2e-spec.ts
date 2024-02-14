@@ -40,11 +40,7 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
       .spec()
       .withBearerToken(user.token)
       .get('/ue')
-      .expectUEs({
-        items: ues.slice(0, Number(app().get(ConfigService).get('PAGINATION_PAGE_SIZE'))),
-        itemCount: ues.length,
-        itemsPerPage: Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')),
-      });
+      .expectUEs(app, ues.slice(0, Number(app().get(ConfigService).get('PAGINATION_PAGE_SIZE'))), ues.length);
   });
 
   it('should return a list of all ues (within the second page)', () => {
@@ -53,79 +49,64 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
       .withBearerToken(user.token)
       .get('/ue')
       .withQueryParams('page', 2)
-      .expectUEs({
-        items: ues.slice(
+      .expectUEs(
+        app,
+        ues.slice(
           Number(app().get(ConfigService).get('PAGINATION_PAGE_SIZE')),
           Math.min(30, Number(app().get(ConfigService).get('PAGINATION_PAGE_SIZE') * 2)),
         ),
-        itemCount: ues.length,
-        itemsPerPage: Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')),
-      });
+        ues.length,
+      );
   });
 
   it('should return a list of ues filtered by semester', () => {
+    const expectedUEs = ues.filter((ue) => ue.openSemester.some((semester) => semester.code === 'A24'));
     return pactum
       .spec()
       .withBearerToken(user.token)
       .get('/ue')
       .withQueryParams('availableAtSemester', 'A24')
-      .expectUEs({
-        items: ues.filter((ue) => ue.openSemester.some((semester) => semester.code === 'A24')),
-        itemCount: ues.filter((ue) => ue.openSemester.some((semester) => semester.code === 'A24')).length,
-        itemsPerPage: Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')),
-      });
+      .expectUEs(app, expectedUEs, expectedUEs.length);
   });
 
   it('should return a list of ues filtered by credit type', () => {
+    const expectedUEs = ues.filter((ue) => ue.credits.some((credit) => credit.category.code === 'CS'));
     return pactum
       .spec()
       .withBearerToken(user.token)
       .get('/ue')
       .withQueryParams('creditType', 'CS')
-      .expectUEs({
-        items: ues.filter((ue) => ue.credits.some((credit) => credit.category.code === 'CS')),
-        itemCount: ues.filter((ue) => ue.credits.some((credit) => credit.category.code === 'CS')).length,
-        itemsPerPage: Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')),
-      });
+      .expectUEs(app, expectedUEs, expectedUEs.length);
   });
 
   it('should return a list of ues filtered by filiere', () => {
+    const expectedUEs = ues.filter((ue) => ue.branchOption.some((branchOption) => branchOption.code === 'T1'));
     return pactum
       .spec()
       .withBearerToken(user.token)
       .get('/ue')
       .withQueryParams('branchOption', 'T1')
-      .expectUEs({
-        items: ues.filter((ue) => ue.branchOption.some((branchOption) => branchOption.code === 'T1')),
-        itemCount: ues.filter((ue) => ue.branchOption.some((branchOption) => branchOption.code === 'T1')).length,
-        itemsPerPage: Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')),
-      });
+      .expectUEs(app, expectedUEs, expectedUEs.length);
   });
 
   it('should return a list of ues filtered by branch', () => {
+    const expectedUEs = ues.filter((ue) => ue.branchOption.some((branchOption) => branchOption.branch.code === 'B1'));
     return pactum
       .spec()
       .withBearerToken(user.token)
       .get('/ue')
       .withQueryParams('branch', 'B1')
-      .expectUEs({
-        items: ues.filter((ue) => ue.branchOption.some((branchOption) => branchOption.branch.code === 'B1')),
-        itemsPerPage: Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')),
-        itemCount: ues.filter((ue) => ue.branchOption.some((branchOption) => branchOption.branch.code === 'B1')).length,
-      });
+      .expectUEs(app, expectedUEs, expectedUEs.length);
   });
 
   it('should return a list of ues filtered by name', () => {
+    const expectedUEs = ues.filter((ue) => ue.name.includes('XX0'));
     return pactum
       .spec()
       .withBearerToken(user.token)
       .get('/ue')
       .withQueryParams('q', 'XX0')
-      .expectUEs({
-        items: ues.filter((ue) => ue.code.startsWith('XX0')),
-        itemsPerPage: Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')),
-        itemCount: ues.filter((ue) => ue.code.startsWith('XX0')).length,
-      });
+      .expectUEs(app, expectedUEs, expectedUEs.length);
   });
 });
 

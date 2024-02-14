@@ -230,6 +230,32 @@ export class UEService {
   }
 
   /**
+   * Retrieves a single {@link UEComment} from a comment UUID
+   * @param commentId the UUID of the comment
+   * @param userId the user fetching the comments. Used to determine if an anonymous comment should include its author
+   * @param bypassAnonymousData if true, the author of an anonymous comment will be included in the response (this is the case if the user is a moderator)
+   * @returns a page of {@link UEComment} matching the user query
+   */
+  async getCommentFromId(commentId: string, userId: string, bypassAnonymousData: boolean) {
+    const comment = await this.prisma.uEComment.findUnique(
+      SelectComment({
+        where: {
+          id: commentId,
+        },
+      }),
+    );
+    if (comment === null) {
+      return null;
+    }
+    if (comment.isAnonymous && !bypassAnonymousData && comment.author?.id !== userId) delete comment.author;
+    return {
+      ...comment,
+      upvotes: comment.upvotes.length,
+      upvoted: comment.upvotes.some((upvote) => upvote.userId == userId),
+    };
+  }
+
+  /**
    * Checks whether a user is the author of a comment
    * @remarks The comment must exist and user must not be null
    * @param userId the user to check

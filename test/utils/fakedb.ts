@@ -27,6 +27,7 @@ export type FakeUser = Partial<RawUser & RawUserInfos & { permissions: string[];
 export type FakeTimetableGroup = Partial<RawTimetableGroup>;
 export type FakeTimetableEntry = Partial<RawTimetableEntry>;
 export type FakeTimetableEntryOverride = Partial<RawTimetableEntryOverride>;
+export type FakeUE = Partial<UEDetail>;
 
 /**
  * Creates a user in the database.
@@ -265,23 +266,10 @@ export function createUE(
     const ue = await (forOverview
       ? app().get(PrismaService).uE.create(SelectUEOverview(data))
       : app().get(PrismaService).uE.create(SelectUEDetail(data)));
-    Object.assign(
-      partialUE,
-      !('workTime' in ue)
-        ? {
-            ...ue,
-            openSemester: ue.openSemester.map((semester) => ({
-              ...semester,
-              start: (<Date>semester.start).toISOString(),
-              end: (<Date>semester.end).toISOString(),
-            })),
-          }
-        : {
-            ...ue,
-            openSemester: ue.openSemester.map((semester) => semester.code),
-            starVotes: {},
-          },
-    );
+    Object.assign(partialUE, {
+      ...ue,
+      ...('workTime' in ue ? { starVotes: {} } : {}),
+    });
   });
   return partialUE;
 }

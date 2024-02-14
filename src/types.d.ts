@@ -19,3 +19,5 @@ declare type DeepWritable<T> = {
 declare type UnpartialFields<T, K extends keyof T> = { [P in K]-?: T[P] } & {
   [P in keyof T]: P extends T ? never : T[P];
 };
+
+declare type PartiallyPartial<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;

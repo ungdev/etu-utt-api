@@ -4,7 +4,7 @@ import { RawSemester } from '../../../src/prisma/types';
 export default function semesterSeed(prisma: PrismaClient): Promise<RawSemester[]> {
   console.log('Seeding semesters...');
   const semesters: Promise<RawSemester>[] = [];
-  for (let i = 10; i < 50; i++) {
+  for (let i = 13; i < 38; i++) {
     semesters.push(
       prisma.semester.create({
         data: {

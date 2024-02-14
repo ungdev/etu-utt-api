@@ -1,5 +1,5 @@
 import { RawSemester, RawUE, RawUEComment, RawUser } from '../../../src/prisma/types';
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { faker } from '@faker-js/faker';
 
 export default function ueCommentSeed(
@@ -26,6 +26,17 @@ export default function ueCommentSeed(
       };
     }
     ueAuthorPairs.push(ueAuthorPair);
+    const answers: Prisma.UECommentReplyCreateWithoutCommentInput[] = new Array(faker.datatype.number(4))
+      .fill(undefined)
+      .map(() => {
+        const answerDate = faker.date.soon(10, date);
+        return {
+          body: faker.lorem.paragraph(),
+          authorId: faker.helpers.arrayElement(users).id,
+          createdAt: answerDate,
+          updatedAt: faker.date.soon(10, answerDate),
+        };
+      });
     comments.push(
       prisma.uEComment.create({
         data: {
@@ -47,7 +58,12 @@ export default function ueCommentSeed(
           },
           body: faker.lorem.paragraph(),
           createdAt: date,
-          updatedAt: date,
+          updatedAt: faker.datatype.boolean() ? faker.date.soon(10, date) : undefined,
+          answers: {
+            createMany: {
+              data: answers,
+            },
+          },
         },
       }),
     );

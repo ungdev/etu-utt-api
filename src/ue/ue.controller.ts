@@ -56,6 +56,26 @@ export class UEController {
     return this.ueService.createComment(body, user.id, ueCode);
   }
 
+  @Get('/comments/:commentId')
+  async getUECommentFromId(
+    @Param(
+      'commentId',
+      new ParseUUIDPipe({ exceptionFactory: () => new AppException(ERROR_CODE.PARAM_NOT_UUID, 'commentId') }),
+    )
+    commentId: string,
+    @GetUser() user: User,
+  ) {
+    const comment = await this.ueService.getCommentFromId(
+      commentId,
+      user.id,
+      user.permissions.includes('commentModerator'),
+    );
+    if (!comment) {
+      throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
+    }
+    return comment;
+  }
+
   @Patch('/comments/:commentId')
   async EditUEComment(
     @Param(
