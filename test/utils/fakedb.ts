@@ -1,22 +1,29 @@
 import {
+  RawSemester,
   RawTimetableEntry,
   RawTimetableEntryOverride,
   RawTimetableGroup,
+  RawUE,
+  RawUEComment,
+  RawUECommentReply,
+  RawUECommentUpvote,
+  RawUECredit,
+  RawUECreditCategory,
+  RawUEInfo,
+  RawUEStarCriterion,
+  RawUEStarVote,
+  RawUEWorkTime,
+  RawUTTBranch,
+  RawUTTBranchOption,
   RawUser,
   RawUserInfos,
+  RawUserUESubscription,
 } from '../../src/prisma/types';
 import { faker } from '@faker-js/faker';
 import { AuthService } from '../../src/auth/auth.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { AppProvider } from './test_utils';
 import { Sex, TimetableEntryType, UserRole } from '@prisma/client';
-import { User } from '../../src/users/interfaces/user.interface';
-import { SelectUEOverview, UEOverView } from '../../src/ue/interfaces/ue-overview.interface';
-import { SelectUEDetail, UEDetail } from '../../src/ue/interfaces/ue-detail.interface';
-import { Criterion, SelectCriterion } from '../../src/ue/interfaces/criterion.interface';
-import { UEComment } from '../../src/ue/interfaces/comment.interface';
-import { UEService } from '../../src/ue/ue.service';
-import { UECommentReply } from '../../src/ue/interfaces/comment-reply.interface';
 import { omit, pick } from '../../src/utils';
 
 /**
@@ -27,6 +34,94 @@ export type FakeUser = Partial<RawUser & RawUserInfos & { permissions: string[];
 export type FakeTimetableGroup = Partial<RawTimetableGroup>;
 export type FakeTimetableEntry = Partial<RawTimetableEntry>;
 export type FakeTimetableEntryOverride = Partial<RawTimetableEntryOverride>;
+export type FakeBranch = Partial<RawUTTBranch>;
+export type FakeBranchOption = Partial<RawUTTBranchOption>;
+export type FakeSemester = Partial<RawSemester>;
+export type FakeUE = Partial<RawUE> & {
+  credits?: (Partial<RawUECredit> & { category: RawUECreditCategory })[];
+  info?: Partial<RawUEInfo & { requirements: { code: string }[] }>;
+  workTime?: Partial<RawUEWorkTime>;
+  openSemesters?: Partial<RawSemester>[];
+  branchOption?: Partial<RawUTTBranchOption & { branch: RawUTTBranch }>[];
+};
+export type FakeUserUESubscription = Partial<RawUserUESubscription>;
+export type FakeUEStarCriterion = Partial<RawUEStarCriterion>;
+export type FakeUEStarVote = Partial<RawUEStarVote>;
+export type FakeComment = Partial<RawUEComment>;
+export type FakeCommentUpvote = Partial<RawUECommentUpvote>;
+export type FakeCommentReply = Partial<RawUECommentReply>;
+export type FakeUECreditCategory = Partial<RawUECreditCategory>;
+
+export interface FakeEntityMap {
+  timetableEntryOverride: {
+    entity: Partial<FakeTimetableEntryOverride>;
+    params: CreateTimetableEntryOverrideParameters;
+    deps: { entry: FakeTimetableEntry };
+  };
+  timetableEntry: {
+    entity: Partial<FakeTimetableEntry>;
+    params: CreateTimetableEntryParameters;
+  };
+  timetableGroup: {
+    entity: FakeTimetableGroup;
+    params: CreateTimetableGroupParams;
+  };
+  user: {
+    entity: FakeUser;
+    params: FakeUser & { password?: string };
+  };
+  branch: {
+    entity: FakeBranch;
+    params: CreateBranchParameters;
+  };
+  branchOption: {
+    entity: FakeBranchOption;
+    params: CreateBranchOptionParameters;
+    deps: { branch: FakeBranch };
+  };
+  semester: {
+    entity: FakeSemester;
+    params: CreateSemesterParameters;
+  };
+  ue: {
+    entity: FakeUE;
+    params: CreateUEParameters;
+    deps: { branchOption: FakeBranchOption; semesters: FakeSemester[] };
+  };
+  userUESubscription: {
+    entity: FakeUserUESubscription;
+    params: CreateUserSubscriptionParameters;
+    deps: { user: FakeUser; ue: FakeUE; semester: FakeSemester };
+  };
+  ueCriterion: {
+    entity: FakeUEStarCriterion;
+    params: CreateCriterionParameters;
+  };
+  ueStarVote: {
+    entity: FakeUEStarVote;
+    params: CreateUERatingParameters;
+    deps: { user: FakeUser; criterion: FakeUEStarCriterion; ue: FakeUE };
+  };
+  comment: {
+    entity: FakeComment;
+    params: CreateCommentParameters;
+    deps: { user: FakeUser; ue: FakeUE; semester: FakeSemester };
+  };
+  commentUpvote: {
+    entity: FakeCommentUpvote;
+    params: CreateCommentUpvoteParameters;
+    deps: { user: FakeUser; comment: FakeComment };
+  };
+  commentReply: {
+    entity: FakeCommentReply;
+    params: CreateCommentReplyParameters;
+    deps: { user: FakeUser; comment: FakeComment };
+  };
+  ueCreditCategory: {
+    entity: FakeUECreditCategory;
+    params: CreateUECreditCategoryParameters;
+  };
+}
 
 /**
  * Creates a user in the database.
@@ -35,16 +130,17 @@ export type FakeTimetableEntryOverride = Partial<RawTimetableEntryOverride>;
  * @returns {@link FakeUser}
  */
 export const createUser = entityFaker(
-  () => ({
-    login: faker.internet.userName(),
-    studentId: faker.datatype.number(),
+  'user',
+  {
+    login: faker.internet.userName,
+    studentId: faker.datatype.number,
     sex: 'OTHER' as Sex,
-    lastName: faker.name.lastName(),
-    firstName: faker.name.firstName(),
+    lastName: faker.name.lastName,
+    firstName: faker.name.firstName,
     role: 'STUDENT' as UserRole,
     birthday: new Date(0),
-    password: faker.internet.password(),
-  }),
+    password: faker.internet.password,
+  },
   async (app, params) => {
     const user = await app()
       .get(PrismaService)
@@ -70,9 +166,6 @@ export const createUser = entityFaker(
       token: await app().get(AuthService).signToken(user.id, user.login),
     };
   },
-  null as FakeUser,
-  null as FakeUser & { password?: string },
-  null as Record<string, never>,
 );
 
 export type CreateTimetableGroupParams = { users?: Array<{ user: FakeUser; priority: number }> };
@@ -84,9 +177,10 @@ export type CreateTimetableGroupParams = { users?: Array<{ user: FakeUser; prior
  * @returns {@link FakeTimetableGroup}
  */
 export const createTimetableGroup = entityFaker(
-  () => ({
+  'timetableGroup',
+  {
     users: [],
-  }),
+  },
   async (app, params) => {
     return app()
       .get(PrismaService)
@@ -101,9 +195,6 @@ export const createTimetableGroup = entityFaker(
         },
       });
   },
-  null as FakeTimetableGroup,
-  null as CreateTimetableGroupParams,
-  null as Record<string, never>,
 );
 
 export type CreateTimetableEntryParameters = FakeTimetableEntry & { groups?: FakeTimetableGroup[] };
@@ -115,15 +206,16 @@ export type CreateTimetableEntryParameters = FakeTimetableEntry & { groups?: Fak
  * @returns {@link FakeTimetableEntry}
  */
 export const createTimetableEntry = entityFaker(
-  () => ({
+  'timetableEntry',
+  {
     eventStart: new Date(0),
     occurrenceDuration: 0,
     occurrencesCount: 1,
     repeatEvery: 0,
     type: 'CUSTOM' as TimetableEntryType,
-    location: faker.address.cityName(),
+    location: faker.address.cityName,
     groups: [],
-  }),
+  },
   (app, params) =>
     app()
       .get(PrismaService)
@@ -133,20 +225,18 @@ export const createTimetableEntry = entityFaker(
           ...omit(params, 'groups', 'eventId', 'ueCourseId'),
         },
       }),
-  null as FakeTimetableEntry,
-  null as CreateTimetableEntryParameters,
-  null as Record<string, never>,
 );
 
 export type CreateTimetableEntryOverrideParameters = {
   groups?: FakeTimetableGroup[];
 } & Partial<FakeTimetableEntryOverride>;
 export const createTimetableEntryOverride = entityFaker(
-  () => ({
+  'timetableEntryOverride',
+  {
     groups: [],
     applyFrom: 0,
     applyUntil: 0,
-  }),
+  },
   async (app, dependencies, params) =>
     app()
       .get(PrismaService)
@@ -157,370 +247,390 @@ export const createTimetableEntryOverride = entityFaker(
           ...omit(params, 'groups', 'overrideTimetableEntryId'),
         },
       }),
-  null as FakeTimetableEntryOverride,
-  null as CreateTimetableEntryOverrideParameters,
-  null as { entry: FakeTimetableEntry },
 );
 
-type UECreationOptions<T extends boolean> = {
-  code?: string;
-  category?: string;
-  branchOption?: string;
-  branch?: string;
-  semester?: string;
-  forOverview?: T;
-};
-export function createUE<T extends boolean = false>(
-  app: AppProvider,
-  opt?: UECreationOptions<T>,
-): Partial<T extends true ? UEOverView : UEDetail>;
-export function createUE(
-  app: AppProvider,
+export type CreateBranchParameters = FakeBranch;
+export const createBranch = entityFaker(
+  'branch',
   {
-    code = 'XX00',
-    category = 'CS',
-    branchOption = 'JSP',
-    branch = 'JSP_BR',
-    semester = 'A24',
-    forOverview = false,
-  } = {},
-) {
-  const partialUE: Partial<UEOverView | UEDetail> = {};
-  const data = {
-    data: {
-      code,
-      inscriptionCode: code,
-      name: `UE ${code}`,
-      credits: {
-        create: [
-          {
-            category: {
-              connectOrCreate: {
-                create: { code: category, name: category },
-                where: { code: category },
-              },
-            },
-            credits: 6,
-          },
-        ],
-      },
-      branchOption: {
-        connectOrCreate: {
-          create: {
-            code: branchOption,
-            name: branchOption,
-            branch: {
-              connectOrCreate: {
-                create: {
-                  code: branch,
-                  name: branch,
-                  descriptionTranslation: {
-                    create: {},
-                  },
-                },
-                where: {
-                  code: branch,
-                },
-              },
-            },
-            descriptionTranslation: {
-              create: {},
-            },
-          },
-          where: {
-            code: branchOption,
-          },
-        },
-      },
-      info: {
-        create: {
-          program: 'What is going to be studied',
-          objectives: 'The objectives of the UE',
-        },
-      },
-      workTime: {
-        create: {
-          cm: 20,
-          td: 20,
-          tp: 16,
-          the: 102,
-          project: 48,
-        },
-      },
-      openSemester: {
-        connectOrCreate: {
-          create: {
-            code: semester,
-            start: new Date(),
-            end: new Date(),
-          },
-          where: {
-            code: semester,
-          },
-        },
-      },
-    },
-  };
-  beforeAll(async () => {
-    const ue = await (forOverview
-      ? app().get(PrismaService).uE.create(SelectUEOverview(data))
-      : app().get(PrismaService).uE.create(SelectUEDetail(data)));
-    Object.assign(
-      partialUE,
-      !('workTime' in ue)
-        ? {
-            ...ue,
-            openSemester: ue.openSemester.map((semester) => ({
-              ...semester,
-              start: (<Date>semester.start).toISOString(),
-              end: (<Date>semester.end).toISOString(),
-            })),
-          }
-        : {
-            ...ue,
-            openSemester: ue.openSemester.map((semester) => semester.code),
-            starVotes: {},
-          },
-    );
-  });
-  return partialUE;
-}
-
-export function makeUserJoinUE(app: AppProvider, user: Partial<User>, ue: Partial<UEOverView | UEDetail>) {
-  beforeAll(() =>
+    code: faker.db.branch.code,
+    name: faker.name.jobTitle,
+  },
+  async (app, params) =>
     app()
       .get(PrismaService)
-      .userUESubscription.create({
+      .uTTBranch.create({
         data: {
-          ue: {
-            connect: {
-              code: ue.code,
-            },
-          },
-          user: {
-            connect: {
-              id: user.id,
-            },
-          },
-          semester: {
-            connectOrCreate: {
-              create: {
-                code: 'A24',
-                end: new Date(),
-                start: new Date(),
-              },
-              where: {
-                code: 'A24',
-              },
+          ...omit(params, 'descriptionTranslationId'),
+          descriptionTranslation: {
+            create: {
+              id: params.descriptionTranslationId,
             },
           },
         },
       }),
-  );
-}
+);
 
-export function createUERating(
-  app: AppProvider,
-  user: Partial<User>,
-  criterion: Partial<Criterion>,
-  ue: Partial<UEDetail | UEOverView>,
-  value = 3,
-) {
-  beforeAll(async () => {
-    return app()
+export type CreateBranchOptionParameters = FakeBranchOption;
+export const createBranchOption = entityFaker(
+  'branchOption',
+  {
+    code: faker.db.branchOption.code,
+    name: faker.name.jobTitle,
+  },
+  async (app, dependencies, params) =>
+    app()
+      .get(PrismaService)
+      .uTTBranchOption.create({
+        data: {
+          code: params.code,
+          name: params.name,
+          branch: {
+            connect: {
+              code: dependencies.branch.code,
+            },
+          },
+          descriptionTranslation: {
+            create: {
+              id: params.descriptionTranslationId,
+            },
+          },
+        },
+      }),
+);
+
+export type CreateSemesterParameters = FakeSemester;
+export const createSemester = entityFaker(
+  'semester',
+  {
+    code: faker.db.semester.code,
+    start: faker.date.past,
+    end: faker.date.past,
+  },
+  async (app, params) => {
+    return app().get(PrismaService).semester.create({
+      data: params,
+    });
+  },
+);
+
+export type CreateUEParameters = FakeUE;
+export const createUE = entityFaker(
+  'ue',
+  {
+    code: faker.db.ue.code,
+    name: faker.name.jobTitle,
+    credits: [
+      {
+        category: {
+          code: faker.db.ueCreditCategory.code,
+          name: faker.name.jobTitle,
+        },
+        credits: () => faker.datatype.number({ min: 1, max: 6 }),
+      },
+    ],
+    info: {
+      program: faker.random.words,
+      objectives: faker.random.words,
+    },
+    workTime: {
+      cm: () => faker.datatype.number({ min: 0, max: 100 }),
+      td: () => faker.datatype.number({ min: 0, max: 100 }),
+      tp: () => faker.datatype.number({ min: 0, max: 100 }),
+      the: () => faker.datatype.number({ min: 0, max: 100 }),
+      project: () => faker.datatype.number({ min: 0, max: 100 }),
+      internship: () => faker.datatype.number({ min: 0, max: 100 }),
+    },
+  },
+  async (app, dependencies, params) =>
+    app()
+      .get(PrismaService)
+      .uE.create({
+        data: {
+          ...omit(params, 'credits', 'info', 'workTime', 'inscriptionCode'),
+          inscriptionCode: params.inscriptionCode ?? params.code,
+          credits: {
+            create: params.credits.map((credit) => ({
+              category: {
+                connectOrCreate: {
+                  create: credit.category,
+                  where: { code: credit.category.code },
+                },
+              },
+              credits: credit.credits,
+            })),
+          },
+          info: {
+            create: omit(params.info, 'ueId', 'requirements'),
+          },
+          workTime: {
+            create: params.workTime,
+          },
+          branchOption: {
+            connect: {
+              code: dependencies.branchOption.code,
+            },
+          },
+          openSemester: {
+            connect: dependencies.semesters.map((semester) => ({
+              code: semester.code,
+            })),
+          },
+        },
+        include: {
+          info: {
+            include: {
+              requirements: {
+                select: {
+                  code: true,
+                },
+              },
+            },
+          },
+          workTime: true,
+          credits: {
+            include: {
+              category: true,
+            },
+          },
+          openSemester: true,
+          branchOption: {
+            include: {
+              branch: true,
+            },
+          },
+        },
+      })
+      .then((ue) => ({
+        ...omit(ue, 'openSemester'),
+        openSemesters: ue.openSemester,
+      })),
+);
+
+export type CreateUserSubscriptionParameters = FakeUserUESubscription;
+export const createUESubscription = entityFaker('userUESubscription', {}, async (app, dependencies, params) =>
+  app()
+    .get(PrismaService)
+    .userUESubscription.create({
+      data: {
+        ...omit(params, 'semesterId', 'ueId', 'userId'),
+        semester: {
+          connect: {
+            code: dependencies.semester.code,
+          },
+        },
+        ue: {
+          connect: {
+            code: dependencies.ue.code,
+          },
+        },
+        user: {
+          connect: {
+            id: dependencies.user.id,
+          },
+        },
+      },
+    }),
+);
+
+export type CreateCriterionParameters = FakeUEStarCriterion;
+export const createCriterion = entityFaker(
+  'ueCriterion',
+  {
+    name: faker.word.adjective,
+  },
+  async (app, params) =>
+    app()
+      .get(PrismaService)
+      .uEStarCriterion.create({
+        data: {
+          ...omit(params, 'descriptionTranslationId'),
+          descriptionTranslation: {
+            create: {
+              id: params.descriptionTranslationId,
+            },
+          },
+        },
+      }),
+);
+
+export type CreateUERatingParameters = FakeUEStarVote;
+export const createUERating = entityFaker(
+  'ueStarVote',
+  {
+    value: faker.db.ueStarVote.value,
+  },
+  async (app, dependencies, params) =>
+    app()
       .get(PrismaService)
       .uEStarVote.create({
         data: {
+          ...omit(params, 'criterionId', 'ueId', 'userId'),
           criterion: {
             connect: {
-              id: criterion.id,
+              id: dependencies.criterion.id,
+            },
+          },
+          ue: {
+            connect: {
+              code: dependencies.ue.code,
             },
           },
           user: {
             connect: {
-              id: user.id,
+              id: dependencies.user.id,
             },
           },
+        },
+      }),
+);
+
+export type CreateCommentParameters = FakeComment;
+export const createComment = entityFaker(
+  'comment',
+  {
+    body: faker.random.words,
+    isAnonymous: faker.datatype.boolean,
+  },
+  async (app, dependencies, params) =>
+    app()
+      .get(PrismaService)
+      .uEComment.create({
+        data: {
+          ...omit(params, 'ueId', 'authorId', 'semesterId'),
           ue: {
             connect: {
-              code: ue.code,
+              code: dependencies.ue.code,
             },
           },
-          value,
-        },
-      });
-  });
-}
-
-export function createCriterion(app: AppProvider, name = 'testCriterion') {
-  const lazyCriterion: Partial<Criterion> = {};
-  beforeAll(async () => {
-    Object.assign(
-      lazyCriterion,
-      await app()
-        .get(PrismaService)
-        .uEStarCriterion.create(
-          SelectCriterion({
-            data: {
-              name,
-              descriptionTranslation: {
-                create: {},
-              },
+          author: {
+            connect: {
+              id: dependencies.user.id,
             },
-          }),
-        ),
-    );
-  });
-  return lazyCriterion;
-}
+          },
+          semester: {
+            connect: {
+              code: dependencies.semester.code,
+            },
+          },
+        },
+      }),
+);
 
-export function createComment(
-  app: AppProvider,
-  onUE: Partial<UEOverView | UEDetail>,
-  user: FakeUser,
-  anonymous = false,
-) {
-  const lazyComment: Partial<UEComment> = {};
-  beforeAll(async () => {
-    const sub = await app()
+export type CreateCommentUpvoteParameters = FakeCommentUpvote;
+export const createCommentUpvote = entityFaker('commentUpvote', {}, async (app, dependencies, params) =>
+  app()
+    .get(PrismaService)
+    .uECommentUpvote.create({
+      data: {
+        ...omit(params, 'commentId', 'userId'),
+        comment: {
+          connect: {
+            id: dependencies.comment.id,
+          },
+        },
+        user: {
+          connect: {
+            id: dependencies.user.id,
+          },
+        },
+      },
+    }),
+);
+
+export type CreateCommentReplyParameters = FakeCommentReply;
+export const createCommentReply = entityFaker(
+  'commentReply',
+  {
+    body: faker.random.words,
+  },
+  async (app, dependencies, params) =>
+    app()
       .get(PrismaService)
-      .userUESubscription.findFirst({
-        where: {
-          ue: {
-            code: onUE.code,
-          },
-          userId: user.id,
-        },
-      });
-    if (!sub)
-      await app()
-        .get(PrismaService)
-        .userUESubscription.create({
-          data: {
-            semester: {
-              connectOrCreate: {
-                create: {
-                  code: 'A24',
-                  start: new Date(),
-                  end: new Date(),
-                },
-                where: { code: 'A24' },
-              },
-            },
-            ue: { connect: { code: onUE.code } },
-            user: { connect: { id: user.id } },
-          },
-        });
-    Object.assign(
-      lazyComment,
-      await app().get(UEService).createComment(
-        {
-          body: 'TEST',
-          isAnonymous: anonymous,
-        },
-        user.id,
-        onUE.code,
-      ),
-    );
-  });
-  return lazyComment;
-}
-
-export function upvoteComment(app: AppProvider, user: Partial<User>, comment: Partial<UEComment>) {
-  beforeAll(() => {
-    comment.upvotes++;
-    return app()
-      .get(PrismaService)
-      .uECommentUpvote.create({
+      .uECommentReply.create({
         data: {
+          ...omit(params, 'commentId', 'authorId'),
           comment: {
             connect: {
-              id: comment.id,
+              id: dependencies.comment.id,
             },
           },
-          user: {
+          author: {
             connect: {
-              id: user.id,
+              id: dependencies.user.id,
             },
           },
         },
-      });
-  });
-}
-
-export function createReply(app: AppProvider, user: Partial<User>, comment: Partial<UEComment>) {
-  const lazyReply: Partial<UECommentReply> = {};
-  beforeAll(async () => {
-    Object.assign(
-      lazyReply,
-      await app().get(UEService).replyComment(user.id, comment.id, {
-        body: "Bouboubou je suis pas d'accord",
       }),
-    );
-  });
-  return lazyReply;
-}
+);
 
-/**
- * Represents a function to generate an entity, which may need dependencies or not.
- * @see EntityFactoryWithoutDependencies
- * @see EntityFactoryWithDependencies
- */
-type EntityFactory<
-  FakeEntity extends Partial<object>,
-  Params extends object,
-  Keys extends keyof Params,
-  Dependencies extends object,
-> = Dependencies extends Record<string, never>
-  ? EntityFactoryWithoutDependencies<FakeEntity, Params, Keys>
-  : EntityFactoryWithDependencies<FakeEntity, Params, Keys, Dependencies>;
-/**
- * Represents a function to generate an entity, which does not need dependencies to be executed.
- */
-type EntityFactoryWithoutDependencies<
-  FakeEntity extends Partial<object>,
-  Params extends object,
-  Keys extends keyof Params,
-> = (app: AppProvider, params: UnpartialFields<Params, Keys>) => Promise<FakeEntity>;
-/**
- * Represents a function to generate an entity, which needs dependencies to be executed.
- */
-type EntityFactoryWithDependencies<
-  FakeEntity extends Partial<object>,
-  Params extends object,
-  Keys extends keyof Params,
-  Dependencies extends object,
-> = (app: AppProvider, dependencies: Dependencies, params: UnpartialFields<Params, Keys>) => Promise<FakeEntity>;
+export type CreateUECreditCategoryParameters = FakeUECreditCategory;
+export const createUECreditCategory = entityFaker(
+  'ueCreditCategory',
+  {
+    name: faker.name.jobTitle,
+    code: faker.db.ueCreditCategory.code,
+  },
+  async (app, params) => app().get(PrismaService).uECreditCategory.create({ data: params }),
+);
 
-/**
- * A fake function which does not have dependencies.
- */
-type FakeFunctionWithoutDependencies<FakeEntity extends Partial<object>, Params extends object> = <
-  OnTheFly extends boolean = false,
->(
-  app: AppProvider,
-  rawParams?: Partial<Params>,
-  onTheFly?: OnTheFly,
-) => FakeFunctionReturn<FakeEntity, OnTheFly>;
-/**
- * A fake function which has dependencies.
- */
-type FakeFunctionWithDependencies<
-  FakeEntity extends Partial<object>,
-  Params extends object,
-  Dependencies extends object,
-> = <OnTheFly extends boolean = false>(
-  app: AppProvider,
-  dependencies: Dependencies,
-  rawParams?: Partial<Params>,
-  onTheFly?: OnTheFly,
-) => FakeFunctionReturn<FakeEntity, OnTheFly>;
 /**
  * The return type of a fake function, either Promise<FakeEntity> or FakeEntity depending on whether OnTheFly is true or false
  */
-type FakeFunctionReturn<FakeEntity extends Partial<object>, OnTheFly extends boolean> = OnTheFly extends true
+type FakeFunctionReturn<FakeEntity extends Partial<FakeEntity>, OnTheFly extends boolean> = OnTheFly extends true
   ? Promise<FakeEntity>
   : FakeEntity;
+/** Retrieves the return type of the generator of the given fakerFunction */
+export type Entity<T extends keyof FakeEntityMap> = FakeEntityMap[T]['entity'];
+/** Retrieves the type of parameters of the generator of the given fakerFunction */
+type Params<T extends keyof FakeEntityMap> = FakeEntityMap[T]['params'];
+/** Retrieves the type of dependencies of the generator of the given fakerFunction */
+type Deps<T extends keyof FakeEntityMap> = FakeEntityMap[T] extends { deps: infer R } ? R : Record<string, never>;
+/**
+ * The type of the function that actually creates a fake entity. May include dependencies if
+ * there are some registered in {@link FakeEntityMap}.
+ */
+type EntityFactory<T extends keyof FakeEntityMap, OptionalParams> = (
+  app: AppProvider,
+  ...args: EntityFactoryExtraArgs<T, OptionalParams>
+) => Promise<Entity<T>>;
+/** The arguments of the {@link EntityFactory} that are not the {@link AppProvider} */
+type EntityFactoryExtraArgs<T extends keyof FakeEntityMap, OptionalParams> = FakeEntityMap[T] extends { deps: infer R }
+  ? [deps: R, params: RuntimeParams<T> & Required<OptionalParams>]
+  : [params: RuntimeParams<T> & Required<OptionalParams>];
+/**
+ * An object mapping all the optional properties that will be used (if provided) when creating the entity.
+ */
+type RuntimeParams<T extends keyof FakeEntityMap> = Partial<Params<T>>;
+/**
+ * The type of the function called to create a fake entity. May include dependencies if
+ * there are some registered in {@link FakeEntityMap}.
+ */
+type FakeFunction<T extends keyof FakeEntityMap> = <OnTheFly extends boolean = false>(
+  app: AppProvider,
+  ...args: FakeEntityMap[T] extends { deps: infer Deps }
+    ? [dependencies: Deps, rawParams?: RuntimeParams<T>, onTheFly?: OnTheFly]
+    : [rawParams?: RuntimeParams<T>, onTheFly?: OnTheFly]
+) => FakeFunctionReturn<Entity<T>, OnTheFly>;
+/** Ensure {@link This} does not contain more properties that the ones defined in {@link Model} */
+type ExclusiveProperties<This, Model> = {
+  [K in keyof This]: K extends keyof Model ? Model[K] : never;
+} & Model;
+
+type DefaultParams<OptionalParams> = {
+  [K in keyof OptionalParams]: (() => OptionalParams[K]) | DefaultParams<OptionalParams[K]>;
+};
+
+function deeplyCallFunctions<T>(params: T) {
+  for (const key in params) {
+    if (typeof params[key] === 'function') {
+      params[key] = (params[key] as () => T[Extract<keyof T, string>])();
+    } else if (typeof params[key] === 'object') {
+      deeplyCallFunctions(params[key]);
+    }
+  }
+}
+
 /**
  * Creates a function that permits creating fake data.
  *
@@ -529,10 +639,10 @@ type FakeFunctionReturn<FakeEntity extends Partial<object>, OnTheFly extends boo
  * The first argument is the {@link AppProvider}.
  *
  * The second argument does or does not exist depending on how the function has been created :
- *   - If {@link _dependenciesType} is not an empty object (not {@code Record<string, never>}), you must pass an object of the same type as {@link _dependenciesType}.
+ *   - If {@link FakeEntityMap FakeEntityMap[T]} contains a `deps` property, you must pass an object of the same type as {@link FakeEntityMap FakeEntityMap[T].deps}.
  *     This basically represents mandatory parameters to create the entity. This will often be other fake entities.
  *     For example, if you want to create a Restaurant and the Restaurant must have a manager, you may pass an object of type { manager: FakeUser } (see usage example under)
- *   - If {@link _dependenciesType} is an empty object ({@code Record<string, never>}), do not pass it.
+ *   - If {@link FakeEntityMap FakeEntityMap[T]} does not include a `deps` property, do not pass it.
  *
  * The last 2 arguments are optional.
  *
@@ -547,13 +657,23 @@ type FakeFunctionReturn<FakeEntity extends Partial<object>, OnTheFly extends boo
  *     This is useful in a describe for example, where you can't await, but also don't need to access the values directly.
  *     Note that this should still be usable as a parameter / dependency for another function created with {@link entityFaker}, as they do not require to read the content of the entity outside a beforeAll.
  *     This is the default behaviour.
- * @param defaultParams A function that takes no arguments and returns the default values of the parameters. The type of the object returned should be a subset of the one of {@link _paramsType}.
+ *
+ * @param _kind The kind of entity to create. This is the key in {@link FakeEntityMap} that represents the entity. Any record in {@link FakeEntityMap} must contain:
+ * an `entity` field, used to represent the type generated by this faker function;
+ * a `params` field, used to represent all the parameters that can be given to the {@link EntityFactory generator function}.
+ * A record may also include a `deps` field, used to represent all the dependencies that shall be given to the {@link EntityFactory generator function}.
+ * @param defaultParams A function that takes no arguments and returns the default values of the parameters. The type of the object returned should be a subset of the one of {@link FakeEntityMap FakeEntityMap[T]}.
  * @param entityFactory A function that creates a new entity. It takes as parameter the application, the parameters (with the default value if they are empty) and if some with the dependencies.
- * @param _fakeEntityType You can pass null to this value. Make it of the type of your fake entity.
- * @param _paramsType You can pass null to this value. Make it of the type of the params you are expecting from the user. These parameters will all be optional.
- * @param _dependenciesType You can pass null to this value. Make it of the type of the mandatory parameters, it will often be other fake entities.
  * @example
+ * interface FakeEntityMap {
+ *   restaurant: {
+ *     entity: Partial<RawRestaurant>;
+ *     params: { location: string; menu: string };
+ *     deps: { manager: FakeUser };
+ *   }
+ * }
  * const createFakeRestaurant = entityFake(
+ *   "restaurant",
  *   () => ({ location: "@see Google Maps" }),
  *   async (app, dependencies, params) =>
  *     app().get(PrismaService)
@@ -564,74 +684,58 @@ type FakeFunctionReturn<FakeEntity extends Partial<object>, OnTheFly extends boo
  *         manager: { connect: { id: dependencies.manager.id } }
  *       }
  *     }),
- *   null as Partial<RawRestaurant>,
- *   null as { location: string; menu: string }
- *   null as { manager: FakeUser }
  * );
  * const user = createFakeUser(app); // createFakeUser() has been created the same way.
- * const restaurant1 = createFakeRestaurant(app, { manager: user }, ); // This will be created in a beforeAll automatically. You will be able to use the fields of restaurant1 in the it().
+ * const restaurant1 = createFakeRestaurant(app, { manager: user }); // This will be created in a beforeAll automatically. You will be able to use the fields of restaurant1 in the it().
  *                                                                     // Note that user is not accessible yet, but you can still use it in dependencies and params
  * const restaurant2 = await createFakeRestaurant(app, { manager: user }, { menu: "grenouilles" }, true); // Creates the restaurant on the fly, as soon as this line finishes executing, a restaurant will have been created in the database.
  *                                                                                                        // You will be able to exploit the fields of the object right after.
  *                                                                                                        // This usage is very useful in it() functions, to be able to create objects on the fly
  */
-
 function entityFaker<
-  FakeEntity extends Partial<object>,
-  Params extends object,
-  Keys extends keyof Params,
-  Dependencies extends object,
+  T extends keyof FakeEntityMap,
+  OptionalParams extends ExclusiveProperties<OptionalParams, Params<T>>,
 >(
-  defaultParams: () => { [K in Keys]: Params[Keys] },
-  entityFactory: EntityFactory<FakeEntity, Params, Keys, Dependencies>,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _fakeEntityType: FakeEntity,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _paramsType: Params,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _dependenciesType: Dependencies,
-): Dependencies extends Record<string, never>
-  ? FakeFunctionWithoutDependencies<FakeEntity, Params>
-  : FakeFunctionWithDependencies<FakeEntity, Params, Dependencies> {
-  const func: FakeFunctionWithDependencies<FakeEntity, Params, Dependencies> = <OnTheFly extends boolean = false>(
+  _kind: T,
+  defaultParams: DefaultParams<OptionalParams>,
+  entityFactory: EntityFactory<T, OptionalParams>,
+): FakeFunction<T> {
+  const func = <OnTheFly extends boolean = false>(
     app: AppProvider,
-    dependencies: Dependencies,
-    rawParams: Partial<Params> = {},
+    dependencies: Deps<T>,
+    rawParams: RuntimeParams<T> = {},
     onTheFly: OnTheFly = false as OnTheFly,
-  ): FakeFunctionReturn<FakeEntity, OnTheFly> => {
-    const params: UnpartialFields<Params, Keys> = {
-      ...defaultParams(),
-      ...rawParams,
-    } as UnpartialFields<Params, Keys>;
-    const lazyEntity: FakeEntity = {} as FakeEntity;
-    const factory =
-      entityFactory.length === 2
-        ? () =>
-            (entityFactory as EntityFactoryWithoutDependencies<FakeEntity, Params, Keys>)(app, params).then((res) =>
-              Object.assign(lazyEntity, res),
-            )
-        : () =>
-            (entityFactory as EntityFactoryWithDependencies<FakeEntity, Params, Keys, Dependencies>)(
-              app,
-              dependencies,
-              params,
-            ).then((res) => Object.assign(lazyEntity, res));
+  ): FakeFunctionReturn<Entity<T>, OnTheFly> => {
+    const lazyEntity: Entity<T> = {};
+    // We're being evaluated in describe(...) so we cannot evaluate defaultParams here (in the case `onTheFly` is set to false)
+    // and we delay the evaluation with `factory()` used as a wrapper function.
+    const factory = async () => {
+      // We concatenate default params with params to ensure we have all the params
+      const params = {
+        ...defaultParams,
+        ...rawParams,
+      } as Params<T>;
+      // If a default param is a function, call it. We need to do it recursively to support nested objects.
+      deeplyCallFunctions(params);
+      // We generate the parameters of the entity generator (`entityFactory` in the code below)
+      const factoryDepsParams = (
+        entityFactory.length !== 2 ? [dependencies, params] : [params]
+      ) as EntityFactoryExtraArgs<T, OptionalParams>;
+      const entity = await entityFactory(app, ...factoryDepsParams);
+      return Object.assign(lazyEntity, entity);
+    };
     if (onTheFly === true) {
-      return factory() as OnTheFly extends true ? Promise<FakeEntity> : never;
+      return factory() as OnTheFly extends true ? Promise<Entity<T>> : never;
     }
     beforeAll(factory);
-    return lazyEntity as OnTheFly extends true ? never : FakeEntity;
+    return lazyEntity as OnTheFly extends true ? never : Entity<T>;
   };
   if (entityFactory.length === 2) {
     return (<OnTheFly extends boolean = false>(
       app: AppProvider,
-      rawParams: Partial<Params> = {},
+      rawParams: RuntimeParams<T> = {},
       onTheFly: OnTheFly = false as OnTheFly,
-    ) => func(app, {} as Dependencies, rawParams, onTheFly)) as Dependencies extends Record<string, never>
-      ? FakeFunctionWithoutDependencies<FakeEntity, Params>
-      : never;
+    ) => func(app, {} as Deps<T>, rawParams, onTheFly)) as FakeFunction<T>;
   }
-  return func as Dependencies extends Record<string, never>
-    ? never
-    : FakeFunctionWithDependencies<FakeEntity, Params, Dependencies>;
+  return func as FakeFunction<T>;
 }

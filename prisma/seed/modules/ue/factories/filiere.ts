@@ -1,6 +1,6 @@
 import { UTTBranchOption } from '@prisma/client';
 import { faker } from '@faker-js/faker';
-import { branchesCode } from '../../../const';
+import { branchesCode } from '../../../utils';
 
 export function fakeUTTBranchOption(code, translationId): UTTBranchOption {
   return {

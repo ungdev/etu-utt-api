@@ -4,6 +4,7 @@ import { TestingModule } from '@nestjs/testing';
 import { faker } from '@faker-js/faker';
 import { ConfigService } from '@nestjs/config';
 import { DMMF } from '@prisma/client/runtime/library';
+import { clearUniqueValues } from '../../prisma/seed/utils';
 
 /**
  * Initializes this file.
@@ -43,6 +44,7 @@ function suite<T extends AppProvider>(name: string, func: (app: T) => void) {
     describe(name, () => {
       beforeAll(async () => {
         await cleanDb(app().get(PrismaService));
+        clearUniqueValues();
       });
       func(app);
     });

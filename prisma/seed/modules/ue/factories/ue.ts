@@ -1,6 +1,6 @@
 import { UE } from '@prisma/client';
 import { faker } from '@faker-js/faker';
-import { baseUesCode } from '../../../const';
+import { baseUesCode } from '../../../utils';
 
 export function fakeUE(): UE {
   const date: Date = faker.date.past();
