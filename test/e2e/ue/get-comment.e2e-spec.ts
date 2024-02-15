@@ -1,37 +1,55 @@
 import * as pactum from 'pactum';
-import { createComment, createUE, createUser, upvoteComment } from '../../utils/fakedb';
+import {
+  FakeComment,
+  createBranch,
+  createBranchOption,
+  createComment,
+  createCommentReply,
+  createCommentUpvote,
+  createSemester,
+  createUE,
+  createUser,
+} from '../../utils/fakedb';
 import { e2eSuite } from '../../utils/test_utils';
 import { ConfigService } from '@nestjs/config';
-import { UEComment } from '../../../src/ue/interfaces/comment.interface';
-import { UEService } from '../../../src/ue/ue.service';
-import { UECommentReply } from '../../../src/ue/interfaces/comment-reply.interface';
 import { ERROR_CODE } from 'src/exceptions';
+import { PrismaService } from '../../../src/prisma/prisma.service';
+import { SelectComment } from '../../../src/ue/interfaces/comment.interface';
 
 const GetCommentsE2ESpec = e2eSuite('GET /ue/{ueCode}/comments', (app) => {
   const user = createUser(app);
   const user2 = createUser(app, { login: 'user2', studentId: 3 });
-  const ue = createUE(app, {
-    code: `XX01`,
-    semester: 'A24',
-  });
-  const comments: UEComment[] = [];
-  comments.push(createComment(app, ue, user, true) as UEComment);
-  upvoteComment(app, user2, comments[0]);
+  const semester = createSemester(app);
+  const branch = createBranch(app);
+  const branchOption = createBranchOption(app, { branch });
+  const ue = createUE(app, { semesters: [semester], branchOption });
+  const comments: FakeComment[] = [];
+  comments.push(
+    createComment(
+      app,
+      { ue, user, semester },
+      {
+        isAnonymous: true,
+      },
+    ),
+  );
+  createCommentUpvote(app, { user: user2, comment: comments[0] });
+  createCommentReply(app, { user, comment: comments[0] });
   for (let i = 1; i < 30; i++) {
     const commentAuthor = createUser(app, {
       login: `user${i + 10}`,
       studentId: i + 10,
     });
-    comments.push(createComment(app, ue, commentAuthor, i % 2 === 0) as UEComment);
-  }
-
-  beforeAll(async () => {
-    comments[0].answers.push(
-      (await app().get(UEService).replyComment(user.id, comments[0].id, {
-        body: 'HelloWorld',
-      })) as UECommentReply,
+    comments.push(
+      createComment(
+        app,
+        { ue, user: commentAuthor, semester },
+        {
+          isAnonymous: i % 2 === 0,
+        },
+      ),
     );
-  });
+  }
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum.spec().get(`/ue/${ue.code}/comments`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
@@ -50,17 +68,32 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/{ueCode}/comments', (app) => {
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .get(`/ue/${ue.code.slice(0, 3)}/comments`)
-      .expectAppError(ERROR_CODE.NO_SUCH_UE, ue.code.slice(0, 3));
+      .get(`/ue/${ue.code.slice(0, ue.code.length - 1)}/comments`)
+      .expectAppError(ERROR_CODE.NO_SUCH_UE, ue.code.slice(0, ue.code.length - 1));
   });
 
-  it('should return the first page of comments', () => {
+  it('should return the first page of comments', async () => {
+    const extendedComments = (
+      await app()
+        .get(PrismaService)
+        .uEComment.findMany(
+          SelectComment({
+            select: {
+              upvotes: true,
+            },
+          }),
+        )
+    ).map((comment) => ({
+      ...comment,
+      upvotes: comment.upvotes.length,
+      upvoted: comment.upvotes.some((upvote) => upvote.userId === user.id),
+    }));
     return pactum
       .spec()
       .withBearerToken(user.token)
       .get(`/ue/${ue.code}/comments`)
       .expectUEComments({
-        items: comments
+        items: extendedComments
           .sort((a, b) =>
             b.upvotes - a.upvotes == 0
               ? (<Date>b.createdAt).getTime() - (<Date>a.createdAt).getTime()
@@ -71,11 +104,11 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/{ueCode}/comments', (app) => {
             ...comment,
             answers: comment.answers.map((answer) => ({
               ...answer,
-              createdAt: `${(<Date>answer.createdAt).toISOString()}`,
-              updatedAt: `${(<Date>answer.updatedAt).toISOString()}`,
+              createdAt: answer.createdAt.toISOString(),
+              updatedAt: answer.updatedAt.toISOString(),
             })),
-            updatedAt: `${(<Date>comment.updatedAt).toISOString()}`,
-            createdAt: `${(<Date>comment.createdAt).toISOString()}`,
+            updatedAt: comment.updatedAt.toISOString(),
+            createdAt: comment.createdAt.toISOString(),
           }))
           .map((comment) => {
             if (comment.isAnonymous && comment.author.id !== user.id) delete comment.author;
@@ -86,14 +119,29 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/{ueCode}/comments', (app) => {
       });
   });
 
-  it('should return the second page of comments', () => {
+  it('should return the second page of comments', async () => {
+    const extendedComments = (
+      await app()
+        .get(PrismaService)
+        .uEComment.findMany(
+          SelectComment({
+            select: {
+              upvotes: true,
+            },
+          }),
+        )
+    ).map((comment) => ({
+      ...comment,
+      upvotes: comment.upvotes.length,
+      upvoted: comment.upvotes.some((upvote) => upvote.userId === user.id),
+    }));
     return pactum
       .spec()
       .withBearerToken(user.token)
       .get(`/ue/${ue.code}/comments`)
       .withQueryParams('page', 2)
       .expectUEComments({
-        items: comments
+        items: extendedComments
           .sort((a, b) =>
             b.upvotes - a.upvotes == 0
               ? (<Date>b.createdAt).getTime() - (<Date>a.createdAt).getTime()
@@ -107,11 +155,11 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/{ueCode}/comments', (app) => {
             ...comment,
             answers: comment.answers.map((answer) => ({
               ...answer,
-              createdAt: `${(<Date>answer.createdAt).toISOString()}`,
-              updatedAt: `${(<Date>answer.updatedAt).toISOString()}`,
+              createdAt: answer.createdAt.toISOString(),
+              updatedAt: answer.updatedAt.toISOString(),
             })),
-            updatedAt: `${(<Date>comment.updatedAt).toISOString()}`,
-            createdAt: `${(<Date>comment.createdAt).toISOString()}`,
+            updatedAt: comment.updatedAt.toISOString(),
+            createdAt: comment.createdAt.toISOString(),
           }))
           .map((comment) => {
             if (comment.isAnonymous && comment.author.id !== user.id) delete comment.author;

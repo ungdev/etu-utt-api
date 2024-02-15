@@ -201,6 +201,15 @@ export class UEController {
     return this.ueService.doRateUE(user.id, ueCode, dto);
   }
 
+  @Delete('/:ueCode/rate/:criterionId')
+  async UnRateUE(@Param('ueCode') ueCode: string, @Param('criterionId') criterionId: string, @GetUser() user: User) {
+    if (!(await this.ueService.doesUEExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
+    if (!(await this.ueService.doesCriterionExist(criterionId))) throw new AppException(ERROR_CODE.NO_SUCH_CRITERION);
+    if (!(await this.ueService.hasAlreadyRated(user.id, ueCode, criterionId)))
+      throw new AppException(ERROR_CODE.NOT_ALREADY_RATED_UE, ueCode, criterionId);
+    return this.ueService.unRateUE(user.id, ueCode, criterionId);
+  }
+
   /*
    * ADMIN ROUTES
    */

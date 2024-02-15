@@ -1,14 +1,27 @@
-import { createUser, createUE, createComment } from '../../utils/fakedb';
+import {
+  createUser,
+  createUE,
+  createComment,
+  createBranch,
+  createBranchOption,
+  createSemester,
+  createCommentUpvote,
+} from '../../utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
 import { HttpStatus } from '@nestjs/common';
 import { Dummies, e2eSuite } from '../../utils/test_utils';
+import { PrismaService } from '../../../src/prisma/prisma.service';
 
 const DeleteUpvote = e2eSuite('DELETE /ue/comments/{commentId}/upvote', (app) => {
   const user = createUser(app);
   const user2 = createUser(app, { login: 'user2' });
-  const ue = createUE(app);
-  const comment1 = createComment(app, ue, user);
+  const semester = createSemester(app);
+  const branch = createBranch(app);
+  const branchOption = createBranchOption(app, { branch });
+  const ue = createUE(app, { semesters: [semester], branchOption });
+  const comment1 = createComment(app, { user, ue, semester });
+  const upvote = createCommentUpvote(app, { user: user2, comment: comment1 });
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum.spec().delete(`/ue/comments/${comment1.id}/upvote`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
@@ -42,21 +55,21 @@ const DeleteUpvote = e2eSuite('DELETE /ue/comments/{commentId}/upvote', (app) =>
     await pactum
       .spec()
       .withBearerToken(user2.token)
-      .post(`/ue/comments/${comment1.id}/upvote`)
-      .expectStatus(HttpStatus.CREATED);
-    return pactum
-      .spec()
-      .withBearerToken(user2.token)
       .delete(`/ue/comments/${comment1.id}/upvote`)
       .expectStatus(HttpStatus.NO_CONTENT);
+    return createCommentUpvote(app, { user: user2, comment: comment1 }, upvote, true);
   });
 
-  it('should not be able to re-de-upvote upvote', () => {
-    return pactum
+  it('should not be able to re-de-upvote a comment', async () => {
+    await app()
+      .get(PrismaService)
+      .uECommentUpvote.delete({ where: { id: upvote.id } });
+    await pactum
       .spec()
       .withBearerToken(user2.token)
       .delete(`/ue/comments/${comment1.id}/upvote`)
       .expectAppError(ERROR_CODE.FORBIDDEN_ALREADY_UNUPVOTED);
+    return createCommentUpvote(app, { user: user2, comment: comment1 }, upvote, true);
   });
 });
 

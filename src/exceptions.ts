@@ -45,6 +45,7 @@ export const enum ERROR_CODE {
   NOT_REPLY_AUTHOR = 4223,
   IS_COMMENT_AUTHOR = 4224,
   GROUP_NOT_PART_OF_ENTRY = 4225,
+  NOT_ALREADY_RATED_UE = 4226,
   NO_SUCH_UE = 4401,
   NO_SUCH_COMMENT = 4402,
   NO_SUCH_REPLY = 4403,
@@ -187,6 +188,10 @@ export const ErrorData = Object.freeze({
   },
   [ERROR_CODE.GROUP_NOT_PART_OF_ENTRY]: {
     message: 'The group % is not part of the timetable entry %',
+    httpCode: HttpStatus.FORBIDDEN,
+  },
+  [ERROR_CODE.NOT_ALREADY_RATED_UE]: {
+    message: 'You must have rated the UE % (on criterion %) before deleting your rating',
     httpCode: HttpStatus.FORBIDDEN,
   },
   [ERROR_CODE.NO_SUCH_UE]: {

@@ -1,14 +1,26 @@
-import { createUser, createUE, makeUserJoinUE, createCriterion } from '../../utils/fakedb';
+import {
+  createUser,
+  createUE,
+  createCriterion,
+  createBranchOption,
+  createBranch,
+  createSemester,
+  createUESubscription,
+} from '../../utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from 'src/exceptions';
 import { e2eSuite } from '../../utils/test_utils';
+import { PrismaService } from '../../../src/prisma/prisma.service';
 
 const PutRate = e2eSuite('PUT /ue/{ueCode}/rate', (app) => {
   const user = createUser(app);
   const user2 = createUser(app, { login: 'user2' });
-  const ue = createUE(app);
-  makeUserJoinUE(app, user, ue);
-  const criterion = createCriterion(app, 'etAlors');
+  const semester = createSemester(app);
+  const branch = createBranch(app);
+  const branchOption = createBranchOption(app, { branch });
+  const ue = createUE(app, { semesters: [semester], branchOption });
+  const criterion = createCriterion(app);
+  createUESubscription(app, { user, ue, semester });
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum.spec().put(`/ue/${ue.code}/rate`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
@@ -98,8 +110,8 @@ const PutRate = e2eSuite('PUT /ue/{ueCode}/rate', (app) => {
       .expectAppError(ERROR_CODE.NO_SUCH_UE, `${ue.code.slice(0, 3)}9`);
   });
 
-  it('should return the updated rate for specific criterion', () => {
-    return pactum
+  it('should return the updated rate for specific criterion', async () => {
+    await pactum
       .spec()
       .withBearerToken(user.token)
       .put(`/ue/${ue.code}/rate`)
@@ -111,6 +123,7 @@ const PutRate = e2eSuite('PUT /ue/{ueCode}/rate', (app) => {
         criterionId: criterion.id,
         value: 1,
       });
+    return app().get(PrismaService).uEStarVote.deleteMany();
   });
 });
 

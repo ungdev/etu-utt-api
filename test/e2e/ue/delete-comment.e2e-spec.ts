@@ -1,14 +1,25 @@
-import { createUser, createUE, createComment, upvoteComment } from '../../utils/fakedb';
-import { Dummies, e2eSuite, JsonLike } from '../../utils/test_utils';
+import {
+  createUser,
+  createUE,
+  createComment,
+  createSemester,
+  createBranchOption,
+  createBranch,
+  createCommentUpvote,
+} from '../../utils/fakedb';
+import { Dummies, e2eSuite } from '../../utils/test_utils';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
 
 const DeleteComment = e2eSuite('DELETE /ue/comments/{commentId}', (app) => {
   const user = createUser(app);
   const user2 = createUser(app, { login: 'user2' });
-  const ue = createUE(app);
-  const comment1 = createComment(app, ue, user);
-  upvoteComment(app, user, comment1);
+  const semester = createSemester(app);
+  const branch = createBranch(app);
+  const branchOption = createBranchOption(app, { branch });
+  const ue = createUE(app, { semesters: [semester], branchOption });
+  const comment1 = createComment(app, { user, ue, semester });
+  createCommentUpvote(app, { user, comment: comment1 });
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum.spec().delete(`/ue/comments/${comment1.id}`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
@@ -38,30 +49,31 @@ const DeleteComment = e2eSuite('DELETE /ue/comments/{commentId}', (app) => {
       .expectAppError(ERROR_CODE.NO_SUCH_COMMENT);
   });
 
-  it('should return the deleted comment', () => {
-    return pactum
+  it('should return the deleted comment', async () => {
+    await pactum
       .spec()
       .withBearerToken(user.token)
       .delete(`/ue/comments/${comment1.id}`)
       .expectUEComment({
-        id: JsonLike.ANY_UUID,
+        id: comment1.id,
         author: {
-          id: user.id,
+          id: comment1.authorId,
           firstName: user.firstName,
           lastName: user.lastName,
           studentId: user.studentId,
         },
-        createdAt: JsonLike.ANY_DATE,
-        updatedAt: JsonLike.ANY_DATE,
+        createdAt: comment1.createdAt.toISOString(),
+        updatedAt: comment1.updatedAt.toISOString(),
         semester: {
-          code: 'A24',
+          code: semester.code,
         },
-        isAnonymous: false,
-        body: 'TEST',
+        isAnonymous: comment1.isAnonymous,
+        body: comment1.body,
         answers: [],
         upvotes: 1,
         upvoted: true,
       });
+    return createComment(app, { user, ue, semester }, comment1, true);
   });
 });
 

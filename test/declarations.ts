@@ -11,7 +11,7 @@ import { UERating } from 'src/ue/interfaces/rate.interface';
 
 /** Shortcut function for `this.expectStatus(200).expectJsonLike` */
 function expect<T>(obj: JsonLikeVariant<T>) {
-  return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonLike(obj);
+  return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonMatchStrict(obj);
 }
 /** Shortcut function for `this.expectStatus(200|204).expectJsonLike` */
 function expectOkOrCreate<T>(obj: JsonLikeVariant<T>, created = false) {
@@ -36,4 +36,4 @@ SpecProto.expectUECriteria = expect<Criterion[]>;
 SpecProto.expectUERate = expect<UERating>;
 SpecProto.expectUERates = expect<UERating[]>;
 
-export { Spec };
+export { Spec, JsonLikeVariant };

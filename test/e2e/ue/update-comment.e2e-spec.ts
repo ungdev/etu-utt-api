@@ -1,19 +1,31 @@
-import { createUser, createUE, createComment, upvoteComment } from '../../utils/fakedb';
+import {
+  createUser,
+  createUE,
+  createComment,
+  createBranch,
+  createBranchOption,
+  createSemester,
+  createCommentUpvote,
+} from '../../utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
 import { Dummies, e2eSuite, JsonLike } from '../../utils/test_utils';
+import { PrismaService } from '../../../src/prisma/prisma.service';
 
 const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
   const user = createUser(app);
   const user2 = createUser(app, { login: 'user2' });
-  const ue = createUE(app);
-  const comment1 = createComment(app, ue, user);
-  upvoteComment(app, user2, comment1);
+  const semester = createSemester(app);
+  const branch = createBranch(app);
+  const branchOption = createBranchOption(app, { branch });
+  const ue = createUE(app, { semesters: [semester], branchOption });
+  const comment = createComment(app, { ue, user, semester });
+  createCommentUpvote(app, { user: user2, comment });
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum
       .spec()
-      .patch(`/ue/comments/${comment1.id}`)
+      .patch(`/ue/comments/${comment.id}`)
       .withBody({
         body: 'Test comment',
       })
@@ -24,7 +36,7 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .patch(`/ue/comments/${comment1.id}`)
+      .patch(`/ue/comments/${comment.id}`)
       .withBody({
         body: false,
         isAnonymous: true,
@@ -36,7 +48,7 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
     return pactum
       .spec()
       .withBearerToken(user2.token)
-      .patch(`/ue/comments/${comment1.id}`)
+      .patch(`/ue/comments/${comment.id}`)
       .withBody({
         body: 'Cette  UE est troooop bien',
         isAnonymous: true,
@@ -48,7 +60,7 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .patch(`/ue/comments/${comment1.id}`)
+      .patch(`/ue/comments/${comment.id}`)
       .withBody({
         body: 'gg',
       })
@@ -59,7 +71,7 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .patch(`/ue/comments/${comment1.id.slice(0, 31)}`)
+      .patch(`/ue/comments/${comment.id.slice(0, 31)}`)
       .withBody({
         body: 'heyhey',
       })
@@ -77,11 +89,11 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
       .expectAppError(ERROR_CODE.NO_SUCH_COMMENT);
   });
 
-  it('should return the updated comment as anonymous user', () => {
-    return pactum
+  it('should return the updated comment as anonymous user', async () => {
+    await pactum
       .spec()
       .withBearerToken(user.token)
-      .patch(`/ue/comments/${comment1.id}`)
+      .patch(`/ue/comments/${comment.id}`)
       .withBody({
         body: 'Cette  UE est troooop bien',
         isAnonymous: true,
@@ -97,7 +109,7 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
         createdAt: JsonLike.ANY_DATE,
         updatedAt: JsonLike.ANY_DATE,
         semester: {
-          code: 'A24',
+          code: semester.code,
         },
         isAnonymous: true,
         body: 'Cette  UE est troooop bien',
@@ -105,13 +117,16 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
         upvotes: 1,
         upvoted: false,
       });
+    await app().get(PrismaService).uEComment.deleteMany();
+    await createComment(app, { ue, user, semester }, comment, true);
+    return createCommentUpvote(app, { user: user2, comment }, {}, true);
   });
 
-  it('should return a post a comment as a logged in user', () => {
-    return pactum
+  it('should return the updated comment as a logged in user', async () => {
+    await pactum
       .spec()
       .withBearerToken(user.token)
-      .patch(`/ue/comments/${comment1.id}`)
+      .patch(`/ue/comments/${comment.id}`)
       .withBody({
         isAnonymous: false,
       })
@@ -126,14 +141,17 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
         createdAt: JsonLike.ANY_DATE,
         updatedAt: JsonLike.ANY_DATE,
         semester: {
-          code: 'A24',
+          code: semester.code,
         },
         isAnonymous: false,
-        body: 'Cette  UE est troooop bien',
+        body: comment.body,
         answers: [],
         upvotes: 1,
         upvoted: false,
       });
+    await app().get(PrismaService).uEComment.deleteMany();
+    await createComment(app, { ue, user, semester }, comment, true);
+    return createCommentUpvote(app, { user: user2, comment }, {}, true);
   });
 });
 
