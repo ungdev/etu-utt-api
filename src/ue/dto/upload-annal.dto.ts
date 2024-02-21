@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsString, IsUUID, Length } from 'class-validator';
+import { Optional } from '@nestjs/common';
+import { IsInt, IsNotEmpty, IsString, IsUUID, Length, Max, Min } from 'class-validator';
 
 export class UploadAnnal {
   @IsNotEmpty()
@@ -10,4 +11,10 @@ export class UploadAnnal {
   @IsString()
   @IsUUID()
   typeId: string;
+
+  @Optional()
+  @IsInt()
+  @Max(1)
+  @Min(-1)
+  rotate?: -1 | 0 | undefined | 1;
 }

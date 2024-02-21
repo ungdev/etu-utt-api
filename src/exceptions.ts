@@ -49,6 +49,8 @@ export const enum ERROR_CODE {
   IS_COMMENT_AUTHOR = 4224,
   GROUP_NOT_PART_OF_ENTRY = 4225,
   NOT_ALREADY_RATED_UE = 4226,
+  NOT_DONE_UE_IN_SEMESTER = 4227,
+  NOT_ANNAL_SENDER = 4228,
   NO_SUCH_UE = 4401,
   NO_SUCH_COMMENT = 4402,
   NO_SUCH_REPLY = 4403,
@@ -56,6 +58,7 @@ export const enum ERROR_CODE {
   NO_SUCH_TIMETABLE_ENTRY = 4405,
   NO_SUCH_TIMETABLE_GROUP = 4406,
   NO_SUCH_USER = 4407,
+  NO_SUCH_ANNAL = 4408,
   CREDENTIALS_ALREADY_TAKEN = 5001,
 }
 
@@ -209,6 +212,14 @@ export const ErrorData = Object.freeze({
     message: 'You must have rated the UE % (on criterion %) before deleting your rating',
     httpCode: HttpStatus.FORBIDDEN,
   },
+  [ERROR_CODE.NOT_DONE_UE_IN_SEMESTER]: {
+    message: 'You must have done the UE % in semester %',
+    httpCode: HttpStatus.FORBIDDEN,
+  },
+  [ERROR_CODE.NOT_ANNAL_SENDER]: {
+    message: 'You are not the sender of this annal',
+    httpCode: HttpStatus.FORBIDDEN,
+  },
   [ERROR_CODE.NO_SUCH_UE]: {
     message: 'The UE % does not exist',
     httpCode: HttpStatus.NOT_FOUND,
@@ -235,6 +246,10 @@ export const ErrorData = Object.freeze({
   },
   [ERROR_CODE.NO_SUCH_USER]: {
     message: 'The user % does not exist',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
+  [ERROR_CODE.NO_SUCH_ANNAL]: {
+    message: 'The annal % does not exist for ue %',
     httpCode: HttpStatus.NOT_FOUND,
   },
   [ERROR_CODE.CREDENTIALS_ALREADY_TAKEN]: {

@@ -5,7 +5,7 @@ import { AppException, ERROR_CODE } from './exceptions';
 import type { MimeType } from 'file-type';
 
 export type MulterWithMime = {
-  mime: string;
+  mime: MimeType;
   multer: Express.Multer.File;
 };
 

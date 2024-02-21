@@ -14,6 +14,15 @@ import { SelectCommentReply, UECommentReply } from './interfaces/comment-reply.i
 import { Criterion, SelectCriterion } from './interfaces/criterion.interface';
 import { SelectRate, UERating } from './interfaces/rate.interface';
 import { RawUserUESubscription } from '../prisma/types';
+import { User } from '@prisma/client';
+import { MulterWithMime } from 'src/upload.interceptor';
+import { UploadAnnal } from './dto/upload-annal.dto';
+import { createReadStream, createWriteStream } from 'fs';
+import { writeFile } from 'fs/promises';
+import { SelectUEAnnalFile } from './interfaces/annal.interface';
+import PDFDocument from 'pdfkit';
+import sharp from 'sharp';
+import { UpdateAnnal } from './dto/update-annal.dto';
 
 @Injectable()
 export class UEService {
@@ -326,6 +335,20 @@ export class UEService {
    */
   async hasAlreadyDoneThisUE(userId: string, ueCode: string) {
     return (await this.getLastSemesterDoneByUser(userId, ueCode)) != null;
+  }
+
+  async hasDoneThisUEInSemester(userId: string, ueCode: string, semesterCode: string) {
+    return (
+      (await this.prisma.userUESubscription.count({
+        where: {
+          semesterId: semesterCode,
+          ue: {
+            code: ueCode,
+          },
+          userId,
+        },
+      })) != 0
+    );
   }
 
   /**
@@ -679,6 +702,277 @@ export class UEService {
             userId,
             criterionId,
           },
+        },
+      }),
+    );
+  }
+
+  async getUEAnnalMetadata(user: User, ueCode: string, isModerator = false) {
+    const ue = await this.prisma.uE.findUnique({
+      where: {
+        code: ueCode,
+      },
+      include: {
+        openSemester: true,
+      },
+    });
+    const semesters = !isModerator
+      ? (
+          await this.prisma.userUESubscription.findMany({
+            where: {
+              userId: user.id,
+              ueId: ue.id,
+            },
+          })
+        ).map((subscription) => subscription.semesterId)
+      : ue.openSemester.map((semester) => semester.code);
+    const annalType = await this.prisma.uEAnnalType.findMany();
+    return {
+      types: annalType,
+      semesters,
+    };
+  }
+
+  async uploadAnnalFile(file: MulterWithMime, user: User, ueCode: string, params: UploadAnnal) {
+    // Create upload/file entry
+    const fileEntry = await this.prisma.uEAnnal.create(
+      SelectUEAnnalFile({
+        data: {
+          type: {
+            connect: {
+              id: params.typeId,
+            },
+          },
+          semester: {
+            connect: {
+              code: params.semester,
+            },
+          },
+          sender: {
+            connect: {
+              id: user.id,
+            },
+          },
+          ue: {
+            connect: {
+              code: ueCode,
+            },
+          },
+        },
+      }),
+    );
+    let rootDirectory = this.config.get<string>('ANNAL_UPLOAD_DIR');
+    if (rootDirectory.endsWith('/')) rootDirectory = rootDirectory.slice(0, -1);
+    // We won't wait for the file to be processed to send the response.
+    // Files do not need to be processed instantly and will only be displayed to all users when processed
+    (async () => {
+      // Create callback when file is uploaded
+      const registerUploadComplete = () =>
+        this.prisma.uEAnnal.update({
+          where: {
+            id: fileEntry.id,
+          },
+          data: {
+            uploadComplete: true,
+          },
+        });
+      // Add support for WebP, AVIF and TIFF
+      // We convert the picture to PNG in order to be able to add it in the pdf
+      if (file.mime === 'image/webp' || file.mime === 'image/avif' || file.mime === 'image/tiff') {
+        file.multer.buffer = await sharp(file.multer.buffer).png().toBuffer();
+        file.mime = 'image/png';
+      }
+      // It is always more enjoyable for a user to have all files in the same format
+      // The file format chosen is PDF as it can include original exam files, keeping them clean
+      // Our library pdfkit only supports PNG and JPEG images
+      if (file.mime === 'image/png' || file.mime === 'image/jpeg') {
+        const metadata = await sharp(file.multer.buffer).metadata();
+        const size = [metadata.width, metadata.height];
+        if (params.rotate) {
+          // Rotate the picture if asked by the user
+          file.multer.buffer = await sharp(file.multer.buffer)
+            .rotate(params.rotate * 90)
+            .toBuffer();
+          size.reverse();
+        }
+        // Create the PDF document
+        const pdf = new PDFDocument({
+          margin: 0,
+          size,
+          compress: true,
+          info: {
+            Title: `${fileEntry.type.name} ${ueCode} - ${fileEntry.semesterId}`,
+            Creator: 'EtuUTT',
+            Producer: 'EtuUTT',
+          },
+        });
+        pdf.image(file.multer.buffer, 0, 0);
+        // Write document
+        pdf.pipe(createWriteStream(`${rootDirectory}/${fileEntry.id}.pdf`));
+        pdf.end();
+        // Register processing as complete
+        await registerUploadComplete();
+      }
+      if (file.mime === 'application/pdf') {
+        // Write document
+        await writeFile(`${rootDirectory}/${fileEntry.id}.pdf`, file.multer.buffer);
+        // Register processing as complete
+        await registerUploadComplete();
+      }
+    })().catch(async () => {
+      // Delete file if an error occured
+      // TODO: send notification to the uploader
+      this.prisma.uEAnnal.delete({
+        where: {
+          id: fileEntry.id,
+        },
+      });
+    });
+    return fileEntry;
+  }
+
+  async getUEAnnalsList(user: User, ueCode: string, isModerator = false) {
+    return this.prisma.uEAnnal.findMany(
+      SelectUEAnnalFile({
+        where: {
+          ue: {
+            code: ueCode,
+          },
+          deletedAt: {
+            not: isModerator ? undefined : null,
+          },
+          OR: isModerator
+            ? undefined
+            : [
+                {
+                  uploadComplete: true,
+                  reports: {
+                    none: {
+                      mitigated: false,
+                    },
+                  },
+                },
+                {
+                  sender: {
+                    id: user.id,
+                  },
+                },
+              ],
+        },
+      }),
+    );
+  }
+
+  async doesUEAnnalExist(userId: string, ueCode: string, annalId: string, isModerator = false) {
+    return (
+      (await this.prisma.uEAnnal.count({
+        where: {
+          id: annalId,
+          ue: {
+            code: ueCode,
+          },
+          deletedAt: {
+            not: isModerator ? undefined : null,
+          },
+          OR: isModerator
+            ? undefined
+            : [
+                {
+                  uploadComplete: true,
+                  reports: {
+                    none: {
+                      mitigated: false,
+                    },
+                  },
+                },
+                {
+                  sender: {
+                    id: userId,
+                  },
+                },
+              ],
+        },
+      })) === 1
+    );
+  }
+
+  async getUEAnnalFile(annalId: string, userId: string, isModerator = false) {
+    const metadata = await this.prisma.uEAnnal.findUnique(
+      SelectUEAnnalFile({
+        where: {
+          id: annalId,
+          deletedAt: {
+            not: isModerator ? undefined : null,
+          },
+          OR: isModerator
+            ? undefined
+            : [
+                {
+                  uploadComplete: true,
+                  reports: {
+                    none: {
+                      mitigated: false,
+                    },
+                  },
+                },
+                {
+                  sender: {
+                    id: userId,
+                  },
+                },
+              ],
+        },
+      }),
+    );
+    let rootDirectory = this.config.get<string>('ANNAL_UPLOAD_DIR');
+    if (rootDirectory.endsWith('/')) rootDirectory = rootDirectory.slice(0, -1);
+    return {
+      metadata,
+      stream: createReadStream(`${rootDirectory}/${metadata.id}.pdf`),
+    };
+  }
+
+  async isUEAnnalSender(userId: string, annalId: string) {
+    return (
+      (await this.prisma.uEAnnal.count({
+        where: {
+          id: annalId,
+          senderId: userId,
+        },
+      })) === 1
+    );
+  }
+
+  async updateAnnalMetadata(annalId: string, metadata: UpdateAnnal) {
+    return this.prisma.uEAnnal.update(
+      SelectUEAnnalFile({
+        where: {
+          id: annalId,
+        },
+        data: {
+          type: {
+            connect: {
+              id: metadata.typeId,
+            },
+          },
+          semester: {
+            connect: {
+              code: metadata.semester,
+            },
+          },
+        },
+      }),
+    );
+  }
+
+  async deleteAnnal(annalId: string) {
+    return this.prisma.uEAnnal.update(
+      SelectUEAnnalFile({
+        where: {
+          id: annalId,
+        },
+        data: {
+          deletedAt: new Date(),
         },
       }),
     );

@@ -272,6 +272,7 @@ model UEAnnalReport {
   id        String   @id @default(uuid())
   body      String?  @db.Text
   createdAt DateTime @default(now())
+  mitigated Boolean  @default(false)
   annalId   String
   userId    String?
   reasonId  String
