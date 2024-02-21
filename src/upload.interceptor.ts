@@ -2,6 +2,7 @@ import { UploadedFile, UseInterceptors, ParseFilePipe, Injectable } from '@nestj
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { AppException, ERROR_CODE } from './exceptions';
+import type { MimeType } from 'file-type';
 
 export type MulterWithMime = {
   mime: string;
@@ -25,6 +26,7 @@ class FileValidationPipe extends ParseFilePipe {
 
   async transform(file: Express.Multer.File) {
     if (!file) return super.transform(file);
+    if (this.#maxSize < file.size) throw new AppException(ERROR_CODE.FILE_TOO_HEAVY, `${this.#maxSize} bytes`);
     // Using dynamic import using a Function to avoid typescript
     // to turn it into a require statement. Indeed file-type is
     // an ecmascript module and cannot be loaded with a 'require'
@@ -33,7 +35,10 @@ class FileValidationPipe extends ParseFilePipe {
     const fileTypeResult = await fileType.fileTypeFromBuffer(file.buffer);
     if (!fileTypeResult || !this.#mimeTypes.includes(fileTypeResult.mime))
       throw new AppException(ERROR_CODE.FILE_INVALID_TYPE, this.#mimeTypes.join(', '));
-    if (this.#maxSize < file.size) throw new AppException(ERROR_CODE.FILE_TOO_HEAVY, `${this.#maxSize} bytes`);
+    if (!file.originalname.endsWith(`.${fileTypeResult.ext}`))
+      // Check local extension was correct. The file is supposed to be renamed during upload
+      // but we check the extension to avoid a potential security issue.
+      throw new AppException(ERROR_CODE.FILE_INVALID_TYPE, this.#mimeTypes.join(', '));
     return { mime: fileTypeResult.mime, multer: await super.transform(file) };
   }
 }
@@ -48,7 +53,7 @@ export enum FileSize {
  * @example
  * Simple upload route
  * ```
- * @UploadRoute()
+ * @UploadRoute('file')
  * async upload(
  *   @UserFile(['application/pdf'], 8 * FileSize.MegaByte)
  *   file: Promise<MulterWithMime>,
@@ -76,5 +81,5 @@ export const UploadRoute = (fieldName: string) =>
     }),
   );
 
-export const UserFile = (fileTypes: string[], maxByteSize: number) =>
+export const UserFile = (fileTypes: MimeType[], maxByteSize: number) =>
   UploadedFile(new FileValidationPipe(fileTypes, maxByteSize));

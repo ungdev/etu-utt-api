@@ -6,15 +6,15 @@ import {
   HttpCode,
   HttpStatus,
   Param,
-  ParseUUIDPipe,
   Patch,
   Post,
   Put,
   Query,
+  Response,
 } from '@nestjs/common';
 import { UESearchDto } from './dto/ue-search.dto';
 import { UEService } from './ue.service';
-import { GetUser, IsPublic } from '../auth/decorator';
+import { GetUser, IsPublic, RequireRole } from '../auth/decorator';
 import { User } from '../users/interfaces/user.interface';
 import { UeCommentPostDto } from './dto/ue-comment-post.dto';
 import { AppException, ERROR_CODE } from '../exceptions';
@@ -22,6 +22,10 @@ import { UERateDto } from './dto/ue-rate.dto';
 import { UeCommentUpdateDto } from './dto/ue-comment-update.dto';
 import { CommentReplyDto } from './dto/ue-comment-reply.dto';
 import { GetUECommentsDto } from './dto/ue-get-comments.dto';
+import { FileSize, MulterWithMime, UploadRoute, UserFile } from '../upload.interceptor';
+import { UploadAnnal } from './dto/upload-annal.dto';
+import { Response as ExpressResponse } from 'express';
+import { UUIDParam } from '../app.pipe';
 
 @Controller('ue')
 export class UEController {
@@ -41,12 +45,14 @@ export class UEController {
   }
 
   @Get('/:ueCode/comments')
+  @RequireRole('STUDENT', 'FORMER_STUDENT')
   async getUEComments(@Param('ueCode') ueCode: string, @GetUser() user: User, @Query() dto: GetUECommentsDto) {
     if (!(await this.ueService.doesUEExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     return this.ueService.getComments(ueCode, user.id, dto, user.permissions.includes('commentModerator'));
   }
 
   @Post('/:ueCode/comments')
+  @RequireRole('STUDENT')
   async PostUEComment(@Param('ueCode') ueCode: string, @GetUser() user: User, @Body() body: UeCommentPostDto) {
     if (!(await this.ueService.doesUEExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     if (!(await this.ueService.hasAlreadyDoneThisUE(user.id, ueCode)))
@@ -57,14 +63,9 @@ export class UEController {
   }
 
   @Patch('/comments/:commentId')
+  @RequireRole('STUDENT', 'FORMER_STUDENT')
   async EditUEComment(
-    @Param(
-      'commentId',
-      new ParseUUIDPipe({
-        exceptionFactory: () => new AppException(ERROR_CODE.PARAM_NOT_UUID, 'commentId'),
-      }),
-    )
-    commentId: string,
+    @UUIDParam('commentId') commentId: string,
     @GetUser() user: User,
     @Body() body: UeCommentUpdateDto,
   ) {
@@ -75,16 +76,8 @@ export class UEController {
   }
 
   @Delete('/comments/:commentId')
-  async DiscardUEComment(
-    @Param(
-      'commentId',
-      new ParseUUIDPipe({
-        exceptionFactory: () => new AppException(ERROR_CODE.PARAM_NOT_UUID, 'commentId'),
-      }),
-    )
-    commentId: string,
-    @GetUser() user: User,
-  ) {
+  @RequireRole('STUDENT', 'FORMER_STUDENT')
+  async DiscardUEComment(@UUIDParam('commentId') commentId: string, @GetUser() user: User) {
     if (!(await this.ueService.doesCommentExist(commentId))) throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
     if (await this.ueService.isUserCommentAuthor(user.id, commentId))
       return this.ueService.deleteComment(commentId, user.id);
@@ -92,17 +85,9 @@ export class UEController {
   }
 
   @Post('/comments/:commentId/upvote')
+  @RequireRole('STUDENT')
   @HttpCode(HttpStatus.CREATED)
-  async UpvoteUEComment(
-    @Param(
-      'commentId',
-      new ParseUUIDPipe({
-        exceptionFactory: () => new AppException(ERROR_CODE.PARAM_NOT_UUID, 'commentId'),
-      }),
-    )
-    commentId: string,
-    @GetUser() user: User,
-  ) {
+  async UpvoteUEComment(@UUIDParam('commentId') commentId: string, @GetUser() user: User) {
     if (!(await this.ueService.doesCommentExist(commentId))) throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
     if (await this.ueService.isUserCommentAuthor(user.id, commentId))
       throw new AppException(ERROR_CODE.IS_COMMENT_AUTHOR);
@@ -112,17 +97,9 @@ export class UEController {
   }
 
   @Delete('/comments/:commentId/upvote')
+  @RequireRole('STUDENT', 'FORMER_STUDENT')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async UnUpvoteUEComment(
-    @Param(
-      'commentId',
-      new ParseUUIDPipe({
-        exceptionFactory: () => new AppException(ERROR_CODE.PARAM_NOT_UUID, 'commentId'),
-      }),
-    )
-    commentId: string,
-    @GetUser() user: User,
-  ) {
+  async UnUpvoteUEComment(@UUIDParam('commentId') commentId: string, @GetUser() user: User) {
     if (!(await this.ueService.doesCommentExist(commentId))) throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
     if (await this.ueService.isUserCommentAuthor(user.id, commentId))
       throw new AppException(ERROR_CODE.IS_COMMENT_AUTHOR);
@@ -132,15 +109,10 @@ export class UEController {
   }
 
   @Post('/comments/:commentId/reply')
+  @RequireRole('STUDENT')
   async CreateReplyComment(
     @GetUser() user: User,
-    @Param(
-      'commentId',
-      new ParseUUIDPipe({
-        exceptionFactory: () => new AppException(ERROR_CODE.PARAM_NOT_UUID, 'commentId'),
-      }),
-    )
-    commentId: string,
+    @UUIDParam('commentId') commentId: string,
     @Body() body: CommentReplyDto,
   ) {
     if (!(await this.ueService.doesCommentExist(commentId))) throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
@@ -148,51 +120,36 @@ export class UEController {
   }
 
   @Patch('/comments/reply/:replyId')
-  async EditReplyComment(
-    @GetUser() user: User,
-    @Param(
-      'replyId',
-      new ParseUUIDPipe({
-        exceptionFactory: () => new AppException(ERROR_CODE.PARAM_NOT_UUID, 'replyId'),
-      }),
-    )
-    replyId: string,
-    @Body() body: CommentReplyDto,
-  ) {
+  @RequireRole('STUDENT', 'FORMER_STUDENT')
+  async EditReplyComment(@GetUser() user: User, @UUIDParam('replyId') replyId: string, @Body() body: CommentReplyDto) {
     if (!(await this.ueService.doesReplyExist(replyId))) throw new AppException(ERROR_CODE.NO_SUCH_REPLY);
     if (await this.ueService.isUserCommentReplyAuthor(user.id, replyId)) return this.ueService.editReply(replyId, body);
     throw new AppException(ERROR_CODE.NOT_REPLY_AUTHOR);
   }
 
   @Delete('/comments/reply/:replyId')
-  async DeleteReplyComment(
-    @GetUser() user: User,
-    @Param(
-      'replyId',
-      new ParseUUIDPipe({
-        exceptionFactory: () => new AppException(ERROR_CODE.PARAM_NOT_UUID, 'replyId'),
-      }),
-    )
-    replyId: string,
-  ) {
+  @RequireRole('STUDENT', 'FORMER_STUDENT')
+  async DeleteReplyComment(@GetUser() user: User, @UUIDParam('replyId') replyId: string) {
     if (!(await this.ueService.doesReplyExist(replyId))) throw new AppException(ERROR_CODE.NO_SUCH_REPLY);
     if (await this.ueService.isUserCommentReplyAuthor(user.id, replyId)) return this.ueService.deleteReply(replyId);
     throw new AppException(ERROR_CODE.NOT_REPLY_AUTHOR);
   }
 
   @Get('/rate/criteria')
-  @IsPublic()
+  @RequireRole('STUDENT', 'FORMER_STUDENT')
   async GetRateCriteria() {
     return this.ueService.getRateCriteria();
   }
 
   @Get('/:ueCode/rate')
+  @RequireRole('STUDENT', 'FORMER_STUDENT')
   async GetRateUE(@Param('ueCode') ueCode: string, @GetUser() user: User) {
     if (!(await this.ueService.doesUEExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     return this.ueService.getRateUE(user.id, ueCode);
   }
 
   @Put('/:ueCode/rate')
+  @RequireRole('STUDENT')
   async RateUE(@Param('ueCode') ueCode: string, @GetUser() user: User, @Body() dto: UERateDto) {
     if (!(await this.ueService.doesUEExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     if (!(await this.ueService.doesCriterionExist(dto.criterion))) throw new AppException(ERROR_CODE.NO_SUCH_CRITERION);
@@ -202,7 +159,12 @@ export class UEController {
   }
 
   @Delete('/:ueCode/rate/:criterionId')
-  async UnRateUE(@Param('ueCode') ueCode: string, @Param('criterionId') criterionId: string, @GetUser() user: User) {
+  @RequireRole('STUDENT', 'FORMER_STUDENT')
+  async UnRateUE(
+    @Param('ueCode') ueCode: string,
+    @UUIDParam('criterionId') criterionId: string,
+    @GetUser() user: User,
+  ) {
     if (!(await this.ueService.doesUEExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     if (!(await this.ueService.doesCriterionExist(criterionId))) throw new AppException(ERROR_CODE.NO_SUCH_CRITERION);
     if (!(await this.ueService.hasAlreadyRated(user.id, ueCode, criterionId)))
@@ -210,11 +172,43 @@ export class UEController {
     return this.ueService.unRateUE(user.id, ueCode, criterionId);
   }
 
+  @Get('/annal/metadata')
+  @RequireRole('STUDENT', 'FORMER_STUDENT')
+  async getUeAnnalMetadata(@GetUser() user: User) {
+    // TODO
+  }
+
+  @Post('/:ueCode/annal')
+  @RequireRole('STUDENT')
+  @UploadRoute('file')
+  async uploadUeAnnal(
+    @UserFile(['application/pdf'], 8 * FileSize.MegaByte) file: Promise<MulterWithMime>,
+    @Param('ueCode') ueCode: string,
+    @Body() body: UploadAnnal,
+    @GetUser() user: User,
+  ) {
+    // TODO
+    // writeFileSync('test.pdf', (await file).multer.buffer);
+    // return { mimeType: (await file).mime };
+  }
+
+  @Get('/:ueCode/annal/:annalId')
+  @RequireRole('STUDENT', 'FORMER_STUDENT')
+  async getUeAnnal(
+    @Param('ueCode') ueCode: string,
+    @UUIDParam('annalId') annalId: string,
+    @Response() response: ExpressResponse,
+  ) {
+    // TODO
+    // const file = createReadStream('test.pdf');
+    // return new StreamableFile(file);
+  }
+
   /*
    * ADMIN ROUTES
    */
   // @Patch('/admin/comments/:commentId')
-  // @RequirePermission(['commentModerator', 'admin'])
+  // @RequirePermission('commentModerator', 'admin')
   // async UpdateUEComment(
   //   @Param('commentId') commentId: string,
   //   @Body() body: UeCommentPostDto,
@@ -224,7 +218,7 @@ export class UEController {
   // }
 
   // @Delete('/admin/comments/:commentId')
-  // @RequirePermission(['commentModerator', 'admin'])
+  // @RequirePermission('commentModerator', 'admin')
   // async DeleteUEComment(
   //   @Param('commentId') commentId: string,
   //   @GetUser() user: User,
@@ -233,7 +227,7 @@ export class UEController {
   // }
 
   // @Patch('/admin/comments/reply/:replyId')
-  // @RequirePermission(['commentModerator', 'admin'])
+  // @RequirePermission('commentModerator', 'admin')
   // async UpdateUECommentReply(
   //   @Param('replyId') commentId: string,
   //   @Body() body: UeCommentPostDto,
@@ -242,7 +236,7 @@ export class UEController {
   // }
 
   // @Delete('/admin/comments/reply/:replyId')
-  // @RequirePermission(['commentModerator', 'admin'])
+  // @RequirePermission('commentModerator', 'admin')
   // async DeleteUECommentReply(@Param('replyId') replyId: string) {
   //   return this.ueService.deleteReply(replyId);
   // }

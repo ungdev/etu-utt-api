@@ -242,20 +242,30 @@ model UE {
 }
 
 model UEAnnal {
-  id            String    @id @default(uuid())
-  filename      String    @db.VarChar(255)
-  validatedById String
-  createdAt     DateTime  @default(now())
-  deletedAt     DateTime?
-  ueId          String
-  senderId      String?
-  semesterId    String
-  typeId        String
+  id             String    @id @default(uuid())
+  // The filename is not stored in the database because it is computed from the annal id
+  uploadComplete Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+  ueId           String
+  senderId       String?
+  semesterId     String
+  validatedById  String?
+  typeId         String
 
   ue       UE              @relation(fields: [ueId], references: [id], onDelete: Cascade)
   sender   User?           @relation(fields: [senderId], references: [id], onDelete: SetNull)
+  type     UEAnnalType     @relation(fields: [typeId], references: [id])
   semester Semester        @relation(fields: [semesterId], references: [code])
   reports  UEAnnalReport[]
+}
+
+model UEAnnalType {
+  id   String @id @default(uuid())
+  name String @db.VarChar(255)
+
+  annals UEAnnal[]
 }
 
 model UEAnnalReport {
@@ -753,8 +763,10 @@ model UTTFormationFollowingMethod {
 
 enum UserRole {
   STUDENT
+  FORMER_STUDENT
   TEACHER
   EMPLOYEE
+  OTHER
 }
 
 enum AttributeType {

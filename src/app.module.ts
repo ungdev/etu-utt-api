@@ -6,6 +6,7 @@ import { ProfileModule } from './profile/profile.module';
 import { UsersModule } from './users/users.module';
 import { APP_GUARD } from '@nestjs/core';
 import { PermissionGuard } from './auth/guard/permission.guard';
+import { RoleGuard } from './auth/guard/role.guard';
 import { UEModule } from './ue/ue.module';
 import { JwtGuard } from './auth/guard';
 import { TimetableModule } from './timetable/timetable.module';
@@ -36,6 +37,10 @@ import { TimetableModule } from './timetable/timetable.module';
     {
       provide: APP_GUARD,
       useClass: PermissionGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RoleGuard,
     },
   ],
 })
