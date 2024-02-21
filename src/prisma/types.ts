@@ -11,4 +11,6 @@ export {
   UECreditCategory as RawCreditCategory,
   UE as RawUE,
   UEComment as RawUEComment,
+  UEStarCriterion as RawUEStarCriterion,
+  UEStarVote as RawUEStarVote,
 } from '@prisma/client';
