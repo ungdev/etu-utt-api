@@ -39,30 +39,26 @@ const GetE2ESpec = e2eSuite('GET /ue/{ueCode}', (app) => {
   const ues: FakeUE[] = [];
   for (let i = 0; i < 30; i++)
     ues.push(
-      createUE(
-        app,
-        { semesters: [semesters[i % 2]], branchOption: branchOptions[(i * 3) % 4] },
-        {
-          code: `XX${`${i}`.padStart(2, '0')}`,
-          credits: [
-            {
-              category: {
-                code: i % 3 == 0 ? 'CS' : 'TM',
-                name: i % 3 == 0 ? 'CS' : 'TM',
-              },
-              credits: 6,
+      createUE(app, {
+        code: `XX${`${i}`.padStart(2, '0')}`,
+        credits: [
+          {
+            category: {
+              code: i % 3 == 0 ? 'CS' : 'TM',
+              name: i % 3 == 0 ? 'CS' : 'TM',
             },
-          ],
-        },
-      ),
+            credits: 6,
+          },
+        ],
+        openSemesters: [semesters[i % 2]],
+        branchOption: [branchOptions[(i * 3) % 4]],
+      }),
     );
-  const ueWithRating = createUE(
-    app,
-    { semesters, branchOption: branchOptions[0] },
-    {
-      code: `XX30`,
-    },
-  );
+  const ueWithRating = createUE(app, {
+    code: `XX30`,
+    openSemesters: semesters,
+    branchOption: [branchOptions[0]],
+  });
   const criterion = createCriterion(app);
   createUESubscription(app, { user, ue: ueWithRating, semester: semesters[0] });
   createUESubscription(app, { user: user2, ue: ueWithRating, semester: semesters[0] });
@@ -74,79 +70,11 @@ const GetE2ESpec = e2eSuite('GET /ue/{ueCode}', (app) => {
   });
 
   it('should return the UE XX01', () => {
-    return pactum
-      .spec()
-      .withBearerToken(user.token)
-      .get('/ue/XX01')
-      .expectUE({
-        name: ues[1].name,
-        code: ues[1].code,
-        inscriptionCode: ues[1].inscriptionCode,
-        info: {
-          ...omit(ues[1].info as Required<FakeUE['info']>, 'requirements', 'id', 'ueId'),
-          requirements: ues[1].info.requirements.map((r) => ({
-            code: r.code,
-          })),
-        },
-        branchOption: [
-          {
-            code: branchOptions[3].code,
-            name: branchOptions[3].name,
-            branch: {
-              code: branches[1].code,
-              name: branches[1].name,
-            },
-          },
-        ],
-        credits: [
-          {
-            credits: ues[1].credits[0].credits,
-            category: ues[1].credits[0].category,
-          },
-        ],
-        openSemester: [semesters[1].code],
-        starVotes: {},
-        workTime: omit(ues[1].workTime, 'ueId', 'id') as Required<Omit<FakeUE['workTime'], 'ueId'>>,
-      });
+    return pactum.spec().withBearerToken(user.token).get('/ue/XX01').expectUE(ues[1]);
   });
 
   it('should return the UE XX30 with rating', () => {
-    return pactum
-      .spec()
-      .withBearerToken(user.token)
-      .get('/ue/XX30')
-      .expectUE({
-        name: ueWithRating.name,
-        code: ueWithRating.code,
-        inscriptionCode: ueWithRating.inscriptionCode,
-        info: {
-          ...omit(ueWithRating.info as Required<FakeUE['info']>, 'requirements', 'id', 'ueId'),
-          requirements: ueWithRating.info.requirements.map((r) => ({
-            code: r.code,
-          })),
-        },
-        branchOption: [
-          {
-            code: branchOptions[0].code,
-            name: branchOptions[0].name,
-            branch: {
-              code: branches[0].code,
-              name: branches[0].name,
-            },
-          },
-        ],
-        credits: [
-          {
-            credits: ueWithRating.credits[0].credits,
-            category: ueWithRating.credits[0].category,
-          },
-        ],
-        openSemester: semesters.sort((a, b) => a.start.getTime() - b.start.getTime()).map((s) => s.code),
-        workTime: omit(ueWithRating.workTime, 'ueId', 'id') as Required<Omit<FakeUE['workTime'], 'ueId'>>,
-        starVotes: {
-          [criterion.id]: 4.0,
-        },
-      });
+    return pactum.spec().withBearerToken(user.token).get('/ue/XX30').expectUE(ueWithRating);
   });
 });
 

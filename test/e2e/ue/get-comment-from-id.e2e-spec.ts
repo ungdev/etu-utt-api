@@ -1,30 +1,19 @@
 import * as pactum from 'pactum';
-import { createComment, createUE, createUser, upvoteComment } from '../../utils/fakedb';
+import * as fakedb from '../../utils/fakedb';
 import { e2eSuite } from '../../utils/test_utils';
-import { UEComment } from '../../../src/ue/interfaces/comment.interface';
-import { UEService } from '../../../src/ue/ue.service';
-import { UECommentReply } from '../../../src/ue/interfaces/comment-reply.interface';
 import { ERROR_CODE } from 'src/exceptions';
 import { faker } from '@faker-js/faker';
 import { omit } from '../../../src/utils';
+import { FakeComment } from '../../utils/fakedb';
 
 const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) => {
-  const user = createUser(app);
-  const user2 = createUser(app, { login: 'user2', studentId: 3 });
-  const ue = createUE(app, {
-    code: `XX01`,
-    semester: 'A24',
-  });
-  const comment = createComment(app, ue, user, true) as UEComment;
-  upvoteComment(app, user2, comment);
-
-  beforeAll(async () => {
-    comment.answers.push(
-      (await app().get(UEService).replyComment(user.id, comment.id, {
-        body: 'HelloWorld',
-      })) as UECommentReply,
-    );
-  });
+  const user = fakedb.createUser(app);
+  const user2 = fakedb.createUser(app, { login: 'user2', studentId: 3 });
+  const semester = fakedb.createSemester(app);
+  const ue = fakedb.createUE(app, { code: `XX01`, openSemesters: [semester] });
+  const comment = fakedb.createComment(app, { user, ue, semester });
+  fakedb.createCommentUpvote(app, { user: user2, comment });
+  const reply = fakedb.createCommentReply(app, { user, comment }, { body: 'HelloWorld' });
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum.spec().get(`/ue/comments/${comment.id}`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
@@ -46,19 +35,31 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
       .expectAppError(ERROR_CODE.NO_SUCH_COMMENT);
   });
 
-  it('should return the comment with the author field as the user is the author', () => pactum
+  it('should return the comment with the author field as the user is the author', () =>
+    pactum
       .spec()
       .withBearerToken(user.token)
       .get(`/ue/comments/${comment.id}`)
       .expectUEComment({
-        ...comment,
-        answers: comment.answers.map((answer) => ({
-          ...answer,
-          createdAt: `${(<Date>answer.createdAt).toISOString()}`,
-          updatedAt: `${(<Date>answer.updatedAt).toISOString()}`,
-        })),
+        ...(omit(comment, 'semesterId', 'authorId', 'deletedAt', 'ueId') as Required<FakeComment>),
+        answers: [
+          {
+            ...omit(reply, 'authorId', 'deletedAt', 'commentId'),
+            author: {
+              id: user.id,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              studentId: user.studentId,
+            },
+            createdAt: `${(<Date>reply.createdAt).toISOString()}`,
+            updatedAt: `${(<Date>reply.updatedAt).toISOString()}`,
+          },
+        ],
         updatedAt: `${(<Date>comment.updatedAt).toISOString()}`,
         createdAt: `${(<Date>comment.createdAt).toISOString()}`,
+        semester: { code: semester.code },
+        upvotes: 1,
+        upvoted: false,
       }));
 
   it('should return the comment without the author field as the user is not the author', () => {
@@ -67,15 +68,19 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
       .withBearerToken(user2.token)
       .get(`/ue/comments/${comment.id}`)
       .expectUEComment({
-        ...omit(comment, 'author'),
-        upvoted: true,
-        answers: comment.answers.map((answer) => ({
-          ...answer,
-          createdAt: `${(<Date>answer.createdAt).toISOString()}`,
-          updatedAt: `${(<Date>answer.updatedAt).toISOString()}`,
-        })),
+        ...(omit(comment, 'semesterId', 'authorId', 'deletedAt', 'ueId') as Required<FakeComment>),
+        answers: [
+          {
+            ...omit(reply, 'authorId', 'deletedAt', 'commentId'),
+            createdAt: `${(<Date>reply.createdAt).toISOString()}`,
+            updatedAt: `${(<Date>reply.updatedAt).toISOString()}`,
+          },
+        ],
         updatedAt: `${(<Date>comment.updatedAt).toISOString()}`,
         createdAt: `${(<Date>comment.createdAt).toISOString()}`,
+        semester: { code: semester.code },
+        upvotes: 1,
+        upvoted: true,
       });
   });
 });

@@ -32,22 +32,20 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
   const ues: FakeUE[] = [];
   for (let i = 0; i < 30; i++)
     ues.push(
-      createUE(
-        app,
-        { semesters: [semesters[i % 2]], branchOption: branchOptions[i % 4] },
-        {
-          code: `XX${`${i}`.padStart(2, '0')}`,
-          credits: [
-            {
-              category: {
-                code: i % 3 == 0 ? 'CS' : 'TM',
-                name: i % 3 == 0 ? 'CS' : 'TM',
-              },
-              credits: 6,
+      createUE(app, {
+        code: `XX${`${i}`.padStart(2, '0')}`,
+        credits: [
+          {
+            category: {
+              code: i % 3 == 0 ? 'CS' : 'TM',
+              name: i % 3 == 0 ? 'CS' : 'TM',
             },
-          ],
-        },
-      ),
+            credits: 6,
+          },
+        ],
+        openSemesters: [semesters[i % 2]],
+        branchOption: [branchOptions[i % 4]],
+      }),
     );
 
   it('should return a 400 as semester is in a wrong format', () => {
@@ -66,142 +64,71 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
       .expectAppError(ERROR_CODE.PARAM_NOT_POSITIVE, 'page');
   });
 
-  it('should return a list of all ues (within the first page)', () => {
-    return pactum
-      .spec()
-      .withBearerToken(user.token)
-      .get('/ue')
-      .expectUEs({
-        items: ues.slice(0, Number(app().get(ConfigService).get('PAGINATION_PAGE_SIZE'))).map(toOverview),
-        itemCount: ues.length,
-        itemsPerPage: Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')),
-      });
-  });
-
   it('should return a list of all ues (within the second page)', () => {
     return pactum
       .spec()
       .withBearerToken(user.token)
       .get('/ue')
       .withQueryParams('page', 2)
-      .expectUEs({
-        items: ues
-          .slice(
-            Number(app().get(ConfigService).get('PAGINATION_PAGE_SIZE')),
-            Math.min(30, Number(app().get(ConfigService).get('PAGINATION_PAGE_SIZE') * 2)),
-          )
-          .map(toOverview),
-        itemCount: ues.length,
-        itemsPerPage: Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')),
-      });
+      .expectUEs(
+        app,
+        ues.slice(
+          Number(app().get(ConfigService).get('PAGINATION_PAGE_SIZE')),
+          Math.min(30, Number(app().get(ConfigService).get('PAGINATION_PAGE_SIZE') * 2)),
+        ),
+        ues.length,
+      );
   });
 
   it('should return a list of ues filtered by semester', () => {
+    const expectedUEs = ues.filter((ue) => ue.openSemesters.some((semester) => semester.code === 'A24'));
     return pactum
       .spec()
       .withBearerToken(user.token)
       .get('/ue')
       .withQueryParams('availableAtSemester', 'A24')
-      .expectUEs({
-        items: ues.filter((ue) => ue.openSemesters.some((semester) => semester.code === 'A24')).map(toOverview),
-        itemCount: ues.filter((ue) => ue.openSemesters.some((semester) => semester.code === 'A24')).length,
-        itemsPerPage: Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')),
-      });
+      .expectUEs(app, expectedUEs, expectedUEs.length);
   });
 
   it('should return a list of ues filtered by credit type', () => {
+    const expectedUEs = ues.filter((ue) => ue.credits.some((credit) => credit.category.code === 'CS'));
     return pactum
       .spec()
       .withBearerToken(user.token)
       .get('/ue')
       .withQueryParams('creditType', 'CS')
-      .expectUEs({
-        items: ues.filter((ue) => ue.credits.some((credit) => credit.category.code === 'CS')).map(toOverview),
-        itemCount: ues.filter((ue) => ue.credits.some((credit) => credit.category.code === 'CS')).length,
-        itemsPerPage: Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')),
-      });
+      .expectUEs(app, expectedUEs, expectedUEs.length);
   });
 
   it('should return a list of ues filtered by filiere', () => {
+    const expectedUEs = ues.filter((ue) => ue.branchOption.some((branchOption) => branchOption.code === 'T1'));
     return pactum
       .spec()
       .withBearerToken(user.token)
       .get('/ue')
-      .withQueryParams('branchOption', branchOptions[0].code)
-      .expectUEs({
-        items: ues
-          .filter((ue) => ue.branchOption.some((branchOption) => branchOption.code === branchOptions[0].code))
-          .map(toOverview),
-        itemCount: ues.filter((ue) =>
-          ue.branchOption.some((branchOption) => branchOption.code === branchOptions[0].code),
-        ).length,
-        itemsPerPage: Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')),
-      });
+      .withQueryParams('branchOption', 'T1')
+      .expectUEs(app, expectedUEs, expectedUEs.length);
   });
 
   it('should return a list of ues filtered by branch', () => {
+    const expectedUEs = ues.filter((ue) => ue.branchOption.some((branchOption) => branchOption.branch.code === 'B1'));
     return pactum
       .spec()
       .withBearerToken(user.token)
       .get('/ue')
-      .withQueryParams('branch', branches[0].code)
-      .expectUEs({
-        items: ues
-          .filter((ue) => ue.branchOption.some((branchOption) => branchOption.branch.code === branches[0].code))
-          .map(toOverview),
-        itemsPerPage: Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')),
-        itemCount: ues.filter((ue) =>
-          ue.branchOption.some((branchOption) => branchOption.branch.code === branches[0].code),
-        ).length,
-      });
+      .withQueryParams('branch', 'B1')
+      .expectUEs(app, expectedUEs, expectedUEs.length);
   });
 
   it('should return a list of ues filtered by name', () => {
+    const expectedUEs = ues.filter((ue) => ue.code.includes('XX0'));
     return pactum
       .spec()
       .withBearerToken(user.token)
       .get('/ue')
       .withQueryParams('q', 'XX0')
-      .expectUEs({
-        items: ues.filter((ue) => ue.code.startsWith('XX0')).map(toOverview),
-        itemsPerPage: Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')),
-        itemCount: ues.filter((ue) => ue.code.startsWith('XX0')).length,
-      });
+      .expectUEs(app, expectedUEs, expectedUEs.length);
   });
 });
-
-function toOverview(fakeUE: FakeUE): JsonLikeVariant<UEOverView> {
-  return {
-    code: fakeUE.code,
-    inscriptionCode: fakeUE.inscriptionCode,
-    name: fakeUE.name,
-    credits: fakeUE.credits.map((credit) => ({
-      credits: credit.credits,
-      category: {
-        code: credit.category.code,
-        name: credit.category.name,
-      },
-    })),
-    openSemester: fakeUE.openSemesters.map((semester) => ({
-      code: semester.code,
-      start: semester.start.toISOString(),
-      end: semester.end.toISOString(),
-    })),
-    branchOption: fakeUE.branchOption.map((branchOption) => ({
-      code: branchOption.code,
-      name: branchOption.name,
-      branch: {
-        code: branchOption.branch.code,
-        name: branchOption.branch.name,
-      },
-    })),
-    info: {
-      ...(omit(fakeUE.info, 'requirements', 'id', 'ueId') as Required<Omit<FakeUE['info'], 'requirements'>>),
-      requirements: fakeUE.info.requirements.map((requirement) => ({
-        code: requirement.code,
-      })),
-    },
-  };
-}
 
 export default SearchE2ESpec;

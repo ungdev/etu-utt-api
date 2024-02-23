@@ -9,6 +9,7 @@ import { UERating } from 'src/ue/interfaces/rate.interface';
 import { FakeUE } from './utils/fakedb';
 import { ConfigService } from '@nestjs/config';
 import { AppProvider } from './utils/test_utils';
+import { omit, pick } from '../src/utils';
 
 /** Shortcut function for `this.expectStatus(200).expectJsonLike` */
 function expect<T>(obj: JsonLikeVariant<T>) {
@@ -30,8 +31,15 @@ SpecProto.expectAppError = function <ErrorCode extends ERROR_CODE>(
 };
 SpecProto.expectUE = function (ue: FakeUE) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonLike({
-    ...ue,
-    openSemester: ue.openSemester.map((semester) => ({
+    ...omit(ue, 'id', 'validationRate', 'createdAt', 'updatedAt', 'openSemesters'),
+    info: omit(ue.info, 'id', 'ueId'),
+    workTime: omit(ue.workTime, 'id', 'ueId'),
+    credits: ue.credits.map((credit) => omit(credit, 'id', 'ueId', 'categoryId')),
+    branchOption: ue.branchOption.map((branchOption) => ({
+      ...pick(branchOption, 'code', 'name'),
+      branch: pick(branchOption.branch, 'code', 'name'),
+    })),
+    openSemester: ue.openSemesters.map((semester) => ({
       ...semester,
       start: semester.start.toISOString(),
       end: semester.end.toISOString(),
@@ -41,8 +49,14 @@ SpecProto.expectUE = function (ue: FakeUE) {
 SpecProto.expectUEs = function (app: AppProvider, ues: FakeUE[], count: number) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonLike({
     items: ues.map((ue) => ({
-      ...ue,
-      openSemester: ue.openSemester.map((semester) => ({
+      ...omit(ue, 'id', 'validationRate', 'createdAt', 'updatedAt', 'openSemesters', 'workTime'),
+      info: omit(ue.info, 'id', 'ueId'),
+      credits: ue.credits.map((credit) => omit(credit, 'id', 'ueId', 'categoryId')),
+      branchOption: ue.branchOption.map((branchOption) => ({
+        ...pick(branchOption, 'code', 'name'),
+        branch: pick(branchOption.branch, 'code', 'name'),
+      })),
+      openSemester: ue.openSemesters.map((semester) => ({
         ...semester,
         start: semester.start.toISOString(),
         end: semester.end.toISOString(),
