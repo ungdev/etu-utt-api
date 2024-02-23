@@ -3,9 +3,6 @@ import * as pactum from 'pactum';
 import { ConfigService } from '@nestjs/config';
 import { ERROR_CODE } from 'src/exceptions';
 import { e2eSuite } from '../../utils/test_utils';
-import { UEOverView } from '../../../src/ue/interfaces/ue-overview.interface';
-import { omit } from '../../../src/utils';
-import { JsonLikeVariant } from '../../declarations';
 import { registerUniqueValue } from '../../../prisma/seed/utils';
 
 const SearchE2ESpec = e2eSuite('GET /ue', (app) => {

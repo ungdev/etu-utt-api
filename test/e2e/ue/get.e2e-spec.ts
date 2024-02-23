@@ -12,7 +12,6 @@ import {
 import { e2eSuite } from '../../utils/test_utils';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
-import { omit } from '../../../src/utils';
 
 const GetE2ESpec = e2eSuite('GET /ue/{ueCode}', (app) => {
   const user = createUser(app);
