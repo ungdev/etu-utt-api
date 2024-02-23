@@ -8,7 +8,7 @@ import { UERating } from 'src/ue/interfaces/rate.interface';
 import { FakeUE } from "./utils/fakedb";
 import { AppProvider } from "./utils/test_utils";
 
-export type JsonLikeVariant<T> = {
+type JsonLikeVariant<T> = {
   [K in keyof T]: T[K] extends string | Date | DeepWritable<Date> ? string | RegExp : JsonLikeVariant<T[K]>;
 };
 

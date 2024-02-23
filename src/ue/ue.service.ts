@@ -602,6 +602,20 @@ export class UEService {
     );
   }
 
+  async hasAlreadyRated(userId: string, ueCode: string, criterionId: string) {
+    return (
+      (await this.prisma.uEStarVote.count({
+        where: {
+          ue: {
+            code: ueCode,
+          },
+          userId,
+          criterionId,
+        },
+      })) != 0
+    );
+  }
+
   /**
    * Retrieves a list of all available criteria
    * @returns the list of all criteria
@@ -675,6 +689,21 @@ export class UEService {
         },
         update: {
           value: dto.value,
+        },
+      }),
+    );
+  }
+
+  async unRateUE(userId: string, ueCode: string, criterionId: string) {
+    const ue = await this.prisma.uE.findUnique({ where: { code: ueCode } });
+    return this.prisma.uEStarVote.delete(
+      SelectRate({
+        where: {
+          ueId_userId_criterionId: {
+            ueId: ue.id,
+            userId,
+            criterionId,
+          },
         },
       }),
     );

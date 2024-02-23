@@ -1,20 +1,30 @@
-import { createUser, createUE, makeUserJoinUE } from '../../utils/fakedb';
+import {
+  createUser,
+  createUE,
+  createBranch,
+  createBranchOption,
+  createSemester,
+  createUESubscription,
+  createComment,
+} from '../../utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
 import { e2eSuite, JsonLike } from '../../utils/test_utils';
+import { PrismaService } from '../../../src/prisma/prisma.service';
 
 const PostCommment = e2eSuite('POST /ue/{ueCode}/comments', (app) => {
   const user = createUser(app);
   const user2 = createUser(app, { login: 'user2' });
-  const user3 = createUser(app, { login: 'user3' });
-  const ue = createUE(app);
-  makeUserJoinUE(app, user2, ue);
-  makeUserJoinUE(app, user3, ue);
+  const semester = createSemester(app);
+  const branch = createBranch(app);
+  const branchOption = createBranchOption(app, { branch });
+  const ue = createUE(app, { semesters: [semester], branchOption });
+  createUESubscription(app, { user: user2, ue, semester });
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum
       .spec()
-      .post('/ue/XX00/comments')
+      .post(`/ue/${ue.code}/comments`)
       .withBody({
         body: 'Test comment',
       })
@@ -25,7 +35,7 @@ const PostCommment = e2eSuite('POST /ue/{ueCode}/comments', (app) => {
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .post('/ue/XX00/comments')
+      .post(`/ue/${ue.code}/comments`)
       .withBody({
         body: false,
         isAnonymous: true,
@@ -37,7 +47,7 @@ const PostCommment = e2eSuite('POST /ue/{ueCode}/comments', (app) => {
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .post('/ue/XX00/comments')
+      .post(`/ue/${ue.code}/comments`)
       .withBody({
         body: 'gg',
       })
@@ -48,18 +58,18 @@ const PostCommment = e2eSuite('POST /ue/{ueCode}/comments', (app) => {
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .post(`/ue/${ue.code.slice(0, 3)}/comments`)
+      .post(`/ue/${ue.code.slice(0, ue.code.length - 1)}/comments`)
       .withBody({
         body: 'heyhey',
       })
-      .expectAppError(ERROR_CODE.NO_SUCH_UE, ue.code.slice(0, 3));
+      .expectAppError(ERROR_CODE.NO_SUCH_UE, ue.code.slice(0, ue.code.length - 1));
   });
 
   it('should return a 403 because user has not done the UE yet', () => {
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .post('/ue/XX00/comments')
+      .post(`/ue/${ue.code}/comments`)
       .withBody({
         body: 'Cette  UE est troooop bien',
         isAnonymous: true,
@@ -67,11 +77,11 @@ const PostCommment = e2eSuite('POST /ue/{ueCode}/comments', (app) => {
       .expectAppError(ERROR_CODE.NOT_ALREADY_DONE_UE);
   });
 
-  it('should return a comment as anonymous user', () => {
-    return pactum
+  it('should return a comment as anonymous user', async () => {
+    await pactum
       .spec()
       .withBearerToken(user2.token)
-      .post('/ue/XX00/comments')
+      .post(`/ue/${ue.code}/comments`)
       .withBody({
         body: 'Cette  UE est troooop bien',
         isAnonymous: true,
@@ -88,7 +98,7 @@ const PostCommment = e2eSuite('POST /ue/{ueCode}/comments', (app) => {
           createdAt: JsonLike.ANY_DATE,
           updatedAt: JsonLike.ANY_DATE,
           semester: {
-            code: 'A24',
+            code: semester.code,
           },
           isAnonymous: true,
           body: 'Cette  UE est troooop bien',
@@ -98,24 +108,27 @@ const PostCommment = e2eSuite('POST /ue/{ueCode}/comments', (app) => {
         },
         true,
       );
+    return app().get(PrismaService).uEComment.deleteMany();
   });
 
-  it('should return a 403 while trying to post another comment', () => {
-    return pactum
+  it('should return a 403 while trying to post another comment', async () => {
+    await createComment(app, { ue, user: user2, semester }, { isAnonymous: true }, true);
+    await pactum
       .spec()
       .withBearerToken(user2.token)
-      .post('/ue/XX00/comments')
+      .post(`/ue/${ue.code}/comments`)
       .withBody({
         body: 'Cette  UE est troooop bien',
       })
       .expectAppError(ERROR_CODE.FORBIDDEN_ALREADY_COMMENTED);
+    return app().get(PrismaService).uEComment.deleteMany();
   });
 
-  it('should return a comment as a logged in user', () => {
-    return pactum
+  it('should return a comment as a logged in user', async () => {
+    await pactum
       .spec()
-      .withBearerToken(user3.token)
-      .post('/ue/XX00/comments')
+      .withBearerToken(user2.token)
+      .post(`/ue/${ue.code}/comments`)
       .withBody({
         body: 'Cette  UE est troooop bien',
       })
@@ -123,15 +136,15 @@ const PostCommment = e2eSuite('POST /ue/{ueCode}/comments', (app) => {
         {
           id: JsonLike.ANY_UUID,
           author: {
-            id: user3.id,
-            firstName: user3.firstName,
-            lastName: user3.lastName,
-            studentId: user3.studentId,
+            id: user2.id,
+            firstName: user2.firstName,
+            lastName: user2.lastName,
+            studentId: user2.studentId,
           },
           createdAt: JsonLike.ANY_DATE,
           updatedAt: JsonLike.ANY_DATE,
           semester: {
-            code: 'A24',
+            code: semester.code,
           },
           isAnonymous: false,
           body: 'Cette  UE est troooop bien',
@@ -141,6 +154,7 @@ const PostCommment = e2eSuite('POST /ue/{ueCode}/comments', (app) => {
         },
         true,
       );
+    return app().get(PrismaService).uEComment.deleteMany();
   });
 });
 
