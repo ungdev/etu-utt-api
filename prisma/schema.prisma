@@ -248,10 +248,10 @@ model UEAnnal {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
   deletedAt      DateTime?
+  validatedAt    DateTime?
   ueId           String
   senderId       String?
   semesterId     String
-  validatedById  String?
   typeId         String
 
   ue       UE              @relation(fields: [ueId], references: [id], onDelete: Cascade)
@@ -293,15 +293,17 @@ model UEAnnalReportReason {
 }
 
 model UEComment {
-  id          String    @id @default(uuid())
-  body        String    @db.Text
-  isAnonymous Boolean
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  deletedAt   DateTime?
-  ueId        String
-  authorId    String?
-  semesterId  String
+  id                String    @id @default(uuid())
+  body              String    @db.Text
+  isAnonymous       Boolean
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime?
+  validatedAt       DateTime?
+  lastValidatedBody String?
+  ueId              String
+  authorId          String?
+  semesterId        String
 
   ue       UE                @relation(fields: [ueId], references: [id], onDelete: Cascade)
   author   User?             @relation(fields: [authorId], references: [id], onDelete: SetNull)
@@ -310,7 +312,8 @@ model UEComment {
   reports  UECommentReport[]
   upvotes  UECommentUpvote[]
 
-  @@unique([ueId, authorId])
+  // A user may have deleted several comments on this UE but only one is visible
+  @@unique([ueId, authorId, deletedAt])
 }
 
 model UECommentReply {
@@ -322,31 +325,50 @@ model UECommentReply {
   commentId String
   authorId  String?
 
-  comment UEComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
-  author  User?     @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  comment UEComment              @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  author  User?                  @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  reports UECommentReplyReport[]
 }
 
 model UECommentReport {
   id        String   @id @default(uuid())
   body      String   @db.Text
   createdAt DateTime @default(now())
+  mitigated Boolean  @default(false)
   commentId String
-  userId    String?
+  userId    String
   reasonId  String
 
   comment UEComment             @relation(fields: [commentId], references: [id], onDelete: Cascade)
-  user    User?                 @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user    User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
   reason  UECommentReportReason @relation(fields: [reasonId], references: [name], onDelete: Cascade)
 
   @@unique([userId, commentId, reasonId]) // Prevent from spam
+}
+
+model UECommentReplyReport {
+  id        String   @id @default(uuid())
+  body      String   @db.Text
+  createdAt DateTime @default(now())
+  mitigated Boolean  @default(false)
+  replyId   String
+  userId    String
+  reasonId  String
+
+  reply  UECommentReply        @relation(fields: [replyId], references: [id], onDelete: Cascade)
+  user   User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reason UECommentReportReason @relation(fields: [reasonId], references: [name], onDelete: Cascade)
+
+  @@unique([userId, replyId, reasonId]) // Prevent from spam
 }
 
 model UECommentReportReason {
   name                     String @id @db.VarChar(100)
   descriptionTranslationId String @unique
 
-  descriptionTranslation Translation       @relation(fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
+  descriptionTranslation Translation            @relation(fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
   reports                UECommentReport[]
+  replyReports           UECommentReplyReport[]
 }
 
 model UECommentUpvote {
@@ -527,6 +549,7 @@ model User {
   comments              UEComment[]
   commentReplies        UECommentReply[]
   commentsReported      UECommentReport[]
+  repliesReported       UECommentReplyReport[]
   gitHubIssues          GitHubIssue[]
   etuUTTTeam            UserEtuUTTTeam[]
   // Permissions assigned to the user

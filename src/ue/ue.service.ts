@@ -8,9 +8,9 @@ import { UeCommentUpdateDto } from './dto/ue-comment-update.dto';
 import { CommentReplyDto } from './dto/ue-comment-reply.dto';
 import { GetUECommentsDto } from './dto/ue-get-comments.dto';
 import { SelectUEOverview, UEOverView } from './interfaces/ue-overview.interface';
-import { SelectUEDetail, UEDetail } from './interfaces/ue-detail.interface';
-import { SelectComment, UEComment, UERawComment } from './interfaces/comment.interface';
-import { SelectCommentReply, UECommentReply } from './interfaces/comment-reply.interface';
+import { FormatUEDetail, SelectUEDetail, UEDetail } from './interfaces/ue-detail.interface';
+import { FormatComment, SelectComment, UEComment } from './interfaces/comment.interface';
+import { FormatReply, SelectCommentReply, UECommentReply } from './interfaces/comment-reply.interface';
 import { Criterion, SelectCriterion } from './interfaces/criterion.interface';
 import { SelectRate, UERating } from './interfaces/rate.interface';
 import { RawUserUESubscription } from '../prisma/types';
@@ -19,7 +19,7 @@ import { MulterWithMime } from 'src/upload.interceptor';
 import { UploadAnnal } from './dto/upload-annal.dto';
 import { createReadStream, createWriteStream } from 'fs';
 import { writeFile } from 'fs/promises';
-import { SelectUEAnnalFile } from './interfaces/annal.interface';
+import { FormatAnnal, SelectUEAnnalFile } from './interfaces/annal.interface';
 import PDFDocument from 'pdfkit';
 import sharp from 'sharp';
 import { UpdateAnnal } from './dto/update-annal.dto';
@@ -130,55 +130,16 @@ export class UEService {
    * @returns the {@link UEDetail} of the ue matching the given code
    */
   async getUE(code: string): Promise<UEDetail> {
-    // Fetch an ue from the database. This ue shall not be returned as is because
-    // it is not formatted at that point.
-    const ue = await this.prisma.uE.findUnique(
-      SelectUEDetail({
-        where: {
-          code,
-        },
-      }),
-    );
-    // We store rates in a object where the key is the criterion id and the value is a list ratings
-    const starVoteCriteria: {
-      [key: string]: {
-        createdAt: Date;
-        value: number;
-      }[];
-    } = {};
-    for (const starVote of ue.starVotes) {
-      if (starVote.criterionId in starVoteCriteria)
-        starVoteCriteria[starVote.criterionId].push({
-          createdAt: starVote.createdAt,
-          value: starVote.value,
-        });
-      else
-        starVoteCriteria[starVote.criterionId] = [
-          {
-            createdAt: starVote.createdAt,
-            value: starVote.value,
+    // Fetch an ue from the database and formats it
+    return FormatUEDetail(
+      await this.prisma.uE.findUnique(
+        SelectUEDetail({
+          where: {
+            code,
           },
-        ];
-    }
-    // Compute ratings for each criterion, using an exponential decay function
-    // And turn semester into their respective code.
-    return {
-      ...ue,
-      openSemester: ue.openSemester.map((semester) => semester.code),
-      starVotes: Object.fromEntries(
-        Object.entries(starVoteCriteria).map(([key, entry]) => {
-          let coefficients = 0;
-          let ponderation = 0;
-          for (const { value, createdAt } of entry) {
-            const dt = (starVoteCriteria[key][0].createdAt.getTime() - createdAt.getTime()) / 1000;
-            const dp = Math.exp(-dt / 10e7);
-            ponderation += dp * value;
-            coefficients += dp;
-          }
-          return [key, Math.round((ponderation / coefficients) * 10) / 10];
         }),
       ),
-    };
+    );
   }
 
   /**
@@ -194,46 +155,67 @@ export class UEService {
     userId: string,
     dto: GetUECommentsDto,
     bypassAnonymousData: boolean,
+    includeDeletedAndUnverified = false,
   ): Promise<Pagination<UEComment>> {
     // Use a prisma transaction to execute two requests at once:
     // We fetch a page of comments matching our filters and retrieve the total count of comments matching our filters
-    const [comments, commentCount] = (await this.prisma.$transaction([
+    const [comments, commentCount] = await this.prisma.$transaction([
       this.prisma.uEComment.findMany(
-        SelectComment({
-          where: {
-            ue: {
-              code: ueCode,
-            },
-          },
-          orderBy: [
-            {
-              upvotes: {
-                _count: 'desc',
+        SelectComment(
+          {
+            where: {
+              ue: {
+                code: ueCode,
               },
+              deletedAt: includeDeletedAndUnverified ? undefined : null,
+              OR: [
+                {
+                  reports: {
+                    none: {
+                      mitigated: false,
+                    },
+                  },
+                  validatedAt: {
+                    // If `includeDeletedAndUnverified` is true, condition is ignored as we're using the value undefined
+                    // Check https://www.prisma.io/docs/orm/prisma-client/special-fields-and-types/null-and-undefined#the-effect-of-null-and-undefined-on-conditionals
+                    // for more details
+                    not: includeDeletedAndUnverified ? undefined : null,
+                  },
+                },
+                {
+                  authorId: includeDeletedAndUnverified ? undefined : userId,
+                },
+              ],
             },
-            {
-              createdAt: 'desc',
-            },
-          ],
-          take: Number(this.config.get('PAGINATION_PAGE_SIZE')),
-          skip: ((dto.page ?? 1) - 1) * Number(this.config.get('PAGINATION_PAGE_SIZE')),
-        }),
+            orderBy: [
+              {
+                upvotes: {
+                  _count: 'desc',
+                },
+              },
+              {
+                createdAt: 'desc',
+              },
+            ],
+            take: Number(this.config.get('PAGINATION_PAGE_SIZE')),
+            skip: ((dto.page ?? 1) - 1) * Number(this.config.get('PAGINATION_PAGE_SIZE')),
+          },
+          userId,
+          includeDeletedAndUnverified,
+          includeDeletedAndUnverified,
+        ),
       ),
       this.prisma.uEComment.count({
         where: { ue: { code: ueCode } },
       }),
-    ])) as [UERawComment[], number];
+    ]);
     // If the user is neither a moderator or the comment author, and the comment is anonymous,
     // we remove the author from the response
     for (const comment of comments)
       if (comment.isAnonymous && !bypassAnonymousData && comment.author?.id !== userId) delete comment.author;
     // Data pagination
     return {
-      items: comments.map((comment) => ({
-        ...comment,
-        upvotes: comment.upvotes.length,
-        upvoted: comment.upvotes.some((upvote) => upvote.userId == userId),
-      })),
+      items: comments.map((comment) => FormatComment(comment, userId)),
       itemCount: commentCount,
       itemsPerPage: Number(this.config.get('PAGINATION_PAGE_SIZE')),
     };
@@ -250,6 +232,7 @@ export class UEService {
     const comment = await this.prisma.uEComment.findUnique({
       where: {
         id: commentId,
+        deletedAt: null,
       },
     });
     return comment.authorId == userId;
@@ -260,11 +243,24 @@ export class UEService {
    * @param replyId the id of the reply to check
    * @returns whether the {@link replyId | reply} exists
    */
-  async doesReplyExist(replyId: string): Promise<boolean> {
+  async doesReplyExist(replyId: string, userId: string, includeDeleted = false): Promise<boolean> {
     return (
       (await this.prisma.uECommentReply.count({
         where: {
           id: replyId,
+          deletedAt: includeDeleted ? undefined : null,
+          OR: [
+            {
+              reports: {
+                none: {
+                  mitigated: false,
+                },
+              },
+            },
+            {
+              authorId: includeDeleted ? undefined : userId,
+            },
+          ],
         },
       })) != 0
     );
@@ -283,6 +279,7 @@ export class UEService {
         where: {
           id: replyId,
           authorId: userId,
+          deletedAt: null,
         },
       })) > 0
     );
@@ -368,9 +365,10 @@ export class UEService {
     // Find a comment (in the UE) whoose author is the user
     const comment = await this.prisma.uEComment.findUnique({
       where: {
-        ueId_authorId: {
+        ueId_authorId_deletedAt: {
           authorId: userId,
           ueId: ue.id,
+          deletedAt: null,
         },
       },
     });
@@ -386,36 +384,39 @@ export class UEService {
    * @returns the created {@link UEComment}
    */
   async createComment(body: UeCommentPostDto, userId: string, ueCode: string): Promise<UEComment> {
-    return {
-      ...(await this.prisma.uEComment.create(
-        SelectComment({
-          data: {
-            body: body.body,
-            isAnonymous: body.isAnonymous ?? false,
-            updatedAt: new Date(),
-            author: {
-              connect: {
-                id: userId,
+    return FormatComment(
+      await this.prisma.uEComment.create(
+        SelectComment(
+          {
+            data: {
+              body: body.body,
+              isAnonymous: body.isAnonymous ?? false,
+              updatedAt: new Date(),
+              author: {
+                connect: {
+                  id: userId,
+                },
               },
-            },
-            ue: {
-              connect: {
-                code: ueCode,
+              ue: {
+                connect: {
+                  code: ueCode,
+                },
               },
-            },
-            semester: {
-              connect: {
-                // Use last semester done when creating the comment
-                code: (await this.getLastSemesterDoneByUser(userId, ueCode)).semesterId,
+              semester: {
+                connect: {
+                  // Use last semester done when creating the comment
+                  code: (await this.getLastSemesterDoneByUser(userId, ueCode)).semesterId,
+                },
               },
             },
           },
-        }),
-      )),
-      // The comment has no upvotes yet
-      upvotes: 0,
-      upvoted: false,
-    };
+          userId,
+          true,
+          true,
+        ),
+      ),
+      userId,
+    );
   }
 
   /**
@@ -427,22 +428,33 @@ export class UEService {
    * @returns the updated comment
    */
   async updateComment(body: UeCommentUpdateDto, commentId: string, userId: string): Promise<UEComment> {
-    const comment = await this.prisma.uEComment.update(
-      SelectComment({
-        where: {
-          id: commentId,
-        },
-        data: {
-          body: body.body,
-          isAnonymous: body.isAnonymous,
-        },
-      }),
+    const previousComment = await this.prisma.uEComment.findUnique({
+      where: {
+        id: commentId,
+      },
+    });
+    const needsValidationAgain = body.body && body.body !== previousComment.body && previousComment.validatedAt != null;
+    return FormatComment(
+      await this.prisma.uEComment.update(
+        SelectComment(
+          {
+            where: {
+              id: commentId,
+            },
+            data: {
+              body: body.body,
+              isAnonymous: body.isAnonymous,
+              validatedAt: needsValidationAgain ? null : undefined,
+              lastValidatedBody: needsValidationAgain ? previousComment.body : undefined,
+            },
+          },
+          userId,
+          true,
+          true,
+        ),
+      ),
+      userId,
     );
-    return {
-      ...comment,
-      upvotes: comment.upvotes.length,
-      upvoted: comment.upvotes.some((upvote) => upvote.userId == userId),
-    };
   }
 
   /**
@@ -467,11 +479,27 @@ export class UEService {
    * @param commentId the id of the comment to check
    * @returns whether the {@link commentId | comment} exists
    */
-  async doesCommentExist(commentId: string) {
+  async doesCommentExist(commentId: string, userId: string, includeUnverified = false, includeDeleted = false) {
     return (
       (await this.prisma.uEComment.count({
         where: {
           id: commentId,
+          deletedAt: includeDeleted ? undefined : null,
+          OR: [
+            {
+              validatedAt: {
+                not: null,
+              },
+              reports: {
+                none: {
+                  mitigated: false,
+                },
+              },
+            },
+            {
+              authorId: includeUnverified ? undefined : userId,
+            },
+          ],
         },
       })) != 0
     );
@@ -486,14 +514,16 @@ export class UEService {
    * @returns the created {@link UECommentReply}
    */
   async replyComment(userId: string, commentId: string, reply: CommentReplyDto): Promise<UECommentReply> {
-    return this.prisma.uECommentReply.create(
-      SelectCommentReply({
-        data: {
-          body: reply.body,
-          commentId,
-          authorId: userId,
-        },
-      }),
+    return FormatReply(
+      await this.prisma.uECommentReply.create(
+        SelectCommentReply({
+          data: {
+            body: reply.body,
+            commentId,
+            authorId: userId,
+          },
+        }),
+      ),
     );
   }
 
@@ -505,15 +535,17 @@ export class UEService {
    * @returns the updated {@link UECommentReply}
    */
   async editReply(replyId: string, reply: CommentReplyDto): Promise<UECommentReply> {
-    return this.prisma.uECommentReply.update(
-      SelectCommentReply({
-        data: {
-          body: reply.body,
-        },
-        where: {
-          id: replyId,
-        },
-      }),
+    return FormatReply(
+      await this.prisma.uECommentReply.update(
+        SelectCommentReply({
+          data: {
+            body: reply.body,
+          },
+          where: {
+            id: replyId,
+          },
+        }),
+      ),
     );
   }
 
@@ -524,12 +556,17 @@ export class UEService {
    * @returns the deleted {@link UECommentReply}
    */
   async deleteReply(replyId: string): Promise<UECommentReply> {
-    return this.prisma.uECommentReply.delete(
-      SelectCommentReply({
-        where: {
-          id: replyId,
-        },
-      }),
+    return FormatReply(
+      await this.prisma.uECommentReply.update(
+        SelectCommentReply({
+          where: {
+            id: replyId,
+          },
+          data: {
+            deletedAt: new Date(),
+          },
+        }),
+      ),
     );
   }
 
@@ -571,18 +608,24 @@ export class UEService {
    * @returns the deleted {@link UEComment}
    */
   async deleteComment(commentId: string, userId: string): Promise<UEComment> {
-    const comment = await this.prisma.uEComment.delete(
-      SelectComment({
-        where: {
-          id: commentId,
-        },
-      }),
+    return FormatComment(
+      await this.prisma.uEComment.update(
+        SelectComment(
+          {
+            where: {
+              id: commentId,
+            },
+            data: {
+              deletedAt: new Date(),
+            },
+          },
+          userId,
+          true,
+          true,
+        ),
+      ),
+      userId,
     );
-    return {
-      ...comment,
-      upvotes: comment.upvotes.length,
-      upvoted: comment.upvotes.some((upvote) => upvote.userId == userId),
-    };
   }
 
   /**
@@ -832,35 +875,36 @@ export class UEService {
   }
 
   async getUEAnnalsList(user: User, ueCode: string, isModerator = false) {
-    return this.prisma.uEAnnal.findMany(
-      SelectUEAnnalFile({
-        where: {
-          ue: {
-            code: ueCode,
-          },
-          deletedAt: {
-            not: isModerator ? undefined : null,
-          },
-          OR: isModerator
-            ? undefined
-            : [
-                {
-                  uploadComplete: true,
-                  reports: {
-                    none: {
-                      mitigated: false,
-                    },
+    return (
+      await this.prisma.uEAnnal.findMany(
+        SelectUEAnnalFile({
+          where: {
+            ue: {
+              code: ueCode,
+            },
+            deletedAt: isModerator ? undefined : null,
+            OR: [
+              {
+                uploadComplete: true,
+                validatedAt: {
+                  not: null,
+                },
+                reports: {
+                  none: {
+                    mitigated: false,
                   },
                 },
-                {
-                  sender: {
-                    id: user.id,
-                  },
+              },
+              {
+                sender: {
+                  id: isModerator ? undefined : user.id,
                 },
-              ],
-        },
-      }),
-    );
+              },
+            ],
+          },
+        }),
+      )
+    ).map(FormatAnnal);
   }
 
   async doesUEAnnalExist(userId: string, ueCode: string, annalId: string, isModerator = false) {
@@ -871,58 +915,58 @@ export class UEService {
           ue: {
             code: ueCode,
           },
-          deletedAt: {
-            not: isModerator ? undefined : null,
-          },
-          OR: isModerator
-            ? undefined
-            : [
-                {
-                  uploadComplete: true,
-                  reports: {
-                    none: {
-                      mitigated: false,
-                    },
-                  },
+          deletedAt: isModerator ? undefined : null,
+          OR: [
+            {
+              uploadComplete: true,
+              validatedAt: {
+                not: null,
+              },
+              reports: {
+                none: {
+                  mitigated: false,
                 },
-                {
-                  sender: {
-                    id: userId,
-                  },
-                },
-              ],
+              },
+            },
+            {
+              sender: {
+                id: isModerator ? undefined : userId,
+              },
+            },
+          ],
         },
       })) === 1
     );
   }
 
   async getUEAnnalFile(annalId: string, userId: string, isModerator = false) {
-    const metadata = await this.prisma.uEAnnal.findUnique(
-      SelectUEAnnalFile({
-        where: {
-          id: annalId,
-          deletedAt: {
-            not: isModerator ? undefined : null,
+    const metadata = FormatAnnal(
+      await this.prisma.uEAnnal.findUnique(
+        SelectUEAnnalFile({
+          where: {
+            id: annalId,
+            deletedAt: isModerator ? undefined : null,
+            OR: [
+              {
+                uploadComplete: true,
+                validatedAt: {
+                  not: null,
+                },
+                reports: {
+                  none: {
+                    mitigated: false,
+                  },
+                },
+              },
+              {
+                sender: {
+                  id: isModerator ? undefined : userId,
+                },
+              },
+            ],
           },
-          OR: isModerator
-            ? undefined
-            : [
-                {
-                  uploadComplete: true,
-                  reports: {
-                    none: {
-                      mitigated: false,
-                    },
-                  },
-                },
-                {
-                  sender: {
-                    id: userId,
-                  },
-                },
-              ],
-        },
-      }),
+        }),
+      ),
     );
     let rootDirectory = this.config.get<string>('ANNAL_UPLOAD_DIR');
     if (rootDirectory.endsWith('/')) rootDirectory = rootDirectory.slice(0, -1);
@@ -944,37 +988,41 @@ export class UEService {
   }
 
   async updateAnnalMetadata(annalId: string, metadata: UpdateAnnal) {
-    return this.prisma.uEAnnal.update(
-      SelectUEAnnalFile({
-        where: {
-          id: annalId,
-        },
-        data: {
-          type: {
-            connect: {
-              id: metadata.typeId,
+    return FormatAnnal(
+      await this.prisma.uEAnnal.update(
+        SelectUEAnnalFile({
+          where: {
+            id: annalId,
+          },
+          data: {
+            type: {
+              connect: {
+                id: metadata.typeId,
+              },
+            },
+            semester: {
+              connect: {
+                code: metadata.semester,
+              },
             },
           },
-          semester: {
-            connect: {
-              code: metadata.semester,
-            },
-          },
-        },
-      }),
+        }),
+      ),
     );
   }
 
   async deleteAnnal(annalId: string) {
-    return this.prisma.uEAnnal.update(
-      SelectUEAnnalFile({
-        where: {
-          id: annalId,
-        },
-        data: {
-          deletedAt: new Date(),
-        },
-      }),
+    return FormatAnnal(
+      await this.prisma.uEAnnal.update(
+        SelectUEAnnalFile({
+          where: {
+            id: annalId,
+          },
+          data: {
+            deletedAt: new Date(),
+          },
+        }),
+      ),
     );
   }
 }

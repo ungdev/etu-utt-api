@@ -1,4 +1,6 @@
 import { Prisma } from '@prisma/client';
+import { omit } from '../../utils';
+import { CommentStatus } from './comment.interface';
 
 const REPLY_SELECT_FILTER = {
   select: {
@@ -14,10 +16,16 @@ const REPLY_SELECT_FILTER = {
     body: true,
     createdAt: true,
     updatedAt: true,
+    deletedAt: true,
   },
 } as const;
 
-export type UECommentReply = DeepWritable<Prisma.UECommentReplyGetPayload<typeof REPLY_SELECT_FILTER>>;
+export type UECommentReply = Omit<
+  DeepWritable<Prisma.UECommentReplyGetPayload<typeof REPLY_SELECT_FILTER>>,
+  'deletedAt'
+> & {
+  status: CommentStatus;
+};
 
 /**
  * Generates the argument to use in prisma function to retrieve an object containing the necessary
@@ -43,4 +51,10 @@ export function SelectCommentReply<T>(arg: T): T & typeof REPLY_SELECT_FILTER {
     ...arg,
     ...REPLY_SELECT_FILTER,
   } as const;
+}
+
+export function FormatReply<T extends Prisma.UECommentReplyGetPayload<typeof REPLY_SELECT_FILTER>>(
+  answer: T,
+): UECommentReply & Omit<T, 'deletedAt'> {
+  return { ...omit(answer, 'deletedAt'), status: answer.deletedAt ? CommentStatus.DELETED : CommentStatus.VALIDATED };
 }

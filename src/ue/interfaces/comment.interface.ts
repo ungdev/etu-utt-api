@@ -1,4 +1,6 @@
 import { Prisma } from '@prisma/client';
+import { omit } from '../../utils';
+import { FormatReply, UECommentReply } from './comment-reply.interface';
 
 const COMMENT_SELECT_FILTER = {
   select: {
@@ -13,6 +15,8 @@ const COMMENT_SELECT_FILTER = {
     },
     createdAt: true,
     updatedAt: true,
+    deletedAt: true,
+    validatedAt: true,
     semester: {
       select: {
         code: true,
@@ -34,6 +38,10 @@ const COMMENT_SELECT_FILTER = {
         body: true,
         createdAt: true,
         updatedAt: true,
+        deletedAt: true,
+      },
+      where: {
+        deletedAt: null,
       },
     },
     upvotes: {
@@ -44,10 +52,12 @@ const COMMENT_SELECT_FILTER = {
   },
 } as const;
 
-export type UERawComment = DeepWritable<Prisma.UECommentGetPayload<typeof COMMENT_SELECT_FILTER>>;
-export type UEComment = Omit<UERawComment, 'upvotes'> & {
+type UERawComment = DeepWritable<Prisma.UECommentGetPayload<typeof COMMENT_SELECT_FILTER>>;
+export type UEComment = Omit<UERawComment, 'upvotes' | 'deletedAt' | 'validatedAt'> & {
   upvotes: number;
   upvoted: boolean;
+  status: CommentStatus;
+  answers: UECommentReply[];
 };
 
 /**
@@ -70,9 +80,53 @@ export type UEComment = Omit<UERawComment, 'upvotes'> & {
  *   }),
  * );
  */
-export function SelectComment<T>(arg: T): T & typeof COMMENT_SELECT_FILTER {
+export function SelectComment<T>(
+  arg: T,
+  userId: string,
+  includeDeletedReplied = false,
+  includeReportedReplies = false,
+): T & typeof COMMENT_SELECT_FILTER {
+  Object.assign(COMMENT_SELECT_FILTER.select.answers.where, {
+    deletedAt: includeDeletedReplied ? undefined : null,
+    OR: [
+      {
+        reports: {
+          none: {
+            mitigated: false,
+          },
+        },
+      },
+      {
+        authorId: includeReportedReplies ? undefined : userId,
+      },
+    ],
+  });
   return {
     ...arg,
     ...COMMENT_SELECT_FILTER,
   } as const;
+}
+
+export function FormatComment<T extends Prisma.UECommentGetPayload<typeof COMMENT_SELECT_FILTER>>(
+  comment: T,
+  userId: string,
+): UEComment & Omit<T, 'deletedAt' | 'validatedAt'> {
+  return {
+    ...omit(comment, 'deletedAt', 'validatedAt'),
+    answers: comment.answers.map(FormatReply),
+    status: comment.deletedAt
+      ? CommentStatus.DELETED
+      : comment.validatedAt
+      ? CommentStatus.VALIDATED
+      : CommentStatus.UNVERIFIED,
+    upvotes: comment.upvotes.length,
+    upvoted: comment.upvotes.some((upvote) => upvote.userId == userId),
+  };
+}
+
+export const enum CommentStatus {
+  UNVERIFIED = 0,
+  VALIDATED = 1,
+  DELETED = 2,
+  PROCESSING = 3,
 }

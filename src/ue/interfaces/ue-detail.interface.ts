@@ -71,7 +71,7 @@ const UE_DETAIL_SELECT_FILTER = {
   },
 } as const;
 
-export type UEUnComputedDetail = DeepWritable<Prisma.UEGetPayload<typeof UE_DETAIL_SELECT_FILTER>>;
+type UEUnComputedDetail = DeepWritable<Prisma.UEGetPayload<typeof UE_DETAIL_SELECT_FILTER>>;
 export type UEDetail = Omit<UEUnComputedDetail, 'openSemester' | 'starVotes'> & {
   openSemester: string[];
   starVotes: { [key: string]: number };
@@ -101,4 +101,47 @@ export function SelectUEDetail<T>(arg: T): T & typeof UE_DETAIL_SELECT_FILTER {
     ...arg,
     ...UE_DETAIL_SELECT_FILTER,
   } as const;
+}
+
+export function FormatUEDetail<T extends Prisma.UEGetPayload<typeof UE_DETAIL_SELECT_FILTER>>(ue: T): UEDetail & T {
+  // We store rates in a object where the key is the criterion id and the value is a list ratings
+  const starVoteCriteria: {
+    [key: string]: {
+      createdAt: Date;
+      value: number;
+    }[];
+  } = {};
+  for (const starVote of ue.starVotes) {
+    if (starVote.criterionId in starVoteCriteria)
+      starVoteCriteria[starVote.criterionId].push({
+        createdAt: starVote.createdAt,
+        value: starVote.value,
+      });
+    else
+      starVoteCriteria[starVote.criterionId] = [
+        {
+          createdAt: starVote.createdAt,
+          value: starVote.value,
+        },
+      ];
+  }
+  // Compute ratings for each criterion, using an exponential decay function
+  // And turn semester into their respective code.
+  return {
+    ...ue,
+    openSemester: ue.openSemester.map((semester) => semester.code),
+    starVotes: Object.fromEntries(
+      Object.entries(starVoteCriteria).map(([key, entry]) => {
+        let coefficients = 0;
+        let ponderation = 0;
+        for (const { value, createdAt } of entry) {
+          const dt = (starVoteCriteria[key][0].createdAt.getTime() - createdAt.getTime()) / 1000;
+          const dp = Math.exp(-dt / 10e7);
+          ponderation += dp * value;
+          coefficients += dp;
+        }
+        return [key, Math.round((ponderation / coefficients) * 10) / 10];
+      }),
+    ),
+  };
 }

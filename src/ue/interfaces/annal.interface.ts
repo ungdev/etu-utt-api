@@ -1,9 +1,12 @@
 import { Prisma } from '@prisma/client';
+import { omit } from '../../utils';
+import { CommentStatus } from './comment.interface';
 
 const UE_ANNAL_SELECT_FILTER = {
   select: {
     createdAt: true,
     updatedAt: true,
+    deletedAt: true,
     uploadComplete: true,
     id: true,
     semesterId: true,
@@ -20,11 +23,14 @@ const UE_ANNAL_SELECT_FILTER = {
         id: true,
       },
     },
-    validatedById: true,
+    validatedAt: true,
   },
 };
 
-export type UEAnnalFile = DeepWritable<Prisma.UEGetPayload<typeof UE_ANNAL_SELECT_FILTER>>;
+export type UEAnnalFile = Omit<
+  DeepWritable<Prisma.UEAnnalGetPayload<typeof UE_ANNAL_SELECT_FILTER>>,
+  'validatedAt' | 'deletedAt' | 'uploadComplete'
+> & { status: CommentStatus };
 
 /**
  * Generates the argument to use in prisma function to retrieve an object containing the necessary
@@ -35,4 +41,19 @@ export function SelectUEAnnalFile<T>(arg: T): T & typeof UE_ANNAL_SELECT_FILTER 
     ...arg,
     ...UE_ANNAL_SELECT_FILTER,
   } as const;
+}
+
+export function FormatAnnal<T extends Prisma.UEAnnalGetPayload<typeof UE_ANNAL_SELECT_FILTER>>(
+  annal: T,
+): UEAnnalFile & Omit<T, 'validatedAt' | 'deletedAt' | 'uploadComplete'> {
+  return {
+    ...omit(annal, 'validatedAt', 'deletedAt', 'uploadComplete'),
+    status: annal.deletedAt
+      ? CommentStatus.DELETED
+      : annal.validatedAt
+      ? CommentStatus.VALIDATED
+      : annal.uploadComplete
+      ? CommentStatus.UNVERIFIED
+      : CommentStatus.PROCESSING,
+  };
 }

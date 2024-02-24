@@ -50,7 +50,13 @@ export class UEController {
   @RequireRole('STUDENT', 'FORMER_STUDENT')
   async getUEComments(@Param('ueCode') ueCode: string, @GetUser() user: User, @Query() dto: GetUECommentsDto) {
     if (!(await this.ueService.doesUEExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
-    return this.ueService.getComments(ueCode, user.id, dto, user.permissions.includes('commentModerator'));
+    return this.ueService.getComments(
+      ueCode,
+      user.id,
+      dto,
+      user.permissions.includes('commentModerator'),
+      user.permissions.includes('commentModerator'),
+    );
   }
 
   @Post('/:ueCode/comments')
@@ -71,7 +77,15 @@ export class UEController {
     @GetUser() user: User,
     @Body() body: UeCommentUpdateDto,
   ) {
-    if (!(await this.ueService.doesCommentExist(commentId))) throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
+    if (
+      !(await this.ueService.doesCommentExist(
+        commentId,
+        user.id,
+        user.permissions.includes('commentModerator'),
+        user.permissions.includes('commentModerator'),
+      ))
+    )
+      throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
     if (await this.ueService.isUserCommentAuthor(user.id, commentId))
       return this.ueService.updateComment(body, commentId, user.id);
     throw new AppException(ERROR_CODE.NOT_COMMENT_AUTHOR);
@@ -80,7 +94,8 @@ export class UEController {
   @Delete('/comments/:commentId')
   @RequireRole('STUDENT', 'FORMER_STUDENT')
   async DiscardUEComment(@UUIDParam('commentId') commentId: string, @GetUser() user: User) {
-    if (!(await this.ueService.doesCommentExist(commentId))) throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
+    if (!(await this.ueService.doesCommentExist(commentId, user.id, user.permissions.includes('commentModerator'))))
+      throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
     if (await this.ueService.isUserCommentAuthor(user.id, commentId))
       return this.ueService.deleteComment(commentId, user.id);
     throw new AppException(ERROR_CODE.NOT_COMMENT_AUTHOR);
@@ -90,7 +105,15 @@ export class UEController {
   @RequireRole('STUDENT')
   @HttpCode(HttpStatus.CREATED)
   async UpvoteUEComment(@UUIDParam('commentId') commentId: string, @GetUser() user: User) {
-    if (!(await this.ueService.doesCommentExist(commentId))) throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
+    if (
+      !(await this.ueService.doesCommentExist(
+        commentId,
+        user.id,
+        user.permissions.includes('commentModerator'),
+        user.permissions.includes('commentModerator'),
+      ))
+    )
+      throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
     if (await this.ueService.isUserCommentAuthor(user.id, commentId))
       throw new AppException(ERROR_CODE.IS_COMMENT_AUTHOR);
     if (await this.ueService.hasAlreadyUpvoted(user.id, commentId))
@@ -102,7 +125,15 @@ export class UEController {
   @RequireRole('STUDENT', 'FORMER_STUDENT')
   @HttpCode(HttpStatus.NO_CONTENT)
   async UnUpvoteUEComment(@UUIDParam('commentId') commentId: string, @GetUser() user: User) {
-    if (!(await this.ueService.doesCommentExist(commentId))) throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
+    if (
+      !(await this.ueService.doesCommentExist(
+        commentId,
+        user.id,
+        user.permissions.includes('commentModerator'),
+        user.permissions.includes('commentModerator'),
+      ))
+    )
+      throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
     if (await this.ueService.isUserCommentAuthor(user.id, commentId))
       throw new AppException(ERROR_CODE.IS_COMMENT_AUTHOR);
     if (!(await this.ueService.hasAlreadyUpvoted(user.id, commentId)))
@@ -117,23 +148,41 @@ export class UEController {
     @UUIDParam('commentId') commentId: string,
     @Body() body: CommentReplyDto,
   ) {
-    if (!(await this.ueService.doesCommentExist(commentId))) throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
+    if (
+      !(await this.ueService.doesCommentExist(
+        commentId,
+        user.id,
+        user.permissions.includes('commentModerator'),
+        user.permissions.includes('commentModerator'),
+      ))
+    )
+      throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
     return this.ueService.replyComment(user.id, commentId, body);
   }
 
   @Patch('/comments/reply/:replyId')
   @RequireRole('STUDENT', 'FORMER_STUDENT')
   async EditReplyComment(@GetUser() user: User, @UUIDParam('replyId') replyId: string, @Body() body: CommentReplyDto) {
-    if (!(await this.ueService.doesReplyExist(replyId))) throw new AppException(ERROR_CODE.NO_SUCH_REPLY);
-    if (await this.ueService.isUserCommentReplyAuthor(user.id, replyId)) return this.ueService.editReply(replyId, body);
+    if (!(await this.ueService.doesReplyExist(replyId, user.id, user.permissions.includes('commentModerator'))))
+      throw new AppException(ERROR_CODE.NO_SUCH_REPLY);
+    if (
+      (await this.ueService.isUserCommentReplyAuthor(user.id, replyId)) ||
+      user.permissions.includes('commentModerator')
+    )
+      return this.ueService.editReply(replyId, body);
     throw new AppException(ERROR_CODE.NOT_REPLY_AUTHOR);
   }
 
   @Delete('/comments/reply/:replyId')
   @RequireRole('STUDENT', 'FORMER_STUDENT')
   async DeleteReplyComment(@GetUser() user: User, @UUIDParam('replyId') replyId: string) {
-    if (!(await this.ueService.doesReplyExist(replyId))) throw new AppException(ERROR_CODE.NO_SUCH_REPLY);
-    if (await this.ueService.isUserCommentReplyAuthor(user.id, replyId)) return this.ueService.deleteReply(replyId);
+    if (!(await this.ueService.doesReplyExist(replyId, user.id, user.permissions.includes('commentModerator'))))
+      throw new AppException(ERROR_CODE.NO_SUCH_REPLY);
+    if (
+      (await this.ueService.isUserCommentReplyAuthor(user.id, replyId)) ||
+      user.permissions.includes('commentModerator')
+    )
+      return this.ueService.deleteReply(replyId);
     throw new AppException(ERROR_CODE.NOT_REPLY_AUTHOR);
   }
 
@@ -268,40 +317,10 @@ export class UEController {
     return this.ueService.deleteAnnal(annalId);
   }
 
-  /*
-   * ADMIN ROUTES
-   */
-  // @Patch('/admin/comments/:commentId')
-  // @RequirePermission('commentModerator', 'admin')
-  // async UpdateUEComment(
-  //   @Param('commentId') commentId: string,
-  //   @Body() body: UeCommentPostDto,
-  //   @GetUser() user: User,
-  // ) {
-  //   return this.ueService.updateComment(body, commentId, user);
-  // }
-
-  // @Delete('/admin/comments/:commentId')
-  // @RequirePermission('commentModerator', 'admin')
-  // async DeleteUEComment(
-  //   @Param('commentId') commentId: string,
-  //   @GetUser() user: User,
-  // ) {
-  //   return this.ueService.deleteComment(commentId, user);
-  // }
-
-  // @Patch('/admin/comments/reply/:replyId')
-  // @RequirePermission('commentModerator', 'admin')
-  // async UpdateUECommentReply(
-  //   @Param('replyId') commentId: string,
-  //   @Body() body: UeCommentPostDto,
-  // ) {
-  //   return this.ueService.editReply(commentId, body);
-  // }
-
-  // @Delete('/admin/comments/reply/:replyId')
-  // @RequirePermission('commentModerator', 'admin')
-  // async DeleteUECommentReply(@Param('replyId') replyId: string) {
-  //   return this.ueService.deleteReply(replyId);
-  // }
+  // Routes to create
+  // - Get lastValidatedBody from comment (for admins)
+  // --- User report for : comments, replies, annals
+  // -- Validation for : comments, annals
+  // --- Display reports for : comments, replies, annals
+  // -- Display pending validations for : comments, annals
 }
