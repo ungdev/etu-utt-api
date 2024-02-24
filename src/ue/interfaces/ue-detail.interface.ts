@@ -70,7 +70,7 @@ const UE_DETAIL_SELECT_FILTER = {
         value: true,
       },
       orderBy: {
-        createdAt: 'desc',
+        criterionId: 'asc',
       },
     },
   },

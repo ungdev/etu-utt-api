@@ -29,8 +29,8 @@ SpecProto.expectAppError = function <ErrorCode extends ERROR_CODE>(
     error: (args as string[]).reduce((arg, extra) => arg.replaceAll('%', extra), ErrorData[errorCode].message),
   });
 };
-SpecProto.expectUE = function (ue: FakeUE) {
-  return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonLike({
+SpecProto.expectUE = function (ue: FakeUE, rates: Array<{ criterionId: string; value: number }> = []) {
+  return (<Spec>this).expectStatus(HttpStatus.OK).expectJson({
     ...omit(ue, 'id', 'validationRate', 'createdAt', 'updatedAt', 'openSemesters'),
     info: omit(ue.info, 'id', 'ueId'),
     workTime: omit(ue.workTime, 'id', 'ueId'),
@@ -44,6 +44,7 @@ SpecProto.expectUE = function (ue: FakeUE) {
       start: semester.start.toISOString(),
       end: semester.end.toISOString(),
     })),
+    starVotes: Object.fromEntries(rates.map((rate) => [rate.criterionId, rate.value])),
   });
 };
 SpecProto.expectUEs = function (app: AppProvider, ues: FakeUE[], count: number) {

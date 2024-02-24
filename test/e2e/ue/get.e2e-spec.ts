@@ -8,10 +8,12 @@ import {
   createUERating,
   createUESubscription,
   createUser,
+  FakeUEStarVote,
 } from '../../utils/fakedb';
 import { e2eSuite } from '../../utils/test_utils';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
+import { UEService } from '../../../src/ue/ue.service';
 
 const GetE2ESpec = e2eSuite('GET /ue/{ueCode}', (app) => {
   const user = createUser(app);
@@ -61,8 +63,8 @@ const GetE2ESpec = e2eSuite('GET /ue/{ueCode}', (app) => {
   const criterion = createCriterion(app);
   createUESubscription(app, { user, ue: ueWithRating, semester: semesters[0] });
   createUESubscription(app, { user: user2, ue: ueWithRating, semester: semesters[0] });
-  createUERating(app, { user, criterion, ue: ueWithRating }, { value: 3 });
-  createUERating(app, { user: user2, criterion, ue: ueWithRating }, { value: 5 });
+  const rate1 = createUERating(app, { user, criterion, ue: ueWithRating }, { value: 3 });
+  const rate2 = createUERating(app, { user: user2, criterion, ue: ueWithRating }, { value: 5 });
 
   it('should return an error if the ue does not exist', () => {
     return pactum.spec().withBearerToken(user.token).get('/ue/AA01').expectAppError(ERROR_CODE.NO_SUCH_UE, 'AA01');
@@ -73,7 +75,18 @@ const GetE2ESpec = e2eSuite('GET /ue/{ueCode}', (app) => {
   });
 
   it('should return the UE XX30 with rating', () => {
-    return pactum.spec().withBearerToken(user.token).get('/ue/XX30').expectUE(ueWithRating);
+    return pactum
+      .spec()
+      .withBearerToken(user.token)
+      .get('/ue/XX30')
+      .expectUE(ueWithRating, [
+        {
+          criterionId: criterion.id,
+          value: app()
+            .get(UEService)
+            .computeRate([rate2 as Required<FakeUEStarVote>, rate1 as Required<FakeUEStarVote>]),
+        },
+      ]);
   });
 });
 

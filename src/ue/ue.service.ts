@@ -156,17 +156,7 @@ export class UEService {
     return {
       ...ue,
       starVotes: Object.fromEntries(
-        Object.entries(starVoteCriteria).map(([key, entry]) => {
-          let coefficients = 0;
-          let ponderation = 0;
-          for (const { value, createdAt } of entry) {
-            const dt = (starVoteCriteria[key][0].createdAt.getTime() - createdAt.getTime()) / 1000;
-            const dp = Math.exp(-dt / 10e7);
-            ponderation += dp * value;
-            coefficients += dp;
-          }
-          return [key, Math.round((ponderation / coefficients) * 10) / 10];
-        }),
+        Object.entries(starVoteCriteria).map(([key, entry]) => [key, this.computeRate(entry)]),
       ),
     };
   }
@@ -707,5 +697,18 @@ export class UEService {
         },
       }),
     );
+  }
+
+  computeRate(rates: Array<{ createdAt: Date; value: number }>) {
+    let coefficients = 0;
+    let ponderation = 0;
+    const newestCreationTimestamp = rates.reduce((acc, rate) => Math.max(rate.createdAt.getTime(), acc), 0);
+    for (const { value, createdAt } of rates) {
+      const dt = (newestCreationTimestamp - createdAt.getTime()) / 1000;
+      const dp = Math.exp(-dt / 10e7);
+      ponderation += dp * value;
+      coefficients += dp;
+    }
+    return Math.round((ponderation / coefficients) * 10) / 10;
   }
 }

@@ -27,7 +27,7 @@ declare module './declarations' {
       ...customMessage: ExtrasTypeBuilder<(typeof ErrorData)[ErrorCode]['message']>
     ): this;
     /** expects to return the given {@link UEDetail} */
-    expectUE(ue: FakeUE): this;
+    expectUE(ue: FakeUE, rates?: Array<{ criterionId: string; value: number }>): this;
     /** expects to return the given {@link page | page of UEOverView} */
     expectUEs(app: AppProvider, ues: FakeUE[], count: number): this;
     /**
