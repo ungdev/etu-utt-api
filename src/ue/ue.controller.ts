@@ -112,7 +112,7 @@ export class UEController {
   }
 
   @Post('/comments/:commentId/upvote')
-  @HttpCode(HttpStatus.CREATED)
+  @HttpCode(HttpStatus.NO_CONTENT)
   async UpvoteUEComment(
     @Param(
       'commentId',
