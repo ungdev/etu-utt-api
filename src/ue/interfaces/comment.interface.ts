@@ -114,19 +114,15 @@ export function FormatComment<T extends Prisma.UECommentGetPayload<typeof COMMEN
   return {
     ...omit(comment, 'deletedAt', 'validatedAt'),
     answers: comment.answers.map(FormatReply),
-    status: comment.deletedAt
-      ? CommentStatus.DELETED
-      : comment.validatedAt
-      ? CommentStatus.VALIDATED
-      : CommentStatus.UNVERIFIED,
+    status: (comment.deletedAt && CommentStatus.DELETED) | (comment.validatedAt && CommentStatus.VALIDATED),
     upvotes: comment.upvotes.length,
     upvoted: comment.upvotes.some((upvote) => upvote.userId == userId),
   };
 }
 
 export const enum CommentStatus {
-  UNVERIFIED = 0,
-  VALIDATED = 1,
-  DELETED = 2,
-  PROCESSING = 3,
+  UNVERIFIED = 0b000, // For typing only
+  VALIDATED = 0b001,
+  PROCESSING = 0b010,
+  DELETED = 0b100,
 }

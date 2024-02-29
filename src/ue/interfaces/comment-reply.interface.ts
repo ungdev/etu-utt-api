@@ -56,5 +56,8 @@ export function SelectCommentReply<T>(arg: T): T & typeof REPLY_SELECT_FILTER {
 export function FormatReply<T extends Prisma.UECommentReplyGetPayload<typeof REPLY_SELECT_FILTER>>(
   answer: T,
 ): UECommentReply & Omit<T, 'deletedAt'> {
-  return { ...omit(answer, 'deletedAt'), status: answer.deletedAt ? CommentStatus.DELETED : CommentStatus.VALIDATED };
+  return {
+    ...omit(answer, 'deletedAt'),
+    status: (answer.deletedAt && CommentStatus.DELETED) | CommentStatus.VALIDATED,
+  };
 }

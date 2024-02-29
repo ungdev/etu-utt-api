@@ -11,6 +11,7 @@ import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
 import { Dummies, e2eSuite, JsonLike } from '../../utils/test_utils';
 import { PrismaService } from '../../../src/prisma/prisma.service';
+import { CommentStatus } from 'src/ue/interfaces/comment.interface';
 
 const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
   const user = createUser(app);
@@ -116,6 +117,7 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
         answers: [],
         upvotes: 1,
         upvoted: false,
+        status: CommentStatus.UNVERIFIED,
       });
     await app().get(PrismaService).uEComment.deleteMany();
     await createComment(app, { ue, user, semester }, comment, true);
@@ -148,6 +150,7 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
         answers: [],
         upvotes: 1,
         upvoted: false,
+        status: CommentStatus.VALIDATED,
       });
     await app().get(PrismaService).uEComment.deleteMany();
     await createComment(app, { ue, user, semester }, comment, true);

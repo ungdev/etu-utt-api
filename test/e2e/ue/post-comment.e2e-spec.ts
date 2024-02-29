@@ -11,6 +11,7 @@ import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
 import { e2eSuite, JsonLike } from '../../utils/test_utils';
 import { PrismaService } from '../../../src/prisma/prisma.service';
+import { CommentStatus } from 'src/ue/interfaces/comment.interface';
 
 const PostCommment = e2eSuite('POST /ue/{ueCode}/comments', (app) => {
   const user = createUser(app);
@@ -105,6 +106,7 @@ const PostCommment = e2eSuite('POST /ue/{ueCode}/comments', (app) => {
           answers: [],
           upvotes: 0,
           upvoted: false,
+          status: CommentStatus.UNVERIFIED,
         },
         true,
       );
@@ -151,6 +153,7 @@ const PostCommment = e2eSuite('POST /ue/{ueCode}/comments', (app) => {
           answers: [],
           upvotes: 0,
           upvoted: false,
+          status: CommentStatus.UNVERIFIED,
         },
         true,
       );

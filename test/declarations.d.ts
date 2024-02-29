@@ -7,7 +7,11 @@ import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { UERating } from 'src/ue/interfaces/rate.interface';
 
 type JsonLikeVariant<T> = {
-  [K in keyof T]: T[K] extends string | Date | DeepWritable<Date> ? string | RegExp : JsonLikeVariant<T[K]>;
+  [K in keyof T]: T[K] extends string | Date | DeepWritable<Date>
+    ? string | RegExp
+    : T[K] extends (infer R)[]
+    ? JsonLikeVariant<R>[]
+    : JsonLikeVariant<T[K]>;
 };
 
 /**

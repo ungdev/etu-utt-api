@@ -11,6 +11,7 @@ import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
 import { Dummies, e2eSuite, JsonLike } from '../../utils/test_utils';
 import { PrismaService } from '../../../src/prisma/prisma.service';
+import { CommentStatus } from 'src/ue/interfaces/comment.interface';
 
 const UpdateCommentReply = e2eSuite('PATCH /ue/comments/reply/{replyId}', (app) => {
   const user = createUser(app);
@@ -106,6 +107,7 @@ const UpdateCommentReply = e2eSuite('PATCH /ue/comments/reply/{replyId}', (app) 
         createdAt: JsonLike.ANY_DATE,
         updatedAt: JsonLike.ANY_DATE,
         body: "Je m'appelle Alban Ichou et j'approuve ce commentaire",
+        status: CommentStatus.VALIDATED,
       });
     return app().get(PrismaService).uECommentReply.deleteMany();
   });

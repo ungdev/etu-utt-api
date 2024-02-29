@@ -87,7 +87,7 @@ export class UEController {
     )
       throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
     if (await this.ueService.isUserCommentAuthor(user.id, commentId))
-      return this.ueService.updateComment(body, commentId, user.id);
+      return this.ueService.updateComment(body, commentId, user.id, user.permissions.includes('commentModerator'));
     throw new AppException(ERROR_CODE.NOT_COMMENT_AUTHOR);
   }
 

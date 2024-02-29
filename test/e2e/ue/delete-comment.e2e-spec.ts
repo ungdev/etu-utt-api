@@ -10,6 +10,8 @@ import {
 import { Dummies, e2eSuite } from '../../utils/test_utils';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
+import { CommentStatus } from 'src/ue/interfaces/comment.interface';
+import { PrismaService } from '../../../src/prisma/prisma.service';
 
 const DeleteComment = e2eSuite('DELETE /ue/comments/{commentId}', (app) => {
   const user = createUser(app);
@@ -72,6 +74,12 @@ const DeleteComment = e2eSuite('DELETE /ue/comments/{commentId}', (app) => {
         answers: [],
         upvotes: 1,
         upvoted: true,
+        status: CommentStatus.DELETED | CommentStatus.VALIDATED,
+      });
+    await app()
+      .get(PrismaService)
+      .uEComment.delete({
+        where: { id: comment1.id },
       });
     return createComment(app, { user, ue, semester }, comment1, true);
   });

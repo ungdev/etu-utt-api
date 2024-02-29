@@ -14,7 +14,8 @@ import { e2eSuite } from '../../utils/test_utils';
 import { ConfigService } from '@nestjs/config';
 import { ERROR_CODE } from 'src/exceptions';
 import { PrismaService } from '../../../src/prisma/prisma.service';
-import { SelectComment } from '../../../src/ue/interfaces/comment.interface';
+import { CommentStatus, SelectComment } from '../../../src/ue/interfaces/comment.interface';
+import { omit } from '../../../src/utils';
 
 const GetCommentsE2ESpec = e2eSuite('GET /ue/{ueCode}/comments', (app) => {
   const user = createUser(app);
@@ -77,11 +78,14 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/{ueCode}/comments', (app) => {
       await app()
         .get(PrismaService)
         .uEComment.findMany(
-          SelectComment({
-            select: {
-              upvotes: true,
+          SelectComment(
+            {
+              select: {
+                upvotes: true,
+              },
             },
-          }),
+            user.id,
+          ),
         )
     ).map((comment) => ({
       ...comment,
@@ -101,14 +105,16 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/{ueCode}/comments', (app) => {
           )
           .slice(0, Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')))
           .map((comment) => ({
-            ...comment,
+            ...omit(comment, 'validatedAt', 'deletedAt'),
             answers: comment.answers.map((answer) => ({
-              ...answer,
+              ...omit(answer, 'deletedAt'),
               createdAt: answer.createdAt.toISOString(),
               updatedAt: answer.updatedAt.toISOString(),
+              status: CommentStatus.VALIDATED,
             })),
             updatedAt: comment.updatedAt.toISOString(),
             createdAt: comment.createdAt.toISOString(),
+            status: CommentStatus.VALIDATED,
           }))
           .map((comment) => {
             if (comment.isAnonymous && comment.author.id !== user.id) delete comment.author;
@@ -124,11 +130,14 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/{ueCode}/comments', (app) => {
       await app()
         .get(PrismaService)
         .uEComment.findMany(
-          SelectComment({
-            select: {
-              upvotes: true,
+          SelectComment(
+            {
+              select: {
+                upvotes: true,
+              },
             },
-          }),
+            user.id,
+          ),
         )
     ).map((comment) => ({
       ...comment,
@@ -152,14 +161,16 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/{ueCode}/comments', (app) => {
             Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')) * 2,
           )
           .map((comment) => ({
-            ...comment,
+            ...omit(comment, 'deletedAt', 'validatedAt'),
             answers: comment.answers.map((answer) => ({
-              ...answer,
+              ...omit(answer, 'deletedAt'),
               createdAt: answer.createdAt.toISOString(),
               updatedAt: answer.updatedAt.toISOString(),
+              status: CommentStatus.VALIDATED,
             })),
             updatedAt: comment.updatedAt.toISOString(),
             createdAt: comment.createdAt.toISOString(),
+            status: CommentStatus.VALIDATED,
           }))
           .map((comment) => {
             if (comment.isAnonymous && comment.author.id !== user.id) delete comment.author;

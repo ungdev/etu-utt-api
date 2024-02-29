@@ -11,6 +11,7 @@ import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
 import { Dummies, e2eSuite, JsonLike } from '../../utils/test_utils';
 import { PrismaService } from '../../../src/prisma/prisma.service';
+import { CommentStatus } from 'src/ue/interfaces/comment.interface';
 
 const PostCommmentReply = e2eSuite('POST /ue/comments/{commentId}/reply', (app) => {
   const user = createUser(app);
@@ -83,7 +84,7 @@ const PostCommmentReply = e2eSuite('POST /ue/comments/{commentId}/reply', (app) 
       .expectAppError(ERROR_CODE.PARAM_NOT_UUID, 'commentId');
   });
 
-  it('should return the posted comment', async () => {
+  it('should return the posted reply', async () => {
     await pactum
       .spec()
       .withBearerToken(user.token)
@@ -103,6 +104,7 @@ const PostCommmentReply = e2eSuite('POST /ue/comments/{commentId}/reply', (app) 
           body: 'heyhey',
           createdAt: JsonLike.ANY_DATE,
           updatedAt: JsonLike.ANY_DATE,
+          status: CommentStatus.VALIDATED,
         },
         true,
       );

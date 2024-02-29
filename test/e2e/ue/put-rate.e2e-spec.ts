@@ -50,6 +50,18 @@ const PutRate = e2eSuite('PUT /ue/{ueCode}/rate', (app) => {
       .expectAppError(ERROR_CODE.PARAM_NOT_NUMBER, 'value');
   });
 
+  it('should return a 400 as value is not an int', () => {
+    return pactum
+      .spec()
+      .withBearerToken(user2.token)
+      .put(`/ue/${ue.code}/rate`)
+      .withBody({
+        criterion: criterion.id,
+        value: 1.5,
+      })
+      .expectAppError(ERROR_CODE.PARAM_NOT_INT, 'value');
+  });
+
   it('should return a 400 as value is too high', () => {
     return pactum
       .spec()

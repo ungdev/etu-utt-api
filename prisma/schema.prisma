@@ -297,7 +297,8 @@ model UEComment {
   body              String    @db.Text
   isAnonymous       Boolean
   createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  updatedAt         DateTime  @default(now())
+  // Removed @updatedAt because the property is used to display the last datetime the content of the comment was altered on
   deletedAt         DateTime?
   validatedAt       DateTime?
   lastValidatedBody String?
@@ -311,16 +312,14 @@ model UEComment {
   answers  UECommentReply[]
   reports  UECommentReport[]
   upvotes  UECommentUpvote[]
-
-  // A user may have deleted several comments on this UE but only one is visible
-  @@unique([ueId, authorId, deletedAt])
 }
 
 model UECommentReply {
   id        String    @id @default(uuid())
   body      String    @db.Text
   createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  updatedAt DateTime  @default(now())
+  // Removed @updatedAt because the property is used to display the last datetime the content of the reply was altered on
   deletedAt DateTime?
   commentId String
   authorId  String?

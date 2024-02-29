@@ -363,13 +363,11 @@ export class UEService {
       },
     });
     // Find a comment (in the UE) whoose author is the user
-    const comment = await this.prisma.uEComment.findUnique({
+    const comment = await this.prisma.uEComment.findFirst({
       where: {
-        ueId_authorId_deletedAt: {
-          authorId: userId,
-          ueId: ue.id,
-          deletedAt: null,
-        },
+        authorId: userId,
+        ueId: ue.id,
+        deletedAt: null,
       },
     });
     return comment != null;
@@ -427,13 +425,19 @@ export class UEService {
    * @param userId the user updating the comment
    * @returns the updated comment
    */
-  async updateComment(body: UeCommentUpdateDto, commentId: string, userId: string): Promise<UEComment> {
+  async updateComment(
+    body: UeCommentUpdateDto,
+    commentId: string,
+    userId: string,
+    isModerator = false,
+  ): Promise<UEComment> {
     const previousComment = await this.prisma.uEComment.findUnique({
       where: {
         id: commentId,
       },
     });
-    const needsValidationAgain = body.body && body.body !== previousComment.body && previousComment.validatedAt != null;
+    const needsValidationAgain =
+      body.body && body.body !== previousComment.body && previousComment.validatedAt != null && !isModerator;
     return FormatComment(
       await this.prisma.uEComment.update(
         SelectComment(
@@ -446,6 +450,7 @@ export class UEService {
               isAnonymous: body.isAnonymous,
               validatedAt: needsValidationAgain ? null : undefined,
               lastValidatedBody: needsValidationAgain ? previousComment.body : undefined,
+              updatedAt: new Date(),
             },
           },
           userId,
@@ -540,6 +545,7 @@ export class UEService {
         SelectCommentReply({
           data: {
             body: reply.body,
+            updatedAt: new Date(),
           },
           where: {
             id: replyId,
