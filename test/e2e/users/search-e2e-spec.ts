@@ -16,11 +16,12 @@ function userToBodyUser(user: User) {
   };
 }
 
-const SearchE2ESpec = suite('Search', (app) => {
+const SearchE2ESpec = suite('GET /users', (app) => {
   const userInfos = {
     login: 'users',
     password: 'verystrongpwd',
     sex: 'FEMALE',
+
     studentId: 69,
     lastName: 'profile',
     firstName: 'profile',

@@ -29,6 +29,8 @@ export class AuthService {
           infos: {
             create: { sex: dto.sex, birthday: dto.birthday },
           },
+          preference: { create: {} },
+          RGPD: { create: {} },
         },
       });
 

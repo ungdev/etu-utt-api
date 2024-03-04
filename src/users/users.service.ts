@@ -80,6 +80,7 @@ export default class UsersService {
 
   filterPublicInfo(user: UserComplete, isCurrentUser: Boolean) {
     return {
+      id: user.id,
       firstName: user.firstName,
       lastName: user.lastName,
       nickName: user.infos.nickname,
@@ -95,42 +96,55 @@ export default class UsersService {
           : undefined,
       passions: user.infos.passions,
       website: user.infos.website,
-      branche: user.branche.brancheId,
-      semestre: user.branche.semesterNumber,
-      filiere: user.branche.filiereId,
-      mailUTT: user.mailsPhones.mailUTT,
+      branche: user.branche === null ? undefined : user.branche.brancheId,
+      semestre: user.branche === null ? undefined : user.branche.semesterNumber,
+      filiere: user.branche === null ? undefined : user.branche.filiereId,
+      mailUTT: user.mailsPhones === null ? undefined : user.mailsPhones.mailUTT,
       mailPersonal:
-        user.preference.displayMailPersonal || isCurrentUser
+        (user.preference.displayMailPersonal && !(user.mailsPhones === null)) ||
+        isCurrentUser
           ? user.mailsPhones.mailPersonal
           : undefined,
       phone:
-        user.preference.displayPhone || isCurrentUser
+        (user.preference.displayPhone && !(user.mailsPhones === null)) ||
+        isCurrentUser
           ? user.mailsPhones.phoneNumber
           : undefined,
       street:
-        user.preference.displayAddresse || isCurrentUser
+        (user.preference.displayAddresse && !(user.addresse === null)) ||
+        isCurrentUser
           ? user.addresse.street
           : undefined,
       postalCode:
-        user.preference.displayAddresse || isCurrentUser
+        (user.preference.displayAddresse && !(user.addresse === null)) ||
+        isCurrentUser
           ? user.addresse.postalCode
           : undefined,
       city:
-        user.preference.displayAddresse || isCurrentUser
+        (user.preference.displayAddresse && !(user.addresse === null)) ||
+        isCurrentUser
           ? user.addresse.city
           : undefined,
       country:
-        user.preference.displayAddresse || isCurrentUser
+        (user.preference.displayAddresse && !(user.addresse === null)) ||
+        isCurrentUser
           ? user.addresse.country
           : undefined,
-      facebook: user.socialNetwork.facebook,
-      twitter: user.socialNetwork.twitter,
-      instagram: user.socialNetwork.instagram,
-      linkendIn: user.socialNetwork.linkedin,
-      twitch: user.socialNetwork.twitch,
-      spotify: user.socialNetwork.spotify,
+      facebook:
+        user.socialNetwork === null ? undefined : user.socialNetwork.facebook,
+      twitter:
+        user.socialNetwork === null ? undefined : user.socialNetwork.twitter,
+      instagram:
+        user.socialNetwork === null ? undefined : user.socialNetwork.instagram,
+      linkendIn:
+        user.socialNetwork === null ? undefined : user.socialNetwork.linkedin,
+      twitch:
+        user.socialNetwork === null ? undefined : user.socialNetwork.twitch,
+      spotify:
+        user.socialNetwork === null ? undefined : user.socialNetwork.spotify,
       discord:
-        user.preference.displayDiscord || isCurrentUser
+        (user.preference.displayDiscord && !(user.socialNetwork === null)) ||
+        isCurrentUser
           ? user.socialNetwork.pseudoDiscord
           : undefined,
       infoDisplayed: isCurrentUser

@@ -403,27 +403,33 @@ model UEWorkTime {
 }
 
 model User {
-  id        String  @id @default(uuid())
-  login     String  @unique @db.VarChar(50)
-  hash      String
-  studentId Int?
-  firstName String
-  lastName  String
-  roles     Json    @default("[]")
-  RGPDId    String? @unique
+  id               String  @id @default(uuid())
+  login            String  @unique @db.VarChar(50)
+  hash             String
+  studentId        Int?
+  firstName        String
+  lastName         String
+  roles            Json    @default("[]")
+  RGPDId           String  @unique
+  preferenceId     String  @unique
+  infosId          String  @unique
+  addresseId       String? @unique
+  brancheId        String? @unique
+  mailsPhonesId    String?  @unique
+  socialNetworkId  String? @unique
 
   timestamps            UserTimestamps?
-  socialNetwork         UserSocialNetwork?
+  socialNetwork         UserSocialNetwork?        @relation(fields: [socialNetworkId], references: [id])
   bans                  UserBan[]
-  RGPD                  UserRGPD?
+  RGPD                  UserRGPD                  @relation(fields: [RGPDId], references: [id])
   BDEContributions      UserBDEContribution[]
   assoMembership        AssoMembership[]
-  branche               UserBranche?
+  branche               UserBranche?              @relation(fields: [brancheId], references: [id])
   formation             UserFormation?
-  preference            UserPreference?
-  infos                 UserInfos?
-  addresse              UserAddress?
-  mailsPhones           UserMailsPhones?
+  preference            UserPreference            @relation(fields: [preferenceId], references: [id])
+  infos                 UserInfos                 @relation(fields: [infosId], references: [id])
+  addresse              UserAddress?              @relation(fields: [addresseId], references: [id])
+  mailsPhones           UserMailsPhones?          @relation(fields: [mailsPhonesId], references: [id])
   otherAttributes       UserOtherAttributValue[]
   UEsSubscriptions      UserUESubscription[]
   UEStarVotes           UEStarVote[]
@@ -448,7 +454,7 @@ model UserAddress {
   country    String? @db.VarChar(50)
   userId     String  @unique
 
-  user User @relation(fields: [userId], references: [id])
+  user User?
 }
 
 model UserBan {
@@ -477,12 +483,11 @@ model UserBranche {
   id             String   @id @default(uuid())
   semesterNumber Int      @db.SmallInt
   createdAt      DateTime
-  userId         String   @unique
   brancheId      String
   filiereId      String
   semesterId     String
 
-  user     User       @relation(fields: [userId], references: [id])
+  user     User?
   branche  UTTBranche @relation(fields: [brancheId], references: [code])
   filiere  UTTFiliere @relation(fields: [filiereId], references: [code])
   semester Semester   @relation(fields: [semesterId], references: [code])
@@ -518,9 +523,8 @@ model UserInfos {
   nickname    String?  @db.VarChar(50)
   passions    String?  @db.Text
   website     String?  @db.VarChar(255)
-  userId      String   @unique
 
-  user User @relation(fields: [userId], references: [id])
+  user User?
 }
 
 model UserMailsPhones {
@@ -528,9 +532,8 @@ model UserMailsPhones {
   mailUTT      String? @db.VarChar(255)
   mailPersonal String? @db.VarChar(255)
   phoneNumber  String? @db.VarChar(100)
-  userId       String  @unique
 
-  user User @relation(fields: [userId], references: [id])
+  user User?
 }
 
 model UserOtherAttribut {
@@ -552,11 +555,10 @@ model UserOtherAttributValue {
 
 model UserPreference {
   id                     String   @id @default(uuid())
-  birthdayDisplayOnlyAge Boolean
-  language               Language
-  wantDaymail            Boolean
-  wantDayNotif           Boolean
-  userId                 String   @unique
+  birthdayDisplayOnlyAge Boolean  @default(false)
+  language               Language @default(FR)
+  wantDaymail            Boolean  @default(false)
+  wantDayNotif           Boolean  @default(false)
   displaySex             Boolean  @default(false)
   displayBirthday        Boolean  @default(false)
   displayMailPersonal    Boolean  @default(false)
@@ -564,16 +566,15 @@ model UserPreference {
   displayAddresse        Boolean  @default(false)
   displayDiscord         Boolean  @default(false)
 
-  user User @relation(fields: [userId], references: [id])
+  user User?
 }
 
 model UserRGPD {
   id                   String   @id @default(uuid())
   isKeepingAccount     Boolean?
   isDeletingEverything Boolean?
-  userId               String   @unique
 
-  user User @relation(fields: [userId], references: [id])
+  user User?
 }
 
 model UserSocialNetwork {
@@ -586,9 +587,8 @@ model UserSocialNetwork {
   spotify        String? @db.VarChar(255)
   pseudoDiscord  String? @db.VarChar(255)
   wantDiscordUTT Boolean
-  userId         String  @unique
 
-  user User @relation(fields: [userId], references: [id])
+  user User?
 }
 
 model UserTimestamps {

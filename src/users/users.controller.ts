@@ -35,7 +35,7 @@ export default class UsersController {
   @UseGuards(JwtGuard)
   async getProfile(@GetUser() user: User) {
     const completeUser = await this.usersService.fetchWholeUser(user.id);
-    if (!user) {
+    if (!completeUser) {
       throw new NotFoundException(`No user with id ${user.id}`);
     }
     return this.usersService.filterPublicInfo(completeUser, true);
