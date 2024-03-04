@@ -3,14 +3,13 @@ import * as pactum from 'pactum';
 import { HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 
-const GetUserE2ESpec = suite('GET /users/current', (app) => {
+const GetCurrentUserE2ESpec = suite('GET /users/current', (app) => {
   const user = createUser(app);
-  const userToSearch = createUser(app, { login: 'userToSearch', studentId: 2 });
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum
       .spec()
-      .get('/users/abcdef')
+      .get('/users/current')
       .expectStatus(HttpStatus.UNAUTHORIZED);
   });
 
@@ -26,7 +25,7 @@ const GetUserE2ESpec = suite('GET /users/current', (app) => {
     const userFromDb = await app()
       .get(PrismaService)
       .user.findUnique({
-        where: { login: userToSearch.login },
+        where: { login: user.login },
         include: {
           infos: true,
           branche: true,
@@ -42,11 +41,9 @@ const GetUserE2ESpec = suite('GET /users/current', (app) => {
       lastName: userFromDb.lastName,
       nickName: userFromDb.infos.nickname,
       avatar: userFromDb.infos.avatar,
-      sex: userFromDb.preference.displaySex ? userFromDb.infos.sex : undefined,
+      sex: userFromDb.infos.sex,
       nationality: userFromDb.infos.nationality,
-      birthday: userFromDb.preference.displayBirthday
-        ? userFromDb.infos.birthday
-        : undefined,
+      birthday: userFromDb.infos.birthday,
       passions: userFromDb.infos.passions,
       website: userFromDb.infos.website,
       branche:
@@ -62,26 +59,17 @@ const GetUserE2ESpec = suite('GET /users/current', (app) => {
           ? undefined
           : userFromDb.mailsPhones.mailUTT,
       mailPersonal:
-        userFromDb.preference.displayMailPersonal &&
-        !(userFromDb.mailsPhones === null)
-          ? userFromDb.mailsPhones.mailPersonal
-          : undefined,
+        userFromDb.mailsPhones === null
+          ? undefined
+          : userFromDb.mailsPhones.mailPersonal,
       phone:
-        userFromDb.preference.displayPhone && !(userFromDb.mailsPhones === null)
-          ? userFromDb.mailsPhones.phoneNumber
-          : undefined,
-      street: userFromDb.preference.displayAddresse
-        ? userFromDb.addresse.street
-        : undefined,
-      postalCode: userFromDb.preference.displayAddresse
-        ? userFromDb.addresse.postalCode
-        : undefined,
-      city: userFromDb.preference.displayAddresse
-        ? userFromDb.addresse.city
-        : undefined,
-      country: userFromDb.preference.displayAddresse
-        ? userFromDb.addresse.country
-        : undefined,
+        userFromDb.mailsPhones === null
+          ? undefined
+          : userFromDb.mailsPhones.phoneNumber,
+      street: userFromDb.addresse.street,
+      postalCode: userFromDb.addresse.postalCode,
+      city: userFromDb.addresse.city,
+      country: userFromDb.addresse.country,
       facebook:
         userFromDb.socialNetwork === null
           ? undefined
@@ -107,15 +95,22 @@ const GetUserE2ESpec = suite('GET /users/current', (app) => {
           ? undefined
           : userFromDb.socialNetwork.spotify,
       discord:
-        userFromDb.preference.displayDiscord &&
-        !(userFromDb.socialNetwork === null)
-          ? userFromDb.socialNetwork.pseudoDiscord
-          : undefined,
+        userFromDb.socialNetwork === null
+          ? undefined
+          : userFromDb.socialNetwork.pseudoDiscord,
+      infoDisplayed: {
+        displayBirthday: userFromDb.preference.displayBirthday,
+        displayMailPersonal: userFromDb.preference.displayMailPersonal,
+        displayPhone: userFromDb.preference.displayPhone,
+        displayAddresse: userFromDb.preference.displayAddresse,
+        displaySex: userFromDb.preference.displaySex,
+        displayDiscord: userFromDb.preference.displayDiscord,
+      },
     };
 
     return pactum
       .spec()
-      .get(`/users/${expectedBody.id}`)
+      .get(`/users/current`)
       .withBearerToken(user.token)
       .expectStatus(HttpStatus.OK)
       .expectBody(
@@ -128,4 +123,4 @@ const GetUserE2ESpec = suite('GET /users/current', (app) => {
   });
 });
 
-export default GetUserE2ESpec;
+export default GetCurrentUserE2ESpec;

@@ -38,7 +38,7 @@ export default class UsersController {
     if (!completeUser) {
       throw new NotFoundException(`No user with id ${user.id}`);
     }
-    return this.usersService.filterPublicInfo(completeUser, true);
+    return this.usersService.filterInfo(completeUser, true);
   }
 
   @Get('/:userId')
@@ -48,7 +48,7 @@ export default class UsersController {
     if (!user) {
       throw new NotFoundException(`No user with id ${userId}`);
     }
-    return this.usersService.filterPublicInfo(user, false);
+    return this.usersService.filterInfo(user, false);
   }
 
   @Get('/:userId/associations')
@@ -60,7 +60,7 @@ export default class UsersController {
     }
     return this.usersService.filterUserAsso(user);
   }
-
+  
   @Patch('/current')
   @UseGuards(JwtGuard)
   async updateInfos(@GetUser() user: User, @Body() dto: UserUpdateDto) {

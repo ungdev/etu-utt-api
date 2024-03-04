@@ -2,6 +2,8 @@ import { PrismaService } from '../src/prisma/prisma.service';
 import { INestApplication } from '@nestjs/common';
 import { AuthService } from '../src/auth/auth.service';
 import { AuthSignInDto, AuthSignUpDto } from '../src/auth/dto';
+import { Asso, AssoMembership } from '@prisma/client';
+import { stringify } from 'querystring';
 
 export function suite(
   name: string,
@@ -36,4 +38,23 @@ export function createUser(
     ).access_token;
   });
   return userWithToken;
+}
+
+export function createAsso(
+  app: () => INestApplication,
+  { id = 'oui', studentId = 2 } = {},
+) {
+  const asso = {
+    id: id,
+    createdAt: new Date(Date.now()),
+    userId: 'oui',
+    assoId: 'oui',
+  } as Partial<Asso>;
+  const assoWithToken = { ...asso, token: '' };
+  beforeAll(async () => {
+    assoWithToken.token = (
+      await app().get(AuthService).signup(user)
+    ).access_token;
+  });
+  return assoWithToken;
 }

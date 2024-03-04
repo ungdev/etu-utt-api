@@ -78,7 +78,7 @@ export default class UsersService {
     });
   }
 
-  filterPublicInfo(user: UserComplete, isCurrentUser: Boolean) {
+  filterInfo(user: UserComplete, isCurrentUser: Boolean) {
     return {
       id: user.id,
       firstName: user.firstName,
