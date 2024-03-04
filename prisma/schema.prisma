@@ -58,6 +58,7 @@ model AssoMembershipPermission {
 
 model AssoMembershipRole {
   id String @id @default(uuid())
+  role String 
 
   assoMembership AssoMembership[]
   eventPrivacys  EventPrivacy[]
@@ -421,7 +422,7 @@ model User {
   formation             UserFormation?
   preference            UserPreference?
   infos                 UserInfos?
-  addresses             UserAddress[]
+  addresse              UserAddress?
   mailsPhones           UserMailsPhones?
   otherAttributes       UserOtherAttributValue[]
   UEsSubscriptions      UserUESubscription[]
@@ -445,7 +446,7 @@ model UserAddress {
   postalCode String? @db.VarChar(20)
   city       String? @db.VarChar(255)
   country    String? @db.VarChar(50)
-  userId     String
+  userId     String  @unique
 
   user User @relation(fields: [userId], references: [id])
 }
@@ -556,6 +557,12 @@ model UserPreference {
   wantDaymail            Boolean
   wantDayNotif           Boolean
   userId                 String   @unique
+  displaySex             Boolean  @default(false)
+  displayBirthday        Boolean  @default(false)
+  displayMailPersonal    Boolean  @default(false)
+  displayPhone           Boolean  @default(false)
+  displayAddresse        Boolean  @default(false)
+  displayDiscord         Boolean  @default(false)
 
   user User @relation(fields: [userId], references: [id])
 }
@@ -575,6 +582,8 @@ model UserSocialNetwork {
   twitter        String? @db.VarChar(255)
   instagram      String? @db.VarChar(255)
   linkedin       String? @db.VarChar(255)
+  twitch         String? @db.VarChar(255)
+  spotify        String? @db.VarChar(255)
   pseudoDiscord  String? @db.VarChar(255)
   wantDiscordUTT Boolean
   userId         String  @unique
@@ -584,7 +593,6 @@ model UserSocialNetwork {
 
 model UserTimestamps {
   id             String    @id @default(uuid())
-  firstLoginDate DateTime?
   lastLoginDate  DateTime?
   createdAt      DateTime
   updatedAt      DateTime

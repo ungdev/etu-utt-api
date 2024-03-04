@@ -16,6 +16,7 @@ import { ProfileUpdateDto } from './dto/profile-update.dto';
 export class ProfileController {
   constructor(private prisma: PrismaService) {}
 
+  // done
   @Get()
   @UseGuards(JwtGuard)
   async getProfile(@GetUser() user: User) {
@@ -33,6 +34,7 @@ export class ProfileController {
     };
   }
 
+  // in progress
   @Post()
   @UseGuards(JwtGuard)
   async updateProfile(@GetUser() user: User, @Body() dto: ProfileUpdateDto) {

@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { User } from '../prisma/types';
+import { User, UserComplete, UserAssociation } from '../prisma/types';
 import { UsersSearchDto } from './dto/users-search.dto';
+import { UserUpdateDto } from './dto/users-update.dto';
+import { AssoMembership } from '@prisma/client';
 
 @Injectable()
 export default class UsersService {
@@ -62,14 +64,159 @@ export default class UsersService {
     });
   }
 
-  filterPublicInfo(user: User) {
+  async fetchWholeUser(userId: string): Promise<UserComplete> {
+    return this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        infos: true,
+        branche: true,
+        mailsPhones: true,
+        socialNetwork: true,
+        preference: true,
+        addresse: true,
+      },
+    });
+  }
+
+  filterPublicInfo(user: UserComplete, isCurrentUser: Boolean) {
     return {
-      id: user.id,
-      studentId: user.studentId,
       firstName: user.firstName,
       lastName: user.lastName,
-      nickname: user.infos.nickname,
-      sex: user.infos.sex,
+      nickName: user.infos.nickname,
+      avatar: user.infos.avatar,
+      sex:
+        user.preference.displaySex || isCurrentUser
+          ? user.infos.sex
+          : undefined,
+      nationality: user.infos.nationality,
+      birthday:
+        user.preference.displayBirthday || isCurrentUser
+          ? user.infos.birthday
+          : undefined,
+      passions: user.infos.passions,
+      website: user.infos.website,
+      branche: user.branche.brancheId,
+      semestre: user.branche.semesterNumber,
+      filiere: user.branche.filiereId,
+      mailUTT: user.mailsPhones.mailUTT,
+      mailPersonal:
+        user.preference.displayMailPersonal || isCurrentUser
+          ? user.mailsPhones.mailPersonal
+          : undefined,
+      phone:
+        user.preference.displayPhone || isCurrentUser
+          ? user.mailsPhones.phoneNumber
+          : undefined,
+      street:
+        user.preference.displayAddresse || isCurrentUser
+          ? user.addresse.street
+          : undefined,
+      postalCode:
+        user.preference.displayAddresse || isCurrentUser
+          ? user.addresse.postalCode
+          : undefined,
+      city:
+        user.preference.displayAddresse || isCurrentUser
+          ? user.addresse.city
+          : undefined,
+      country:
+        user.preference.displayAddresse || isCurrentUser
+          ? user.addresse.country
+          : undefined,
+      facebook: user.socialNetwork.facebook,
+      twitter: user.socialNetwork.twitter,
+      instagram: user.socialNetwork.instagram,
+      linkendIn: user.socialNetwork.linkedin,
+      twitch: user.socialNetwork.twitch,
+      spotify: user.socialNetwork.spotify,
+      discord:
+        user.preference.displayDiscord || isCurrentUser
+          ? user.socialNetwork.pseudoDiscord
+          : undefined,
+      infoDisplayed: isCurrentUser
+        ? {
+            displayBirthday: user.preference.displayBirthday,
+            displayMailPersonal: user.preference.displayMailPersonal,
+            displayPhone: user.preference.displayPhone,
+            displayAddresse: user.preference.displayAddresse,
+            displaySex: user.preference.displaySex,
+            displayDiscord: user.preference.displayDiscord,
+          }
+        : undefined,
     };
+  }
+
+  async fetchUserAssociation(userId: string): Promise<UserAssociation[]> {
+    return this.prisma.assoMembership.findMany({
+      where: { userId: userId },
+      include: { roles: true, asso: true },
+    });
+  }
+
+  filterUserAsso(assos: UserAssociation[]) {
+    let userAssos = [];
+    let roles = [];
+    assos.forEach((element) => {
+      element.roles.forEach((memberRole) => {
+        roles.push(memberRole.role);
+      });
+      userAssos.push({
+        asso: element.asso.name,
+        roles: roles,
+      });
+      roles.splice(0);
+    });
+    return userAssos;
+  }
+
+  async updateUserProfil(user: UserComplete, dto: UserUpdateDto) {
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        infos: {
+          update: {
+            nickname: dto.nickname,
+            avatar: dto.avatar,
+            passions: dto.passions,
+            website: dto.website,
+          },
+        },
+        mailsPhones: {
+          update: {
+            mailPersonal: dto.mailPersonal,
+            phoneNumber: dto.phone,
+          },
+        },
+        addresse: {
+          update: {
+            street: dto.street,
+            postalCode: dto.postalCode,
+            city: dto.city,
+            country: dto.country,
+          },
+        },
+        socialNetwork: {
+          update: {
+            facebook: dto.facebook,
+            twitter: dto.twitter,
+            instagram: dto.instagram,
+            linkedin: dto.linkendIn,
+            twitch: dto.twitch,
+            spotify: dto.spotify,
+            pseudoDiscord: dto.discord,
+          },
+        },
+        preference: {
+          update: {
+            displayBirthday: dto.displayBirthday,
+            displayMailPersonal: dto.displayMailPersonal,
+            displayPhone: dto.displayPhone,
+            displayAddresse: dto.displayAddresse,
+            displaySex: dto.displaySex,
+            displayDiscord: dto.displayDiscord,
+          },
+        },
+      },
+    });
   }
 }
