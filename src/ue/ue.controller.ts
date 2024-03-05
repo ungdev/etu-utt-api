@@ -227,7 +227,7 @@ export class UEController {
   @RequireRole('STUDENT', 'FORMER_STUDENT')
   async getUeAnnalMetadata(@Param('ueCode') ueCode: string, @GetUser() user: User) {
     if (!(await this.ueService.doesUEExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
-    if (!(await this.ueService.hasAlreadyDoneThisUE(user.id, ueCode)) || user.permissions.includes('annalUploader'))
+    if (!(await this.ueService.hasAlreadyDoneThisUE(user.id, ueCode)) && !user.permissions.includes('annalUploader'))
       throw new AppException(ERROR_CODE.NOT_ALREADY_DONE_UE);
     return this.ueService.getUEAnnalMetadata(user, ueCode, user.permissions.includes('annalUploader'));
   }
@@ -277,6 +277,7 @@ export class UEController {
       user.id,
       user.permissions.includes('annalModerator'),
     );
+    if (!annalFile) throw new AppException(ERROR_CODE.NO_SUCH_ANNAL, annalId, ueCode);
     response.setHeader('Content-Type', 'application/pdf');
     response.setHeader(
       'Content-Disposition',

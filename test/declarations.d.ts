@@ -5,14 +5,16 @@ import { UEOverView } from 'src/ue/interfaces/ue-overview.interface';
 import { UEDetail } from 'src/ue/interfaces/ue-detail.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { UERating } from 'src/ue/interfaces/rate.interface';
+import { FakeUEAnnalType } from './utils/fakedb';
+import { UEAnnalFile } from 'src/ue/interfaces/annal.interface';
 
-type JsonLikeVariant<T> = {
-  [K in keyof T]: T[K] extends string | Date | DeepWritable<Date>
+type JsonLikeVariant<T> = Partial<{
+  [K in keyof T]: T[K] extends string | Date
     ? string | RegExp
     : T[K] extends (infer R)[]
     ? JsonLikeVariant<R>[]
     : JsonLikeVariant<T[K]>;
-};
+}>;
 
 /**
  * Overwrites the declarations in pactum/src/models/Spec
@@ -52,5 +54,12 @@ declare module './declarations' {
     expectUERate(rate: JsonLikeVariant<UERating>): this;
     /** expects to return the given {@link rate} list */
     expectUERates(rate: JsonLikeVariant<UERating[]>): this;
+    expectUEAnnalMetadata(
+      metadata: JsonLikeVariant<{
+        types: FakeUEAnnalType[];
+        semesters: string[];
+      }>,
+    ): this;
+    expectUEAnnal(annals: JsonLikeVariant<UEAnnalFile>[]): this;
   }
 }

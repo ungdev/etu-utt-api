@@ -28,7 +28,7 @@ const UE_ANNAL_SELECT_FILTER = {
 };
 
 export type UEAnnalFile = Omit<
-  DeepWritable<Prisma.UEAnnalGetPayload<typeof UE_ANNAL_SELECT_FILTER>>,
+  Prisma.UEAnnalGetPayload<typeof UE_ANNAL_SELECT_FILTER>,
   'validatedAt' | 'deletedAt' | 'uploadComplete'
 > & { status: CommentStatus };
 

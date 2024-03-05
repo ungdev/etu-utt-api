@@ -20,10 +20,7 @@ const REPLY_SELECT_FILTER = {
   },
 } as const;
 
-export type UECommentReply = Omit<
-  DeepWritable<Prisma.UECommentReplyGetPayload<typeof REPLY_SELECT_FILTER>>,
-  'deletedAt'
-> & {
+export type UECommentReply = Omit<Prisma.UECommentReplyGetPayload<typeof REPLY_SELECT_FILTER>, 'deletedAt'> & {
   status: CommentStatus;
 };
 

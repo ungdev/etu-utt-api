@@ -18,4 +18,6 @@ export {
   UEComment as RawUEComment,
   UECommentReply as RawUECommentReply,
   UECommentUpvote as RawUECommentUpvote,
+  UEAnnalType as RawUEAnnalType,
+  UEAnnal as RawUEAnnal,
 } from '@prisma/client';

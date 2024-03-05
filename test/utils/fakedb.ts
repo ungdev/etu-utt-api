@@ -4,6 +4,8 @@ import {
   RawTimetableEntryOverride,
   RawTimetableGroup,
   RawUE,
+  RawUEAnnal,
+  RawUEAnnalType,
   RawUEComment,
   RawUECommentReply,
   RawUECommentUpvote,
@@ -54,6 +56,8 @@ export type FakeCommentReply = Partial<RawUECommentReply> & {
   status: Exclude<CommentStatus, CommentStatus.PROCESSING | CommentStatus.UNVERIFIED>;
 };
 export type FakeUECreditCategory = Partial<RawUECreditCategory>;
+export type FakeUEAnnalType = Partial<RawUEAnnalType>;
+export type FakeUEAnnal = Partial<RawUEAnnal>;
 
 export interface FakeEntityMap {
   timetableEntryOverride: {
@@ -128,6 +132,20 @@ export interface FakeEntityMap {
     entity: FakeUECreditCategory;
     params: CreateUECreditCategoryParameters;
   };
+  annalType: {
+    entity: FakeUEAnnalType;
+    params: FakeUEAnnalType;
+  };
+  annal: {
+    entity: FakeUEAnnal;
+    params: CreateAnnalParams;
+    deps: {
+      type: FakeUEAnnalType;
+      semester: FakeSemester;
+      ue: FakeUE;
+      sender: FakeUser;
+    };
+  };
 }
 
 /**
@@ -149,6 +167,33 @@ export const createUser = entityFaker(
     password: faker.internet.password,
   },
   async (app, params) => {
+    const permissions = await app()
+      .get(PrismaService)
+      .userPermission.findMany({
+        where: {
+          id: {
+            in: params.permissions ?? [],
+          },
+        },
+      });
+    permissions.push(
+      ...(await Promise.all(
+        (params.permissions ?? [])
+          .filter((perm) => !permissions.some((p) => p.id === perm))
+          .map((perm) =>
+            app()
+              .get(PrismaService)
+              .userPermission.create({
+                data: {
+                  id: perm,
+                  name: {
+                    create: {},
+                  },
+                },
+              }),
+          ),
+      )),
+    );
     const user = await app()
       .get(PrismaService)
       .user.create({
@@ -156,6 +201,11 @@ export const createUser = entityFaker(
           hash: params.hash ?? (await app().get(AuthService).getHash(params.password)),
           ...pick(params, 'id', 'login', 'studentId', 'firstName', 'lastName', 'role'),
           infos: { create: pick(params, 'birthday', 'sex', 'nickname') },
+          permissions: {
+            createMany: {
+              data: permissions.map((perm) => ({ userPermissionId: perm.id })),
+            },
+          },
         },
         include: {
           infos: true,
@@ -319,6 +369,43 @@ export const createSemester = entityFaker(
       data: params,
     });
   },
+);
+
+export const createAnnalType = entityFaker(
+  'annalType',
+  {
+    name: faker.random.word,
+  },
+  async (app, params) => {
+    return app().get(PrismaService).uEAnnalType.create({ data: params });
+  },
+);
+
+export type CreateAnnalParams = Pick<FakeUEAnnal, 'uploadComplete'> & {
+  deleted?: boolean;
+  validated?: boolean;
+};
+export const createAnnal = entityFaker(
+  'annal',
+  {
+    uploadComplete: true,
+    validated: true,
+    deleted: false,
+  },
+  async (app, { semester, sender, type, ue }, { validated, deleted, uploadComplete }) =>
+    app()
+      .get(PrismaService)
+      .uEAnnal.create({
+        data: {
+          uploadComplete,
+          deletedAt: deleted ? faker.date.recent() : null,
+          validatedAt: validated ? faker.date.past() : null,
+          semesterId: semester.code,
+          senderId: sender.id,
+          typeId: type.id,
+          ueId: ue.id,
+        },
+      }),
 );
 
 export type CreateUEParameters = FakeUE;

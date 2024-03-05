@@ -889,28 +889,42 @@ export class UEService {
               code: ueCode,
             },
             deletedAt: isModerator ? undefined : null,
-            OR: [
-              {
-                uploadComplete: true,
-                validatedAt: {
-                  not: null,
-                },
-                reports: {
-                  none: {
-                    mitigated: false,
-                  },
-                },
-              },
-              {
-                sender: {
-                  id: isModerator ? undefined : user.id,
-                },
-              },
-            ],
+            ...(isModerator
+              ? {}
+              : {
+                  OR: [
+                    {
+                      uploadComplete: true,
+                      validatedAt: {
+                        not: null,
+                      },
+                      reports: {
+                        none: {
+                          mitigated: false,
+                        },
+                      },
+                    },
+                    {
+                      sender: {
+                        id: user.id,
+                      },
+                    },
+                  ],
+                }),
           },
         }),
       )
-    ).map(FormatAnnal);
+    )
+      .map(FormatAnnal)
+      .sort((annal1, annal2) => {
+        const difference = Number(annal2.semesterId.slice(1)) - Number(annal1.semesterId.slice(1));
+        if (difference != 0) return difference;
+        if (annal1.semesterId.slice(0, 1) !== annal2.semesterId.slice(0, 1))
+          return annal1.semesterId.slice(0, 1) === 'P' ? -1 : 1;
+        const typeComparison = annal2.type.name.localeCompare(annal1.type.name);
+        if (typeComparison) return typeComparison;
+        return annal1.createdAt.getTime() - annal2.createdAt.getTime();
+      });
   }
 
   async doesUEAnnalExist(userId: string, ueCode: string, annalId: string, isModerator = false) {
@@ -946,34 +960,34 @@ export class UEService {
   }
 
   async getUEAnnalFile(annalId: string, userId: string, isModerator = false) {
-    const metadata = FormatAnnal(
-      await this.prisma.uEAnnal.findUnique(
-        SelectUEAnnalFile({
-          where: {
-            id: annalId,
-            deletedAt: isModerator ? undefined : null,
-            OR: [
-              {
-                uploadComplete: true,
-                validatedAt: {
-                  not: null,
-                },
-                reports: {
-                  none: {
-                    mitigated: false,
-                  },
+    const rawAnnal = await this.prisma.uEAnnal.findUnique(
+      SelectUEAnnalFile({
+        where: {
+          id: annalId,
+          deletedAt: isModerator ? undefined : null,
+          OR: [
+            {
+              uploadComplete: true,
+              validatedAt: {
+                not: null,
+              },
+              reports: {
+                none: {
+                  mitigated: false,
                 },
               },
-              {
-                sender: {
-                  id: isModerator ? undefined : userId,
-                },
+            },
+            {
+              sender: {
+                id: isModerator ? undefined : userId,
               },
-            ],
-          },
-        }),
-      ),
+            },
+          ],
+        },
+      }),
     );
+    if (!rawAnnal) return null;
+    const metadata = FormatAnnal(rawAnnal);
     let rootDirectory = this.config.get<string>('ANNAL_UPLOAD_DIR');
     if (rootDirectory.endsWith('/')) rootDirectory = rootDirectory.slice(0, -1);
     return {

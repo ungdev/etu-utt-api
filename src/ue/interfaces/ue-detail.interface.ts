@@ -71,7 +71,7 @@ const UE_DETAIL_SELECT_FILTER = {
   },
 } as const;
 
-type UEUnComputedDetail = DeepWritable<Prisma.UEGetPayload<typeof UE_DETAIL_SELECT_FILTER>>;
+type UEUnComputedDetail = Prisma.UEGetPayload<typeof UE_DETAIL_SELECT_FILTER>;
 export type UEDetail = Omit<UEUnComputedDetail, 'openSemester' | 'starVotes'> & {
   openSemester: string[];
   starVotes: { [key: string]: number };
