@@ -33,6 +33,7 @@ export const enum ERROR_CODE {
   PARAM_TOO_HIGH = 2017,
   PARAM_DOES_NOT_MATCH_REGEX = 2102,
   NO_FIELD_PROVIDED = 2201,
+  WIDGET_OVERLAPPING = 2301,
   FORBIDDEN_NOT_ENOUGH_PERMISSIONS = 3001,
   NO_TOKEN = 3002,
   INVALID_TOKEN_FORMAT = 3003,
@@ -140,6 +141,10 @@ export const ErrorData = Object.freeze({
   },
   [ERROR_CODE.NO_FIELD_PROVIDED]: {
     message: 'You must provide at least one field',
+    httpCode: HttpStatus.BAD_REQUEST,
+  },
+  [ERROR_CODE.WIDGET_OVERLAPPING]: {
+    message: 'Widgets at index % and % are overlapping',
     httpCode: HttpStatus.BAD_REQUEST,
   },
   [ERROR_CODE.FORBIDDEN_NOT_ENOUGH_PERMISSIONS]: {

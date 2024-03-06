@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { User } from './interfaces/user.interface';
+import { User, formatUser, SelectUser } from './interfaces/user.interface';
 import { UsersSearchDto } from './dto/users-search.dto';
+import { ProfileUpdateDto } from '../profile/dto/profile-update.dto';
 
 @Injectable()
 export default class UsersService {
@@ -62,9 +63,18 @@ export default class UsersService {
       include: { infos: true, permissions: true },
     });
     if (!user) return null;
-    const transformedUser: User = { ...user, permissions: undefined };
-    transformedUser.permissions = user.permissions.map((permission) => permission.userPermissionId);
-    return transformedUser;
+    return formatUser(user);
+  }
+
+  updateUser(userId: string, dto: ProfileUpdateDto): Promise<User> {
+    return formatUser(
+      this.prisma.user.update(
+        SelectUser({
+          where: { id: userId },
+          data: { infos: { update: { nickname: dto.nickname, website: dto.website, passions: dto.passions } } },
+        }),
+      ),
+    );
   }
 
   filterPublicInfo(user: User) {

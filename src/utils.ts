@@ -1,5 +1,5 @@
 /**
- * Sorts an array in place and returns it.
+ * Sorts an array and returns it. The sort is done in place if the `inPlace` parameter is true.
  * Array is sorted based on a mapper function, that returns in order the values by which to sort the array.
  * @example
  * const array = [
@@ -17,8 +17,10 @@
  * @param array The array to sort
  * @param mapper A function that returns a list of values that will be used for comparison.
  *               The length of the array should be fixed, not dependent on the value to map.
+ * @param inPlace Whether to sort the array in place or to create a new array.
  */
-export function sortArray<T>(array: T[], mapper: (e: T) => any[] | any): T[] {
+export function sortArray<T>(array: T[], mapper: (e: T) => any[] | any, inPlace = true): T[] {
+  array = inPlace ? array : array.slice();
   return array.sort((a, b) => {
     const aMapped = mapper(a);
     const bMapped = mapper(b);

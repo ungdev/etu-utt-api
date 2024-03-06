@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PrismaService } from '../../prisma/prisma.service';
-import { User } from '../../users/interfaces/user.interface';
+import { formatUser, SelectUser, User } from '../../users/interfaces/user.interface';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -14,25 +14,15 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
   }
 
-  async validate(payload: { sub: string; login: string }) {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        id: payload.sub,
-      },
-      include: {
-        infos: true,
-        permissions: {
-          select: {
-            userPermissionId: true,
+  async validate(payload: { sub: string; login: string }): Promise<User> {
+    return formatUser(
+      await this.prisma.user.findUnique(
+        SelectUser({
+          where: {
+            id: payload.sub,
           },
-        },
-      },
-    });
-
-    delete user.hash;
-    // Clear permissions
-    const storedUser: User = { ...user, permissions: undefined };
-    storedUser.permissions = user.permissions.map((permission) => permission.userPermissionId);
-    return storedUser;
+        }),
+      ),
+    );
   }
 }
