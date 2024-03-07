@@ -40,7 +40,7 @@ export class AuthService {
 
   async signin(dto: AuthSignInDto): Promise<string> {
     // find the user by login, if it does not exist, throw exception
-    const user = await this.prisma.user.findUnique({
+    const user = await this.prisma.withDefaultBehaviour.user.findUnique({
       where: {
         login: dto.login,
       },

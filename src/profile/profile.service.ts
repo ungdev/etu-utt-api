@@ -17,14 +17,10 @@ export class ProfileService {
 
   async setParking(userId: string, parking: ParkingUpdateDto[]): Promise<RawParkingWidget[]> {
     return (
-      await this.prisma.user.update({
+      await this.prisma.withDefaultBehaviour.user.update({
         where: { id: userId },
-        data: {
-          userParkingWidget: { deleteMany: {}, createMany: { data: parking } },
-        },
-        select: {
-          userParkingWidget: true,
-        },
+        data: { userParkingWidget: { deleteMany: {}, createMany: { data: parking } } },
+        select: { userParkingWidget: true },
       })
     ).userParkingWidget;
   }

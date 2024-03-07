@@ -5,6 +5,7 @@ import { faker } from '@faker-js/faker';
 import { ConfigService } from '@nestjs/config';
 import { DMMF } from '@prisma/client/runtime/library';
 import { clearUniqueValues } from '../../prisma/seed/utils';
+import { PrismaClient } from '@prisma/client';
 
 /**
  * Initializes this file.
@@ -77,7 +78,7 @@ export const Dummies = {
  * Clears entirely the database.
  * @param prisma The prisma service instance.
  */
-export async function cleanDb(prisma: PrismaService) {
+export async function cleanDb(prisma: PrismaService | PrismaClient) {
   // We can't delete each table one by one, because of foreign key constraints
   const tablesCleared = [] as string[];
   // _runtimeDataModel.models basically contains a JS-ified version of the schema.prisma
@@ -95,7 +96,7 @@ export async function cleanDb(prisma: PrismaService) {
  * @param modelName The name of the model to clear.
  * @param tablesCleared The list of tables that have already been cleared.
  */
-async function clearTableWithCascade(prisma: PrismaService, modelName: string, tablesCleared: string[]) {
+async function clearTableWithCascade(prisma: PrismaService | PrismaClient, modelName: string, tablesCleared: string[]) {
   // No, the full type of the model is not even exported :(
   // (type RuntimeDataModel in prisma/client/runtime/library)
   const model: Omit<DMMF.Model, 'name'> = (prisma as any)._runtimeDataModel.models[modelName];

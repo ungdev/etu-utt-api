@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { User, formatUser, SelectUser } from './interfaces/user.interface';
+import { User } from './interfaces/user.interface';
 import { UsersSearchDto } from './dto/users-search.dto';
 import { ProfileUpdateDto } from '../profile/dto/profile-update.dto';
 
@@ -52,29 +52,20 @@ export default class UsersService {
           },
         ],
       },
-      include: { infos: true },
-      orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
     });
   }
 
-  async fetchUser(userId: string): Promise<User> {
-    const user = await this.prisma.user.findUnique({
+  fetchUser(userId: string): Promise<User> {
+    return this.prisma.user.findUnique({
       where: { id: userId },
-      include: { infos: true, permissions: true },
     });
-    if (!user) return null;
-    return formatUser(user);
   }
 
   updateUser(userId: string, dto: ProfileUpdateDto): Promise<User> {
-    return formatUser(
-      this.prisma.user.update(
-        SelectUser({
-          where: { id: userId },
-          data: { infos: { update: { nickname: dto.nickname, website: dto.website, passions: dto.passions } } },
-        }),
-      ),
-    );
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { infos: { update: { nickname: dto.nickname, website: dto.website, passions: dto.passions } } },
+    });
   }
 
   filterPublicInfo(user: User) {

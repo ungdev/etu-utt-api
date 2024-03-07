@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, OnApplicationBootstrap } from "@nestjs/common";
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
@@ -9,6 +9,8 @@ import { PermissionGuard } from './auth/guard/permission.guard';
 import { UEModule } from './ue/ue.module';
 import { JwtGuard } from './auth/guard';
 import { TimetableModule } from './timetable/timetable.module';
+import { PrismaService } from "./prisma/prisma.service";
+import * as process from "process";
 
 @Module({
   imports: [
@@ -27,7 +29,7 @@ import { TimetableModule } from './timetable/timetable.module';
     TimetableModule,
   ],
   // The providers below are used for all the routes of the api.
-  // For example, the JwtGuard is used for all the routes and checks whether the user is authentified.
+  // For example, the JwtGuard is used for all the routes and checks whether the user is authenticated.
   providers: [
     {
       provide: APP_GUARD,
