@@ -9,7 +9,7 @@ import { CommentReplyDto } from './dto/ue-comment-reply.dto';
 import { GetUECommentsDto } from './dto/ue-get-comments.dto';
 import { SelectUEOverview, UEOverView } from './interfaces/ue-overview.interface';
 import { SelectUEDetail, UEDetail } from './interfaces/ue-detail.interface';
-import { SelectComment, UEComment, UERawComment } from './interfaces/comment.interface';
+import { UEComment } from './interfaces/comment.interface';
 import { SelectCommentReply, UECommentReply } from './interfaces/comment-reply.interface';
 import { Criterion, SelectCriterion } from './interfaces/criterion.interface';
 import { SelectRate, UERating } from './interfaces/rate.interface';
@@ -177,43 +177,28 @@ export class UEService {
   ): Promise<Pagination<UEComment>> {
     // Use a prisma transaction to execute two requests at once:
     // We fetch a page of comments matching our filters and retrieve the total count of comments matching our filters
-    const [comments, commentCount] = (await this.prisma.$transaction([
-      this.prisma.uEComment.findMany(
-        SelectComment({
-          where: {
-            ue: {
-              code: ueCode,
-            },
+    const comments = await this.prisma.uEComment.findMany(
+      {
+        where: {
+          ue: {
+            code: ueCode,
           },
-          orderBy: [
-            {
-              upvotes: {
-                _count: 'desc',
-              },
-            },
-            {
-              createdAt: 'desc',
-            },
-          ],
-          take: Number(this.config.get('PAGINATION_PAGE_SIZE')),
-          skip: ((dto.page ?? 1) - 1) * Number(this.config.get('PAGINATION_PAGE_SIZE')),
-        }),
-      ),
-      this.prisma.uEComment.count({
-        where: { ue: { code: ueCode } },
-      }),
-    ])) as [UERawComment[], number];
+        },
+        take: Number(this.config.get('PAGINATION_PAGE_SIZE')),
+        skip: ((dto.page ?? 1) - 1) * Number(this.config.get('PAGINATION_PAGE_SIZE')),
+      },
+      userId,
+    );
+    const commentCount = await this.prisma.uEComment.count({
+      where: { ue: { code: ueCode } },
+    });
     // If the user is neither a moderator or the comment author, and the comment is anonymous,
     // we remove the author from the response
     for (const comment of comments)
-      if (comment.isAnonymous && !bypassAnonymousData && comment.author?.id !== userId) delete comment.author;
+      if (comment.isAnonymous && !bypassAnonymousData && comment.author?.id !== userId) comment.author = undefined;
     // Data pagination
     return {
-      items: comments.map((comment) => ({
-        ...comment,
-        upvotes: comment.upvotes.length,
-        upvoted: comment.upvotes.some((upvote) => upvote.userId == userId),
-      })),
+      items: comments,
       itemCount: commentCount,
       itemsPerPage: Number(this.config.get('PAGINATION_PAGE_SIZE')),
     };
@@ -226,23 +211,24 @@ export class UEService {
    * @param bypassAnonymousData if true, the author of an anonymous comment will be included in the response (this is the case if the user is a moderator)
    * @returns a page of {@link UEComment} matching the user query
    */
-  async getCommentFromId(commentId: string, userId: string, bypassAnonymousData: boolean) {
+  async getCommentFromId(
+    commentId: string,
+    userId: string,
+    bypassAnonymousData: boolean,
+  ): Promise<PartiallyPartial<UEComment, 'author'>> {
     const comment = await this.prisma.uEComment.findUnique(
-      SelectComment({
+      {
         where: {
           id: commentId,
         },
-      }),
+      },
+      userId,
     );
     if (comment === null) {
       return null;
     }
     if (comment.isAnonymous && !bypassAnonymousData && comment.author?.id !== userId) delete comment.author;
-    return {
-      ...comment,
-      upvotes: comment.upvotes.length,
-      upvoted: comment.upvotes.some((upvote) => upvote.userId == userId),
-    };
+    return comment;
   }
 
   /**
@@ -252,13 +238,13 @@ export class UEService {
    * @param commentId the comment to check
    * @returns whether the user is the author of the {@link commentId | comment}
    */
-  async isUserCommentAuthor(userId: string, commentId: string) {
+  async isUserCommentAuthor(userId: string, commentId: string): Promise<boolean> {
     const comment = await this.prisma.uEComment.findUnique({
       where: {
         id: commentId,
       },
     });
-    return comment.authorId == userId;
+    return comment.author.id == userId;
   }
 
   /**
@@ -357,7 +343,7 @@ export class UEService {
         code: ueCode,
       },
     });
-    // Find a comment (in the UE) whoose author is the user
+    // Find a comment (in the UE) whose author is the user
     const comment = await this.prisma.uEComment.findUnique({
       where: {
         ueId_authorId: {
@@ -378,36 +364,32 @@ export class UEService {
    * @returns the created {@link UEComment}
    */
   async createComment(body: UeCommentPostDto, userId: string, ueCode: string): Promise<UEComment> {
-    return {
-      ...(await this.prisma.uEComment.create(
-        SelectComment({
-          data: {
-            body: body.body,
-            isAnonymous: body.isAnonymous ?? false,
-            updatedAt: new Date(),
-            author: {
-              connect: {
-                id: userId,
-              },
-            },
-            ue: {
-              connect: {
-                code: ueCode,
-              },
-            },
-            semester: {
-              connect: {
-                // Use last semester done when creating the comment
-                code: (await this.getLastSemesterDoneByUser(userId, ueCode)).semesterId,
-              },
+    return this.prisma.uEComment.create(
+      {
+        data: {
+          body: body.body,
+          isAnonymous: body.isAnonymous ?? false,
+          updatedAt: new Date(),
+          author: {
+            connect: {
+              id: userId,
             },
           },
-        }),
-      )),
-      // The comment has no upvotes yet
-      upvotes: 0,
-      upvoted: false,
-    };
+          ue: {
+            connect: {
+              code: ueCode,
+            },
+          },
+          semester: {
+            connect: {
+              // Use last semester done when creating the comment
+              code: (await this.getLastSemesterDoneByUser(userId, ueCode)).semesterId,
+            },
+          },
+        },
+      },
+      userId,
+    );
   }
 
   /**
@@ -418,9 +400,9 @@ export class UEService {
    * @param userId the user updating the comment
    * @returns the updated comment
    */
-  async updateComment(body: UeCommentUpdateDto, commentId: string, userId: string): Promise<UEComment> {
-    const comment = await this.prisma.uEComment.update(
-      SelectComment({
+  updateComment(body: UeCommentUpdateDto, commentId: string, userId: string): Promise<UEComment> {
+    return this.prisma.uEComment.update(
+      {
         where: {
           id: commentId,
         },
@@ -428,13 +410,9 @@ export class UEService {
           body: body.body,
           isAnonymous: body.isAnonymous,
         },
-      }),
+      },
+      userId,
     );
-    return {
-      ...comment,
-      upvotes: comment.upvotes.length,
-      upvoted: comment.upvotes.some((upvote) => upvote.userId == userId),
-    };
   }
 
   /**
@@ -562,19 +540,15 @@ export class UEService {
    * @param userId the user deleting the comment
    * @returns the deleted {@link UEComment}
    */
-  async deleteComment(commentId: string, userId: string): Promise<UEComment> {
-    const comment = await this.prisma.uEComment.delete(
-      SelectComment({
+  deleteComment(commentId: string, userId: string): Promise<UEComment> {
+    return this.prisma.uEComment.delete(
+      {
         where: {
           id: commentId,
         },
-      }),
+      },
+      userId,
     );
-    return {
-      ...comment,
-      upvotes: comment.upvotes.length,
-      upvoted: comment.upvotes.some((upvote) => upvote.userId == userId),
-    };
   }
 
   /**

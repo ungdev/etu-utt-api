@@ -156,19 +156,10 @@ export const createUser = entityFaker(
           ...pick(params, 'id', 'login', 'studentId', 'firstName', 'lastName', 'role'),
           infos: { create: pick(params, 'birthday', 'sex', 'nickname') },
         },
-        include: {
-          infos: true,
-          permissions: {
-            select: {
-              userPermissionId: true,
-            },
-          },
-        },
       });
     return {
-      ...omit(user, 'infos', 'permissions'),
-      ...omit(user.infos, 'id'),
-      permissions: user.permissions.map((perm) => perm.userPermissionId),
+      ...omit(user, 'infos'),
+      ...user.infos,
       token: await app().get(AuthService).signToken(user.id, user.login),
     };
   },
@@ -503,7 +494,7 @@ export const createComment = entityFaker(
   async (app, dependencies, params) =>
     app()
       .get(PrismaService)
-      .uEComment.create({
+      .withDefaultBehaviour.uEComment.create({
         data: {
           ...omit(params, 'ueId', 'authorId', 'semesterId'),
           ue: {

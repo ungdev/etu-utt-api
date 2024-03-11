@@ -1,4 +1,6 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
+import { generateCustomModel, RequestType } from '../../prisma/prisma.service';
+import { isArray } from 'class-validator';
 
 const COMMENT_SELECT_FILTER = {
   select: {
@@ -42,37 +44,48 @@ const COMMENT_SELECT_FILTER = {
       },
     },
   },
-} as const;
+  orderBy: [
+    {
+      upvotes: {
+        _count: 'desc',
+      },
+    },
+    {
+      createdAt: 'desc',
+    },
+  ],
+} satisfies Partial<RequestType<'uEComment'>>;
 
-export type UERawComment = DeepWritable<Prisma.UECommentGetPayload<typeof COMMENT_SELECT_FILTER>>;
-export type UEComment = Omit<UERawComment, 'upvotes'> & {
+export type UnformattedUEComment = Prisma.UECommentGetPayload<typeof COMMENT_SELECT_FILTER>;
+export type UEComment = Omit<UnformattedUEComment, 'upvotes'> & {
   upvotes: number;
   upvoted: boolean;
 };
 
-/**
- * Generates the argument to use in prisma function to retrieve an object containing the necessary
- * properties to match against the {@link UEComment} type.
- * @param arg extra arguments to provide to the prisma function. This includes `where` or `data` fields.
- * Sub arguments of the ones provided in {@link COMMENT_SELECT_FILTER} will be ignored
- * @returns arguments to use in prisma function.
- *
- * @example
- * const comment = await this.prisma.uEComment.update(
- *   SelectComment({
- *     where: {
- *       id: commentId,
- *     },
- *     data: {
- *       body: body.body,
- *       isAnonymous: body.isAnonymous,
- *     },
- *   }),
- * );
- */
-export function SelectComment<T>(arg: T): T & typeof COMMENT_SELECT_FILTER {
+export function generateCustomCommentModel(prisma: PrismaClient) {
+  const model = generateCustomModel<'uEComment', UnformattedUEComment>(prisma, 'uEComment', COMMENT_SELECT_FILTER);
+  const modelWithFormatting: Partial<{
+    [K in keyof typeof model]: (typeof model)[K] extends (arg: infer Arg) => Promise<infer R>
+      ? (arg: Arg, userId?: string) => R extends any[] ? Promise<UEComment[]> : Promise<UEComment>
+      : (typeof model)[K];
+  }> = {};
+  for (const [key, func] of Object.entries(model)) {
+    modelWithFormatting[key] = async (args, userId?: string) =>
+      func(args).then((comment: UnformattedUEComment | UnformattedUEComment[]) => {
+        if (!comment) return null;
+        if (isArray(comment)) {
+          return (comment as UnformattedUEComment[]).map((c) => formatComment(c, userId));
+        }
+        return formatComment(comment as UnformattedUEComment, userId);
+      });
+  }
+  return modelWithFormatting as Required<typeof modelWithFormatting>;
+}
+
+export function formatComment(comment: UnformattedUEComment, userId?: string): UEComment {
   return {
-    ...arg,
-    ...COMMENT_SELECT_FILTER,
-  } as const;
+    ...comment,
+    upvotes: comment.upvotes.length,
+    upvoted: userId ? comment.upvotes.some((upvote) => upvote.userId === userId) : undefined,
+  };
 }

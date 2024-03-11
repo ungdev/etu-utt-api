@@ -14,7 +14,6 @@ import { e2eSuite } from '../../utils/test_utils';
 import { ConfigService } from '@nestjs/config';
 import { ERROR_CODE } from 'src/exceptions';
 import { PrismaService } from '../../../src/prisma/prisma.service';
-import { SelectComment } from '../../../src/ue/interfaces/comment.interface';
 
 const GetCommentsE2ESpec = e2eSuite('GET /ue/{ueCode}/comments', (app) => {
   const user = createUser(app);
@@ -73,21 +72,7 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/{ueCode}/comments', (app) => {
   });
 
   it('should return the first page of comments', async () => {
-    const extendedComments = (
-      await app()
-        .get(PrismaService)
-        .uEComment.findMany(
-          SelectComment({
-            select: {
-              upvotes: true,
-            },
-          }),
-        )
-    ).map((comment) => ({
-      ...comment,
-      upvotes: comment.upvotes.length,
-      upvoted: comment.upvotes.some((upvote) => upvote.userId === user.id),
-    }));
+    const extendedComments = await app().get(PrismaService).uEComment.findMany({}, user.id);
     return pactum
       .spec()
       .withBearerToken(user.token)
@@ -120,21 +105,7 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/{ueCode}/comments', (app) => {
   });
 
   it('should return the second page of comments', async () => {
-    const extendedComments = (
-      await app()
-        .get(PrismaService)
-        .uEComment.findMany(
-          SelectComment({
-            select: {
-              upvotes: true,
-            },
-          }),
-        )
-    ).map((comment) => ({
-      ...comment,
-      upvotes: comment.upvotes.length,
-      upvoted: comment.upvotes.some((upvote) => upvote.userId === user.id),
-    }));
+    const extendedComments = await app().get(PrismaService).uEComment.findMany({}, user.id);
     return pactum
       .spec()
       .withBearerToken(user.token)
