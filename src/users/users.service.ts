@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { User, UserComplete, UserAssoMembership } from '../prisma/types';
+import { UserComplete, UserAssoMembership } from '../prisma/types';
+import { User } from './interfaces/user.interface';
 import { UsersSearchDto } from './dto/users-search.dto';
 import { UserUpdateDto } from './dto/users-update.dto';
 import { AssoMembership } from '@prisma/client';
@@ -55,14 +56,19 @@ export default class UsersService {
         ],
       },
       include: { infos: true },
+      orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
     });
   }
 
-  fetchUser(userId: string): Promise<User> {
-    return this.prisma.user.findUnique({
+  async fetchUser(userId: string): Promise<User> {
+    const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      include: { infos: true },
+      include: { infos: true, permissions: true },
     });
+    if (!user) return null;
+    const transformedUser: User = { ...user, permissions: undefined };
+    transformedUser.permissions = user.permissions.map((permssion) => permssion.userPermissionId);
+    return transformedUser;
   }
 
   async fetchWholeUser(userId: string): Promise<UserComplete> {

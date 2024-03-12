@@ -13,15 +13,15 @@ import { JwtGuard } from '../auth/guard';
 import { UsersSearchDto } from './dto/users-search.dto';
 import { UserUpdateDto } from './dto/users-update.dto';
 import { GetUser } from '../auth/decorator';
-import { User } from '../prisma/types';
+import { User } from '../users/interfaces/user.interface';
 import UsersService from './users.service';
+import { AppException, ERROR_CODE } from '../exceptions';
 
 @Controller('users')
 export default class UsersController {
   constructor(private usersService: UsersService) {}
 
   @Get()
-  @UseGuards(JwtGuard)
   async searchUsers(@Query() query: UsersSearchDto) {
     return (await this.usersService.searchUsers(query)).map((user) => ({
       id: user.id,
@@ -42,11 +42,10 @@ export default class UsersController {
   }
 
   @Get('/:userId')
-  @UseGuards(JwtGuard)
   async getSingleUser(@Param('userId') userId: string) {
     const user = await this.usersService.fetchWholeUser(userId);
     if (!user) {
-      throw new NotFoundException(`No user with id ${userId}`);
+      throw new AppException(ERROR_CODE.NO_SUCH_USER, userId);
     }
     return this.usersService.filterInfo(user, false);
   }

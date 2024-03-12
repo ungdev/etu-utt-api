@@ -1,27 +1,36 @@
-import {
-  User as UserModel,
-  UserInfos as UserInfosModel,
-  UserBranche,
-  UserMailsPhones,
-  UserSocialNetwork,
-  UserPreference,
-  UserAddress,
-  AssoMembership as AssoMembershipModel,
-  AssoMembershipRole,
-  Asso,
+export {
+  User as RawUser,
+  UserInfos as RawUserInfos,
+  TimetableEntry as RawTimetableEntry,
+  TimetableGroup as RawTimetableGroup,
+  TimetableEntryOverride as RawTimetableEntryOverride,
+  UserUESubscription as RawUserUESubscription,
+  UTTBranch as RawUTTBranch,
+  UTTBranchOption as RawUTTBranchOption,
+  Semester as RawSemester,
+  UE as RawUE,
+  UECredit as RawUECredit,
+  UECreditCategory as RawUECreditCategory,
+  UEInfo as RawUEInfo,
+  UEWorkTime as RawUEWorkTime,
+  UEStarVote as RawUEStarVote,
+  UEStarCriterion as RawUEStarCriterion,
+  UEComment as RawUEComment,
+  UECommentReply as RawUECommentReply,
+  UECommentUpvote as RawUECommentUpvote,
+  UserMailsPhones as RawUserMailsPhones,
+  UserSocialNetwork as RawUserSocialNetwork,
+  UserPreference as RawUserPreference,
+  UserAddress as RawUserAddress,
 } from '@prisma/client';
 
-export type User = UserModel & {
-  infos: UserInfosModel;
-};
-
-export type UserComplete = UserModel & {
-  infos: UserInfosModel;
-  branche: UserBranche;
-  mailsPhones: UserMailsPhones;
-  socialNetwork: UserSocialNetwork;
-  preference: UserPreference;
-  addresse: UserAddress;
+export type UserComplete = RawUser & {
+  infos: RawUserInfos;
+  branch: RawUTTBranch;
+  mailsPhones: RawUserMailsPhones;
+  socialNetwork: RawUserSocialNetwork;
+  preference: RawUserPreference;
+  addresse: RawUserAddress;
 };
 
 export type UserAssoMembership = {

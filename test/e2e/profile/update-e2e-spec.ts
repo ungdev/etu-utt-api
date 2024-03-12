@@ -1,10 +1,11 @@
 import * as pactum from 'pactum';
 import { PrismaService } from '../../../src/prisma/prisma.service';
-import { suite } from '../../test_utils';
+import { e2eSuite } from '../../utils/test_utils';
 import { AuthSignUpDto } from '../../../src/auth/dto';
 import { AuthService } from '../../../src/auth/auth.service';
+import { ERROR_CODE } from '../../../src/exceptions';
 
-const UpdateE2ESpec = suite('Update', (app) => {
+const UpdateE2ESpec = e2eSuite('Update', (app) => {
   const userInfos = {
     login: 'profile',
     password: 'verystrongpwd',
@@ -12,14 +13,14 @@ const UpdateE2ESpec = suite('Update', (app) => {
     studentId: 69,
     lastName: 'profile',
     firstName: 'profile',
+    role: 'STUDENT',
     birthday: new Date(Date.UTC(2000, 1, 1)), // We need to do it this way because of timezones
   } as AuthSignUpDto;
   let token: string;
   let id: string;
 
   beforeAll(async () => {
-    await app().get(PrismaService).cleanDb();
-    token = (await app().get(AuthService).signup(userInfos)).access_token;
+    token = await app().get(AuthService).signup(userInfos);
     id = (
       await app()
         .get(PrismaService)
@@ -32,15 +33,11 @@ const UpdateE2ESpec = suite('Update', (app) => {
       .spec()
       .post('/profile')
       .withBody({ website: 'https://etu.utt.fr' })
-      .expectStatus(401);
+      .expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
   it('should return a 400 if no body is sent', async () => {
-    return pactum
-      .spec()
-      .post('/profile')
-      .withBearerToken(token)
-      .expectStatus(400);
+    return pactum.spec().post('/profile').withBearerToken(token).expectAppError(ERROR_CODE.NO_FIELD_PROVIDED);
   });
 
   it('should return a 400 if the body is empty', async () => {
@@ -49,7 +46,7 @@ const UpdateE2ESpec = suite('Update', (app) => {
       .post('/profile')
       .withBearerToken(token)
       .withBody({})
-      .expectStatus(400);
+      .expectAppError(ERROR_CODE.NO_FIELD_PROVIDED);
   });
 
   it('should return a 400 if "nickname" is not a string', async () => {
@@ -58,7 +55,7 @@ const UpdateE2ESpec = suite('Update', (app) => {
       .post('/profile')
       .withBearerToken(token)
       .withBody({ nickname: 42 }) // 42 is the answer to everything <- these 2 things have been generated with copilot, that's amazing :)
-      .expectStatus(400);
+      .expectAppError(ERROR_CODE.PARAM_NOT_STRING, 'nickname');
   });
 
   it('should return a 400 if "passions" is not a string', async () => {
@@ -67,7 +64,7 @@ const UpdateE2ESpec = suite('Update', (app) => {
       .post('/profile')
       .withBearerToken(token)
       .withBody({ passions: 42 })
-      .expectStatus(400);
+      .expectAppError(ERROR_CODE.PARAM_NOT_STRING, 'passions');
   });
 
   it('should return a 400 if "website" is not a string', async () => {
@@ -76,7 +73,7 @@ const UpdateE2ESpec = suite('Update', (app) => {
       .post('/profile')
       .withBearerToken(token)
       .withBody({ website: 42 })
-      .expectStatus(400);
+      .expectAppError(ERROR_CODE.PARAM_NOT_STRING, 'website');
   });
 
   it('should return a 400 if there is an unknown field', async () => {
@@ -85,7 +82,7 @@ const UpdateE2ESpec = suite('Update', (app) => {
       .post('/profile')
       .withBearerToken(token)
       .withBody({ youdontknowme: 'secretmeaning' })
-      .expectStatus(400);
+      .expectAppError(ERROR_CODE.PARAM_DOES_NOT_EXIST, 'youdontknowme');
   });
 
   it('should return a 200 if everything was specified', async () => {
