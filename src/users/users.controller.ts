@@ -58,9 +58,9 @@ export default class UsersController {
     if (!user) {
       throw new NotFoundException(`No user with id ${userId}`);
     }
-    return this.usersService.filterUserAsso(user);
+    return user;
   }
-  
+
   @Patch('/current')
   @UseGuards(JwtGuard)
   async updateInfos(@GetUser() user: User, @Body() dto: UserUpdateDto) {

@@ -3,14 +3,18 @@ import * as pactum from 'pactum';
 import { HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 
-const GetUserE2ESpec = suite('GET /users/current', (app) => {
+const GetUserE2ESpec = suite('GET /users/:userId', (app) => {
   const user = createUser(app);
-  const userToSearch = createUser(app, { login: 'userToSearch', studentId: 2 });
+  const userToSearch = createUser(app, {
+    login: 'userToSearch',
+    userId: 'oui',
+  });
 
+  // TODO : replace studentId by id
   it('should return a 401 as user is not authenticated', () => {
     return pactum
       .spec()
-      .get('/users/abcdef')
+      .get(`/users/${userToSearch.userId}`)
       .expectStatus(HttpStatus.UNAUTHORIZED);
   });
 

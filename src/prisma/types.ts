@@ -6,7 +6,7 @@ import {
   UserSocialNetwork,
   UserPreference,
   UserAddress,
-  AssoMembership,
+  AssoMembership as AssoMembershipModel,
   AssoMembershipRole,
   Asso,
 } from '@prisma/client';
@@ -24,7 +24,16 @@ export type UserComplete = UserModel & {
   addresse: UserAddress;
 };
 
-export type UserAssociation = AssoMembership & {
-  roles: AssoMembershipRole[];
-  asso: Asso;
+export type UserAssoMembership = {
+  startAt: Date;
+  endAt: Date;
+  role: string;
+  asso: AssoResume;
+};
+
+export type AssoResume = {
+  name: string;
+  logo: string;
+  descriptionShortTranslationId: string;
+  mail: string;
 };

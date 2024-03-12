@@ -20,11 +20,12 @@ export function suite(
 
 export function createUser(
   app: () => INestApplication,
-  { login = 'user', studentId = 2 } = {},
+  { login = 'user', userId = 'oui' } = {},
 ) {
   const user = {
+    userId: userId,
     login,
-    studentId,
+    studentId: 2,
     sex: 'OTHER',
     lastName: 'user',
     firstName: 'user',
@@ -40,21 +41,11 @@ export function createUser(
   return userWithToken;
 }
 
-export function createAsso(
-  app: () => INestApplication,
-  { id = 'oui', studentId = 2 } = {},
-) {
+export function createAsso(app: () => INestApplication, { id = 'oui' } = {}) {
   const asso = {
-    id: id,
+    id,
     createdAt: new Date(Date.now()),
-    userId: 'oui',
-    assoId: 'oui',
   } as Partial<Asso>;
   const assoWithToken = { ...asso, token: '' };
-  beforeAll(async () => {
-    assoWithToken.token = (
-      await app().get(AuthService).signup(user)
-    ).access_token;
-  });
   return assoWithToken;
 }

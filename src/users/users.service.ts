@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { User, UserComplete, UserAssociation } from '../prisma/types';
+import { User, UserComplete, UserAssoMembership } from '../prisma/types';
 import { UsersSearchDto } from './dto/users-search.dto';
 import { UserUpdateDto } from './dto/users-update.dto';
 import { AssoMembership } from '@prisma/client';
+import { resolveSoa } from 'dns';
 
 @Injectable()
 export default class UsersService {
@@ -160,27 +161,30 @@ export default class UsersService {
     };
   }
 
-  async fetchUserAssociation(userId: string): Promise<UserAssociation[]> {
-    return this.prisma.assoMembership.findMany({
-      where: { userId: userId },
-      include: { roles: true, asso: true },
-    });
-  }
-
-  filterUserAsso(assos: UserAssociation[]) {
-    let userAssos = [];
-    let roles = [];
-    assos.forEach((element) => {
-      element.roles.forEach((memberRole) => {
-        roles.push(memberRole.role);
-      });
-      userAssos.push({
-        asso: element.asso.name,
-        roles: roles,
-      });
-      roles.splice(0);
-    });
-    return userAssos;
+  async fetchUserAssociation(userId: string): Promise<UserAssoMembership[]> {
+    const membership = (
+      await this.prisma.assoMembership.findMany({
+        where: { userId: userId },
+        select: {
+          startAt: true,
+          endAt: true,
+          roles: {
+            select: {
+              role: true,
+            },
+          },
+          asso: {
+            select: {
+              name: true,
+              logo: true,
+              descriptionShortTranslationId: true,
+              mail: true,
+            },
+          },
+        },
+      })
+    ).map((membership) => ({ ...membership, role: membership.roles.role }));
+    return membership;
   }
 
   async updateUserProfil(user: UserComplete, dto: UserUpdateDto) {

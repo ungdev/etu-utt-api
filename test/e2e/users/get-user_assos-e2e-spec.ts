@@ -1,46 +1,41 @@
-import { createUser, suite } from '../../test_utils';
+import { createUser, createAsso, suite } from '../../test_utils';
 import * as pactum from 'pactum';
 import { HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 
 const GetCurrentUserE2ESpec = suite('GET /users/current', (app) => {
-  const user = createAsso(app);
-  const userAssos = createUser(app, { login: 'userToSearch', studentId: 2 });
+  const asso = createAsso(app);
+  const userAssos = createUser(app, { login: 'userToSearch', userId: 'oui' });
 
+  // TODO : replace studentId by id
   it('should return a 401 as user is not authenticated', () => {
     return pactum
       .spec()
-      .get('/users/abcdef/associations')
+      .get(`/users/${userAssos.studentId}/associations`)
       .expectStatus(HttpStatus.UNAUTHORIZED);
   });
 
-  it('should return a 404 as user was not found', () => {
+  it('should return a 404 as asso was not found', () => {
     return pactum
       .spec()
       .get('/users/abcdef/associations')
-      .withBearerToken(user.token)
+      .withBearerToken(asso.token)
       .expectStatus(HttpStatus.NOT_FOUND);
   });
 
-  it('should successfully find the user', async () => {
+  it('should successfully find the asso', async () => {
     const userFromDb = await app()
       .get(PrismaService)
-      .user.findMany({
-        where: { login: userAssos.login },
-        include: {
-            
-        },
+      .assoMembership.findMany({
+        where: { userId: userAssos.userId },
+        include: {},
       });
-    const expectedBody = {
-      id: userFromDb.id,
-      firstName: userFromDb.firstName,
-      lastName: userFromDb.lastName
-    };
+    const expectedBody = {};
 
     return pactum
       .spec()
-      .get(`/users/`)
-      .withBearerToken(user.token)
+      .get(`/users/${userFromDb.userId}/associations`)
+      .withBearerToken(asso.token)
       .expectStatus(HttpStatus.OK)
       .expectBody(
         Object.fromEntries(
