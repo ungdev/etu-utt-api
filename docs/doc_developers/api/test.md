@@ -1,3 +1,5 @@
+# Test
+
 Pour les tests, nous utilisons Jest.
 
 Dans la CLI, quand on exécute les tests, il faut absolument passer le paramètre `--runInBand`, pour éviter que les tests
@@ -21,7 +23,7 @@ De la même manière qu’il y a 2 types de tests, il y a 2 types de suites et d
 E2E / `E2EAppProvider`, et les suites unitaires / `UnitAppProvider`. Voici donc comment vous pouvez créer une suite pour
 tester la route `GET /users/:id` :
 
-```tsx
+```ts
 import { e2eSuite, E2EAppProvider } from '../../utils/test_utils';
 
 const GetUserFromIdE2ESpec = e2eSuite('GET /users/:userId', (app: E2EAppProvider) => {
@@ -56,7 +58,7 @@ additions de ce plugin sont dans l’objet `faker.db`. Cet objet a pour clés le
 de `FakeEntityMap`, voir plus bas). Les valeurs de cet objet sont des noms de colonnes de cette table. Par exemple, si
 je veux générer le nom d’un semestre, je peux faire :
 
-```tsx
+```ts
 import faker from '@/faker-js/faker';
 
 const semestre: string = faker.db.semester.code();
@@ -66,7 +68,7 @@ Si une valeur unique est hardcodée (par exemple, un numéro de semestre qui ne 
 test, la fonction `registerUniqueValue` du module. Dans le cas où je veux par exemple créer un semestre A24 dans un
 test :
 
-```tsx
+```ts
 import { registerUniqueValue } from '<path_to_root_directory>/prisma/seed/utils';
 
 const semestre: FakeSemester = createSemester(app, { code: registerUniqueValue('semester', 'code', 'A24') });
@@ -94,7 +96,7 @@ sans relations), passées dans le type `Partial` évidemment. Cependant, certain
 être plus complexes, par exemple un utilisateur : il aura ses données par défaut (`RawUser`), quelques informations
 supplémentaires (`RawUserInfos`), ainsi qu’un token (pour authentifier ses requêtes) et un tableau de ses permissions :
 
-```tsx
+```ts
 export type FakeSemester = Partial<RawSemester>; // Exemple d'un type fake simple.
 export type FakeUser = Partial<RawUser & RawUserInfos & { permissions: string[]; token: string }>; // Exemple d'un type fake plus complexe.
 ```
@@ -130,7 +132,7 @@ Les fake functions sont toutes définies de la même façon :
 
 Voici plusieurs exemples d’utilisation de ces fonctions :
 
-```tsx
+```ts
 import * as fakedb from '../../utils/fakedb';
 
 e2eSuite("Foo", (app) => { // Vous pouvez aussi utiliser unitSuite, ou n'importe quoi d'autre, tant que c'est équivalent à un describe() et que vous pouvez avoir l'app.
@@ -177,7 +179,7 @@ e2eSuite("Foo", (app) => { // Vous pouvez aussi utiliser unitSuite, ou n'importe
 Les types des paramètres des différentes fonctions se trouvent dans l’interface `FakeEntityMap`. Sa structure est la
 suivante :
 
-```tsx
+```ts
 interface FakeEntityMap {
   [nom_de_table]: {
     entity: TypeEntityFake;
@@ -200,7 +202,7 @@ interface FakeEntityMap {
 
 On peut accéder aux types directement, ou plus facilement en utilisant les 3 types suivants :
 
-```tsx
+```ts
 export type Entity<T extends keyof FakeEntityMap> = FakeEntityMap[T]['entity'];
 type Params<T extends keyof FakeEntityMap> = FakeEntityMap[T]['params'];
 type Deps<T extends keyof FakeEntityMap> = FakeEntityMap[T] extends { deps: infer R } ? R : Record<string, never>;
@@ -218,7 +220,7 @@ de la partie suivante.
 
 Une fonction pour générer une entité fake ressemble à ça :
 
-```tsx
+```ts
 const createBranchOption = <OnTheFly extends boolean = false>(
     app: AppProvider,
     dependencies: FakeEntityMap.branchOption.deps,
@@ -259,7 +261,7 @@ bien saisir la logique des fake functions. On remarque vite que la logique pour 
 la même, et que le code est donc très redondant. Voici donc à quoi ressemble la définition réelle
 de `createBranchOption` :
 
-```tsx
+```ts
 export const createBranchOption = entityFaker(
   'branchOption',
   {
