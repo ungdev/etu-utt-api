@@ -35,7 +35,7 @@ export class AuthSignUpDto {
   @Type(() => Date)
   birthday: Date;
 
-  @IsEnum(UserRole)
+  @IsEnum(UserType)
   @IsNotEmpty()
-  role: UserRole;
+  type: UserType;
 }
