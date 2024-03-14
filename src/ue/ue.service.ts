@@ -7,12 +7,11 @@ import { UERateDto } from './dto/ue-rate.dto';
 import { UeCommentUpdateDto } from './dto/ue-comment-update.dto';
 import { CommentReplyDto } from './dto/ue-comment-reply.dto';
 import { GetUECommentsDto } from './dto/ue-get-comments.dto';
-import { SelectUEOverview, UEOverView } from './interfaces/ue-overview.interface';
-import { SelectUEDetail, UEDetail } from './interfaces/ue-detail.interface';
+import { UE } from './interfaces/ue-detail.interface';
 import { UEComment } from './interfaces/comment.interface';
-import { SelectCommentReply, UECommentReply } from './interfaces/comment-reply.interface';
-import { Criterion, SelectCriterion } from './interfaces/criterion.interface';
-import { SelectRate, UERating } from './interfaces/rate.interface';
+import { UECommentReply } from './interfaces/comment-reply.interface';
+import { Criterion } from './interfaces/criterion.interface';
+import { UERating } from './interfaces/rate.interface';
 import { RawUserUESubscription } from '../prisma/types';
 
 @Injectable()
@@ -20,13 +19,13 @@ export class UEService {
   constructor(readonly prisma: PrismaService, readonly config: ConfigService) {}
 
   /**
-   * Retrieves a page of {@link UEOverView} matching the user query. This query searchs for a text in
+   * Retrieves a page of {@link UE} matching the user query. This query searchs for a text in
    * the ue code, name, comment, objectives and program. The user can restrict his research to a branch,
    * a filiere, a credit type or a semester.
    * @param query the query parameters of this route
-   * @returns a page of {@link UEOverView} matching the user query
+   * @returns a page of {@link UE} matching the user query
    */
-  async searchUEs(query: UESearchDto): Promise<Pagination<UEOverView>> {
+  async searchUEs(query: UESearchDto): Promise<Pagination<UE>> {
     // The where query object for prisma
     const where = {
       // Search for the user query (if there is one)
@@ -93,19 +92,12 @@ export class UEService {
     };
     // Use a prisma transaction to execute two requests at once:
     // We fetch a page of items matching our filters and retrieve the total count of items matching our filters
-    const [items, itemCount] = await this.prisma.$transaction([
-      this.prisma.uE.findMany(
-        SelectUEOverview({
-          where,
-          take: Number(this.config.get('PAGINATION_PAGE_SIZE')),
-          skip: ((query.page ?? 1) - 1) * Number(this.config.get<number>('PAGINATION_PAGE_SIZE')),
-          orderBy: {
-            code: 'asc',
-          },
-        }),
-      ),
-      this.prisma.uE.count({ where }),
-    ]);
+    const items = await this.prisma.uE.findMany({
+      where,
+      take: Number(this.config.get('PAGINATION_PAGE_SIZE')),
+      skip: ((query.page ?? 1) - 1) * Number(this.config.get<number>('PAGINATION_PAGE_SIZE')),
+    });
+    const itemCount = await this.prisma.uE.count({ where });
     // Data pagination
     return {
       items,
@@ -115,50 +107,19 @@ export class UEService {
   }
 
   /**
-   * Retrieves a {@link UEDetail}
+   * Retrieves a {@link UE}
    * @remarks The ue must exist
    * @param code the code of the ue to retrieve
    * @returns the {@link UEDetail} of the ue matching the given code
    */
-  async getUE(code: string): Promise<UEDetail> {
+  getUE(code: string): Promise<UE> {
     // Fetch an ue from the database. This ue shall not be returned as is because
     // it is not formatted at that point.
-    const ue = await this.prisma.uE.findUnique(
-      SelectUEDetail({
-        where: {
-          code,
-        },
-      }),
-    );
-    // We store rates in a object where the key is the criterion id and the value is a list ratings
-    const starVoteCriteria: {
-      [key: string]: {
-        createdAt: Date;
-        value: number;
-      }[];
-    } = {};
-    for (const starVote of ue.starVotes) {
-      if (starVote.criterionId in starVoteCriteria)
-        starVoteCriteria[starVote.criterionId].push({
-          createdAt: starVote.createdAt,
-          value: starVote.value,
-        });
-      else
-        starVoteCriteria[starVote.criterionId] = [
-          {
-            createdAt: starVote.createdAt,
-            value: starVote.value,
-          },
-        ];
-    }
-    // Compute ratings for each criterion, using an exponential decay function
-    // And turn semester into their respective code.
-    return {
-      ...ue,
-      starVotes: Object.fromEntries(
-        Object.entries(starVoteCriteria).map(([key, entry]) => [key, this.computeRate(entry)]),
-      ),
-    };
+    return this.prisma.uE.findUnique({
+      where: {
+        code,
+      },
+    });
   }
 
   /**
@@ -338,7 +299,7 @@ export class UEService {
    */
   async hasAlreadyPostedAComment(userId: string, ueCode: string) {
     // Find the UE
-    const ue = await this.prisma.uE.findUnique({
+    const ue = await this.prisma.withDefaultBehaviour.uE.findUnique({
       where: {
         code: ueCode,
       },
@@ -456,15 +417,13 @@ export class UEService {
    * @returns the created {@link UECommentReply}
    */
   async replyComment(userId: string, commentId: string, reply: CommentReplyDto): Promise<UECommentReply> {
-    return this.prisma.uECommentReply.create(
-      SelectCommentReply({
-        data: {
-          body: reply.body,
-          commentId,
-          authorId: userId,
-        },
-      }),
-    );
+    return this.prisma.uECommentReply.create({
+      data: {
+        body: reply.body,
+        commentId,
+        authorId: userId,
+      },
+    });
   }
 
   /**
@@ -475,16 +434,14 @@ export class UEService {
    * @returns the updated {@link UECommentReply}
    */
   async editReply(replyId: string, reply: CommentReplyDto): Promise<UECommentReply> {
-    return this.prisma.uECommentReply.update(
-      SelectCommentReply({
-        data: {
-          body: reply.body,
-        },
-        where: {
-          id: replyId,
-        },
-      }),
-    );
+    return this.prisma.uECommentReply.update({
+      data: {
+        body: reply.body,
+      },
+      where: {
+        id: replyId,
+      },
+    });
   }
 
   /**
@@ -494,13 +451,11 @@ export class UEService {
    * @returns the deleted {@link UECommentReply}
    */
   async deleteReply(replyId: string): Promise<UECommentReply> {
-    return this.prisma.uECommentReply.delete(
-      SelectCommentReply({
-        where: {
-          id: replyId,
-        },
-      }),
-    );
+    return this.prisma.uECommentReply.delete({
+      where: {
+        id: replyId,
+      },
+    });
   }
 
   /**
@@ -585,13 +540,7 @@ export class UEService {
    * @returns the list of all criteria
    */
   async getRateCriteria(): Promise<Criterion[]> {
-    return this.prisma.uEStarCriterion.findMany(
-      SelectCriterion({
-        orderBy: {
-          name: 'asc',
-        },
-      }),
-    );
+    return this.prisma.uEStarCriterion.findMany({});
   }
 
   /**
@@ -607,19 +556,12 @@ export class UEService {
         code: ueCode,
       },
     });
-    return this.prisma.uEStarVote.findMany(
-      SelectRate({
-        where: {
-          userId: userId,
-          ueId: UE.id,
-        },
-        orderBy: {
-          criterion: {
-            name: 'asc',
-          },
-        },
-      }),
-    );
+    return this.prisma.uEStarVote.findMany({
+      where: {
+        userId: userId,
+        ueId: UE.id,
+      },
+    });
   }
 
   /**
@@ -631,58 +573,41 @@ export class UEService {
    * @returns the new rate of the {@link ueCode | ue} for the {@link user}
    */
   async doRateUE(userId: string, ueCode: string, dto: UERateDto): Promise<UERating> {
-    const UE = await this.prisma.uE.findUnique({
+    const ueId = await this.getUEIdFromCode(ueCode);
+    return this.prisma.uEStarVote.upsert({
       where: {
-        code: ueCode,
+        ueId_userId_criterionId: {
+          ueId: ueId,
+          userId,
+          criterionId: dto.criterion,
+        },
+      },
+      create: {
+        value: dto.value,
+        criterionId: dto.criterion,
+        ueId: ueId,
+        userId,
+      },
+      update: {
+        value: dto.value,
       },
     });
-    return this.prisma.uEStarVote.upsert(
-      SelectRate({
-        where: {
-          ueId_userId_criterionId: {
-            ueId: UE.id,
-            userId,
-            criterionId: dto.criterion,
-          },
-        },
-        create: {
-          value: dto.value,
-          criterionId: dto.criterion,
-          ueId: UE.id,
+  }
+
+  async unRateUE(userId: string, ueCode: string, criterionId: string): Promise<UERating> {
+    const ueId = await this.getUEIdFromCode(ueCode);
+    return this.prisma.uEStarVote.delete({
+      where: {
+        ueId_userId_criterionId: {
+          ueId,
           userId,
+          criterionId,
         },
-        update: {
-          value: dto.value,
-        },
-      }),
-    );
+      },
+    });
   }
 
-  async unRateUE(userId: string, ueCode: string, criterionId: string) {
-    const ue = await this.prisma.uE.findUnique({ where: { code: ueCode } });
-    return this.prisma.uEStarVote.delete(
-      SelectRate({
-        where: {
-          ueId_userId_criterionId: {
-            ueId: ue.id,
-            userId,
-            criterionId,
-          },
-        },
-      }),
-    );
-  }
-
-  computeRate(rates: Array<{ createdAt: Date; value: number }>) {
-    let coefficients = 0;
-    let ponderation = 0;
-    const newestCreationTimestamp = rates.reduce((acc, rate) => Math.max(rate.createdAt.getTime(), acc), 0);
-    for (const { value, createdAt } of rates) {
-      const dt = (newestCreationTimestamp - createdAt.getTime()) / 1000;
-      const dp = Math.exp(-dt / 10e7);
-      ponderation += dp * value;
-      coefficients += dp;
-    }
-    return Math.round((ponderation / coefficients) * 10) / 10;
+  private async getUEIdFromCode(ueCode: string): Promise<string> {
+    return (await this.prisma.withDefaultBehaviour.uE.findUnique({ where: { code: ueCode }, select: { id: true } })).id;
   }
 }

@@ -4,7 +4,10 @@ import { PrismaClient } from '@prisma/client';
 import { generateCustomUserModel } from '../users/interfaces/user.interface';
 import { omit } from '../utils';
 import { generateCustomCommentModel } from '../ue/interfaces/comment.interface';
-import { Prisma } from "@prisma/client/extension";
+import { generateCustomCriterionModel } from '../ue/interfaces/criterion.interface';
+import { generateCustomUECommentReplyModel } from '../ue/interfaces/comment-reply.interface';
+import { generateCustomRateModel } from '../ue/interfaces/rate.interface';
+import { generateCustomUEModel } from "../ue/interfaces/ue-detail.interface";
 
 // This interface is used to tell typescript that, even tho it does not understand it, PrismaService IS actually a ReturnType<typeof createPrismaClientExtension>
 // TS cannot infer it alone as the construction of the class is made using reflection.
@@ -44,6 +47,10 @@ function createPrismaClientExtension(prisma: ReturnType<typeof createPrismaClien
     model: {
       user: generateCustomUserModel(prisma),
       uEComment: generateCustomCommentModel(prisma),
+      uEStarCriterion: generateCustomCriterionModel(prisma),
+      uECommentReply: generateCustomUECommentReplyModel(prisma),
+      uEStarVote: generateCustomRateModel(prisma),
+      uE: generateCustomUEModel(prisma),
     },
   });
 }
@@ -82,7 +89,7 @@ function generateCustomModelFunction<
   };
 }
 
-const singleValueMethods = ['findUnique', 'update', 'findFirst', 'create', 'delete'] as const;
+const singleValueMethods = ['findUnique', 'update', 'findFirst', 'create', 'delete', 'upsert'] as const;
 const multiValueMethods = ['findMany'] as const;
 
 export function generateCustomModel<ModelName extends ModelNameType, Type>(

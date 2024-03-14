@@ -13,7 +13,7 @@ import {
 import { e2eSuite } from '../../utils/test_utils';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
-import { UEService } from '../../../src/ue/ue.service';
+import { computeRate } from '../../../src/ue/interfaces/ue-detail.interface';
 
 const GetE2ESpec = e2eSuite('GET /ue/{ueCode}', (app) => {
   const user = createUser(app);
@@ -82,9 +82,7 @@ const GetE2ESpec = e2eSuite('GET /ue/{ueCode}', (app) => {
       .expectUE(ueWithRating, [
         {
           criterionId: criterion.id,
-          value: app()
-            .get(UEService)
-            .computeRate([rate2 as Required<FakeUEStarVote>, rate1 as Required<FakeUEStarVote>]),
+          value: computeRate([rate2 as Required<FakeUEStarVote>, rate1 as Required<FakeUEStarVote>]),
         },
       ]);
   });

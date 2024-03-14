@@ -344,7 +344,7 @@ export const createUE = entityFaker(
   async (app, params) =>
     app()
       .get(PrismaService)
-      .uE.create({
+      .withDefaultBehaviour.uE.create({
         data: {
           ...omit(params, 'credits', 'info', 'workTime', 'inscriptionCode', 'openSemesters'),
           inscriptionCode: params.inscriptionCode ?? params.code,
@@ -462,7 +462,7 @@ export const createUERating = entityFaker(
   async (app, dependencies, params) =>
     app()
       .get(PrismaService)
-      .uEStarVote.create({
+      .withDefaultBehaviour.uEStarVote.create({
         data: {
           ...omit(params, 'criterionId', 'ueId', 'userId'),
           criterion: {
@@ -546,7 +546,7 @@ export const createCommentReply = entityFaker(
   async (app, dependencies, params) =>
     app()
       .get(PrismaService)
-      .uECommentReply.create({
+      .withDefaultBehaviour.uECommentReply.create({
         data: {
           ...omit(params, 'commentId', 'authorId'),
           comment: {
