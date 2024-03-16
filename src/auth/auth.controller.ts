@@ -1,8 +1,10 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Headers } from '@nestjs/common';
+import { Body, Controller, Get, Headers, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthSignInDto, AuthSignUpDto } from './dto';
 import { IsPublic } from './decorator';
 import { AppException, ERROR_CODE } from '../exceptions';
+import AuthCasSignInDto from './dto/auth-cas-sign-in.dto';
+import { AuthCasSignUpDto } from './dto/auth-cas-sign-up.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -36,5 +38,24 @@ export class AuthController {
       throw new AppException(ERROR_CODE.INVALID_TOKEN_FORMAT);
     }
     return { valid: this.authService.isTokenValid(match[1]) };
+  }
+
+  @IsPublic()
+  @Post('signin/cas')
+  @HttpCode(HttpStatus.OK)
+  async casSignIn(@Body() dto: AuthCasSignInDto) {
+    const res = await this.authService.casSignIn(dto.service, dto.ticket);
+    if (res.status === 'invalid') {
+      throw new AppException(ERROR_CODE.INVALID_CAS_TICKET);
+    }
+    return { signedIn: res.status === 'ok', access_token: res.token };
+  }
+
+  @IsPublic()
+  @Post('signup/cas')
+  @HttpCode(HttpStatus.CREATED)
+  async casSignUp(@Body() dto: AuthCasSignUpDto) {
+    const token = await this.authService.casSignUp(dto.registerToken);
+    return { access_token: token };
   }
 }

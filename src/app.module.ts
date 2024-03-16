@@ -9,6 +9,7 @@ import { PermissionGuard } from './auth/guard/permission.guard';
 import { UEModule } from './ue/ue.module';
 import { JwtGuard } from './auth/guard';
 import { TimetableModule } from './timetable/timetable.module';
+import { HttpModule } from "./http/http.module";
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { TimetableModule } from './timetable/timetable.module';
       // It loads the .env.dev.test file properly, but overrides it with the normal .env.dev file
       envFilePath: process.env.NODE_ENV === 'test' ? '.env.test' : '.env.dev',
     }),
+    HttpModule,
     PrismaModule,
     AuthModule,
     ProfileModule,

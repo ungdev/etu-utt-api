@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="fr" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Entry &mdash; Documentation EtuUTT </title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=92fd9be5" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=d1a510d7"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../../_static/translations.js?v=d99ca74e"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Recherche" href="../../search.html" />
+    <link rel="next" title="Documentation développeurs - Site web" href="../front/index.html" />
+    <link rel="prev" title="Suite" href="test.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            EtuUTT
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Rechercher docs" aria-label="Rechercher docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Sommaire</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Documentation développeurs</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Documentation développeurs - API</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="setup.html">Setup de l’API EtuUTT</a></li>
+<li class="toctree-l3"><a class="reference internal" href="technologies.html">Technologies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="conventions.html">Conventions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="test.html">Suite</a></li>
+<li class="toctree-l3"><a class="reference internal" href="test.html#module-fakedb">Module fakedb</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Entry</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#occurrence">Occurrence</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#override">Override</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#groupe-devenements">Groupe d’événements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#priorite">Priorité</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../front/index.html">Documentation développeurs - Site web</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../mobile_app/index.html">Documentation EtuUTT - Application mobile</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">EtuUTT</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Documentation développeurs</a></li>
+          <li class="breadcrumb-item"><a href="index.html">Documentation développeurs - API</a></li>
+      <li class="breadcrumb-item active">Entry</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/doc_developers/api/timetables.md.txt" rel="nofollow"> Afficher la source de la page</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <p>Les emplois du temps sont une fonctionnalité puissante sur le site étu, ils permettent de simuler le fonctionnement d’un
+fichier .ical. Voici les grandes fonctionnalité des emplois du temps :</p>
+<ul class="simple">
+<li><p>Répétition d’événements, sur une durée déterminée ou pour toujours</p></li>
+<li><p>Suppression ou modification récurrente d’occurrences d’un événement</p></li>
+<li><p>Groupes d’utilisateurs entre qui un événement (ou une mise à jour d’événement) est partagé(e)</p></li>
+</ul>
+<section id="entry">
+<h1>Entry<a class="headerlink" href="#entry" title="Link to this heading"></a></h1>
+<p>Contient les données nécessaires à la génération des occurrences liées à un événement en particulier.</p>
+<p><strong>Exemple ;</strong> un TD de NF16 le mardi à 14h au semestre A23 sera un événement, commençant le 19 septembre 2023, se
+répétant toutes les semaines, ayant lieu 16 fois, et durant à chaque fois 2h, pour tous les élèves du TD. Pour gérer les
+vacances, jours fériés et journées banalisées, on utilisera des overrides. Cet événement ne changera pas, pas même son
+nombre de répétitions.</p>
+</section>
+<section id="occurrence">
+<h1>Occurrence<a class="headerlink" href="#occurrence" title="Link to this heading"></a></h1>
+<p>Une case dans le calendrier. Une occurrence a une date de début et une date de fin.</p>
+<p>Ce concept n’a pas de table associée dans la base de données. Les routes renvoyant des événements renvoient des
+occurrences, qui sont créées à la volée pendant le traitement de la requête.</p>
+<p><strong>Exemple :</strong> Mon TD de NF16 de la semaine prochaine est une occurrence, il commencera mardi 19 décembre 2023 14h et se
+terminera mardi 19 décembre 2023 16h, et aura lieu en B202. Mon TD de la semaine dernière en est une autre.</p>
+</section>
+<section id="override">
+<h1>Override<a class="headerlink" href="#override" title="Link to this heading"></a></h1>
+<p>Permet de mettre à jour une entry. Le fonctionnement est très similaire à l’entry.</p>
+<p>Un override permet de modifier le lieu d’un événement.</p>
+<p>On peut aussi override la date de début de l’événement ainsi que la durée de chacune de ses occurrences (et donc
+indirectement leur date de fin). La modification du début de l’événement est relative au début de l’événement originel.
+Par exemple, le début relatif d’un événement démarrant à 10h au lieu de 11h sera “-1h” (11h + (-1h) = 10h).</p>
+<p>Pour supprimer un événement, on peut créer un Override avec le flag <code class="docutils literal notranslate"><span class="pre">delete</span></code>.</p>
+<p><strong>Exemple :</strong> si je décide de sécher mon TD de NF16 toutes les 2 semaines entre le 31 octobre et le 28 novembre (
+inclus), on pourrait créer un override avec le flag <code class="docutils literal notranslate"><span class="pre">delete</span></code> commençant à la 7è occurrence et se terminant à la 11è
+occurrence, se répétant toutes les 2 occurrences.</p>
+</section>
+<section id="groupe-devenements">
+<h1>Groupe d’événements<a class="headerlink" href="#groupe-devenements" title="Link to this heading"></a></h1>
+<p>Les groupes d’événements permettent de regrouper les personnes qui sont concernées par un ou plusieurs même événements.</p>
+<p><strong>Exemple :</strong> il y aurait un groupe “TD-NF16-A23-mardi-14h-B202” pour tous les étudiants dans le groupe de TD de NF16 du
+mardi à 14h en B202 (pour le semestre A23).</p>
+<p>Chaque utilisateur peut aussi avoir son groupe personnel, dans lequel il sera seul, pour faire des modifications qui
+n’affecteront que son emploi du temps.</p>
+</section>
+<section id="priorite">
+<h1>Priorité<a class="headerlink" href="#priorite" title="Link to this heading"></a></h1>
+<p>Définit l’ordre d’importance des groupes d’événements pour un utilisateur.</p>
+<p><strong>Exemple :</strong> en reprenant l’exemple du groupe “TD-NF16-A23-mardi-14h-B202”, mon groupe personnel (avec uniquement moi
+dedans) aura la priorité sur les modifications. Si le cours du 31 octobre se passe exceptionnellement en B206,
+l’événement apparaîtra quand même supprimé, puisque mon groupe personnel l’aura supprimé (si je marque le cours comme
+étant séché).</p>
+<p>La priorité des groupes est reliée directement aux utilisateurs, et pas aux groupes : une personne A pourrait très bien
+avoir un groupe C étant prioritaire sur un groupe D, et une autre personne B avoir le groupe D prioritaire sur le groupe
+C.</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Pied de page">
+        <a href="test.html" class="btn btn-neutral float-left" title="Suite" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Précédent</a>
+        <a href="../front/index.html" class="btn btn-neutral float-right" title="Documentation développeurs - Site web" accesskey="n" rel="next">Suivant <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Droits d'auteur 2024, UTT Net Group.</p>
+  </div>
+
+  Compilé avec <a href="https://www.sphinx-doc.org/">Sphinx</a> en utilisant un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thème</a>
+    fourni par <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

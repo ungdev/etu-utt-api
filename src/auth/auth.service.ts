@@ -6,22 +6,41 @@ import { Prisma } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { AppException, ERROR_CODE } from '../exceptions';
+import { HttpService } from '@nestjs/axios';
+import { lastValueFrom } from 'rxjs';
+import { XMLParser } from 'fast-xml-parser';
+
+// TODO : when other PRs will be merged, use the already defined PartiallyPartial type
+type PartiallyPartial<T extends object, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+type RegisterData = { login: string; mail: string; lastName: string };
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService, private jwt: JwtService, private config: ConfigService) {}
+  constructor(
+    private prisma: PrismaService,
+    private jwt: JwtService,
+    private config: ConfigService,
+    private httpService: HttpService,
+  ) {}
 
-  async signup(dto: AuthSignUpDto): Promise<string> {
+  async signup(dto: PartiallyPartial<AuthSignUpDto, 'password'>): Promise<string> {
     try {
+      const isUTTMail = dto.mail?.endsWith('@utt.fr');
       const user = await this.prisma.user.create({
         data: {
           login: dto.login,
-          hash: await this.getHash(dto.password),
+          hash: dto.password ? await this.getHash(dto.password) : undefined,
           firstName: dto.firstName,
           lastName: dto.lastName,
           studentId: dto.studentId,
           infos: {
             create: { sex: dto.sex, birthday: dto.birthday },
+          },
+          mailsPhones: {
+            create: {
+              mailUTT: isUTTMail ? dto.mail : undefined,
+              mailPersonal: isUTTMail ? undefined : dto.mail,
+            },
           },
           role: dto.role,
         },
@@ -66,6 +85,51 @@ export class AuthService {
       return false;
     }
     return true;
+  }
+
+  async casSignIn(
+    service: string,
+    ticket: string,
+  ): Promise<{ status: 'invalid' | 'no_account' | 'ok'; token: string }> {
+    const res = await lastValueFrom(
+      this.httpService.get(`${this.config.get('CAS_URL')}/serviceValidate`, {
+        params: { service, ticket },
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+    const resData: {
+      ['cas:serviceResponse']:
+        | {
+            ['cas:authenticationSuccess']: {
+              ['cas:attributes']: {
+                'cas:uid': string;
+                'cas:mail': string;
+                'cas:sn': string;
+              };
+            };
+          }
+        | { 'cas:authenticationFailure': unknown };
+    } = new XMLParser().parse(res.data);
+    if ('cas:authenticationFailure' in resData['cas:serviceResponse']) {
+      return { status: 'invalid', token: null };
+    }
+    const data: RegisterData = {
+      login: resData['cas:serviceResponse']['cas:authenticationSuccess']['cas:attributes']['cas:uid'],
+      mail: resData['cas:serviceResponse']['cas:authenticationSuccess']['cas:attributes']['cas:mail'],
+      lastName: resData['cas:serviceResponse']['cas:authenticationSuccess']['cas:attributes']['cas:sn'],
+      // TODO : fetch other infos from LDAP
+    };
+    const user = await this.prisma.user.findUnique({ where: { login: data.login } });
+    if (!user) {
+      const token = this.jwt.sign(data, { expiresIn: 60, secret: this.config.get('JWT_SECRET') });
+      return { status: 'no_account', token };
+    }
+    return { status: 'ok', token: await this.signToken(user.id, data.login) };
+  }
+
+  async casSignUp(registerToken: string) {
+    const data: RegisterData = this.jwt.decode(registerToken);
+    return this.signup({ ...data, role: 'STUDENT', firstName: 'unknown' });
   }
 
   async signToken(userId: string, login: string): Promise<string> {
