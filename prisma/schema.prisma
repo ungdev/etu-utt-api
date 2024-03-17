@@ -609,7 +609,7 @@ model UserInfos {
   website     String?   @db.VarChar(255)
   userId      String    @unique
 
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model UserMailsPhones {
@@ -619,7 +619,7 @@ model UserMailsPhones {
   phoneNumber  String? @db.VarChar(100)
   userId       String  @unique
 
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model UserOtherAttribut {

@@ -9,10 +9,11 @@ import { AppException, ERROR_CODE } from '../exceptions';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import { XMLParser } from 'fast-xml-parser';
+import { omit } from "../utils";
 
 // TODO : when other PRs will be merged, use the already defined PartiallyPartial type
 type PartiallyPartial<T extends object, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
-type RegisterData = { login: string; mail: string; lastName: string };
+export type RegisterData = { login: string; mail: string; lastName: string; firstName: string };
 
 @Injectable()
 export class AuthService {
@@ -92,10 +93,7 @@ export class AuthService {
     ticket: string,
   ): Promise<{ status: 'invalid' | 'no_account' | 'ok'; token: string }> {
     const res = await lastValueFrom(
-      this.httpService.get(`${this.config.get('CAS_URL')}/serviceValidate`, {
-        params: { service, ticket },
-        headers: { 'Content-Type': 'application/json' },
-      }),
+      this.httpService.get(`${this.config.get('CAS_URL')}/serviceValidate`, { params: { service, ticket } }),
     );
     const resData: {
       ['cas:serviceResponse']:
@@ -105,6 +103,7 @@ export class AuthService {
                 'cas:uid': string;
                 'cas:mail': string;
                 'cas:sn': string;
+                'cas:givenName': string;
               };
             };
           }
@@ -117,19 +116,23 @@ export class AuthService {
       login: resData['cas:serviceResponse']['cas:authenticationSuccess']['cas:attributes']['cas:uid'],
       mail: resData['cas:serviceResponse']['cas:authenticationSuccess']['cas:attributes']['cas:mail'],
       lastName: resData['cas:serviceResponse']['cas:authenticationSuccess']['cas:attributes']['cas:sn'],
+      firstName: resData['cas:serviceResponse']['cas:authenticationSuccess']['cas:attributes']['cas:givenName'],
       // TODO : fetch other infos from LDAP
     };
     const user = await this.prisma.user.findUnique({ where: { login: data.login } });
     if (!user) {
-      const token = this.jwt.sign(data, { expiresIn: 60, secret: this.config.get('JWT_SECRET') });
+      const token = this.signRegisterToken(data);
       return { status: 'no_account', token };
     }
     return { status: 'ok', token: await this.signToken(user.id, data.login) };
   }
 
-  async casSignUp(registerToken: string) {
-    const data: RegisterData = this.jwt.decode(registerToken);
-    return this.signup({ ...data, role: 'STUDENT', firstName: 'unknown' });
+  decodeRegisterToken(registerToken: string): RegisterData | null {
+    const data = this.jwt.decode(registerToken);
+    if (!data || !('login' in data) || !('mail' in data) || !('firstName' in data) || !('lastName' in data)) {
+      return null;
+    }
+    return omit(data, 'iat', 'exp') as RegisterData;
   }
 
   async signToken(userId: string, login: string): Promise<string> {
@@ -143,6 +146,10 @@ export class AuthService {
       expiresIn: this.config.get('JWT_EXPIRES_IN'),
       secret: secret,
     });
+  }
+
+  signRegisterToken(data: RegisterData): string {
+    return this.jwt.sign(data, { expiresIn: 60, secret: this.config.get('JWT_SECRET') });
   }
 
   getHash(password: string): Promise<string> {

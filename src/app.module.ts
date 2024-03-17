@@ -9,7 +9,7 @@ import { PermissionGuard } from './auth/guard/permission.guard';
 import { UEModule } from './ue/ue.module';
 import { JwtGuard } from './auth/guard';
 import { TimetableModule } from './timetable/timetable.module';
-import { HttpModule } from "./http/http.module";
+import { HttpModule } from './http/http.module';
 
 @Module({
   imports: [
