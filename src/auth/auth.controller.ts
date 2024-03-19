@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Headers, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { AuthService, RegisterData } from './auth.service';
+import { AuthService } from './auth.service';
 import { AuthSignInDto, AuthSignUpDto } from './dto';
 import { IsPublic } from './decorator';
 import { AppException, ERROR_CODE } from '../exceptions';
