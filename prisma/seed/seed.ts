@@ -10,6 +10,7 @@ import { cleanDb } from '../../test/utils/test_utils';
 import ueCommentSeed from './modules/ueComment.seed';
 import ueStarCriterionSeed from './modules/ueStarCriterion.seed';
 import ueStarVotesSeed from './modules/ueStarVotes.seed';
+import ueSubscriptionSeed from './modules/ueSubscription.seed';
 
 const prisma = new PrismaClient();
 async function main() {
@@ -25,8 +26,9 @@ async function main() {
   const ues = await ueSeed(prisma, semesters, branchOptions, creditCategories);
   const users = await userSeed(prisma);
   await ueCommentSeed(prisma, users, ues, semesters);
+  const ueSubscriptions = await ueSubscriptionSeed(prisma, users, ues, semesters);
   const ueStarCriterions = await ueStarCriterionSeed(prisma);
-  await ueStarVotesSeed(prisma, users, ues, ueStarCriterions);
+  await ueStarVotesSeed(prisma, ueStarCriterions, ueSubscriptions);
 
   console.log('Seeding done.');
 }

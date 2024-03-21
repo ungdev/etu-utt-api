@@ -4,10 +4,10 @@ import { faker } from '@faker-js/faker';
 
 export default function ueStarCriterionSeed(prisma: PrismaClient): Promise<RawUEStarCriterion[]> {
   console.log('Seeding UE star criterion...');
-  const criterions: Promise<RawUEStarCriterion>[] = [];
+  const criteria: Promise<RawUEStarCriterion>[] = [];
   const fakerRounds = 5;
   for (let i = 0; i < fakerRounds; i++) {
-    criterions.push(
+    criteria.push(
       prisma.uEStarCriterion.create({
         data: {
           name: faker.random.words(),
@@ -20,5 +20,5 @@ export default function ueStarCriterionSeed(prisma: PrismaClient): Promise<RawUE
       }),
     );
   }
-  return Promise.all(criterions);
+  return Promise.all(criteria);
 }
