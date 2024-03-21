@@ -20,7 +20,7 @@ declare type UnpartialFields<T, K extends keyof T> = { [P in K]-?: T[P] } & {
   [P in keyof T]: P extends T ? never : T[P];
 };
 
-declare type PartiallyPartial<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
-declare type RecursivelyPartiallyPartial<T, K> = K extends `${infer K1}.${infer K2}`
-  ? Omit<T, K1> & RecursivelyPartiallyPartial<T, K2>
-  : PartiallyPartial<T, K>;
+declare type SetPartial<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+declare type RecursivelySetPartial<T, K> = K extends `${infer K1}.${infer K2}`
+  ? Omit<T, K1> & RecursivelySetPartial<T, K2>
+  : SetPartial<T, K>;

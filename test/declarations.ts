@@ -67,7 +67,7 @@ SpecProto.expectUEs = function (app: AppProvider, ues: FakeUE[], count: number) 
     itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
   });
 };
-SpecProto.expectUEComment = expectOkOrCreate<PartiallyPartial<UEComment, 'author'>>;
+SpecProto.expectUEComment = expectOkOrCreate<SetPartial<UEComment, 'author'>>;
 SpecProto.expectUEComments = expect<Pagination<UEComment>>;
 SpecProto.expectUECommentReply = expectOkOrCreate<UECommentReply>;
 SpecProto.expectUECriteria = expect<Criterion[]>;
