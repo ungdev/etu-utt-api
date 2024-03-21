@@ -61,6 +61,14 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
       .expectAppError(ERROR_CODE.PARAM_NOT_POSITIVE, 'page');
   });
 
+  it('should return a list of all ues (within the first page)', () => {
+    return pactum
+      .spec()
+      .withBearerToken(user.token)
+      .get('/ue')
+      .expectUEs(app, ues.slice(0, app().get(ConfigModule).PAGINATION_PAGE_SIZE), ues.length);
+  });
+
   it('should return a list of all ues (within the second page)', () => {
     return pactum
       .spec()
