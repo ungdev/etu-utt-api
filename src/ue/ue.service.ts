@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { UESearchDto } from './dto/ue-search.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { ConfigService } from '@nestjs/config';
 import { UeCommentPostDto } from './dto/ue-comment-post.dto';
 import { UERateDto } from './dto/ue-rate.dto';
 import { UeCommentUpdateDto } from './dto/ue-comment-update.dto';
@@ -14,10 +13,11 @@ import { SelectCommentReply, UECommentReply } from './interfaces/comment-reply.i
 import { Criterion, SelectCriterion } from './interfaces/criterion.interface';
 import { SelectRate, UERating } from './interfaces/rate.interface';
 import { RawUserUESubscription } from '../prisma/types';
+import { ConfigModule } from "../config/config.module";
 
 @Injectable()
 export class UEService {
-  constructor(readonly prisma: PrismaService, readonly config: ConfigService) {}
+  constructor(readonly prisma: PrismaService, readonly config: ConfigModule) {}
 
   /**
    * Retrieves a page of {@link UEOverView} matching the user query. This query searchs for a text in
@@ -97,8 +97,8 @@ export class UEService {
       this.prisma.uE.findMany(
         SelectUEOverview({
           where,
-          take: Number(this.config.get('PAGINATION_PAGE_SIZE')),
-          skip: ((query.page ?? 1) - 1) * Number(this.config.get<number>('PAGINATION_PAGE_SIZE')),
+          take: this.config.PAGINATION_PAGE_SIZE,
+          skip: ((query.page ?? 1) - 1) * this.config.PAGINATION_PAGE_SIZE,
           orderBy: {
             code: 'asc',
           },
@@ -110,7 +110,7 @@ export class UEService {
     return {
       items,
       itemCount,
-      itemsPerPage: Number(this.config.get('PAGINATION_PAGE_SIZE')),
+      itemsPerPage: this.config.PAGINATION_PAGE_SIZE,
     };
   }
 
@@ -195,8 +195,8 @@ export class UEService {
               createdAt: 'desc',
             },
           ],
-          take: Number(this.config.get('PAGINATION_PAGE_SIZE')),
-          skip: ((dto.page ?? 1) - 1) * Number(this.config.get('PAGINATION_PAGE_SIZE')),
+          take: this.config.PAGINATION_PAGE_SIZE,
+          skip: ((dto.page ?? 1) - 1) * this.config.PAGINATION_PAGE_SIZE,
         }),
       ),
       this.prisma.uEComment.count({
@@ -215,7 +215,7 @@ export class UEService {
         upvoted: comment.upvotes.some((upvote) => upvote.userId == userId),
       })),
       itemCount: commentCount,
-      itemsPerPage: Number(this.config.get('PAGINATION_PAGE_SIZE')),
+      itemsPerPage: this.config.PAGINATION_PAGE_SIZE,
     };
   }
 

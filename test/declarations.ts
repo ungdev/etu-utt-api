@@ -7,7 +7,7 @@ import { UECommentReply } from '../src/ue/interfaces/comment-reply.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { UERating } from 'src/ue/interfaces/rate.interface';
 import { FakeUE } from './utils/fakedb';
-import { ConfigService } from '@nestjs/config';
+import { ConfigModule } from '../src/config/config.module';
 import { AppProvider } from './utils/test_utils';
 import { omit, pick } from '../src/utils';
 
@@ -64,7 +64,7 @@ SpecProto.expectUEs = function (app: AppProvider, ues: FakeUE[], count: number) 
       })),
     })),
     itemCount: count,
-    itemsPerPage: Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')),
+    itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
   });
 };
 SpecProto.expectUEComment = expectOkOrCreate<PartiallyPartial<UEComment, 'author'>>;
