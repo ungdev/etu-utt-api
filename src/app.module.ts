@@ -9,6 +9,7 @@ import { PermissionGuard } from './auth/guard/permission.guard';
 import { UEModule } from './ue/ue.module';
 import { JwtGuard } from './auth/guard';
 import { TimetableModule } from './timetable/timetable.module';
+import { BranchModule } from "./branch/branch.module";
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { TimetableModule } from './timetable/timetable.module';
     UsersModule,
     UEModule,
     TimetableModule,
+    BranchModule,
   ],
   // The providers below are used for all the routes of the api.
   // For example, the JwtGuard is used for all the routes and checks whether the user is authentified.
