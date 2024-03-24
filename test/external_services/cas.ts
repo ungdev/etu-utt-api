@@ -23,7 +23,7 @@ export function enable() {
       HttpStatus.OK,
       "<cas:serviceResponse xmlns:cas='http://www.yale.edu/tp/cas'>\n" +
         '    <cas:authenticationSuccess>\n' +
-        '        <cas:user>roncinte</cas:user>\n' +
+        `        <cas:user>${user.login}</cas:user>\n` +
         '        <cas:attributes>\n' +
         `            <cas:uid>${user.login}</cas:uid>\n` +
         `            <cas:mail>${user.mail}</cas:mail>\n` +
