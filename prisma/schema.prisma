@@ -222,7 +222,7 @@ model Translation {
 model UE {
   id              String   @id @default(uuid())
   code            String   @unique @db.VarChar(10)
-  inscriptionCode String   @unique @db.VarChar(4)
+  inscriptionCode String   @unique @db.Char(4)
   name            String   @db.VarChar(255)
   validationRate  Float?
   createdAt       DateTime @default(now())

@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { UESearchDto } from './dto/ue-search.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { ConfigService } from '@nestjs/config';
 import { UeCommentPostDto } from './dto/ue-comment-post.dto';
 import { UERateDto } from './dto/ue-rate.dto';
 import { UeCommentUpdateDto } from './dto/ue-comment-update.dto';
@@ -14,10 +13,11 @@ import { SelectCommentReply, UECommentReply } from './interfaces/comment-reply.i
 import { Criterion, SelectCriterion } from './interfaces/criterion.interface';
 import { SelectRate, UERating } from './interfaces/rate.interface';
 import { RawUserUESubscription } from '../prisma/types';
+import { ConfigModule } from "../config/config.module";
 
 @Injectable()
 export class UEService {
-  constructor(readonly prisma: PrismaService, readonly config: ConfigService) {}
+  constructor(readonly prisma: PrismaService, readonly config: ConfigModule) {}
 
   /**
    * Retrieves a page of {@link UEOverView} matching the user query. This query searchs for a text in
@@ -97,8 +97,8 @@ export class UEService {
       this.prisma.uE.findMany(
         SelectUEOverview({
           where,
-          take: Number(this.config.get('PAGINATION_PAGE_SIZE')),
-          skip: ((query.page ?? 1) - 1) * Number(this.config.get<number>('PAGINATION_PAGE_SIZE')),
+          take: this.config.PAGINATION_PAGE_SIZE,
+          skip: ((query.page ?? 1) - 1) * this.config.PAGINATION_PAGE_SIZE,
           orderBy: {
             code: 'asc',
           },
@@ -110,7 +110,7 @@ export class UEService {
     return {
       items,
       itemCount,
-      itemsPerPage: Number(this.config.get('PAGINATION_PAGE_SIZE')),
+      itemsPerPage: this.config.PAGINATION_PAGE_SIZE,
     };
   }
 
@@ -155,19 +155,8 @@ export class UEService {
     // And turn semester into their respective code.
     return {
       ...ue,
-      openSemester: ue.openSemester.map((semester) => semester.code),
       starVotes: Object.fromEntries(
-        Object.entries(starVoteCriteria).map(([key, entry]) => {
-          let coefficients = 0;
-          let ponderation = 0;
-          for (const { value, createdAt } of entry) {
-            const dt = (starVoteCriteria[key][0].createdAt.getTime() - createdAt.getTime()) / 1000;
-            const dp = Math.exp(-dt / 10e7);
-            ponderation += dp * value;
-            coefficients += dp;
-          }
-          return [key, Math.round((ponderation / coefficients) * 10) / 10];
-        }),
+        Object.entries(starVoteCriteria).map(([key, entry]) => [key, this.computeRate(entry)]),
       ),
     };
   }
@@ -206,8 +195,8 @@ export class UEService {
               createdAt: 'desc',
             },
           ],
-          take: Number(this.config.get('PAGINATION_PAGE_SIZE')),
-          skip: ((dto.page ?? 1) - 1) * Number(this.config.get('PAGINATION_PAGE_SIZE')),
+          take: this.config.PAGINATION_PAGE_SIZE,
+          skip: ((dto.page ?? 1) - 1) * this.config.PAGINATION_PAGE_SIZE,
         }),
       ),
       this.prisma.uEComment.count({
@@ -226,7 +215,33 @@ export class UEService {
         upvoted: comment.upvotes.some((upvote) => upvote.userId == userId),
       })),
       itemCount: commentCount,
-      itemsPerPage: Number(this.config.get('PAGINATION_PAGE_SIZE')),
+      itemsPerPage: this.config.PAGINATION_PAGE_SIZE,
+    };
+  }
+
+  /**
+   * Retrieves a single {@link UEComment} from a comment UUID
+   * @param commentId the UUID of the comment
+   * @param userId the user fetching the comments. Used to determine if an anonymous comment should include its author
+   * @param bypassAnonymousData if true, the author of an anonymous comment will be included in the response (this is the case if the user is a moderator)
+   * @returns a page of {@link UEComment} matching the user query
+   */
+  async getCommentFromId(commentId: string, userId: string, bypassAnonymousData: boolean) {
+    const comment = await this.prisma.uEComment.findUnique(
+      SelectComment({
+        where: {
+          id: commentId,
+        },
+      }),
+    );
+    if (comment === null) {
+      return null;
+    }
+    if (comment.isAnonymous && !bypassAnonymousData && comment.author?.id !== userId) delete comment.author;
+    return {
+      ...comment,
+      upvotes: comment.upvotes.length,
+      upvoted: comment.upvotes.some((upvote) => upvote.userId == userId),
     };
   }
 
@@ -682,5 +697,18 @@ export class UEService {
         },
       }),
     );
+  }
+
+  computeRate(rates: Array<{ createdAt: Date; value: number }>) {
+    let coefficients = 0;
+    let ponderation = 0;
+    const newestCreationTimestamp = rates.reduce((acc, rate) => Math.max(rate.createdAt.getTime(), acc), 0);
+    for (const { value, createdAt } of rates) {
+      const dt = (newestCreationTimestamp - createdAt.getTime()) / 1000;
+      const dp = Math.exp(-dt / 10e7);
+      ponderation += dp * value;
+      coefficients += dp;
+    }
+    return Math.round((ponderation / coefficients) * 10) / 10;
   }
 }
