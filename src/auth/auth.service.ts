@@ -4,12 +4,12 @@ import { AuthSignInDto, AuthSignUpDto } from './dto';
 import * as bcrypt from 'bcryptjs';
 import { Prisma } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 import { AppException, ERROR_CODE } from '../exceptions';
+import { ConfigModule } from '../config/config.module';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import { XMLParser } from 'fast-xml-parser';
-import { omit } from "../utils";
+import { omit } from '../utils';
 
 // TODO : when other PRs will be merged, use the already defined PartiallyPartial type
 type PartiallyPartial<T extends object, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
@@ -20,7 +20,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwt: JwtService,
-    private config: ConfigService,
+    private config: ConfigModule,
     private httpService: HttpService,
   ) {}
 
@@ -95,7 +95,7 @@ export class AuthService {
    */
   isTokenValid(token: string): boolean {
     try {
-      this.jwt.verify(token, { secret: this.config.get('JWT_SECRET') });
+      this.jwt.verify(token, { secret: this.config.JWT_SECRET });
     } catch (e) {
       return false;
     }
@@ -117,7 +117,7 @@ export class AuthService {
     ticket: string,
   ): Promise<{ status: 'invalid' | 'no_account' | 'ok'; token: string }> {
     const res = await lastValueFrom(
-      this.httpService.get(`${this.config.get('CAS_URL')}/serviceValidate`, { params: { service, ticket } }),
+      this.httpService.get(`${this.config.CAS_URL}/serviceValidate`, { params: { service, ticket } }),
     );
     const resData: {
       ['cas:serviceResponse']:
@@ -174,10 +174,10 @@ export class AuthService {
       sub: userId,
       login,
     };
-    const secret = this.config.get('JWT_SECRET');
+    const secret = this.config.JWT_SECRET;
 
     return this.jwt.signAsync(payload, {
-      expiresIn: this.config.get('JWT_EXPIRES_IN'),
+      expiresIn: this.config.JWT_EXPIRES_IN,
       secret: secret,
     });
   }
@@ -196,7 +196,7 @@ export class AuthService {
    * @param password The password to hash.
    */
   getHash(password: string): Promise<string> {
-    const saltRounds = 10;
+    const saltRounds = Number.parseInt(this.config.SALT_ROUNDS);
     return bcrypt.hash(password, saltRounds);
   }
 }

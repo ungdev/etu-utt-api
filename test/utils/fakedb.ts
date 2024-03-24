@@ -8,13 +8,13 @@ import {
   RawUECommentReply,
   RawUECommentUpvote,
   RawUECredit,
-  RawUECreditCategory,
+  RawCreditCategory,
   RawUEInfo,
   RawUEStarCriterion,
   RawUEStarVote,
   RawUEWorkTime,
-  RawUTTBranch,
-  RawUTTBranchOption,
+  RawBranch,
+  RawBranchOption,
   RawUser,
   RawUserInfos,
   RawUserUESubscription,
@@ -34,15 +34,15 @@ export type FakeUser = Partial<RawUser & RawUserInfos & { permissions: string[];
 export type FakeTimetableGroup = Partial<RawTimetableGroup>;
 export type FakeTimetableEntry = Partial<RawTimetableEntry>;
 export type FakeTimetableEntryOverride = Partial<RawTimetableEntryOverride>;
-export type FakeBranch = Partial<RawUTTBranch>;
-export type FakeBranchOption = Partial<RawUTTBranchOption>;
+export type FakeBranch = Partial<RawBranch>;
+export type FakeBranchOption = Partial<RawBranchOption>;
 export type FakeSemester = Partial<RawSemester>;
 export type FakeUE = Partial<RawUE> & {
-  credits?: (Partial<RawUECredit> & { category: RawUECreditCategory })[];
+  credits?: (Partial<RawUECredit> & { category: RawCreditCategory })[];
   info?: Partial<RawUEInfo & { requirements: { code: string }[] }>;
   workTime?: Partial<RawUEWorkTime>;
   openSemesters?: Partial<RawSemester>[];
-  branchOption?: Partial<RawUTTBranchOption & { branch: RawUTTBranch }>[];
+  branchOption?: Partial<RawBranchOption & { branch: RawBranch }>[];
 };
 export type FakeUserUESubscription = Partial<RawUserUESubscription>;
 export type FakeUEStarCriterion = Partial<RawUEStarCriterion>;
@@ -50,7 +50,7 @@ export type FakeUEStarVote = Partial<RawUEStarVote>;
 export type FakeComment = Partial<RawUEComment>;
 export type FakeCommentUpvote = Partial<RawUECommentUpvote>;
 export type FakeCommentReply = Partial<RawUECommentReply>;
-export type FakeUECreditCategory = Partial<RawUECreditCategory>;
+export type FakeUECreditCategory = Partial<RawCreditCategory>;
 
 export interface FakeEntityMap {
   timetableEntryOverride: {
@@ -86,7 +86,6 @@ export interface FakeEntityMap {
   ue: {
     entity: FakeUE;
     params: CreateUEParameters;
-    deps: { branchOption: FakeBranchOption; semesters: FakeSemester[] };
   };
   userUESubscription: {
     entity: FakeUserUESubscription;
@@ -341,13 +340,15 @@ export const createUE = entityFaker(
       project: () => faker.datatype.number({ min: 0, max: 100 }),
       internship: () => faker.datatype.number({ min: 0, max: 100 }),
     },
+    branchOption: [],
+    openSemesters: [],
   },
-  async (app, dependencies, params) =>
+  async (app, params) =>
     app()
       .get(PrismaService)
       .uE.create({
         data: {
-          ...omit(params, 'credits', 'info', 'workTime', 'inscriptionCode'),
+          ...omit(params, 'credits', 'info', 'workTime', 'inscriptionCode', 'openSemesters'),
           inscriptionCode: params.inscriptionCode ?? params.code,
           credits: {
             create: params.credits.map((credit) => ({
@@ -367,12 +368,12 @@ export const createUE = entityFaker(
             create: params.workTime,
           },
           branchOption: {
-            connect: {
-              code: dependencies.branchOption.code,
-            },
+            connect: params.branchOption.map((branchOption) => ({
+              code: branchOption.code,
+            })),
           },
           openSemester: {
-            connect: dependencies.semesters.map((semester) => ({
+            connect: params.openSemesters.map((semester) => ({
               code: semester.code,
             })),
           },

@@ -58,8 +58,9 @@ export class AuthController {
   async casSignUp(@Body() dto: AuthCasSignUpDto) {
     const data = this.authService.decodeRegisterToken(dto.registerToken);
     if (!data) throw new AppException(ERROR_CODE.INVALID_TOKEN_FORMAT);
-    if (await this.usersService.doesUserExist({ login: data.login }))
+    if (await this.usersService.doesUserExist({ login: data.login })) {
       throw new AppException(ERROR_CODE.CREDENTIALS_ALREADY_TAKEN);
+    }
     const token = await this.authService.signup({ ...data, role: 'STUDENT' });
     return { access_token: token };
   }

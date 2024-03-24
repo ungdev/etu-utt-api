@@ -63,7 +63,7 @@ export default class UsersService {
     });
     if (!user) return null;
     const transformedUser: User = { ...user, permissions: undefined };
-    transformedUser.permissions = user.permissions.map((permssion) => permssion.userPermissionId);
+    transformedUser.permissions = user.permissions.map((permission) => permission.userPermissionId);
     return transformedUser;
   }
 

@@ -13,9 +13,9 @@ export const user: RegisterData = {
   firstName: faker.name.firstName(),
 };
 
-export function enable() {
+export function enable(casUrl: string) {
   axios.defaults.adapter = 'http';
-  nock(`https://cas.utt.fr/cas`)
+  nock(casUrl)
     .persist()
     .get(`/serviceValidate`)
     .query({ service: validService, ticket: validTicket })

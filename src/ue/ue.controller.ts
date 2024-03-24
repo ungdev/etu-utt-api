@@ -56,6 +56,26 @@ export class UEController {
     return this.ueService.createComment(body, user.id, ueCode);
   }
 
+  @Get('/comments/:commentId')
+  async getUECommentFromId(
+    @Param(
+      'commentId',
+      new ParseUUIDPipe({ exceptionFactory: () => new AppException(ERROR_CODE.PARAM_NOT_UUID, 'commentId') }),
+    )
+    commentId: string,
+    @GetUser() user: User,
+  ) {
+    const comment = await this.ueService.getCommentFromId(
+      commentId,
+      user.id,
+      user.permissions.includes('commentModerator'),
+    );
+    if (!comment) {
+      throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
+    }
+    return comment;
+  }
+
   @Patch('/comments/:commentId')
   async EditUEComment(
     @Param(
@@ -92,7 +112,7 @@ export class UEController {
   }
 
   @Post('/comments/:commentId/upvote')
-  @HttpCode(HttpStatus.CREATED)
+  @HttpCode(HttpStatus.OK)
   async UpvoteUEComment(
     @Param(
       'commentId',
@@ -109,10 +129,11 @@ export class UEController {
     if (await this.ueService.hasAlreadyUpvoted(user.id, commentId))
       throw new AppException(ERROR_CODE.FORBIDDEN_ALREADY_UPVOTED);
     await this.ueService.upvoteComment(user.id, commentId);
+    return { upvoted: true };
   }
 
   @Delete('/comments/:commentId/upvote')
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @HttpCode(HttpStatus.OK)
   async UnUpvoteUEComment(
     @Param(
       'commentId',
@@ -129,6 +150,7 @@ export class UEController {
     if (!(await this.ueService.hasAlreadyUpvoted(user.id, commentId)))
       throw new AppException(ERROR_CODE.FORBIDDEN_ALREADY_UNUPVOTED);
     await this.ueService.deUpvoteComment(user.id, commentId);
+    return { upvoted: false };
   }
 
   @Post('/comments/:commentId/reply')

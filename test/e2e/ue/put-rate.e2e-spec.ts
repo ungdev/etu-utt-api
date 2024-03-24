@@ -19,7 +19,7 @@ const PutRate = e2eSuite('PUT /ue/{ueCode}/rate', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUE(app, { semesters: [semester], branchOption });
+  const ue = createUE(app, { openSemesters: [semester], branchOption: [branchOption] });
   const criterion = createCriterion(app);
   createUESubscription(app, { user, ue, semester });
 
