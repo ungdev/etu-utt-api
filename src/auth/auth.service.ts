@@ -4,12 +4,12 @@ import { AuthSignInDto, AuthSignUpDto } from './dto';
 import * as bcrypt from 'bcryptjs';
 import { Prisma } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 import { AppException, ERROR_CODE } from '../exceptions';
+import { ConfigModule } from '../config/config.module';
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService, private jwt: JwtService, private config: ConfigService) {}
+  constructor(private prisma: PrismaService, private jwt: JwtService, private config: ConfigModule) {}
 
   async signup(dto: AuthSignUpDto): Promise<string> {
     try {
@@ -61,7 +61,7 @@ export class AuthService {
 
   isTokenValid(token: string): boolean {
     try {
-      this.jwt.verify(token, { secret: this.config.get('JWT_SECRET') });
+      this.jwt.verify(token, { secret: this.config.JWT_SECRET });
     } catch (e) {
       return false;
     }
@@ -73,16 +73,16 @@ export class AuthService {
       sub: userId,
       login,
     };
-    const secret = this.config.get('JWT_SECRET');
+    const secret = this.config.JWT_SECRET;
 
     return this.jwt.signAsync(payload, {
-      expiresIn: this.config.get('JWT_EXPIRES_IN'),
+      expiresIn: this.config.JWT_EXPIRES_IN,
       secret: secret,
     });
   }
 
   getHash(password: string): Promise<string> {
-    const saltRounds = 10;
+    const saltRounds = Number.parseInt(this.config.SALT_ROUNDS);
     return bcrypt.hash(password, saltRounds);
   }
 }

@@ -23,6 +23,11 @@ const UE_DETAIL_SELECT_FILTER = {
     openSemester: {
       select: {
         code: true,
+        start: true,
+        end: true,
+      },
+      orderBy: {
+        start: 'asc',
       },
     },
     workTime: {
@@ -65,15 +70,15 @@ const UE_DETAIL_SELECT_FILTER = {
         value: true,
       },
       orderBy: {
-        createdAt: 'desc',
+        criterionId: 'asc',
       },
     },
   },
-} as const;
+} as const satisfies Prisma.UEFindManyArgs;
 
 export type UEUnComputedDetail = DeepWritable<Prisma.UEGetPayload<typeof UE_DETAIL_SELECT_FILTER>>;
 export type UEDetail = Omit<UEUnComputedDetail, 'openSemester' | 'starVotes'> & {
-  openSemester: string[];
+  openSemester: Array<{ code: string; start: Date; end: Date }>;
   starVotes: { [key: string]: number };
 };
 

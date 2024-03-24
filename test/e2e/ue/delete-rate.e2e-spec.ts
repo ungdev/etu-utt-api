@@ -18,7 +18,7 @@ const DeleteRate = e2eSuite('DELETE /ue/{ueCode}/rate/{critetionId}', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUE(app, { semesters: [semester], branchOption });
+  const ue = createUE(app, { openSemesters: [semester], branchOption: [branchOption] });
   const criterion = createCriterion(app);
   createUESubscription(app, { user, ue, semester });
   const rating = createUERating(app, { user, ue, criterion });
