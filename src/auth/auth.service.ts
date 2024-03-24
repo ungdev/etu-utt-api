@@ -11,8 +11,6 @@ import { lastValueFrom } from 'rxjs';
 import { XMLParser } from 'fast-xml-parser';
 import { omit } from '../utils';
 
-// TODO : when other PRs will be merged, use the already defined PartiallyPartial type
-type PartiallyPartial<T extends object, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 export type RegisterData = { login: string; mail: string; lastName: string; firstName: string };
 
 @Injectable()
@@ -29,7 +27,7 @@ export class AuthService {
    * It returns an access token that the user can then use to authenticate their requests.
    * @param dto Data about the user to create.
    */
-  async signup(dto: PartiallyPartial<AuthSignUpDto, 'password'>): Promise<string> {
+  async signup(dto: SetPartial<AuthSignUpDto, 'password'>): Promise<string> {
     try {
       const isUTTMail = dto.mail?.endsWith('@utt.fr');
       const user = await this.prisma.user.create({
