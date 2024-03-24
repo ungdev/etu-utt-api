@@ -106,3 +106,7 @@ dist
 .idea
 
 yarn.lock
+
+# Build files
+docs/_build/
+docs/build/
