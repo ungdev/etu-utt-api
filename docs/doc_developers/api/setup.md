@@ -24,6 +24,12 @@ sudo apt install nodejs
 
 Vous pouvez remplacer `18` par la version de NodeJS que vous souhaitez installer.
 
+Si vous avez besoin de mettre à jour nodejs vers une version spécifique, vous pouvez exécuter les commandes suivantes (pour utiliser node 20 dans l'exemple donné) :
+```sh
+sudo npm i -g n
+sudo n 20
+```
+
 Vous pouvez maintenant utiliser le gestionnaire de dépendances utilisé dans le projet : PNPM.
 
 ```bash
