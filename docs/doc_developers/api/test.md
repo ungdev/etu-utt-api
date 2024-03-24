@@ -11,6 +11,49 @@ Les tests sont divisés en 2 parties :
 - Unit (Unitaires) : les tests unitaires permettent de tester une partie de l’API. Il n’y en a pas pour toutes les
   parties de l’API, uniquement les plus complexes, là où c’est jugé nécessaire.
 
+Les tests doivent tester le plus de cas possibles, et être le plus complets possible. Pour mesurer la couverture des
+tests, nous utilisons du code coverage. Il faut garder le pourcentage de couverture le plus élevé possible. Pour
+référence, nous sommes actuellement à 96.5% de couverture.
+
+## Commandes
+
+### Lancer tous les tests
+
+```bash
+pnpm test
+```
+
+### Lancer uniquement certain tests
+
+Pour lancer tous les tests ayant le pattern souhaité
+
+```bash
+pnpm test <pattern>
+# Par exemple, pour lancer les tests de la route GET /users/:userId :
+pnpm test "GET /users/:userId"
+```
+
+Pour lancer les tests E2E ou unitaires :
+
+```bash
+pnpm test:e2e  # Uniquement les tests E2E
+pnpm test:unit  # Uniquement les tests unitaires
+```
+
+### Lancer les tests avec un watcher
+
+```bash
+pnpm test:watch
+```
+
+### Lancer l'analyse de la couverture des tests
+
+```bash
+pnpm test:cov
+```
+
+Le résultat sera un site web : `src/coverage/lcov-report/index.html`.
+
 ## Suite
 
 Une suite est un ensemble de test permettant de tester une fonctionnalité : route, service, … Une suite représente en
@@ -47,8 +90,8 @@ describe('E2E Spec', () => {
 ## Module fakedb
 
 Le module `fakedb` est un module simplifiant grandement l’écriture de tests, permettant notamment de générer plus
-facilement des données de test. Le module abstrait beaucoup de fonctions que vous utilisez habituellement, assurez-vous
-donc de bien lire et comprendre cette partie de la documentation.
+facilement des données de test. Vous utiliserez souvent ce module, assurez-vous donc de bien lire et comprendre cette
+partie de la documentation.
 
 ### Plugin faker
 
@@ -154,7 +197,7 @@ e2eSuite("Foo", (app) => { // Vous pouvez aussi utiliser unitSuite, ou n'importe
             credits: 6,
           },
         ],
-      }, // We passed quite a lot of parameters there, they are all optional, we can remove any one of them.
+      }, // On a passé beaucoup de paramètres, ils sont tous optionnels, on peut enlever n'importe lequel
     )
   ;
 

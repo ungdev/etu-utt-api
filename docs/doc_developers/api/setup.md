@@ -24,11 +24,15 @@ sudo apt install nodejs
 
 Vous pouvez remplacer `18` par la version de NodeJS que vous souhaitez installer.
 
-Si vous avez besoin de mettre à jour nodejs vers une version spécifique, vous pouvez exécuter les commandes suivantes (pour utiliser node 20 dans l'exemple donné) :
+Si vous avez besoin de mettre à jour NodeJS vers une version spécifique, vous pouvez exécuter les commandes suivantes (
+pour utiliser Node 20 dans l'exemple donné) :
+
 ```sh
 sudo npm i -g n
 sudo n 20
 ```
+
+Ces commande ne fonctionneront pas sous Windows (mais de toute façon, vous utilisez WSL, right ? :)).
 
 Vous pouvez maintenant utiliser le gestionnaire de dépendances utilisé dans le projet : PNPM.
 
@@ -48,11 +52,19 @@ commande suivante :
 sudo apt install mariadb-server
 ```
 
+Si vous êtes sous WSL, vous aurez besoin de démarrer MariaDB :
+
+```bash
+sudo service mariadb start
+```
+
 Vous pouvez maintenant vous connecter à MariaDB avec la commande suivante :
 
 ```bash
 sudo mariadb
 ```
+
+Si vous avez une erreur, c'est peut-être que votre service n'est pas démarré. Référez-vous à la commande au-dessus.
 
 Vous allez avoir besoin de créer un utilisateur `dev` :
 

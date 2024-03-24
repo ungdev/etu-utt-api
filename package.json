@@ -22,7 +22,6 @@
     "test:e2e": "jest --config test/jest.json \"e2e/app.e2e-spec.ts\" --runInBand --testNamePattern",
     "test:watch": "jest --watch --config ./test/jest.json --runInBand",
     "test:cov": "jest --coverage --config ./test/jest.json --runInBand",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:db:reset": "env-cmd -f .env.test --use-shell \"pnpm prisma migrate reset --force && pnpm prisma db push\"",
     "test:db:editor": "env-cmd -f .env.test -- pnpm prisma studio"
   },

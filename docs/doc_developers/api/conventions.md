@@ -19,8 +19,9 @@ Le nom d'une classe doit être suffixé par ce qu'elle représente :
 
 * Les classes de type module : `Module` (`UsersModule`),
 * Les classes de type service : `Service` (`UsersService`),
-* Les classes de type DTO : `Dto` (`UsersSearchDto`).
+* Les classes de type DTO (Data Transfer Object) : `Dto` (`UsersSearchDto`).
 * Les classes de type pipe : `Pipe` (`RegexPipe`).
+* etc.
 
 Les noms de fichiers et de dossiers doivent être _kebab-case_ : entièrement en minuscule, sans espace, et séparés par
 des tirets (`-`). Par exemple, un fichier nommé `MyClass.ts` devrait être renommé en `my-class.ts`.
