@@ -9,7 +9,7 @@ fichier .ical. Voici les grandes fonctionnalité des emplois du temps :
 
 Contient les données nécessaires à la génération des occurrences liées à un événement en particulier.
 
-**Exemple ;** un TD de NF16 le mardi à 14h au semestre A23 sera un événement, commençant le 19 septembre 2023, se
+**Exemple :** un TD de NF16 le mardi à 14h au semestre A23 sera un événement, commençant le 19 septembre 2023, se
 répétant toutes les semaines, ayant lieu 16 fois, et durant à chaque fois 2h, pour tous les élèves du TD. Pour gérer les
 vacances, jours fériés et journées banalisées, on utilisera des overrides. Cet événement ne changera pas, pas même son
 nombre de répétitions.
