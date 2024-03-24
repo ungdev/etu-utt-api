@@ -211,7 +211,7 @@ type Deps<T extends keyof FakeEntityMap> = FakeEntityMap[T] extends { deps: infe
 Ces 3 types prennent en paramètre le nom de la table (`branch`, `user`, `semester`, `branchOption`, …).
 
 Tous les outils développés et documentés dans la suite de cette partie ont permis d’obtenir ce résultat : leur code est
-difficile à lire à cause de sa complexité, mais nous pensons qu’ils permettent de grandement simplifier la lisibilité,
+difficile à lire à cause de sa complexité, mais ils permettent de grandement simplifier la lisibilité,
 l’écriture, la redondance du code ensuite. Il n’y a que quelques centaines de lignes tout au plus de code fortement
 typé (et assez abstrait), normalement, vous serez capable de comprendre le fonctionnement global de ces lignes à la fin
 de la partie suivante.
