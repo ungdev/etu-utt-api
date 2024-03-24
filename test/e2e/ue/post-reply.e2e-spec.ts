@@ -1,13 +1,25 @@
-import { createUser, createUE, makeUserJoinUE, createComment } from '../../utils/fakedb';
+import {
+  createUser,
+  createUE,
+  createComment,
+  createBranch,
+  createBranchOption,
+  createSemester,
+  createUESubscription,
+} from '../../utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
 import { Dummies, e2eSuite, JsonLike } from '../../utils/test_utils';
+import { PrismaService } from '../../../src/prisma/prisma.service';
 
 const PostCommmentReply = e2eSuite('POST /ue/comments/{commentId}/reply', (app) => {
   const user = createUser(app);
-  const ue = createUE(app);
-  makeUserJoinUE(app, user, ue);
-  const comment = createComment(app, ue, user, false);
+  const semester = createSemester(app);
+  const branch = createBranch(app);
+  const branchOption = createBranchOption(app, { branch });
+  const ue = createUE(app, { semesters: [semester], branchOption });
+  const comment = createComment(app, { ue, user, semester });
+  createUESubscription(app, { user, ue, semester });
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum
@@ -71,8 +83,8 @@ const PostCommmentReply = e2eSuite('POST /ue/comments/{commentId}/reply', (app) 
       .expectAppError(ERROR_CODE.PARAM_NOT_UUID, 'commentId');
   });
 
-  it('should return the posted comment', () => {
-    return pactum
+  it('should return the posted comment', async () => {
+    await pactum
       .spec()
       .withBearerToken(user.token)
       .post(`/ue/comments/${comment.id}/reply`)
@@ -94,6 +106,7 @@ const PostCommmentReply = e2eSuite('POST /ue/comments/{commentId}/reply', (app) 
         },
         true,
       );
+    return app().get(PrismaService).uECommentReply.deleteMany();
   });
 });
 

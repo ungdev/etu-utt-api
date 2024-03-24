@@ -1,63 +1,71 @@
-import { createCriterion, createUE, createUser } from '../../utils/fakedb';
+import {
+  createBranch,
+  createBranchOption,
+  createCriterion,
+  createSemester,
+  createUE,
+  createUERating,
+  createUser,
+} from '../../utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from 'src/exceptions';
-import { UEService } from '../../../src/ue/ue.service';
 import { e2eSuite } from '../../utils/test_utils';
 
 const GetRateE2ESpec = e2eSuite('GET /ue/{ueCode}/rate', (app) => {
   const user = createUser(app);
   const user2 = createUser(app, { login: 'user2' });
-  const ue = createUE(app, {
-    code: `XX00`,
-  });
-  const c1 = createCriterion(app, 'difficulty');
-  const c2 = createCriterion(app, 'interest');
-
-  beforeAll(async () => {
-    await app().get(UEService).doRateUE(user.id, ue.code, {
-      criterion: c1.id,
-      value: 1,
-    });
-    await app().get(UEService).doRateUE(user.id, ue.code, {
-      criterion: c2.id,
-      value: 5,
-    });
-    await app().get(UEService).doRateUE(user2.id, ue.code, {
-      criterion: c1.id,
-      value: 2,
-    });
-  });
+  const semester = createSemester(app);
+  const branch = createBranch(app);
+  const branchOption = createBranchOption(app, { branch });
+  const ue = createUE(app, { semesters: [semester], branchOption });
+  const c1 = createCriterion(app);
+  const c2 = createCriterion(app);
+  createUERating(app, { ue, criterion: c1, user }, { value: 1 });
+  createUERating(app, { ue, criterion: c2, user }, { value: 5 });
+  createUERating(app, { ue, criterion: c1, user: user2 }, { value: 2 });
 
   it('should return a 401 as user is not authenticated', () => {
-    return pactum.spec().get('/ue/XX00/rate').expectAppError(ERROR_CODE.NOT_LOGGED_IN);
+    return pactum.spec().get(`/ue/${ue.code}/rate`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
   it('should return an error if the ue does not exist', () => {
-    return pactum.spec().withBearerToken(user.token).get('/ue/AA01/rate').expectAppError(ERROR_CODE.NO_SUCH_UE, 'AA01');
+    const otherUECode = ue.code === 'AA01' ? 'AA02' : 'AA01';
+    return pactum
+      .spec()
+      .withBearerToken(user.token)
+      .get(`/ue/${otherUECode}/rate`)
+      .expectAppError(ERROR_CODE.NO_SUCH_UE, otherUECode);
   });
 
   it('should return the user rate for the UE', () => {
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .get('/ue/XX00/rate')
-      .expectUERates([
-        {
-          criterionId: c1.id,
-          value: 1,
-        },
-        {
-          criterionId: c2.id,
-          value: 5,
-        },
-      ]);
+      .get(`/ue/${ue.code}/rate`)
+      .expectUERates(
+        [
+          {
+            criterion: c1,
+            value: 1,
+          },
+          {
+            criterion: c2,
+            value: 5,
+          },
+        ]
+          .sort((a, b) => a.criterion.name.localeCompare(b.criterion.name))
+          .map((rate) => ({
+            criterionId: rate.criterion.id,
+            value: rate.value,
+          })),
+      );
   });
 
   it('should return the user rate for the UE (partial rating)', () => {
     return pactum
       .spec()
       .withBearerToken(user2.token)
-      .get('/ue/XX00/rate')
+      .get(`/ue/${ue.code}/rate`)
       .expectUERates([
         {
           criterionId: c1.id,

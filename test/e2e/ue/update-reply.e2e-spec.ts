@@ -1,14 +1,26 @@
-import { createUser, createUE, createComment, createReply } from '../../utils/fakedb';
+import {
+  createUser,
+  createUE,
+  createComment,
+  createBranch,
+  createBranchOption,
+  createSemester,
+  createCommentReply,
+} from '../../utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
 import { Dummies, e2eSuite, JsonLike } from '../../utils/test_utils';
+import { PrismaService } from '../../../src/prisma/prisma.service';
 
 const UpdateCommentReply = e2eSuite('PATCH /ue/comments/reply/{replyId}', (app) => {
   const user = createUser(app);
   const user2 = createUser(app, { login: 'user2' });
-  const ue = createUE(app);
-  const comment1 = createComment(app, ue, user);
-  const reply = createReply(app, user, comment1);
+  const semester = createSemester(app);
+  const branch = createBranch(app);
+  const branchOption = createBranchOption(app, { branch });
+  const ue = createUE(app, { semesters: [semester], branchOption });
+  const comment = createComment(app, { ue, user, semester });
+  const reply = createCommentReply(app, { user, comment });
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum
@@ -75,8 +87,8 @@ const UpdateCommentReply = e2eSuite('PATCH /ue/comments/reply/{replyId}', (app) 
       .expectAppError(ERROR_CODE.NO_SUCH_REPLY);
   });
 
-  it('should return the updated comment', () => {
-    return pactum
+  it('should return the updated comment', async () => {
+    await pactum
       .spec()
       .withBearerToken(user.token)
       .patch(`/ue/comments/reply/${reply.id}`)
@@ -95,6 +107,7 @@ const UpdateCommentReply = e2eSuite('PATCH /ue/comments/reply/{replyId}', (app) 
         updatedAt: JsonLike.ANY_DATE,
         body: "Je m'appelle Alban Ichou et j'approuve ce commentaire",
       });
+    return app().get(PrismaService).uECommentReply.deleteMany();
   });
 });
 

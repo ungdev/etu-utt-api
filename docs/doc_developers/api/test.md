@@ -23,9 +23,10 @@ référence, nous sommes actuellement à 96.5% de couverture.
 pnpm test
 ```
 
-### Lancer uniquement certain tests
+### Lancer uniquement certains tests
 
-Pour lancer tous les tests ayant le pattern souhaité
+Pour lancer tous les tests ayant le pattern souhaité. Cette syntaxe peut être utilisée pour toutes les commandes qui
+suivent.
 
 ```bash
 pnpm test <pattern>
@@ -53,6 +54,12 @@ pnpm test:cov
 ```
 
 Le résultat sera un site web : `src/coverage/lcov-report/index.html`.
+
+### Pour arrêter les tests dès le premier fail
+
+```bash
+pnpm test:instantfail
+```
 
 ## Suite
 
