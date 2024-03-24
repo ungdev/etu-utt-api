@@ -108,7 +108,7 @@ correspondante : `createUser`, `createSemester`, … (*fake functions*)
 
 Les fake functions sont toutes définies de la même façon :
 
-- Le premier argument est l’`AppSupplier`.
+- Le premier argument est l’`AppProvider`.
 - Le deuxième argument (`dependencies`) est un objet de paramètres obligatoires (**dépendances**) : ils peuvent par
   exemple représenter d’autres fake entities. Pour créer une filière par exemple, on doit avoir une branche créée
   préalablement, et créer la filière pour cette branche. On passera donc le paramètre `branch` dans cet objet.
