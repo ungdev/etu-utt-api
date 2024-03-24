@@ -32,6 +32,7 @@ export const enum ERROR_CODE {
   PARAM_TOO_LOW = 2016,
   PARAM_TOO_HIGH = 2017,
   PARAM_NOT_INT = 2018,
+  NO_FILE_PROVIDED = 2019,
   PARAM_DOES_NOT_MATCH_REGEX = 2102,
   NO_FIELD_PROVIDED = 2201,
   FILE_INVALID_TYPE = 2901,
@@ -60,6 +61,7 @@ export const enum ERROR_CODE {
   NO_SUCH_TIMETABLE_GROUP = 4406,
   NO_SUCH_USER = 4407,
   NO_SUCH_ANNAL = 4408,
+  ANNAL_ALREADY_UPLOADED = 4901,
   CREDENTIALS_ALREADY_TAKEN = 5001,
 }
 
@@ -143,6 +145,10 @@ export const ErrorData = Object.freeze({
   },
   [ERROR_CODE.PARAM_NOT_INT]: {
     message: 'The following parameters must be integers: %',
+    httpCode: HttpStatus.BAD_REQUEST,
+  },
+  [ERROR_CODE.NO_FILE_PROVIDED]: {
+    message: 'No file provided',
     httpCode: HttpStatus.BAD_REQUEST,
   },
   [ERROR_CODE.PARAM_DOES_NOT_MATCH_REGEX]: {
@@ -256,6 +262,10 @@ export const ErrorData = Object.freeze({
   [ERROR_CODE.NO_SUCH_ANNAL]: {
     message: 'The annal % does not exist for ue %',
     httpCode: HttpStatus.NOT_FOUND,
+  },
+  [ERROR_CODE.ANNAL_ALREADY_UPLOADED]: {
+    message: 'A file has alreay been uploaded for this annal',
+    httpCode: HttpStatus.CONFLICT,
   },
   [ERROR_CODE.CREDENTIALS_ALREADY_TAKEN]: {
     message: 'The given credentials are already taken',

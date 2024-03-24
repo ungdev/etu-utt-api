@@ -60,6 +60,7 @@ declare module './declarations' {
         semesters: string[];
       }>,
     ): this;
-    expectUEAnnal(annals: JsonLikeVariant<UEAnnalFile>[]): this;
+    expectUEAnnal(annals: JsonLikeVariant<UEAnnalFile>, created = false): this;
+    expectUEAnnals(annals: JsonLikeVariant<UEAnnalFile>[]): this;
   }
 }

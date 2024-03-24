@@ -25,7 +25,7 @@ class FileValidationPipe extends ParseFilePipe {
   }
 
   async transform(file: Express.Multer.File) {
-    if (!file) return super.transform(file);
+    if (!file) throw new AppException(ERROR_CODE.NO_FILE_PROVIDED);
     if (this.#maxSize < file.size) throw new AppException(ERROR_CODE.FILE_TOO_HEAVY, `${this.#maxSize} bytes`);
     // Using dynamic import using a Function to avoid typescript
     // to turn it into a require statement. Indeed file-type is

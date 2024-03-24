@@ -24,10 +24,11 @@ import { UeCommentUpdateDto } from './dto/ue-comment-update.dto';
 import { CommentReplyDto } from './dto/ue-comment-reply.dto';
 import { GetUECommentsDto } from './dto/ue-get-comments.dto';
 import { FileSize, MulterWithMime, UploadRoute, UserFile } from '../upload.interceptor';
-import { UploadAnnal } from './dto/upload-annal.dto';
 import { Response as ExpressResponse } from 'express';
 import { UUIDParam } from '../app.pipe';
 import { UpdateAnnal } from './dto/update-annal.dto';
+import { CreateAnnal } from './dto/create-annal.dto';
+import { CommentStatus } from './interfaces/comment.interface';
 
 @Controller('ue')
 export class UEController {
@@ -235,6 +236,19 @@ export class UEController {
   @Post('/:ueCode/annals')
   @RequireRole('STUDENT')
   @UploadRoute('file')
+  async createUeAnnal(@Param('ueCode') ueCode: string, @Body() body: CreateAnnal, @GetUser() user: User) {
+    if (!(await this.ueService.doesUEExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
+    if (
+      !(await this.ueService.hasDoneThisUEInSemester(user.id, ueCode, body.semester)) &&
+      !user.permissions.includes('annalUploader')
+    )
+      throw new AppException(ERROR_CODE.NOT_DONE_UE_IN_SEMESTER, ueCode, body.semester);
+    return this.ueService.createAnnalFile(user, ueCode, body);
+  }
+
+  @Put('/:ueCode/annals/:annalId')
+  @RequireRole('STUDENT')
+  @UploadRoute('file')
   async uploadUeAnnal(
     @UserFile(
       ['application/pdf', 'image/png', 'image/jpeg', 'image/webp', 'image/avif', 'image/tiff'],
@@ -242,16 +256,20 @@ export class UEController {
     )
     file: Promise<MulterWithMime>,
     @Param('ueCode') ueCode: string,
-    @Body() body: UploadAnnal,
+    @Param('annalId') annalId: string,
+    @Query('rotate') rotate: number,
     @GetUser() user: User,
   ) {
     if (!(await this.ueService.doesUEExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
-    if (
-      !(await this.ueService.hasDoneThisUEInSemester(user.id, ueCode, body.semester)) &&
-      !user.permissions.includes('annalUploader')
-    )
-      throw new AppException(ERROR_CODE.NOT_DONE_UE_IN_SEMESTER, ueCode, body.semester);
-    return this.ueService.uploadAnnalFile(await file, user, ueCode, body);
+    if (!(await this.ueService.isUEAnnalSender(user.id, annalId))) throw new AppException(ERROR_CODE.NOT_ANNAL_SENDER);
+    if ((await this.ueService.getUEAnnal(annalId, user.id)).status !== CommentStatus.PROCESSING)
+      throw new AppException(ERROR_CODE.ANNAL_ALREADY_UPLOADED);
+    const rotation = Number(rotate);
+    return this.ueService.uploadAnnalFile(
+      await file,
+      annalId,
+      isNaN(rotation) || rotation < -1 || rotation > 1 ? 0 : (rotation as -1 | 0 | 1),
+    );
   }
 
   @Get('/:ueCode/annals')
@@ -299,11 +317,6 @@ export class UEController {
       throw new AppException(ERROR_CODE.NO_SUCH_ANNAL, annalId, ueCode);
     if (!(await this.ueService.isUEAnnalSender(user.id, annalId)) && !user.permissions.includes('annalModerator'))
       throw new AppException(ERROR_CODE.NOT_ANNAL_SENDER);
-    if (
-      !(await this.ueService.hasDoneThisUEInSemester(user.id, ueCode, body.semester)) &&
-      !user.permissions.includes('annalModerator')
-    )
-      throw new AppException(ERROR_CODE.NOT_DONE_UE_IN_SEMESTER, ueCode, body.semester);
     return this.ueService.updateAnnalMetadata(annalId, body);
   }
 
@@ -320,6 +333,7 @@ export class UEController {
 
   // Routes to create
   // - Get lastValidatedBody from comment (for admins)
+  // - Add lastSemester in comments
   // --- User report for : comments, replies, annals
   // -- Validation for : comments, annals
   // --- Display reports for : comments, replies, annals

@@ -17,6 +17,9 @@ import DeleteRate from './delete-rate.e2e-spec';
 import GetAnnalMetadata from './get-annal-metadata.e2e-spec';
 import GetAnnal from './get-annals.e2e-spec';
 import GetAnnalFile from './get-annal-file.e2e-spec';
+import EditAnnal from './patch-annal.e2e-spec';
+import DeleteAnnal from './delete-annal.e2e-spec';
+import PostAnnal from './upload-annal.e2e-spec';
 
 export default function UEE2ESpec(app: () => INestApplication) {
   describe('UE', () => {
@@ -38,5 +41,8 @@ export default function UEE2ESpec(app: () => INestApplication) {
     GetAnnalMetadata(app);
     GetAnnal(app);
     GetAnnalFile(app);
+    EditAnnal(app);
+    DeleteAnnal(app);
+    PostAnnal(app);
   });
 }

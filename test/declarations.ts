@@ -41,6 +41,7 @@ SpecProto.expectUEAnnalMetadata = expect<{
   types: FakeUEAnnalType[];
   semesters: string[];
 }>;
-SpecProto.expectUEAnnal = expect<UEAnnalFile[]>;
+SpecProto.expectUEAnnal = expectOkOrCreate<UEAnnalFile>;
+SpecProto.expectUEAnnals = expect<UEAnnalFile[]>;
 
 export { Spec, JsonLikeVariant };
