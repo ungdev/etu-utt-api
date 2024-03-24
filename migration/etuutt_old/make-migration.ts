@@ -1,9 +1,10 @@
 import { PrismaClient } from '@prisma/client';
 import { createConnection } from 'mysql';
 import { migrateUsers } from './modules/user';
-import { cleanDb } from "../../test/utils/test_utils";
-import { migrateUEs } from "./modules/ue";
-import { createCreditCategories } from "./modules/creditCategory";
+import { cleanDb } from '../../test/utils/test_utils';
+import { migrateUEs } from './modules/ue';
+import { createCreditCategories } from './modules/creditCategory';
+import { createSemesters } from './modules/semester';
 
 const prisma = new PrismaClient();
 
@@ -43,6 +44,7 @@ const query = (async (query: string) => {
 async function main() {
   await cleanDb(prisma);
   await createCreditCategories(prisma);
+  const semesters = await createSemesters(prisma);
   const ues = await migrateUEs(query, prisma);
-  await migrateUsers(query, prisma);
+  await migrateUsers(query, prisma, ues, semesters);
 }
