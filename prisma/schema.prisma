@@ -492,6 +492,7 @@ model User {
   firstName String
   lastName  String
   rgpdId    String? @unique
+  privacyId String? @unique
 
   role                  UserRole
   timestamps            UserTimestamps?
@@ -526,6 +527,7 @@ model User {
   courseExchangeReplies UECourseExchangeReply[]
   commentUpvotes        UECommentUpvote[]
   userTimetableGroup    UserTimetableGroup[]
+  privacy               UserPrivacy?                @relation(fields: [privacyId], references: [id])
 }
 
 model UserAddress {
@@ -621,6 +623,22 @@ model UserMailsPhones {
   user User @relation(fields: [userId], references: [id])
 }
 
+model UserPrivacy {
+  // For each field, if it is true, it's public. If it is false, it's private.
+  id                     String         @id @default(uuid())
+  mailUTT                Boolean
+  mailPersonal           Boolean
+  phoneNumber            Boolean
+  birthday               Boolean
+  birthdayDisplayOnlyAge Boolean
+  sex                    Boolean
+  nationality            Boolean
+  discord                Boolean
+  address                AddressPrivacy
+
+  user User?
+}
+
 model UserOtherAttribut {
   name String        @id @db.VarChar(100)
   type AttributeType
@@ -639,12 +657,11 @@ model UserOtherAttributValue {
 }
 
 model UserPreference {
-  id                     String   @id @default(uuid())
-  birthdayDisplayOnlyAge Boolean
-  language               Language
-  wantDaymail            Boolean
-  wantDayNotif           Boolean
-  userId                 String   @unique
+  id           String   @id @default(uuid())
+  language     Language
+  wantDaymail  Boolean
+  wantDayNotif Boolean
+  userId       String   @unique
 
   user User @relation(fields: [userId], references: [id])
 }
@@ -664,7 +681,7 @@ model UserSocialNetwork {
   twitter        String? @db.VarChar(255)
   instagram      String? @db.VarChar(255)
   linkedin       String? @db.VarChar(255)
-  pseudoDiscord  String? @db.VarChar(255)
+  discord        String? @db.VarChar(255)
   wantDiscordUTT Boolean
   userId         String  @unique
 
@@ -797,4 +814,11 @@ enum TimetableEntryType {
   ASSO
   DELETE
   CUSTOM
+}
+
+enum AddressPrivacy {
+  ALL_PRIVATE
+  CITY_PRIVATE
+  ADDRESS_PRIVATE
+  ALL_PUBLIC
 }
