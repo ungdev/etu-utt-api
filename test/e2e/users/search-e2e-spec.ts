@@ -12,11 +12,10 @@ const SearchE2ESpec = e2eSuite('GET /users', (app) => {
   const user = fakedb.createUser(app, {
     login: 'users',
     sex: 'FEMALE',
-
     studentId: 69,
     lastName: 'profile',
     firstName: 'profile',
-    role: 'STUDENT',
+    userType: 'STUDENT',
     birthday: new Date(Date.UTC(2000, 1, 1)),
   });
   const otherUser = fakedb.createUser(app, {
@@ -25,7 +24,7 @@ const SearchE2ESpec = e2eSuite('GET /users', (app) => {
     studentId: 70,
     lastName: 'other',
     firstName: 'user',
-    role: 'STUDENT',
+    userType: 'STUDENT',
     birthday: new Date(Date.UTC(1998, 12, 4)),
     nickname: 'nickname',
   });

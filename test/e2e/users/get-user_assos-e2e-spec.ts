@@ -1,50 +1,58 @@
-import { createUser, createAsso, suite } from '../../test_utils';
+
+import { e2eSuite } from '../../utils/test_utils';
+import { createUser } from '../../utils/fakedb';
 import * as pactum from 'pactum';
 import { HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../../../src/prisma/prisma.service';
+//import { createAsso } from '../../test_utils';
 
-const GetCurrentUserE2ESpec = suite('GET /users/current', (app) => {
-  const asso = createAsso(app);
-  const userAssos = createUser(app, { login: 'userToSearch', userId: 'oui' });
+const GetUserAssociationE2ESpec = e2eSuite('GET /users/:userId/associations', (app) => {
+  //const asso = createAsso(app);
+  const userAssos = createUser(app, { login: 'userToSearch', id: 'oui' });
 
-  // TODO : replace studentId by id
   it('should return a 401 as user is not authenticated', () => {
-    return pactum
-      .spec()
-      .get(`/users/${userAssos.studentId}/associations`)
-      .expectStatus(HttpStatus.UNAUTHORIZED);
+    return pactum.spec().get(`/users/${userAssos.id}/associations`).expectStatus(HttpStatus.UNAUTHORIZED);
   });
 
   it('should return a 404 as asso was not found', () => {
     return pactum
       .spec()
       .get('/users/abcdef/associations')
-      .withBearerToken(asso.token)
+      .withBearerToken(userAssos.token)
       .expectStatus(HttpStatus.NOT_FOUND);
   });
 
   it('should successfully find the asso', async () => {
-    const userFromDb = await app()
+    const assoMembershipFromDb = await app()
       .get(PrismaService)
       .assoMembership.findMany({
-        where: { userId: userAssos.userId },
-        include: {},
+        where: { userId: userAssos.id },
+        select: {
+          startAt: true,
+          endAt: true,
+          roles: {
+            select: {
+              role: true,
+            },
+          },
+          asso: {
+            select: {
+              name: true,
+              logo: true,
+              descriptionShortTranslationId: true,
+              mail: true,
+            },
+          },
+        },
       });
-    const expectedBody = {};
 
     return pactum
       .spec()
-      .get(`/users/${userFromDb.userId}/associations`)
-      .withBearerToken(asso.token)
+      .get(`/users/${userAssos.id}/associations`)
+      .withBearerToken(userAssos.token)
       .expectStatus(HttpStatus.OK)
-      .expectBody(
-        Object.fromEntries(
-          Object.entries(expectedBody).filter(
-            ([, value]) => value !== undefined,
-          ),
-        ),
-      );
+      .expectBody(Object.fromEntries(Object.entries(assoMembershipFromDb).filter(([, value]) => value !== undefined)));
   });
 });
 
-export default GetCurrentUserE2ESpec;
+export default GetUserAssociationE2ESpec;

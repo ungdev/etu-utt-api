@@ -25,7 +25,7 @@ export class AuthService {
           },
           preference: { create: {} },
           rgpd: { create: {} },
-          type: dto.type,
+          userType: dto.type,
         },
       });
 

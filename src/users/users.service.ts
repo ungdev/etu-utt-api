@@ -1,11 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { UserComplete, UserAssoMembership } from '../prisma/types';
-import { User } from './interfaces/user.interface';
+import { User, UserAssoMembership, UserComplete } from './interfaces/user.interface';
 import { UsersSearchDto } from './dto/users-search.dto';
 import { UserUpdateDto } from './dto/users-update.dto';
-import { AssoMembership } from '@prisma/client';
-import { resolveSoa } from 'dns';
+import { omit } from '../utils';
 
 @Injectable()
 export default class UsersService {
@@ -76,7 +74,7 @@ export default class UsersService {
       where: { id: userId },
       include: {
         infos: true,
-        branche: true,
+        branch: true,
         mailsPhones: true,
         socialNetwork: true,
         preference: true,
@@ -92,66 +90,43 @@ export default class UsersService {
       lastName: user.lastName,
       nickName: user.infos.nickname,
       avatar: user.infos.avatar,
-      sex:
-        user.preference.displaySex || isCurrentUser
-          ? user.infos.sex
-          : undefined,
+      sex: user.preference.displaySex || isCurrentUser ? user.infos.sex : undefined,
       nationality: user.infos.nationality,
-      birthday:
-        user.preference.displayBirthday || isCurrentUser
-          ? user.infos.birthday
-          : undefined,
+      birthday: user.preference.displayBirthday || isCurrentUser ? user.infos.birthday : undefined,
       passions: user.infos.passions,
       website: user.infos.website,
-      branche: user.branche === null ? undefined : user.branche.brancheId,
-      semestre: user.branche === null ? undefined : user.branche.semesterNumber,
-      filiere: user.branche === null ? undefined : user.branche.filiereId,
+      branch: user.branch === null ? undefined : user.branch.branchId,
+      semestre: user.branch === null ? undefined : user.branch.semesterNumber,
+      branchOption: user.branch === null ? undefined : user.branch.branchOptionId,
       mailUTT: user.mailsPhones === null ? undefined : user.mailsPhones.mailUTT,
       mailPersonal:
-        (user.preference.displayMailPersonal && !(user.mailsPhones === null)) ||
-        isCurrentUser
+        (user.preference.displayMailPersonal || isCurrentUser) && user.mailsPhones !== null
           ? user.mailsPhones.mailPersonal
           : undefined,
       phone:
-        (user.preference.displayPhone && !(user.mailsPhones === null)) ||
-        isCurrentUser
+        (user.preference.displayPhone || isCurrentUser) && user.mailsPhones !== null
           ? user.mailsPhones.phoneNumber
           : undefined,
       street:
-        (user.preference.displayAddresse && !(user.addresse === null)) ||
-        isCurrentUser
-          ? user.addresse.street
-          : undefined,
+        (user.preference.displayAddresse || isCurrentUser) && user.addresse !== null ? user.addresse.street : undefined,
       postalCode:
-        (user.preference.displayAddresse && !(user.addresse === null)) ||
-        isCurrentUser
+        (user.preference.displayAddresse || isCurrentUser) && user.addresse !== null
           ? user.addresse.postalCode
           : undefined,
       city:
-        (user.preference.displayAddresse && !(user.addresse === null)) ||
-        isCurrentUser
-          ? user.addresse.city
-          : undefined,
+        (user.preference.displayAddresse || isCurrentUser) && user.addresse !== null ? user.addresse.city : undefined,
       country:
-        (user.preference.displayAddresse && !(user.addresse === null)) ||
-        isCurrentUser
+        (user.preference.displayAddresse || isCurrentUser) && user.addresse !== null
           ? user.addresse.country
           : undefined,
-      facebook:
-        user.socialNetwork === null ? undefined : user.socialNetwork.facebook,
-      twitter:
-        user.socialNetwork === null ? undefined : user.socialNetwork.twitter,
-      instagram:
-        user.socialNetwork === null ? undefined : user.socialNetwork.instagram,
-      linkendIn:
-        user.socialNetwork === null ? undefined : user.socialNetwork.linkedin,
-      twitch:
-        user.socialNetwork === null ? undefined : user.socialNetwork.twitch,
-      spotify:
-        user.socialNetwork === null ? undefined : user.socialNetwork.spotify,
+      facebook: user.socialNetwork === null ? undefined : user.socialNetwork.facebook,
+      twitter: user.socialNetwork === null ? undefined : user.socialNetwork.twitter,
+      instagram: user.socialNetwork === null ? undefined : user.socialNetwork.instagram,
+      linkendIn: user.socialNetwork === null ? undefined : user.socialNetwork.linkedin,
+      twitch: user.socialNetwork === null ? undefined : user.socialNetwork.twitch,
+      spotify: user.socialNetwork === null ? undefined : user.socialNetwork.spotify,
       discord:
-        (user.preference.displayDiscord && !(user.socialNetwork === null)) ||
-        isCurrentUser
+        (user.preference.displayDiscord || isCurrentUser) && user.socialNetwork !== null
           ? user.socialNetwork.pseudoDiscord
           : undefined,
       infoDisplayed: isCurrentUser
@@ -189,7 +164,7 @@ export default class UsersService {
           },
         },
       })
-    ).map((membership) => ({ ...membership, role: membership.roles.role }));
+    ).map((membership) => ({ ...omit(membership,"roles"), role: membership.roles.role }));
     return membership;
   }
 

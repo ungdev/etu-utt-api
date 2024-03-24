@@ -18,17 +18,13 @@ import {
   RawUser,
   RawUserInfos,
   RawUserUESubscription,
-  RawAssoMembership,
-  RawAsso,
-  RawAssoMembershipRole,
 } from '../../src/prisma/types';
 import { faker } from '@faker-js/faker';
 import { AuthService } from '../../src/auth/auth.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { AppProvider } from './test_utils';
-import { Sex, TimetableEntryType, UserType } from '@prisma/client';
+import { Sex, TimetableEntryType, UserRole } from '@prisma/client';
 import { omit, pick } from '../../src/utils';
-import { dateTime } from 'pactum-matchers';
 
 /**
  * The fake entities can be used like normal entities in the <code>it(string, () => void)</code> functions.
@@ -40,8 +36,6 @@ export type FakeTimetableEntry = Partial<RawTimetableEntry>;
 export type FakeTimetableEntryOverride = Partial<RawTimetableEntryOverride>;
 export type FakeBranch = Partial<RawUTTBranch>;
 export type FakeBranchOption = Partial<RawUTTBranchOption>;
-export type FakeAssoMembership = Partial<RawAssoMembership>;
-export type FakeAsso = Partial<RawAsso>;
 export type FakeSemester = Partial<RawSemester>;
 export type FakeUE = Partial<RawUE> & {
   credits?: (Partial<RawUECredit> & { category: RawUECreditCategory })[];
@@ -59,15 +53,6 @@ export type FakeCommentReply = Partial<RawUECommentReply>;
 export type FakeUECreditCategory = Partial<RawUECreditCategory>;
 
 export interface FakeEntityMap {
-  assoMembership: {
-    entity: FakeAssoMembership;
-    params : CreateAssoMembership;
-    deps : { asso : FakeAsso ; user : FakeUser }
-  };
-  association: {
-    entity: FakeAsso;
-    params : CreateAsso;
-  };
   timetableEntryOverride: {
     entity: Partial<FakeTimetableEntryOverride>;
     params: CreateTimetableEntryOverrideParameters;
@@ -152,7 +137,7 @@ export const createUser = entityFaker(
     sex: 'OTHER' as Sex,
     lastName: faker.name.lastName,
     firstName: faker.name.firstName,
-    userType: 'STUDENT' as UserType,
+    role: 'STUDENT' as UserRole,
     birthday: new Date(0),
     password: faker.internet.password,
   },
@@ -162,12 +147,8 @@ export const createUser = entityFaker(
       .user.create({
         data: {
           hash: params.hash ?? (await app().get(AuthService).getHash(params.password)),
-          ...pick(params, 'id', 'login', 'studentId', 'firstName', 'lastName', 'userType'),
+          ...pick(params, 'id', 'login', 'studentId', 'firstName', 'lastName', 'role'),
           infos: { create: pick(params, 'birthday', 'sex', 'nickname') },
-          rgpd: { create: {} },
-          preference: {
-            create: {},
-          },
         },
         include: {
           infos: true,
@@ -185,76 +166,6 @@ export const createUser = entityFaker(
       token: await app().get(AuthService).signToken(user.id, user.login),
     };
   },
-);
-
-export type CreateAssoMembership = FakeAssoMembership;
-/**
- * Creates an association membership in the database.
- * @param app The function that returns the app.
- * @param rawParams The parameters to use to create the user.
- * @returns {@link FakeAssoMembership}
- */
-export const createAssoMembership = entityFaker(
-  'assoMembership',
-  {
-    startAt : new Date(0),
-    endAt : new Date(0),
-
-  },async (app,dependencies, params) => 
-  app()
-    .get(PrismaService).asso.create({
-      data: {
-        ...omit(params, 'userId', 'assoId'),
-
-        asso: {
-          connect: {
-            assoId: dependencies.asso.id
-          }
-        },
-        user: {
-          connect: {
-            userId: dependencies.user.id,
-          }
-        }
-      },
-    }));
-
-export type CreateAsso = FakeAsso;
-/**
- * Creates an association in the database.
- * @param app The function that returns the app.
- * @param rawParams The parameters to use to create the association.
- * @returns {@link FakeAsso}
- */
-export const createAsso = entityFaker(
-  'association',
-  {
-    login: faker.internet.userName,
-    name: faker.name.firstName,
-    mail: faker.datatype.string,
-    deletedAt: new Date(0)
-
-  },
-  async (app, params) => 
-  app()
-  .get(PrismaService).asso.create({
-    data: {
-      ...omit(params,'login','name','descriptionShortTranslationId','descriptionTranslationId'),
-      login : params.login,
-      name : params.name,
-      mail : params.mail,
-      descriptionTranslation: {
-        create: {
-          id: params.descriptionTranslationId,
-        },
-      },
-      descriptionShortTranslation: {
-        create: {
-          id: params.descriptionShortTranslationId,
-        },
-      },
-    },
-  }),
 );
 
 export type CreateTimetableGroupParams = { users?: Array<{ user: FakeUser; priority: number }> };

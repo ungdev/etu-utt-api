@@ -1,29 +1,21 @@
-import { e2eSuite } from '../../utils/test_utils';
 import { createUser } from '../../utils/fakedb';
 import * as pactum from 'pactum';
 import { HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../../../src/prisma/prisma.service';
+import { e2eSuite } from '../../utils/test_utils';
 
-const GetUserE2ESpec = e2eSuite('GET /users/:userId', (app) => {
+const GetUserProfileE2ESpec = e2eSuite('GET /users/profile', (app) => {
   const user = createUser(app);
-  const userToSearch = createUser(app, {
-    login: 'userToSearch',
-    id: 'oui',
-  });
 
   it('should return a 401 as user is not authenticated', () => {
-    return pactum.spec().get(`/users/${userToSearch.id}`).expectStatus(HttpStatus.UNAUTHORIZED);
+    return pactum.spec().get('/users/profile').expectStatus(HttpStatus.UNAUTHORIZED);
   });
 
-  it('should return a 404 as user was not found', () => {
-    return pactum.spec().get('/users/abcdef').withBearerToken(user.token).expectStatus(HttpStatus.NOT_FOUND);
-  });
- 
   it('should successfully find the user', async () => {
     const userFromDb = await app()
       .get(PrismaService)
       .user.findUnique({
-        where: { login: userToSearch.login },
+        where: { login: user.login },
         include: {
           infos: true,
           branch: true,
@@ -39,46 +31,45 @@ const GetUserE2ESpec = e2eSuite('GET /users/:userId', (app) => {
       lastName: userFromDb.lastName,
       nickName: userFromDb.infos.nickname,
       avatar: userFromDb.infos.avatar,
-      sex: userFromDb.preference.displaySex ? userFromDb.infos.sex : undefined,
+      sex: userFromDb.infos.sex,
       nationality: userFromDb.infos.nationality,
-      birthday: userFromDb.preference.displayBirthday ? userFromDb.infos.birthday : undefined,
+      birthday: userFromDb.infos.birthday.toISOString(),
       passions: userFromDb.infos.passions,
       website: userFromDb.infos.website,
       branche: userFromDb.branch === null ? undefined : userFromDb.branch.branchId,
       semestre: userFromDb.branch === null ? undefined : userFromDb.branch.semesterNumber,
       filiere: userFromDb.branch === null ? undefined : userFromDb.branch.branchOptionId,
       mailUTT: userFromDb.mailsPhones === null ? undefined : userFromDb.mailsPhones.mailUTT,
-      mailPersonal:
-        userFromDb.preference.displayMailPersonal && !(userFromDb.mailsPhones === null)
-          ? userFromDb.mailsPhones.mailPersonal
-          : undefined,
-      phone:
-        userFromDb.preference.displayPhone && !(userFromDb.mailsPhones === null)
-          ? userFromDb.mailsPhones.phoneNumber
-          : undefined,
-      street: userFromDb.preference.displayAddresse ? userFromDb.addresse.street : undefined,
-      postalCode: userFromDb.preference.displayAddresse ? userFromDb.addresse.postalCode : undefined,
-      city: userFromDb.preference.displayAddresse ? userFromDb.addresse.city : undefined,
-      country: userFromDb.preference.displayAddresse ? userFromDb.addresse.country : undefined,
+      mailPersonal: userFromDb.mailsPhones === null ? undefined : userFromDb.mailsPhones.mailPersonal,
+      phone: userFromDb.mailsPhones === null ? undefined : userFromDb.mailsPhones.phoneNumber,
+      street: userFromDb.addresse === null ? undefined : userFromDb.addresse.street,
+      postalCode: userFromDb.addresse === null ? undefined : userFromDb.addresse.postalCode,
+      city: userFromDb.addresse === null ? undefined : userFromDb.addresse.city,
+      country: userFromDb.addresse === null ? undefined : userFromDb.addresse.country,
       facebook: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.facebook,
       twitter: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.twitter,
       instagram: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.instagram,
       linkendIn: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.linkedin,
       twitch: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.twitch,
       spotify: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.spotify,
-      discord:
-        userFromDb.preference.displayDiscord && !(userFromDb.socialNetwork === null)
-          ? userFromDb.socialNetwork.pseudoDiscord
-          : undefined,
+      discord: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.pseudoDiscord,
+      infoDisplayed: {
+        displayBirthday: userFromDb.preference.displayBirthday,
+        displayMailPersonal: userFromDb.preference.displayMailPersonal,
+        displayPhone: userFromDb.preference.displayPhone,
+        displayAddresse: userFromDb.preference.displayAddresse,
+        displaySex: userFromDb.preference.displaySex,
+        displayDiscord: userFromDb.preference.displayDiscord,
+      },
     };
 
     return pactum
       .spec()
-      .get(`/users/${userFromDb.id}`)
+      .get(`/users/profile`)
       .withBearerToken(user.token)
       .expectStatus(HttpStatus.OK)
-      .expectBody(Object.fromEntries(Object.entries(expectedBody).filter(([, value]) => value !== undefined)));
+      .expectJson(Object.fromEntries(Object.entries(expectedBody).filter(([, value]) => value !== undefined)));
   });
 });
 
-export default GetUserE2ESpec;
+export default GetUserProfileE2ESpec;

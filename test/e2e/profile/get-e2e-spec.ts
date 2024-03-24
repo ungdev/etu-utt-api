@@ -13,7 +13,7 @@ const GetE2ESpec = e2eSuite('Get', (app) => {
     studentId: 69,
     lastName: 'profile',
     firstName: 'profile',
-    role: 'STUDENT',
+    type: 'STUDENT',
     birthday: new Date(Date.UTC(2000, 1, 1)), // We need to do it this way because of timezones
   } as AuthSignUpDto;
   let token: string;

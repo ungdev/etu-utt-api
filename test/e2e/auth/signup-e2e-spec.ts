@@ -12,7 +12,7 @@ const SignupE2ESpec = e2eSuite('POST /auth/signup', (app) => {
     lastName: 'testLastName',
     studentId: 44250,
     sex: 'OTHER',
-    role: 'STUDENT',
+    type: 'STUDENT',
     birthday: new Date('1999-01-01'),
   } as AuthSignUpDto;
 

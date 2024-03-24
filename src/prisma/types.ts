@@ -22,27 +22,10 @@ export {
   UserSocialNetwork as RawUserSocialNetwork,
   UserPreference as RawUserPreference,
   UserAddress as RawUserAddress,
+  UserBranch as RawUserBranch,
+  Asso as RawAsso,
+  AssoMembershipRole as RawAssoMembershipRole,
+  AssoMembership as RawAssoMembership,
 } from '@prisma/client';
 
-export type UserComplete = RawUser & {
-  infos: RawUserInfos;
-  branch: RawUTTBranch;
-  mailsPhones: RawUserMailsPhones;
-  socialNetwork: RawUserSocialNetwork;
-  preference: RawUserPreference;
-  addresse: RawUserAddress;
-};
 
-export type UserAssoMembership = {
-  startAt: Date;
-  endAt: Date;
-  role: string;
-  asso: AssoResume;
-};
-
-export type AssoResume = {
-  name: string;
-  logo: string;
-  descriptionShortTranslationId: string;
-  mail: string;
-};
