@@ -2,7 +2,7 @@ import { User } from '@prisma/client';
 import { faker } from '@faker-js/faker';
 import bcrypt from 'bcryptjs';
 
-export async function fakeUser(): Promise<User> {
+export async function fakeUser(): Promise<Omit<User, 'privacyId'>> {
   const saltRounds = 10; // TODO: load it from the environment variables
   const hash = await bcrypt.hash('etuutt', saltRounds); // TODO: write this in the docs
   return {
