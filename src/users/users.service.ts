@@ -149,7 +149,7 @@ export default class UsersService {
         select: {
           startAt: true,
           endAt: true,
-          roles: {
+          role: {
             select: {
               role: true,
             },
@@ -164,7 +164,7 @@ export default class UsersService {
           },
         },
       })
-    ).map((membership) => ({ ...omit(membership,"roles"), role: membership.roles.role }));
+    ).map((membership) => ({ ...omit(membership, 'role'), role: membership.role.role }));
     return membership;
   }
 

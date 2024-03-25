@@ -44,7 +44,7 @@ export default class UsersController {
   @Get('/current')
   @UseGuards(JwtGuard)
   async getCurrentUser(@GetUser() user: User) {
-    return this.getSingleUser(user.id)
+    return this.getSingleUser(user.id);
   }
 
   @Get('/:userId')
@@ -59,7 +59,8 @@ export default class UsersController {
   @Get('/:userId/associations')
   @UseGuards(JwtGuard)
   async getUserAssociations(@Param('userId') userId: string) {
-    if (!this.usersService.fetchUser(userId)) {
+    const user = await this.usersService.fetchWholeUser(userId);
+    if (!user) {
       throw new AppException(ERROR_CODE.NO_SUCH_USER, userId);
     }
     const assos = await this.usersService.fetchUserAssociation(userId);

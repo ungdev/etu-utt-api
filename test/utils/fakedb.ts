@@ -28,7 +28,6 @@ import { PrismaService } from '../../src/prisma/prisma.service';
 import { AppProvider } from './test_utils';
 import { Sex, TimetableEntryType, UserType } from '@prisma/client';
 import { omit, pick } from '../../src/utils';
-import { dateTime } from 'pactum-matchers';
 
 /**
  * The fake entities can be used like normal entities in the <code>it(string, () => void)</code> functions.
@@ -40,7 +39,9 @@ export type FakeTimetableEntry = Partial<RawTimetableEntry>;
 export type FakeTimetableEntryOverride = Partial<RawTimetableEntryOverride>;
 export type FakeBranch = Partial<RawUTTBranch>;
 export type FakeBranchOption = Partial<RawUTTBranchOption>;
-export type FakeAssoMembership = Partial<RawAssoMembership>;
+export type FakeAssoMembership = Partial<RawAssoMembership> & {
+  role?: Partial<RawAssoMembershipRole>;
+};
 export type FakeAsso = Partial<RawAsso>;
 export type FakeSemester = Partial<RawSemester>;
 export type FakeUE = Partial<RawUE> & {
@@ -61,12 +62,12 @@ export type FakeUECreditCategory = Partial<RawUECreditCategory>;
 export interface FakeEntityMap {
   assoMembership: {
     entity: FakeAssoMembership;
-    params : CreateAssoMembership;
-    deps : { asso : FakeAsso ; user : FakeUser }
+    params: CreateAssoMembership;
+    deps: { asso: FakeAsso; user: FakeUser };
   };
   association: {
     entity: FakeAsso;
-    params : CreateAsso;
+    params: CreateAsso;
   };
   timetableEntryOverride: {
     entity: Partial<FakeTimetableEntryOverride>;
@@ -197,27 +198,42 @@ export type CreateAssoMembership = FakeAssoMembership;
 export const createAssoMembership = entityFaker(
   'assoMembership',
   {
-    startAt : new Date(0),
-    endAt : new Date(0),
-
-  },async (app,dependencies, params) => 
-  app()
-    .get(PrismaService).asso.create({
-      data: {
-        ...omit(params, 'userId', 'assoId'),
-
-        asso: {
-          connect: {
-            assoId: dependencies.asso.id
-          }
+    startAt: new Date(0),
+    endAt: new Date(0),
+    createdAt: new Date(0),
+    userId: faker.datatype.uuid,
+    assoId: faker.datatype.uuid,
+    role: {
+      role: faker.random.words,
+    },
+  },
+  async (app, dependencies, params) =>
+    app()
+      .get(PrismaService)
+      .assoMembership.create({
+        data: {
+          ...omit(params, 'userId', 'assoId', 'assoMembershipId'),
+          asso: {
+            connect: {
+              id: dependencies.asso.id,
+            },
+          },
+          user: {
+            connect: {
+              id: dependencies.user.id,
+            },
+          },
+          role: {
+            create: {
+              role: params.role.role,
+            },
+          },
         },
-        user: {
-          connect: {
-            userId: dependencies.user.id,
-          }
-        }
-      },
-    }));
+        include: {
+          role: true,
+        },
+      }),
+);
 
 export type CreateAsso = FakeAsso;
 /**
@@ -232,29 +248,29 @@ export const createAsso = entityFaker(
     login: faker.internet.userName,
     name: faker.name.firstName,
     mail: faker.datatype.string,
-    deletedAt: new Date(0)
-
+    deletedAt: new Date(0),
   },
-  async (app, params) => 
-  app()
-  .get(PrismaService).asso.create({
-    data: {
-      ...omit(params,'login','name','descriptionShortTranslationId','descriptionTranslationId'),
-      login : params.login,
-      name : params.name,
-      mail : params.mail,
-      descriptionTranslation: {
-        create: {
-          id: params.descriptionTranslationId,
+  async (app, params) =>
+    app()
+      .get(PrismaService)
+      .asso.create({
+        data: {
+          ...omit(params, 'login', 'name', 'descriptionShortTranslationId', 'descriptionTranslationId'),
+          login: params.login,
+          name: params.name,
+          mail: params.mail,
+          descriptionTranslation: {
+            create: {
+              id: params.descriptionTranslationId,
+            },
+          },
+          descriptionShortTranslation: {
+            create: {
+              id: params.descriptionShortTranslationId,
+            },
+          },
         },
-      },
-      descriptionShortTranslation: {
-        create: {
-          id: params.descriptionShortTranslationId,
-        },
-      },
-    },
-  }),
+      }),
 );
 
 export type CreateTimetableGroupParams = { users?: Array<{ user: FakeUser; priority: number }> };

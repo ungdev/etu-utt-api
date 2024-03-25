@@ -47,7 +47,7 @@ model AssoMembership {
 
   user        User                       @relation(fields: [userId], references: [id])
   asso        Asso                       @relation(fields: [assoId], references: [id])
-  roles       AssoMembershipRole         @relation(fields: [assoMembershipId], references: [id])
+  role        AssoMembershipRole         @relation(fields: [assoMembershipId], references: [id])
   permissions AssoMembershipPermission[]
 }
 
