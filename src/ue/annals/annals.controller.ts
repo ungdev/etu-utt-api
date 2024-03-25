@@ -23,6 +23,7 @@ import { CreateAnnal } from './dto/create-annal.dto';
 import { UpdateAnnal } from './dto/update-annal.dto';
 import { User } from '../../users/interfaces/user.interface';
 import { GetFromUeCodeDto } from './dto/get-from-ue.dto';
+import { UploadAnnalDto } from './dto/upload-annal.dto';
 
 @Controller('ue/annals')
 export class AnnalsController {
@@ -67,7 +68,7 @@ export class AnnalsController {
     )
     file: Promise<MulterWithMime>,
     @Param('annalId') annalId: string,
-    @Query('rotate') rotate: number,
+    @Query() { rotate }: UploadAnnalDto,
     @GetUser() user: User,
   ) {
     if (!(await this.annalsService.isUEAnnalSender(user.id, annalId)))
@@ -77,12 +78,7 @@ export class AnnalsController {
       CommentStatus.PROCESSING
     )
       throw new AppException(ERROR_CODE.ANNAL_ALREADY_UPLOADED);
-    const rotation = Number(rotate);
-    return this.annalsService.uploadAnnalFile(
-      await file,
-      annalId,
-      isNaN(rotation) || rotation < -1 || rotation > 1 ? 0 : (rotation as -1 | 0 | 1),
-    );
+    return this.annalsService.uploadAnnalFile(await file, annalId, rotate);
   }
 
   @Get(':annalId')
