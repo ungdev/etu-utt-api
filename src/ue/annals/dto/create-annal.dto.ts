@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsUUID, Length } from 'class-validator';
+import { IsAlphanumeric, IsDefined, IsNotEmpty, IsString, IsUUID, Length, MaxLength, MinLength } from 'class-validator';
 
 export class CreateAnnal {
   @IsNotEmpty()
@@ -10,4 +10,12 @@ export class CreateAnnal {
   @IsString()
   @IsUUID()
   typeId: string;
+
+  @IsString()
+  @IsDefined()
+  @IsNotEmpty()
+  @MinLength(3)
+  @MaxLength(5)
+  @IsAlphanumeric()
+  ueCode: string;
 }

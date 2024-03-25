@@ -260,7 +260,7 @@ export const ErrorData = Object.freeze({
     httpCode: HttpStatus.NOT_FOUND,
   },
   [ERROR_CODE.NO_SUCH_ANNAL]: {
-    message: 'The annal % does not exist for ue %',
+    message: 'The annal % does not exist',
     httpCode: HttpStatus.NOT_FOUND,
   },
   [ERROR_CODE.ANNAL_ALREADY_UPLOADED]: {

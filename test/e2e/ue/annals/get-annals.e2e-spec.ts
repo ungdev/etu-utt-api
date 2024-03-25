@@ -8,16 +8,16 @@ import {
   createUESubscription,
   createAnnalType,
   createAnnal,
-} from '../../utils/fakedb';
-import { e2eSuite } from '../../utils/test_utils';
-import { ERROR_CODE } from '../../../src/exceptions';
-import { UEAnnalFile } from '../../../src/ue/annals/interfaces/annal.interface';
-import { RawUEAnnal } from '../../../src/prisma/types';
+} from '../../../utils/fakedb';
+import { e2eSuite } from '../../../utils/test_utils';
+import { ERROR_CODE } from '../../../../src/exceptions';
+import { UEAnnalFile } from '../../../../src/ue/annals/interfaces/annal.interface';
+import { RawUEAnnal } from '../../../../src/prisma/types';
 import { JsonLikeVariant } from 'test/declarations';
-import { pick } from '../../../src/utils';
-import { CommentStatus } from '../../../src/ue/interfaces/comment.interface';
+import { pick } from '../../../../src/utils';
+import { CommentStatus } from '../../../../src/ue/interfaces/comment.interface';
 
-const GetAnnal = e2eSuite('GET /ue/{ueCode}/annals', (app) => {
+const GetAnnal = e2eSuite('GET /ue/annals', (app) => {
   const senderUser = createUser(app);
   const nonUeUser = createUser(app, { login: 'user2', studentId: 2 });
   const moderator = createUser(app, { login: 'user3', studentId: 3, permissions: ['annalModerator'] });
@@ -42,14 +42,23 @@ const GetAnnal = e2eSuite('GET /ue/{ueCode}/annals', (app) => {
   const annal_deleted = createAnnal(app, { semester, sender: senderUser, type: annalType, ue }, { deleted: true });
 
   it('should return a 401 as user is not authenticated', () => {
-    return pactum.spec().get(`/ue/${ue.code}/annals`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
+    return pactum
+      .spec()
+      .get(`/ue/annals`)
+      .withQueryParams({
+        ueCode: ue.code,
+      })
+      .expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
   it('should return a 404 because UE does not exist', () => {
     return pactum
       .spec()
       .withBearerToken(senderUser.token)
-      .get(`/ue/${ue.code.slice(0, ue.code.length - 1)}/annals`)
+      .get(`/ue/annals`)
+      .withQueryParams({
+        ueCode: ue.code.slice(0, ue.code.length - 1),
+      })
       .expectAppError(ERROR_CODE.NO_SUCH_UE, ue.code.slice(0, ue.code.length - 1));
   });
 
@@ -57,7 +66,10 @@ const GetAnnal = e2eSuite('GET /ue/{ueCode}/annals', (app) => {
     return pactum
       .spec()
       .withBearerToken(nonStudentUser.token)
-      .get(`/ue/${ue.code}/annals`)
+      .get(`/ue/annals`)
+      .withQueryParams({
+        ueCode: ue.code,
+      })
       .expectAppError(ERROR_CODE.FORBIDDEN_INVALID_ROLE, 'STUDENT');
   });
 
@@ -65,17 +77,26 @@ const GetAnnal = e2eSuite('GET /ue/{ueCode}/annals', (app) => {
     await pactum
       .spec()
       .withBearerToken(senderUser.token)
-      .get(`/ue/${ue.code}/annals`)
+      .get(`/ue/annals`)
+      .withQueryParams({
+        ueCode: ue.code,
+      })
       .expectUEAnnals([annal_not_validated, annal_validated, annal_not_uploaded].map(formatAnnalFile));
     await pactum
       .spec()
       .withBearerToken(nonUeUser.token)
-      .get(`/ue/${ue.code}/annals`)
+      .get(`/ue/annals`)
+      .withQueryParams({
+        ueCode: ue.code,
+      })
       .expectUEAnnals([annal_validated].map(formatAnnalFile));
     return pactum
       .spec()
       .withBearerToken(moderator.token)
-      .get(`/ue/${ue.code}/annals`)
+      .get(`/ue/annals`)
+      .withQueryParams({
+        ueCode: ue.code,
+      })
       .expectUEAnnals([annal_not_validated, annal_validated, annal_not_uploaded, annal_deleted].map(formatAnnalFile));
   });
 
@@ -98,6 +119,9 @@ const GetAnnal = e2eSuite('GET /ue/{ueCode}/annals', (app) => {
       type: annalType,
       createdAt: from.createdAt?.toISOString(),
       updatedAt: from.updatedAt?.toISOString(),
+      ue: {
+        code: ue.code,
+      },
     };
   };
 });

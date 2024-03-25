@@ -40,7 +40,7 @@ export class AnnalsService {
     };
   }
 
-  async createAnnalFile(user: User, ueCode: string, params: CreateAnnal) {
+  async createAnnalFile(user: User, params: CreateAnnal) {
     // Create upload/file entry
     return this.prisma.uEAnnal
       .create(
@@ -63,7 +63,7 @@ export class AnnalsService {
             },
             ue: {
               connect: {
-                code: ueCode,
+                code: params.ueCode,
               },
             },
           },
@@ -210,14 +210,11 @@ export class AnnalsService {
       });
   }
 
-  async doesUEAnnalExist(userId: string, ueCode: string, annalId: string, isModerator: boolean) {
+  async doesUEAnnalExist(userId: string, annalId: string, isModerator: boolean) {
     return (
       (await this.prisma.uEAnnal.count({
         where: {
           id: annalId,
-          ue: {
-            code: ueCode,
-          },
           deletedAt: isModerator ? undefined : null,
           OR: [
             {

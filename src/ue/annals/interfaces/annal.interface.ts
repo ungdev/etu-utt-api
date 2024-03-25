@@ -24,6 +24,7 @@ const UE_ANNAL_SELECT_FILTER = {
       },
     },
     validatedAt: true,
+    ue: { select: { code: true } },
   },
 };
 

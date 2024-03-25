@@ -8,13 +8,13 @@ import {
   createUESubscription,
   createAnnalType,
   createAnnal,
-} from '../../utils/fakedb';
-import { Dummies, JsonLike, e2eSuite } from '../../utils/test_utils';
-import { ERROR_CODE } from '../../../src/exceptions';
+} from '../../../utils/fakedb';
+import { Dummies, JsonLike, e2eSuite } from '../../../utils/test_utils';
+import { ERROR_CODE } from '../../../../src/exceptions';
 import { CommentStatus } from 'src/ue/interfaces/comment.interface';
-import { pick } from '../../../src/utils';
+import { pick } from '../../../../src/utils';
 
-const EditAnnal = e2eSuite('PATCH /ue/{ueCode}/annals/{annalId}', (app) => {
+const EditAnnal = e2eSuite('PATCH /ue/annals/{annalId}', (app) => {
   const senderUser = createUser(app);
   const nonUeUser = createUser(app, { login: 'user2', studentId: 2 });
   const nonStudentUser = createUser(app, { login: 'nonStudent', studentId: 4, role: 'TEACHER' });
@@ -40,32 +40,23 @@ const EditAnnal = e2eSuite('PATCH /ue/{ueCode}/annals/{annalId}', (app) => {
   });
 
   it('should return a 401 as user is not authenticated', () => {
-    return pactum.spec().patch(`/ue/${ue.code}/annals/${annal_validated.id}`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
-  });
-
-  it('should return a 404 because UE does not exist', () => {
-    return pactum
-      .spec()
-      .withBearerToken(senderUser.token)
-      .patch(`/ue/${ue.code.slice(0, ue.code.length - 1)}/annals/${annal_validated.id}`)
-      .withBody(generateBody())
-      .expectAppError(ERROR_CODE.NO_SUCH_UE, ue.code.slice(0, ue.code.length - 1));
+    return pactum.spec().patch(`/ue/annals/${annal_validated.id}`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
   it('should return a 404 because annal does not exist', () => {
     return pactum
       .spec()
       .withBearerToken(senderUser.token)
-      .patch(`/ue/${ue.code}/annals/${Dummies.UUID}`)
+      .patch(`/ue/annals/${Dummies.UUID}`)
       .withBody(generateBody())
-      .expectAppError(ERROR_CODE.NO_SUCH_ANNAL, Dummies.UUID, ue.code);
+      .expectAppError(ERROR_CODE.NO_SUCH_ANNAL, Dummies.UUID);
   });
 
   it('should return a 403 because user is not a student', () => {
     return pactum
       .spec()
       .withBearerToken(nonStudentUser.token)
-      .patch(`/ue/${ue.code}/annals/${annal_validated.id}`)
+      .patch(`/ue/annals/${annal_validated.id}`)
       .withBody(generateBody())
       .expectAppError(ERROR_CODE.FORBIDDEN_INVALID_ROLE, 'STUDENT');
   });
@@ -74,7 +65,7 @@ const EditAnnal = e2eSuite('PATCH /ue/{ueCode}/annals/{annalId}', (app) => {
     return pactum
       .spec()
       .withBearerToken(nonUeUser.token)
-      .patch(`/ue/${ue.code}/annals/${annal_validated.id}`)
+      .patch(`/ue/annals/${annal_validated.id}`)
       .withBody(generateBody())
       .expectAppError(ERROR_CODE.NOT_ANNAL_SENDER);
   });
@@ -83,25 +74,25 @@ const EditAnnal = e2eSuite('PATCH /ue/{ueCode}/annals/{annalId}', (app) => {
     return pactum
       .spec()
       .withBearerToken(nonUeUser.token)
-      .patch(`/ue/${ue.code}/annals/${annal_not_uploaded.id}`)
+      .patch(`/ue/annals/${annal_not_uploaded.id}`)
       .withBody(generateBody())
-      .expectAppError(ERROR_CODE.NO_SUCH_ANNAL, annal_not_uploaded.id, ue.code);
+      .expectAppError(ERROR_CODE.NO_SUCH_ANNAL, annal_not_uploaded.id);
   });
 
   it('should return a 404 because annal is deleted', () => {
     return pactum
       .spec()
       .withBearerToken(senderUser.token)
-      .patch(`/ue/${ue.code}/annals/${annal_deleted.id}`)
+      .patch(`/ue/annals/${annal_deleted.id}`)
       .withBody(generateBody())
-      .expectAppError(ERROR_CODE.NO_SUCH_ANNAL, annal_deleted.id, ue.code);
+      .expectAppError(ERROR_CODE.NO_SUCH_ANNAL, annal_deleted.id);
   });
 
   it('should return the updated annal metadata', async () => {
     return pactum
       .spec()
       .withBearerToken(senderUser.token)
-      .patch(`/ue/${ue.code}/annals/${annal_validated.id}`)
+      .patch(`/ue/annals/${annal_validated.id}`)
       .withBody(generateBody())
       .expectUEAnnal({
         semesterId: xx_semester_xx.code,
@@ -111,6 +102,9 @@ const EditAnnal = e2eSuite('PATCH /ue/{ueCode}/annals/{annalId}', (app) => {
         id: annal_validated.id,
         createdAt: annal_validated.createdAt.toISOString(),
         updatedAt: JsonLike.ANY_DATE,
+        ue: {
+          code: ue.code,
+        },
       });
   });
 });

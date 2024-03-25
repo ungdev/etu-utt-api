@@ -7,11 +7,11 @@ import {
   createUE,
   createUESubscription,
   createAnnalType,
-} from '../../utils/fakedb';
-import { e2eSuite } from '../../utils/test_utils';
-import { ERROR_CODE } from '../../../src/exceptions';
+} from '../../../utils/fakedb';
+import { e2eSuite } from '../../../utils/test_utils';
+import { ERROR_CODE } from '../../../../src/exceptions';
 
-const GetAnnalMetadata = e2eSuite('GET /ue/{ueCode}/annals/metadata', (app) => {
+const GetAnnalMetadata = e2eSuite('GET /ue/annals/metadata', (app) => {
   const ueUser = createUser(app);
   const nonUeUser = createUser(app, { login: 'user2', studentId: 3 });
   const uploader = createUser(app, { login: 'user3', studentId: 4, permissions: ['annalUploader'] });
@@ -23,14 +23,23 @@ const GetAnnalMetadata = e2eSuite('GET /ue/{ueCode}/annals/metadata', (app) => {
   createUESubscription(app, { user: ueUser, ue, semester });
 
   it('should return a 401 as user is not authenticated', () => {
-    return pactum.spec().get(`/ue/${ue.code}/annals/metadata`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
+    return pactum
+      .spec()
+      .get(`/ue/annals/metadata`)
+      .withQueryParams({
+        ueCode: ue.code,
+      })
+      .expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
   it('should return a 404 because UE does not exist', () => {
     return pactum
       .spec()
       .withBearerToken(ueUser.token)
-      .get(`/ue/${ue.code.slice(0, ue.code.length - 1)}/annals/metadata`)
+      .get(`/ue/annals/metadata`)
+      .withQueryParams({
+        ueCode: ue.code.slice(0, ue.code.length - 1),
+      })
       .expectAppError(ERROR_CODE.NO_SUCH_UE, ue.code.slice(0, ue.code.length - 1));
   });
 
@@ -38,7 +47,10 @@ const GetAnnalMetadata = e2eSuite('GET /ue/{ueCode}/annals/metadata', (app) => {
     return pactum
       .spec()
       .withBearerToken(nonUeUser.token)
-      .get(`/ue/${ue.code}/annals/metadata`)
+      .get(`/ue/annals/metadata`)
+      .withQueryParams({
+        ueCode: ue.code,
+      })
       .expectAppError(ERROR_CODE.NOT_ALREADY_DONE_UE);
   });
 
@@ -46,7 +58,10 @@ const GetAnnalMetadata = e2eSuite('GET /ue/{ueCode}/annals/metadata', (app) => {
     await pactum
       .spec()
       .withBearerToken(ueUser.token)
-      .get(`/ue/${ue.code}/annals/metadata`)
+      .get(`/ue/annals/metadata`)
+      .withQueryParams({
+        ueCode: ue.code,
+      })
       .expectUEAnnalMetadata({
         types: [annalType],
         semesters: [semester.code],
@@ -54,7 +69,10 @@ const GetAnnalMetadata = e2eSuite('GET /ue/{ueCode}/annals/metadata', (app) => {
     return pactum
       .spec()
       .withBearerToken(uploader.token)
-      .get(`/ue/${ue.code}/annals/metadata`)
+      .get(`/ue/annals/metadata`)
+      .withQueryParams({
+        ueCode: ue.code,
+      })
       .expectUEAnnalMetadata({
         types: [annalType],
         semesters: [semester.code],

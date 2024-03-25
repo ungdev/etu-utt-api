@@ -10,6 +10,7 @@ import { RoleGuard } from './auth/guard/role.guard';
 import { UEModule } from './ue/ue.module';
 import { JwtGuard } from './auth/guard';
 import { TimetableModule } from './timetable/timetable.module';
+import { AnnalsModule } from './ue/annals/annals.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { TimetableModule } from './timetable/timetable.module';
     AuthModule,
     ProfileModule,
     UsersModule,
+    AnnalsModule, // Order is important: this module SHALL be imported before UEModule
     UEModule,
     TimetableModule,
   ],

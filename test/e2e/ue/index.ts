@@ -14,12 +14,7 @@ import PostUpvote from './post-upvote.e2e-spec';
 import PutRate from './put-rate.e2e-spec';
 import DeleteUpvote from './delete-upvote.e2e-spec';
 import DeleteRate from './delete-rate.e2e-spec';
-import GetAnnalMetadata from './get-annal-metadata.e2e-spec';
-import GetAnnal from './get-annals.e2e-spec';
-import GetAnnalFile from './get-annal-file.e2e-spec';
-import EditAnnal from './patch-annal.e2e-spec';
-import DeleteAnnal from './delete-annal.e2e-spec';
-import PostAnnal from './upload-annal.e2e-spec';
+import AnnalsE2ESpec from './annals';
 
 export default function UEE2ESpec(app: () => INestApplication) {
   describe('UE', () => {
@@ -38,11 +33,6 @@ export default function UEE2ESpec(app: () => INestApplication) {
     DeleteUpvote(app);
     PutRate(app);
     DeleteRate(app);
-    GetAnnalMetadata(app);
-    GetAnnal(app);
-    GetAnnalFile(app);
-    EditAnnal(app);
-    DeleteAnnal(app);
-    PostAnnal(app);
+    AnnalsE2ESpec(app);
   });
 }
