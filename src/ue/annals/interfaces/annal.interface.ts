@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
-import { omit } from '../../utils';
-import { CommentStatus } from './comment.interface';
+import { omit } from '../../../utils';
+import { CommentStatus } from '../../interfaces/comment.interface';
 
 const UE_ANNAL_SELECT_FILTER = {
   select: {

@@ -11,7 +11,7 @@ import {
 } from '../../utils/fakedb';
 import { e2eSuite } from '../../utils/test_utils';
 import { ERROR_CODE } from '../../../src/exceptions';
-import { UEAnnalFile } from '../../../src/ue/interfaces/annal.interface';
+import { UEAnnalFile } from '../../../src/ue/annals/interfaces/annal.interface';
 import { RawUEAnnal } from '../../../src/prisma/types';
 import { JsonLikeVariant } from 'test/declarations';
 import { pick } from '../../../src/utils';

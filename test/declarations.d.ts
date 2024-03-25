@@ -6,7 +6,7 @@ import { UEDetail } from 'src/ue/interfaces/ue-detail.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { UERating } from 'src/ue/interfaces/rate.interface';
 import { FakeUEAnnalType } from './utils/fakedb';
-import { UEAnnalFile } from 'src/ue/interfaces/annal.interface';
+import { UEAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
 
 type JsonLikeVariant<T> = Partial<{
   [K in keyof T]: T[K] extends string | Date

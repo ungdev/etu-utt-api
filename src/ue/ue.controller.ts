@@ -1,18 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  Patch,
-  Post,
-  Put,
-  Query,
-  Response,
-  StreamableFile,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { UESearchDto } from './dto/ue-search.dto';
 import { UEService } from './ue.service';
 import { GetUser, IsPublic, RequireRole } from '../auth/decorator';
@@ -23,12 +9,7 @@ import { UERateDto } from './dto/ue-rate.dto';
 import { UeCommentUpdateDto } from './dto/ue-comment-update.dto';
 import { CommentReplyDto } from './dto/ue-comment-reply.dto';
 import { GetUECommentsDto } from './dto/ue-get-comments.dto';
-import { FileSize, MulterWithMime, UploadRoute, UserFile } from '../upload.interceptor';
-import { Response as ExpressResponse } from 'express';
 import { UUIDParam } from '../app.pipe';
-import { UpdateAnnal } from './dto/update-annal.dto';
-import { CreateAnnal } from './dto/create-annal.dto';
-import { CommentStatus } from './interfaces/comment.interface';
 
 @Controller('ue')
 export class UEController {
@@ -223,124 +204,4 @@ export class UEController {
       throw new AppException(ERROR_CODE.NOT_ALREADY_RATED_UE, ueCode, criterionId);
     return this.ueService.unRateUE(user.id, ueCode, criterionId);
   }
-
-  @Get('/:ueCode/annals/metadata')
-  @RequireRole('STUDENT', 'FORMER_STUDENT')
-  async getUeAnnalMetadata(@Param('ueCode') ueCode: string, @GetUser() user: User) {
-    if (!(await this.ueService.doesUEExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
-    if (!(await this.ueService.hasAlreadyDoneThisUE(user.id, ueCode)) && !user.permissions.includes('annalUploader'))
-      throw new AppException(ERROR_CODE.NOT_ALREADY_DONE_UE);
-    return this.ueService.getUEAnnalMetadata(user, ueCode, user.permissions.includes('annalUploader'));
-  }
-
-  @Post('/:ueCode/annals')
-  @RequireRole('STUDENT')
-  @UploadRoute('file')
-  async createUeAnnal(@Param('ueCode') ueCode: string, @Body() body: CreateAnnal, @GetUser() user: User) {
-    if (!(await this.ueService.doesUEExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
-    if (
-      !(await this.ueService.hasDoneThisUEInSemester(user.id, ueCode, body.semester)) &&
-      !user.permissions.includes('annalUploader')
-    )
-      throw new AppException(ERROR_CODE.NOT_DONE_UE_IN_SEMESTER, ueCode, body.semester);
-    return this.ueService.createAnnalFile(user, ueCode, body);
-  }
-
-  @Put('/:ueCode/annals/:annalId')
-  @RequireRole('STUDENT')
-  @UploadRoute('file')
-  async uploadUeAnnal(
-    @UserFile(
-      ['application/pdf', 'image/png', 'image/jpeg', 'image/webp', 'image/avif', 'image/tiff'],
-      8 * FileSize.MegaByte,
-    )
-    file: Promise<MulterWithMime>,
-    @Param('ueCode') ueCode: string,
-    @Param('annalId') annalId: string,
-    @Query('rotate') rotate: number,
-    @GetUser() user: User,
-  ) {
-    if (!(await this.ueService.doesUEExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
-    if (!(await this.ueService.isUEAnnalSender(user.id, annalId))) throw new AppException(ERROR_CODE.NOT_ANNAL_SENDER);
-    if (
-      (await this.ueService.getUEAnnal(annalId, user.id, user.permissions.includes('annalModerator'))).status !==
-      CommentStatus.PROCESSING
-    )
-      throw new AppException(ERROR_CODE.ANNAL_ALREADY_UPLOADED);
-    const rotation = Number(rotate);
-    return this.ueService.uploadAnnalFile(
-      await file,
-      annalId,
-      isNaN(rotation) || rotation < -1 || rotation > 1 ? 0 : (rotation as -1 | 0 | 1),
-    );
-  }
-
-  @Get('/:ueCode/annals')
-  @RequireRole('STUDENT', 'FORMER_STUDENT')
-  async getUeAnnalList(@Param('ueCode') ueCode: string, @GetUser() user: User) {
-    if (!(await this.ueService.doesUEExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
-    return this.ueService.getUEAnnalsList(user, ueCode, user.permissions.includes('annalModerator'));
-  }
-
-  @Get('/:ueCode/annals/:annalId')
-  @RequireRole('STUDENT', 'FORMER_STUDENT')
-  async getUeAnnal(
-    @Param('ueCode') ueCode: string,
-    @UUIDParam('annalId') annalId: string,
-    @GetUser() user: User,
-    @Response() response: ExpressResponse,
-  ) {
-    if (!(await this.ueService.doesUEExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
-    if (!(await this.ueService.doesUEAnnalExist(user.id, ueCode, annalId, user.permissions.includes('annalModerator'))))
-      throw new AppException(ERROR_CODE.NO_SUCH_ANNAL, annalId, ueCode);
-    const annalFile = await this.ueService.getUEAnnalFile(
-      annalId,
-      user.id,
-      user.permissions.includes('annalModerator'),
-    );
-    if (!annalFile) throw new AppException(ERROR_CODE.NO_SUCH_ANNAL, annalId, ueCode);
-    response.setHeader('Content-Type', 'application/pdf');
-    response.setHeader(
-      'Content-Disposition',
-      `attachment; filename=${annalFile.metadata.type.name} ${ueCode} - ${annalFile.metadata.semesterId}`,
-    );
-    return new StreamableFile(annalFile.stream);
-  }
-
-  @Patch('/:ueCode/annals/:annalId')
-  @RequireRole('STUDENT', 'FORMER_STUDENT')
-  async updateUeAnnal(
-    @Param('ueCode') ueCode: string,
-    @UUIDParam('annalId') annalId: string,
-    @Body() body: UpdateAnnal,
-    @GetUser() user: User,
-  ) {
-    if (!(await this.ueService.doesUEExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
-    if (!(await this.ueService.doesUEAnnalExist(user.id, ueCode, annalId, user.permissions.includes('annalModerator'))))
-      throw new AppException(ERROR_CODE.NO_SUCH_ANNAL, annalId, ueCode);
-    if (!(await this.ueService.isUEAnnalSender(user.id, annalId)) && !user.permissions.includes('annalModerator'))
-      throw new AppException(ERROR_CODE.NOT_ANNAL_SENDER);
-    return this.ueService.updateAnnalMetadata(annalId, body);
-  }
-
-  @Delete('/:ueCode/annals/:annalId')
-  @RequireRole('STUDENT', 'FORMER_STUDENT')
-  async deleteUeAnnal(@Param('ueCode') ueCode: string, @UUIDParam('annalId') annalId: string, @GetUser() user: User) {
-    if (!(await this.ueService.doesUEExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
-    if (!(await this.ueService.doesUEAnnalExist(user.id, ueCode, annalId, user.permissions.includes('annalModerator'))))
-      throw new AppException(ERROR_CODE.NO_SUCH_ANNAL, annalId, ueCode);
-    if (!(await this.ueService.isUEAnnalSender(user.id, annalId)) && !user.permissions.includes('annalModerator'))
-      throw new AppException(ERROR_CODE.NOT_ANNAL_SENDER);
-    return this.ueService.deleteAnnal(annalId);
-  }
-
-  // Routes to create
-  // Module for file upload and manipulation (image, etc)
-  // --- User report for : comments, replies, annals
-  // -- Validation for : comments, annals
-  // --- Display reports for : comments, replies, annals
-  // -- Display pending validations for : comments, annals
-
-  // Todo then:
-  // Timetable UI
 }

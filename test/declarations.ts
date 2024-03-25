@@ -9,7 +9,7 @@ import { UEDetail } from 'src/ue/interfaces/ue-detail.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { UERating } from 'src/ue/interfaces/rate.interface';
 import { FakeUEAnnalType } from './utils/fakedb';
-import { UEAnnalFile } from 'src/ue/interfaces/annal.interface';
+import { UEAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
 
 /** Shortcut function for `this.expectStatus(200).expectJsonLike` */
 function expect<T>(obj: JsonLikeVariant<T>) {
