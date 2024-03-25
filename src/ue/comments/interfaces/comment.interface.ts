@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { omit } from '../../utils';
+import { omit } from '../../../utils';
 import { FormatReply, UECommentReply } from './comment-reply.interface';
 
 const COMMENT_SELECT_FILTER = {

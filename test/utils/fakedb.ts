@@ -27,7 +27,7 @@ import { PrismaService } from '../../src/prisma/prisma.service';
 import { AppProvider } from './test_utils';
 import { Sex, TimetableEntryType, UserRole } from '@prisma/client';
 import { omit, pick } from '../../src/utils';
-import { CommentStatus } from 'src/ue/interfaces/comment.interface';
+import { CommentStatus } from 'src/ue/comments/interfaces/comment.interface';
 
 /**
  * The fake entities can be used like normal entities in the <code>it(string, () => void)</code> functions.

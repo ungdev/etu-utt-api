@@ -6,12 +6,12 @@ import {
   createBranchOption,
   createBranch,
   createSemester,
-} from '../../utils/fakedb';
+} from '../../../utils/fakedb';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '../../../src/exceptions';
+import { ERROR_CODE } from '../../../../src/exceptions';
 import { HttpStatus } from '@nestjs/common';
-import { Dummies, e2eSuite } from '../../utils/test_utils';
-import { PrismaService } from '../../../src/prisma/prisma.service';
+import { Dummies, e2eSuite } from '../../../utils/test_utils';
+import { PrismaService } from '../../../../src/prisma/prisma.service';
 
 const PostUpvote = e2eSuite('POST /ue/comments/{commentId}/upvote', (app) => {
   const user = createUser(app);

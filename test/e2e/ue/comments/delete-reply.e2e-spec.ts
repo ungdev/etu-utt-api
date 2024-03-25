@@ -6,12 +6,12 @@ import {
   createBranchOption,
   createSemester,
   createCommentReply,
-} from '../../utils/fakedb';
-import { e2eSuite, Dummies } from '../../utils/test_utils';
+} from '../../../utils/fakedb';
+import { e2eSuite, Dummies } from '../../../utils/test_utils';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '../../../src/exceptions';
-import { CommentStatus } from 'src/ue/interfaces/comment.interface';
-import { PrismaService } from '../../../src/prisma/prisma.service';
+import { ERROR_CODE } from '../../../../src/exceptions';
+import { CommentStatus } from 'src/ue/comments/interfaces/comment.interface';
+import { PrismaService } from '../../../../src/prisma/prisma.service';
 
 const DeleteCommentReply = e2eSuite('DELETE /ue/comments/reply/{replyId}', (app) => {
   const user = createUser(app);

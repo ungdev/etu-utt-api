@@ -11,7 +11,7 @@ import {
 } from '../../../utils/fakedb';
 import { Dummies, JsonLike, e2eSuite } from '../../../utils/test_utils';
 import { ERROR_CODE } from '../../../../src/exceptions';
-import { CommentStatus } from 'src/ue/interfaces/comment.interface';
+import { CommentStatus } from 'src/ue/comments/interfaces/comment.interface';
 import { pick } from '../../../../src/utils';
 import { PrismaService } from '../../../../src/prisma/prisma.service';
 

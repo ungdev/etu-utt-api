@@ -1,6 +1,6 @@
 import { ERROR_CODE, ErrorData, ExtrasTypeBuilder } from '../src/exceptions';
 import { UEComment } from 'src/ue/interfaces/comment.interface';
-import { UECommentReply } from 'src/ue/interfaces/comment-reply.interface';
+import { UECommentReply } from 'src/ue/comments/interfaces/comment-reply.interface';
 import { UEOverView } from 'src/ue/interfaces/ue-overview.interface';
 import { UEDetail } from 'src/ue/interfaces/ue-detail.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';

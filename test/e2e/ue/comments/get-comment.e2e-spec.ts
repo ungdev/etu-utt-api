@@ -9,15 +9,15 @@ import {
   createSemester,
   createUE,
   createUser,
-} from '../../utils/fakedb';
-import { e2eSuite } from '../../utils/test_utils';
+} from '../../../utils/fakedb';
+import { e2eSuite } from '../../../utils/test_utils';
 import { ConfigService } from '@nestjs/config';
 import { ERROR_CODE } from 'src/exceptions';
-import { PrismaService } from '../../../src/prisma/prisma.service';
-import { CommentStatus, SelectComment } from '../../../src/ue/interfaces/comment.interface';
-import { omit } from '../../../src/utils';
+import { PrismaService } from '../../../../src/prisma/prisma.service';
+import { CommentStatus, SelectComment } from '../../../../src/ue/comments/interfaces/comment.interface';
+import { omit } from '../../../../src/utils';
 
-const GetCommentsE2ESpec = e2eSuite('GET /ue/{ueCode}/comments', (app) => {
+const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
   const user = createUser(app);
   const user2 = createUser(app, { login: 'user2', studentId: 3 });
   const moderator = createUser(app, { login: 'user3', studentId: 3, permissions: ['commentModerator'] });
@@ -54,15 +54,18 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/{ueCode}/comments', (app) => {
   }
 
   it('should return a 401 as user is not authenticated', () => {
-    return pactum.spec().get(`/ue/${ue.code}/comments`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
+    return pactum.spec().get(`/ue/comments`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
   it('should return a 400 as user uses a wrong page', () => {
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .get(`/ue/${ue.code}/comments`)
-      .withQueryParams('page', -1)
+      .get(`/ue/comments`)
+      .withQueryParams({
+        page: -1,
+        ueCode: ue.code,
+      })
       .expectAppError(ERROR_CODE.PARAM_NOT_POSITIVE, 'page');
   });
 
@@ -70,7 +73,10 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/{ueCode}/comments', (app) => {
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .get(`/ue/${ue.code.slice(0, ue.code.length - 1)}/comments`)
+      .get(`/ue/comments`)
+      .withQueryParams({
+        ueCode: ue.code.slice(0, ue.code.length - 1),
+      })
       .expectAppError(ERROR_CODE.NO_SUCH_UE, ue.code.slice(0, ue.code.length - 1));
   });
 
@@ -132,7 +138,14 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/{ueCode}/comments', (app) => {
       itemCount: comments.length,
       itemsPerPage: Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')),
     };
-    return pactum.spec().withBearerToken(user.token).get(`/ue/${ue.code}/comments`).expectUEComments(commentsFiltered);
+    return pactum
+      .spec()
+      .withBearerToken(user.token)
+      .get(`/ue/comments`)
+      .withQueryParams({
+        ueCode: ue.code,
+      })
+      .expectUEComments(commentsFiltered);
   });
 
   it('should return the second page of comments', async () => {
@@ -158,8 +171,11 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/{ueCode}/comments', (app) => {
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .get(`/ue/${ue.code}/comments`)
-      .withQueryParams('page', 2)
+      .get(`/ue/comments`)
+      .withQueryParams({
+        page: 2,
+        ueCode: ue.code,
+      })
       .expectUEComments({
         items: extendedComments
           .sort((a, b) =>
@@ -256,7 +272,10 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/{ueCode}/comments', (app) => {
     return pactum
       .spec()
       .withBearerToken(moderator.token)
-      .get(`/ue/${ue.code}/comments`)
+      .get(`/ue/comments`)
+      .withQueryParams({
+        ueCode: ue.code,
+      })
       .expectUEComments(commentsFiltered);
   });
 });

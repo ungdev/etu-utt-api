@@ -11,6 +11,7 @@ import { UEModule } from './ue/ue.module';
 import { JwtGuard } from './auth/guard';
 import { TimetableModule } from './timetable/timetable.module';
 import { AnnalsModule } from './ue/annals/annals.module';
+import { CommentsModule } from './ue/comments/comments.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { AnnalsModule } from './ue/annals/annals.module';
     ProfileModule,
     UsersModule,
     AnnalsModule, // Order is important: this module SHALL be imported before UEModule
+    CommentsModule, // Must be imported before UEModule
     UEModule,
     TimetableModule,
   ],

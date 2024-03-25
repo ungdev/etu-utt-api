@@ -18,7 +18,7 @@ import { UUIDParam } from '../../app.pipe';
 import { RequireRole, GetUser } from '../../auth/decorator';
 import { AppException, ERROR_CODE } from '../../exceptions';
 import { UploadRoute, UserFile, FileSize, MulterWithMime } from '../../upload.interceptor';
-import { CommentStatus } from '../interfaces/comment.interface';
+import { CommentStatus } from '../comments/interfaces/comment.interface';
 import { CreateAnnal } from './dto/create-annal.dto';
 import { UpdateAnnal } from './dto/update-annal.dto';
 import { User } from '../../users/interfaces/user.interface';
@@ -29,14 +29,14 @@ import { UploadAnnalDto } from './dto/upload-annal.dto';
 export class AnnalsController {
   constructor(readonly annalsService: AnnalsService, readonly ueService: UEService) {}
 
-  @Get('')
+  @Get()
   @RequireRole('STUDENT', 'FORMER_STUDENT')
   async getUeAnnalList(@Query() { ueCode }: GetFromUeCodeDto, @GetUser() user: User) {
     if (!(await this.ueService.doesUEExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     return this.annalsService.getUEAnnalsList(user, ueCode, user.permissions.includes('annalModerator'));
   }
 
-  @Post('')
+  @Post()
   @RequireRole('STUDENT')
   @UploadRoute('file')
   async createUeAnnal(@Body() { ueCode, semester, typeId }: CreateAnnal, @GetUser() user: User) {

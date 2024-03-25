@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { omit } from '../../utils';
+import { omit } from '../../../utils';
 import { CommentStatus } from './comment.interface';
 
 const REPLY_SELECT_FILTER = {

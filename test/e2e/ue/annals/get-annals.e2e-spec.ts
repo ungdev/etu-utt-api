@@ -15,7 +15,7 @@ import { UEAnnalFile } from '../../../../src/ue/annals/interfaces/annal.interfac
 import { RawUEAnnal } from '../../../../src/prisma/types';
 import { JsonLikeVariant } from 'test/declarations';
 import { pick } from '../../../../src/utils';
-import { CommentStatus } from '../../../../src/ue/interfaces/comment.interface';
+import { CommentStatus } from '../../../../src/ue/comments/interfaces/comment.interface';
 
 const GetAnnal = e2eSuite('GET /ue/annals', (app) => {
   const senderUser = createUser(app);

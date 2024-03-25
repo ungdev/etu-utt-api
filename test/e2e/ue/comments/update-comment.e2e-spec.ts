@@ -6,12 +6,12 @@ import {
   createBranchOption,
   createSemester,
   createCommentUpvote,
-} from '../../utils/fakedb';
+} from '../../../utils/fakedb';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '../../../src/exceptions';
-import { Dummies, e2eSuite, JsonLike } from '../../utils/test_utils';
-import { PrismaService } from '../../../src/prisma/prisma.service';
-import { CommentStatus } from 'src/ue/interfaces/comment.interface';
+import { ERROR_CODE } from '../../../../src/exceptions';
+import { Dummies, e2eSuite, JsonLike } from '../../../utils/test_utils';
+import { PrismaService } from '../../../../src/prisma/prisma.service';
+import { CommentStatus } from 'src/ue/comments/interfaces/comment.interface';
 
 const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
   const user = createUser(app);
