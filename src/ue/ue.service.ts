@@ -22,6 +22,7 @@ import { FormatAnnal, SelectUEAnnalFile } from './interfaces/annal.interface';
 import { UpdateAnnal } from './dto/update-annal.dto';
 import { CreateAnnal } from './dto/create-annal.dto';
 import type sharp from 'sharp';
+import { CreateReportReasonTranslation } from './dto/create-report-reason';
 
 @Injectable()
 export class UEService {
@@ -1120,5 +1121,388 @@ export class UEService {
         }),
       ),
     );
+  }
+
+  async fetchReportReasons() {
+    return this.prisma.uECommentReportReason.findMany({
+      select: {
+        name: true,
+        descriptionTranslation: {
+          select: {
+            fr: true,
+            en: true,
+            de: true,
+            es: true,
+            zh: true,
+          },
+        },
+      },
+    });
+  }
+
+  async fetchAnnalReportReasons() {
+    return this.prisma.uEAnnalReportReason.findMany({
+      select: {
+        name: true,
+        descriptionTranslation: {
+          select: {
+            fr: true,
+            en: true,
+            de: true,
+            es: true,
+            zh: true,
+          },
+        },
+      },
+    });
+  }
+
+  async doesReportReasonExist(name: string): Promise<number> {
+    return this.prisma.uECommentReportReason.count({
+      where: {
+        name,
+      },
+    });
+  }
+
+  async doesAnnalReportReasonExist(name: string): Promise<number> {
+    return this.prisma.uEAnnalReportReason.count({
+      where: {
+        name,
+      },
+    });
+  }
+
+  async createReportReason(name: string, translation: CreateReportReasonTranslation) {
+    return this.prisma.uECommentReportReason.create({
+      select: {
+        name: true,
+        descriptionTranslation: {
+          select: {
+            fr: true,
+            en: true,
+            de: true,
+            es: true,
+            zh: true,
+          },
+        },
+      },
+      data: {
+        name,
+        descriptionTranslation: {
+          create: translation ?? {},
+        },
+      },
+    });
+  }
+
+  async createAnnalReportReason(name: string, translation: CreateReportReasonTranslation) {
+    return this.prisma.uEAnnalReportReason.create({
+      select: {
+        name: true,
+        descriptionTranslation: {
+          select: {
+            fr: true,
+            en: true,
+            de: true,
+            es: true,
+            zh: true,
+          },
+        },
+      },
+      data: {
+        name,
+        descriptionTranslation: {
+          create: translation ?? {},
+        },
+      },
+    });
+  }
+
+  async deleteReportReason(reasonName: string) {
+    return this.prisma.uECommentReportReason.delete({
+      where: {
+        name: reasonName,
+      },
+      select: {
+        name: true,
+        descriptionTranslation: {
+          select: {
+            fr: true,
+            en: true,
+            de: true,
+            es: true,
+            zh: true,
+          },
+        },
+      },
+    });
+  }
+
+  async deleteAnnalReportReason(reasonName: string) {
+    return this.prisma.uEAnnalReportReason.delete({
+      where: {
+        name: reasonName,
+      },
+      select: {
+        name: true,
+        descriptionTranslation: {
+          select: {
+            fr: true,
+            en: true,
+            de: true,
+            es: true,
+            zh: true,
+          },
+        },
+      },
+    });
+  }
+
+  async reportComment(commentId: string, userId: string, reasonId: string, details: string) {
+    return this.prisma.uECommentReport.create({
+      data: {
+        commentId,
+        userId,
+        reasonId,
+        body: details,
+      },
+    });
+  }
+
+  async reportReply(replyId: string, userId: string, reasonId: string, details: string) {
+    return this.prisma.uECommentReplyReport.create({
+      data: {
+        replyId,
+        userId,
+        reasonId,
+        body: details,
+      },
+    });
+  }
+
+  async reportAnnal(annalId: string, userId: string, reasonId: string, details: string) {
+    return this.prisma.uEAnnalReport.create({
+      data: {
+        annalId,
+        userId,
+        reasonId,
+        body: details,
+      },
+    });
+  }
+
+  async doesCommentReportExist(id: string, commentId: string): Promise<number> {
+    return this.prisma.uECommentReport.count({
+      where: {
+        id,
+        comment: {
+          id: commentId,
+        },
+      },
+    });
+  }
+
+  async doesRelyReportExist(id: string, replyId: string, commentId: string): Promise<number> {
+    return this.prisma.uECommentReplyReport.count({
+      where: {
+        id,
+        reply: {
+          id: replyId,
+          commentId,
+        },
+      },
+    });
+  }
+
+  async doesAnnalReportExist(id: string, annalId: string, ueCode: string): Promise<number> {
+    return this.prisma.uEAnnalReport.count({
+      where: {
+        id,
+        annal: {
+          id: annalId,
+          ue: {
+            code: ueCode,
+          },
+        },
+      },
+    });
+  }
+
+  async isReporter(type: 'Comment' | 'CommentReply' | 'Annal', id: string, userId: string): Promise<number>;
+  async isReporter(type: string, id: string, userId: string): Promise<number> {
+    return this.prisma[`uE${type}Report`].count({
+      where: {
+        id,
+        userId,
+      },
+    });
+  }
+
+  async deleteCommentReport(reportId: string) {
+    return this.prisma.uECommentReport.delete({
+      where: {
+        id: reportId,
+      },
+    });
+  }
+
+  async deleteReplyReport(reportId: string) {
+    return this.prisma.uECommentReplyReport.delete({
+      where: {
+        id: reportId,
+      },
+    });
+  }
+
+  async deleteAnnalReport(reportId: string) {
+    return this.prisma.uEAnnalReport.delete({
+      where: {
+        id: reportId,
+      },
+    });
+  }
+
+  async mitigateCommentReport(reportId: string) {
+    return this.prisma.uECommentReport.update({
+      where: {
+        id: reportId,
+      },
+      data: {
+        mitigated: true,
+      },
+    });
+  }
+
+  async mitigateReplyReport(reportId: string) {
+    return this.prisma.uECommentReplyReport.update({
+      where: {
+        id: reportId,
+      },
+      data: {
+        mitigated: true,
+      },
+    });
+  }
+
+  async mitigateAnnalReport(reportId: string) {
+    return this.prisma.uEAnnalReport.update({
+      where: {
+        id: reportId,
+      },
+      data: {
+        mitigated: true,
+      },
+    });
+  }
+
+  async validateComment(commentId: string, validatedBody: string) {
+    return this.prisma.uEComment.update({
+      where: {
+        id: commentId,
+        body: validatedBody,
+      },
+      data: {
+        validatedAt: new Date(),
+      },
+    });
+  }
+
+  async validateAnnal(annalId: string) {
+    return this.prisma.uEAnnal.update({
+      where: {
+        id: annalId,
+      },
+      data: {
+        validatedAt: new Date(),
+      },
+    });
+  }
+
+  async unValidateComment(commentId: string) {
+    return this.prisma.uEComment.update({
+      where: {
+        id: commentId,
+      },
+      data: {
+        validatedAt: null,
+      },
+    });
+  }
+
+  async unValidateAnnal(annalId: string) {
+    return this.prisma.uEAnnal.update({
+      where: {
+        id: annalId,
+      },
+      data: {
+        validatedAt: null,
+      },
+    });
+  }
+
+  async fetchCommentsPendingValidation(page = 1) {
+    const [comments, commentCount] = await this.prisma.$transaction([
+      this.prisma.uEComment.findMany(
+        SelectComment(
+          {
+            where: {
+              deletedAt: null,
+              validatedAt: null,
+            },
+            orderBy: [
+              {
+                createdAt: 'desc',
+              },
+            ],
+            take: Number(this.config.get('PAGINATION_PAGE_SIZE')),
+            skip: (page - 1) * Number(this.config.get('PAGINATION_PAGE_SIZE')),
+          },
+          null,
+          null,
+          false,
+          true,
+          true,
+        ),
+      ),
+      this.prisma.uEComment.count({
+        where: { deletedAt: null, validatedAt: null },
+      }),
+    ]);
+    // Data pagination
+    return {
+      items: comments.map((comment) => FormatComment(comment, null)),
+      itemCount: commentCount,
+      itemsPerPage: Number(this.config.get('PAGINATION_PAGE_SIZE')),
+    };
+  }
+
+  async fetchAnnalsPendingValidation(page = 1) {
+    const [annals, annalCount] = await this.prisma.$transaction([
+      this.prisma.uEAnnal.findMany(
+        SelectUEAnnalFile({
+          where: {
+            deletedAt: null,
+            validatedAt: null,
+          },
+          orderBy: [
+            {
+              createdAt: 'desc',
+            },
+          ],
+          take: Number(this.config.get('PAGINATION_PAGE_SIZE')),
+          skip: (page - 1) * Number(this.config.get('PAGINATION_PAGE_SIZE')),
+        }),
+      ),
+      this.prisma.uEAnnal.count({
+        where: { deletedAt: null, validatedAt: null },
+      }),
+    ]);
+    // Data pagination
+    return {
+      items: annals.map((annal) => FormatAnnal(annal)),
+      itemCount: annalCount,
+      itemsPerPage: Number(this.config.get('PAGINATION_PAGE_SIZE')),
+    };
   }
 }

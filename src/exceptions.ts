@@ -53,6 +53,7 @@ export const enum ERROR_CODE {
   NOT_ALREADY_RATED_UE = 4226,
   NOT_DONE_UE_IN_SEMESTER = 4227,
   NOT_ANNAL_SENDER = 4228,
+  NOT_REPORTER = 4229,
   NO_SUCH_UE = 4401,
   NO_SUCH_COMMENT = 4402,
   NO_SUCH_REPLY = 4403,
@@ -61,7 +62,10 @@ export const enum ERROR_CODE {
   NO_SUCH_TIMETABLE_GROUP = 4406,
   NO_SUCH_USER = 4407,
   NO_SUCH_ANNAL = 4408,
+  NO_SUCH_REPORT_REASON = 4409,
+  NO_SUCH_REPORT = 4410,
   ANNAL_ALREADY_UPLOADED = 4901,
+  REPORT_REASON_ALREADY_EXISTS = 4902,
   CREDENTIALS_ALREADY_TAKEN = 5001,
 }
 
@@ -231,6 +235,10 @@ export const ErrorData = Object.freeze({
     message: 'You are not the sender of this annal',
     httpCode: HttpStatus.FORBIDDEN,
   },
+  [ERROR_CODE.NOT_REPORTER]: {
+    message: 'You are not the author of this report',
+    httpCode: HttpStatus.FORBIDDEN,
+  },
   [ERROR_CODE.NO_SUCH_UE]: {
     message: 'The UE % does not exist',
     httpCode: HttpStatus.NOT_FOUND,
@@ -263,8 +271,20 @@ export const ErrorData = Object.freeze({
     message: 'The annal % does not exist for ue %',
     httpCode: HttpStatus.NOT_FOUND,
   },
+  [ERROR_CODE.NO_SUCH_REPORT_REASON]: {
+    message: 'The report reason % does not exist',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
+  [ERROR_CODE.NO_SUCH_REPORT]: {
+    message: 'The report does not exist',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
   [ERROR_CODE.ANNAL_ALREADY_UPLOADED]: {
     message: 'A file has alreay been uploaded for this annal',
+    httpCode: HttpStatus.CONFLICT,
+  },
+  [ERROR_CODE.REPORT_REASON_ALREADY_EXISTS]: {
+    message: 'A report reason with the given name already exists',
     httpCode: HttpStatus.CONFLICT,
   },
   [ERROR_CODE.CREDENTIALS_ALREADY_TAKEN]: {

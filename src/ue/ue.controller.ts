@@ -15,7 +15,7 @@ import {
 } from '@nestjs/common';
 import { UESearchDto } from './dto/ue-search.dto';
 import { UEService } from './ue.service';
-import { GetUser, IsPublic, RequireRole } from '../auth/decorator';
+import { GetUser, IsPublic, RequirePermission, RequireRole } from '../auth/decorator';
 import { User } from '../users/interfaces/user.interface';
 import { UeCommentPostDto } from './dto/ue-comment-post.dto';
 import { AppException, ERROR_CODE } from '../exceptions';
@@ -29,6 +29,9 @@ import { UUIDParam } from '../app.pipe';
 import { UpdateAnnal } from './dto/update-annal.dto';
 import { CreateAnnal } from './dto/create-annal.dto';
 import { CommentStatus } from './interfaces/comment.interface';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { CreateReportReason } from './dto/create-report-reason';
+import { CreateReport } from './dto/create-report.dto';
 
 @Controller('ue')
 export class UEController {
@@ -335,12 +338,197 @@ export class UEController {
   }
 
   // Routes to create
-  // Module for file upload and manipulation (image, etc)
-  // --- User report for : comments, replies, annals
-  // -- Validation for : comments, annals
-  // --- Display reports for : comments, replies, annals
-  // -- Display pending validations for : comments, annals
+  // Reports:
+  // -> create reason [comment+annal] (admins)
+  // -> delete reason [comment+annal] (admins)
+  // -> fetch reasons [comment+annal]
+  // -> create report [comment+reply+annal]
+  // -> delete report [comment+reply+annal] (user+moderators)
+  // -> mitigate report [comment+reply+annal] (moderators)
+  // -> list reports [comment+reply+annal] (moderators)
+
+  @Post('/reports/comments/reason')
+  @RequireRole('STUDENT')
+  @RequirePermission('admin')
+  async createReportReason(@Body() dto: CreateReportReason) {
+    try {
+      return this.ueService.createReportReason(dto.name, dto.translation);
+    } catch (err) {
+      if (err instanceof PrismaClientKnownRequestError && err.code === 'P2002')
+        throw new AppException(ERROR_CODE.REPORT_REASON_ALREADY_EXISTS);
+    }
+  }
+
+  @Post('/reports/annals/reason')
+  @RequireRole('STUDENT')
+  @RequirePermission('admin')
+  async createAnnalReportReason(@Body() dto: CreateReportReason) {
+    try {
+      return this.ueService.createAnnalReportReason(dto.name, dto.translation);
+    } catch (err) {
+      if (err instanceof PrismaClientKnownRequestError && err.code === 'P2002')
+        throw new AppException(ERROR_CODE.REPORT_REASON_ALREADY_EXISTS);
+    }
+  }
+
+  @Delete('/reports/comments/reason/{reasonName}')
+  @RequireRole('STUDENT')
+  @RequirePermission('admin')
+  async deleteReportReason(@Param('reasonName') reasonName: string) {
+    if (!(await this.ueService.doesReportReasonExist(reasonName)))
+      throw new AppException(ERROR_CODE.NO_SUCH_REPORT_REASON, reasonName);
+    return this.ueService.deleteReportReason(reasonName);
+  }
+
+  @Delete('/reports/annals/reason/{reasonName}')
+  @RequireRole('STUDENT')
+  @RequirePermission('admin')
+  async deleteAnnalReportReason(@Param('reasonName') reasonName: string) {
+    if (!(await this.ueService.doesAnnalReportReasonExist(reasonName)))
+      throw new AppException(ERROR_CODE.NO_SUCH_REPORT_REASON, reasonName);
+    return this.ueService.deleteAnnalReportReason(reasonName);
+  }
+
+  @Get('/reports/comments/reason')
+  @RequireRole('STUDENT', 'FORMER_STUDENT')
+  async fetchReportReasons() {
+    return this.ueService.fetchReportReasons();
+  }
+
+  @Get('/reports/annals/reason')
+  @RequireRole('STUDENT', 'FORMER_STUDENT')
+  async fetchAnnalReportReasons() {
+    return this.ueService.fetchAnnalReportReasons();
+  }
+
+  @Post('/comments/:commentId/report')
+  @RequireRole('STUDENT', 'FORMER_STUDENT')
+  async reportComment(@GetUser() user: User, @UUIDParam('commentId') commentId: string, @Body() body: CreateReport) {
+    if (!(await this.ueService.doesCommentExist(commentId, user.id, true, false)))
+      throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
+    if (!(await this.ueService.doesReportReasonExist(body.reason)))
+      throw new AppException(ERROR_CODE.NO_SUCH_REPORT_REASON, body.reason);
+    return this.ueService.reportComment(commentId, user.id, body.reason, body.details);
+  }
+
+  @Post('/comments/:commentId/reply/:replyId/report')
+  @RequireRole('STUDENT', 'FORMER_STUDENT')
+  async reportReply(@GetUser() user: User, @UUIDParam('replyId') replyId: string, @Body() body: CreateReport) {
+    if (!(await this.ueService.doesReplyExist(replyId, user.id, false)))
+      throw new AppException(ERROR_CODE.NO_SUCH_REPLY);
+    if (!(await this.ueService.doesReportReasonExist(body.reason)))
+      throw new AppException(ERROR_CODE.NO_SUCH_REPORT_REASON, body.reason);
+    return this.ueService.reportReply(replyId, user.id, body.reason, body.details);
+  }
+
+  @Post('/:ueCode/annals/:annalId/report')
+  @RequireRole('STUDENT', 'FORMER_STUDENT')
+  async reportAnnal(
+    @GetUser() user: User,
+    @Param('ueCode') ueCode: string,
+    @UUIDParam('annalId') annalId: string,
+    @Body() body: CreateReport,
+  ) {
+    if (!(await this.ueService.doesUEAnnalExist(user.id, ueCode, annalId, user.permissions.includes('annalModerator'))))
+      throw new AppException(ERROR_CODE.NO_SUCH_ANNAL, annalId, ueCode);
+    if (!(await this.ueService.doesReportReasonExist(body.reason)))
+      throw new AppException(ERROR_CODE.NO_SUCH_REPORT_REASON, body.reason);
+    return this.ueService.reportAnnal(annalId, user.id, body.reason, body.details);
+  }
+
+  @Delete('/comments/:commentId/report/:reportId')
+  @RequireRole('STUDENT', 'FORMER_STUDENT')
+  async deleteCommentReport(
+    @GetUser() user: User,
+    @UUIDParam('commentId') commentId: string,
+    @UUIDParam('reportId') reportId: string,
+  ) {
+    if (!(await this.ueService.doesCommentReportExist(reportId, commentId)))
+      throw new AppException(ERROR_CODE.NO_SUCH_REPORT);
+    if (
+      !(await this.ueService.isReporter('Comment', reportId, user.id)) &&
+      !user.permissions.includes('commentModerator')
+    )
+      throw new AppException(ERROR_CODE.NOT_REPORTER);
+    return this.ueService.deleteCommentReport(reportId);
+  }
+
+  @Delete('/comments/:commentId/reply/:replyId/report/:reportId')
+  @RequireRole('STUDENT', 'FORMER_STUDENT')
+  async deleteReplyReport() {}
+
+  @Delete('/:ueCode/annals/:annalId/report/:reportId')
+  @RequireRole('STUDENT', 'FORMER_STUDENT')
+  async deleteAnnalReport() {}
+
+  @Get('/reports/comment')
+  @RequireRole('STUDENT')
+  @RequirePermission('commentModerator')
+  async listCommentReports() {}
+
+  @Get('/reports/reply')
+  @RequireRole('STUDENT')
+  @RequirePermission('commentModerator')
+  async listReplyReports() {}
+
+  @Get('/reports/annal')
+  @RequireRole('STUDENT')
+  @RequirePermission('annalModerator')
+  async listAnnalReports() {}
+
+  @Patch('/reports/comments/:commentId')
+  @RequireRole('STUDENT')
+  @RequirePermission('commentModerator')
+  async mitigateCommentReport() {}
+
+  @Patch('/reports/reply/:replyId')
+  @RequireRole('STUDENT')
+  @RequirePermission('commentModerator')
+  async mitigateReplyReport() {}
+
+  @Patch('/reports/annals/:annalId')
+  @RequireRole('STUDENT')
+  @RequirePermission('annalModerator')
+  async mitigateAnnalReport() {}
+
+  // Validation:
+  // -> validate [comment+annal] (moderators)
+  // -> devalidate [comment+annal] (moderators)
+  // -> fetch pending [comment+annal] (moderators)
+
+  @Put('/comments/:commentId/validation')
+  @RequireRole('STUDENT')
+  @RequirePermission('commentModerator')
+  async validateComment() {}
+
+  @Get('/comments/pending')
+  @RequireRole('STUDENT')
+  @RequirePermission('commentModerator')
+  async fetchPendingComments() {}
+
+  @Put('/annals/:annalId/validation')
+  @RequireRole('STUDENT')
+  @RequirePermission('annalModerator')
+  async validateAnnal() {}
+
+  @Get('/annals/pending')
+  @RequireRole('STUDENT')
+  @RequirePermission('annalModerator')
+  async fetchPendingAnnals() {}
+
+  // Routes to create
+  // Create annalType, delete annalType
+  @Post('/annals/types')
+  @RequireRole('STUDENT')
+  @RequirePermission('admin')
+  async createAnnalType() {}
+
+  @Delete('/annals/types/:typeId')
+  @RequireRole('STUDENT')
+  @RequirePermission('admin')
+  async deleteAnnalType() {}
 
   // Todo then:
+  // Module for file upload and manipulation (image, etc)
   // Timetable UI
 }
