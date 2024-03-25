@@ -11,6 +11,16 @@ const COMMENT_SELECT_FILTER = {
         firstName: true,
         lastName: true,
         studentId: true,
+        UEsSubscriptions: {
+          where: {
+            ue: {
+              code: null,
+            },
+          },
+          select: {
+            semesterId: true,
+          },
+        },
       },
     },
     createdAt: true,
@@ -53,12 +63,15 @@ const COMMENT_SELECT_FILTER = {
 } as const;
 
 type UERawComment = Prisma.UECommentGetPayload<typeof COMMENT_SELECT_FILTER>;
-export type UEComment = Omit<UERawComment, 'upvotes' | 'deletedAt' | 'validatedAt'> & {
+export type UEComment = Omit<UERawComment, 'upvotes' | 'deletedAt' | 'validatedAt' | 'author'> & {
   upvotes: number;
   upvoted: boolean;
   status: CommentStatus;
   answers: UECommentReply[];
   lastValidatedBody?: string | undefined;
+  author?: Omit<UERawComment['author'], 'UEsSubscriptions'> & {
+    commentValidForSemesters: string[];
+  };
 };
 
 /**
@@ -84,6 +97,7 @@ export type UEComment = Omit<UERawComment, 'upvotes' | 'deletedAt' | 'validatedA
 export function SelectComment<T>(
   arg: T,
   userId: string,
+  ueCode: string,
   includeDeletedReplied = false,
   includeReportedReplies = false,
   includeLastValidatedBody = false,
@@ -104,6 +118,9 @@ export function SelectComment<T>(
     ],
   });
   Object.assign(COMMENT_SELECT_FILTER.select, { lastValidatedBody: includeLastValidatedBody });
+  Object.assign(COMMENT_SELECT_FILTER.select.author.select.UEsSubscriptions.where.ue, {
+    code: ueCode,
+  });
   return {
     ...arg,
     ...COMMENT_SELECT_FILTER,
@@ -113,9 +130,17 @@ export function SelectComment<T>(
 export function FormatComment<T extends Prisma.UECommentGetPayload<typeof COMMENT_SELECT_FILTER>>(
   comment: T,
   userId: string,
-): UEComment & Omit<T, 'deletedAt' | 'validatedAt'> {
+): UEComment & Omit<T, 'deletedAt' | 'validatedAt' | 'author'> {
   return {
-    ...omit(comment, 'deletedAt', 'validatedAt'),
+    ...omit(comment, 'deletedAt', 'validatedAt', 'author'),
+    ...(comment.author
+      ? {
+          author: {
+            ...omit(comment.author, 'UEsSubscriptions'),
+            commentValidForSemesters: comment.author.UEsSubscriptions.map((sub) => sub.semesterId),
+          },
+        }
+      : {}),
     answers: comment.answers.map(FormatReply),
     status: (comment.deletedAt && CommentStatus.DELETED) | (comment.validatedAt && CommentStatus.VALIDATED),
     upvotes: comment.upvotes.length,

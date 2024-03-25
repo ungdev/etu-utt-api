@@ -93,6 +93,7 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/{ueCode}/comments', (app) => {
               },
             },
             user.id,
+            ue.code,
           ),
         )
     ).map((comment) => ({
@@ -100,37 +101,38 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/{ueCode}/comments', (app) => {
       upvotes: comment.upvotes.length,
       upvoted: comment.upvotes.some((upvote) => upvote.userId === user.id),
     }));
-    return pactum
-      .spec()
-      .withBearerToken(user.token)
-      .get(`/ue/${ue.code}/comments`)
-      .expectUEComments({
-        items: extendedComments
-          .sort((a, b) =>
-            b.upvotes - a.upvotes == 0
-              ? (<Date>b.createdAt).getTime() - (<Date>a.createdAt).getTime()
-              : b.upvotes - a.upvotes,
-          )
-          .slice(0, Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')))
-          .map((comment) => ({
-            ...omit(comment, 'validatedAt', 'deletedAt'),
-            answers: comment.answers.map((answer) => ({
-              ...omit(answer, 'deletedAt'),
-              createdAt: answer.createdAt.toISOString(),
-              updatedAt: answer.updatedAt.toISOString(),
-              status: CommentStatus.VALIDATED,
-            })),
-            updatedAt: comment.updatedAt.toISOString(),
-            createdAt: comment.createdAt.toISOString(),
+    const commentsFiltered = {
+      items: extendedComments
+        .sort((a, b) =>
+          b.upvotes - a.upvotes == 0
+            ? (<Date>b.createdAt).getTime() - (<Date>a.createdAt).getTime()
+            : b.upvotes - a.upvotes,
+        )
+        .slice(0, Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')))
+        .map((comment) => ({
+          ...omit(comment, 'validatedAt', 'deletedAt', 'author'),
+          author: {
+            ...omit(comment.author, 'UEsSubscriptions'),
+            commentValidForSemesters: comment.author.UEsSubscriptions.map((sub) => sub.semesterId),
+          },
+          answers: comment.answers.map((answer) => ({
+            ...omit(answer, 'deletedAt'),
+            createdAt: answer.createdAt.toISOString(),
+            updatedAt: answer.updatedAt.toISOString(),
             status: CommentStatus.VALIDATED,
-          }))
-          .map((comment) => {
-            if (comment.isAnonymous && comment.author.id !== user.id) delete comment.author;
-            return comment;
-          }),
-        itemCount: comments.length,
-        itemsPerPage: Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')),
-      });
+          })),
+          updatedAt: comment.updatedAt.toISOString(),
+          createdAt: comment.createdAt.toISOString(),
+          status: CommentStatus.VALIDATED,
+        }))
+        .map((comment) => {
+          if (comment.isAnonymous && comment.author.id !== user.id) delete comment.author;
+          return comment;
+        }),
+      itemCount: comments.length,
+      itemsPerPage: Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')),
+    };
+    return pactum.spec().withBearerToken(user.token).get(`/ue/${ue.code}/comments`).expectUEComments(commentsFiltered);
   });
 
   it('should return the second page of comments', async () => {
@@ -145,6 +147,7 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/{ueCode}/comments', (app) => {
               },
             },
             user.id,
+            ue.code,
           ),
         )
     ).map((comment) => ({
@@ -169,7 +172,11 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/{ueCode}/comments', (app) => {
             Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')) * 2,
           )
           .map((comment) => ({
-            ...omit(comment, 'deletedAt', 'validatedAt'),
+            ...omit(comment, 'validatedAt', 'deletedAt', 'author'),
+            author: {
+              ...omit(comment.author, 'UEsSubscriptions'),
+              commentValidForSemesters: comment.author.UEsSubscriptions.map((sub) => sub.semesterId),
+            },
             answers: comment.answers.map((answer) => ({
               ...omit(answer, 'deletedAt'),
               createdAt: answer.createdAt.toISOString(),
@@ -208,6 +215,7 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/{ueCode}/comments', (app) => {
               },
             },
             user.id,
+            ue.code,
             true,
             true,
           ),
@@ -226,7 +234,11 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/{ueCode}/comments', (app) => {
         )
         .slice(0, Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')))
         .map((comment) => ({
-          ...omit(comment, 'validatedAt', 'deletedAt'),
+          ...omit(comment, 'validatedAt', 'deletedAt', 'author'),
+          author: {
+            ...omit(comment.author, 'UEsSubscriptions'),
+            commentValidForSemesters: comment.author.UEsSubscriptions.map((sub) => sub.semesterId),
+          },
           answers: comment.answers.map((answer) => ({
             ...omit(answer, 'deletedAt'),
             createdAt: answer.createdAt.toISOString(),

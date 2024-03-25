@@ -336,7 +336,6 @@ export class UEController {
 
   // Routes to create
   // Module for file upload and manipulation (image, etc)
-  // - Add lastSemester in comments
   // --- User report for : comments, replies, annals
   // -- Validation for : comments, annals
   // --- Display reports for : comments, replies, annals

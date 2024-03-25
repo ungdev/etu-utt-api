@@ -200,6 +200,7 @@ export class UEService {
             skip: ((dto.page ?? 1) - 1) * Number(this.config.get('PAGINATION_PAGE_SIZE')),
           },
           userId,
+          ueCode,
           includeDeletedAndUnverified,
           includeDeletedAndUnverified,
           includeDeletedAndUnverified,
@@ -409,6 +410,7 @@ export class UEService {
             },
           },
           userId,
+          ueCode,
           true,
           true,
         ),
@@ -435,6 +437,9 @@ export class UEService {
       where: {
         id: commentId,
       },
+      include: {
+        ue: true,
+      },
     });
     const needsValidationAgain =
       body.body && body.body !== previousComment.body && previousComment.validatedAt != null && !isModerator;
@@ -454,6 +459,7 @@ export class UEService {
             },
           },
           userId,
+          previousComment.ue.code,
           true,
           true,
           isModerator,
@@ -615,6 +621,18 @@ export class UEService {
    * @returns the deleted {@link UEComment}
    */
   async deleteComment(commentId: string, userId: string, isModerator: boolean): Promise<UEComment> {
+    const comment = await this.prisma.uEComment.findUnique({
+      where: {
+        id: commentId,
+      },
+      select: {
+        ue: {
+          select: {
+            code: true,
+          },
+        },
+      },
+    });
     return FormatComment(
       await this.prisma.uEComment.update(
         SelectComment(
@@ -627,6 +645,7 @@ export class UEService {
             },
           },
           userId,
+          comment.ue.code,
           true,
           true,
           isModerator,
