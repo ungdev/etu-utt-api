@@ -20,6 +20,7 @@ import { omit } from '../../../src/utils';
 const GetCommentsE2ESpec = e2eSuite('GET /ue/{ueCode}/comments', (app) => {
   const user = createUser(app);
   const user2 = createUser(app, { login: 'user2', studentId: 3 });
+  const moderator = createUser(app, { login: 'user3', studentId: 3, permissions: ['commentModerator'] });
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
@@ -74,6 +75,13 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/{ueCode}/comments', (app) => {
   });
 
   it('should return the first page of comments', async () => {
+    await app()
+      .get(PrismaService)
+      .uEComment.updateMany({
+        data: {
+          lastValidatedBody: 'I like to spread fake news in my comments !',
+        },
+      });
     const extendedComments = (
       await app()
         .get(PrismaService)
@@ -179,6 +187,65 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/{ueCode}/comments', (app) => {
         itemCount: comments.length,
         itemsPerPage: Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')),
       });
+  });
+
+  it('should return comments with lastValidatedBodies', async () => {
+    await app()
+      .get(PrismaService)
+      .uEComment.updateMany({
+        data: {
+          lastValidatedBody: 'I like to spread fake news in my comments !',
+        },
+      });
+    const extendedComments = (
+      await app()
+        .get(PrismaService)
+        .uEComment.findMany(
+          SelectComment(
+            {
+              select: {
+                upvotes: true,
+              },
+            },
+            user.id,
+            true,
+            true,
+          ),
+        )
+    ).map((comment) => ({
+      ...comment,
+      upvotes: comment.upvotes.length,
+      upvoted: comment.upvotes.some((upvote) => upvote.userId === user.id),
+    }));
+    const commentsFiltered = {
+      items: extendedComments
+        .sort((a, b) =>
+          b.upvotes - a.upvotes == 0
+            ? (<Date>b.createdAt).getTime() - (<Date>a.createdAt).getTime()
+            : b.upvotes - a.upvotes,
+        )
+        .slice(0, Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')))
+        .map((comment) => ({
+          ...omit(comment, 'validatedAt', 'deletedAt'),
+          answers: comment.answers.map((answer) => ({
+            ...omit(answer, 'deletedAt'),
+            createdAt: answer.createdAt.toISOString(),
+            updatedAt: answer.updatedAt.toISOString(),
+            status: CommentStatus.VALIDATED,
+          })),
+          lastValidatedBody: 'I like to spread fake news in my comments !',
+          updatedAt: comment.updatedAt.toISOString(),
+          createdAt: comment.createdAt.toISOString(),
+          status: CommentStatus.VALIDATED,
+        })),
+      itemCount: comments.length,
+      itemsPerPage: Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')),
+    };
+    return pactum
+      .spec()
+      .withBearerToken(moderator.token)
+      .get(`/ue/${ue.code}/comments`)
+      .expectUEComments(commentsFiltered);
   });
 });
 

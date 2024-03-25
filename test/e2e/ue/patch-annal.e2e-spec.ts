@@ -17,7 +17,6 @@ import { pick } from '../../../src/utils';
 const EditAnnal = e2eSuite('PATCH /ue/{ueCode}/annals/{annalId}', (app) => {
   const senderUser = createUser(app);
   const nonUeUser = createUser(app, { login: 'user2', studentId: 2 });
-  const moderator = createUser(app, { login: 'user3', studentId: 3, permissions: ['annalModerator'] });
   const nonStudentUser = createUser(app, { login: 'nonStudent', studentId: 4, role: 'TEACHER' });
   const annalType = createAnnalType(app);
   const semester = createSemester(app);

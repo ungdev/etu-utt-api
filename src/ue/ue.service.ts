@@ -154,7 +154,7 @@ export class UEService {
     userId: string,
     dto: GetUECommentsDto,
     bypassAnonymousData: boolean,
-    includeDeletedAndUnverified = false,
+    includeDeletedAndUnverified: boolean,
   ): Promise<Pagination<UEComment>> {
     // Use a prisma transaction to execute two requests at once:
     // We fetch a page of comments matching our filters and retrieve the total count of comments matching our filters
@@ -202,6 +202,7 @@ export class UEService {
           userId,
           includeDeletedAndUnverified,
           includeDeletedAndUnverified,
+          includeDeletedAndUnverified,
         ),
       ),
       this.prisma.uEComment.count({
@@ -242,7 +243,7 @@ export class UEService {
    * @param replyId the id of the reply to check
    * @returns whether the {@link replyId | reply} exists
    */
-  async doesReplyExist(replyId: string, userId: string, includeDeleted = false): Promise<boolean> {
+  async doesReplyExist(replyId: string, userId: string, includeDeleted: boolean): Promise<boolean> {
     return (
       (await this.prisma.uECommentReply.count({
         where: {
@@ -428,7 +429,7 @@ export class UEService {
     body: UeCommentUpdateDto,
     commentId: string,
     userId: string,
-    isModerator = false,
+    isModerator: boolean,
   ): Promise<UEComment> {
     const previousComment = await this.prisma.uEComment.findUnique({
       where: {
@@ -455,6 +456,7 @@ export class UEService {
           userId,
           true,
           true,
+          isModerator,
         ),
       ),
       userId,
@@ -483,7 +485,7 @@ export class UEService {
    * @param commentId the id of the comment to check
    * @returns whether the {@link commentId | comment} exists
    */
-  async doesCommentExist(commentId: string, userId: string, includeUnverified = false, includeDeleted = false) {
+  async doesCommentExist(commentId: string, userId: string, includeUnverified: boolean, includeDeleted = false) {
     return (
       (await this.prisma.uEComment.count({
         where: {
@@ -612,7 +614,7 @@ export class UEService {
    * @param userId the user deleting the comment
    * @returns the deleted {@link UEComment}
    */
-  async deleteComment(commentId: string, userId: string): Promise<UEComment> {
+  async deleteComment(commentId: string, userId: string, isModerator: boolean): Promise<UEComment> {
     return FormatComment(
       await this.prisma.uEComment.update(
         SelectComment(
@@ -627,6 +629,7 @@ export class UEService {
           userId,
           true,
           true,
+          isModerator,
         ),
       ),
       userId,
@@ -755,7 +758,7 @@ export class UEService {
     );
   }
 
-  async getUEAnnalMetadata(user: User, ueCode: string, isModerator = false) {
+  async getUEAnnalMetadata(user: User, ueCode: string, isModerator: boolean) {
     const ue = await this.prisma.uE.findUnique({
       where: {
         code: ueCode,
@@ -904,7 +907,7 @@ export class UEService {
     return FormatAnnal(fileEntry);
   }
 
-  async getUEAnnalsList(user: User, ueCode: string, isModerator = false) {
+  async getUEAnnalsList(user: User, ueCode: string, isModerator: boolean) {
     return (
       await this.prisma.uEAnnal.findMany(
         SelectUEAnnalFile({
@@ -951,7 +954,7 @@ export class UEService {
       });
   }
 
-  async doesUEAnnalExist(userId: string, ueCode: string, annalId: string, isModerator = false) {
+  async doesUEAnnalExist(userId: string, ueCode: string, annalId: string, isModerator: boolean) {
     return (
       (await this.prisma.uEAnnal.count({
         where: {
@@ -983,7 +986,7 @@ export class UEService {
     );
   }
 
-  async getUEAnnal(annalId: string, userId: string, isModerator = false) {
+  async getUEAnnal(annalId: string, userId: string, isModerator: boolean) {
     const rawAnnal = await this.prisma.uEAnnal.findUnique(
       SelectUEAnnalFile({
         where: {
@@ -1013,7 +1016,7 @@ export class UEService {
     return FormatAnnal(rawAnnal);
   }
 
-  async getUEAnnalFile(annalId: string, userId: string, isModerator = false) {
+  async getUEAnnalFile(annalId: string, userId: string, isModerator: boolean) {
     const rawAnnal = await this.prisma.uEAnnal.findUnique(
       SelectUEAnnalFile({
         where: {

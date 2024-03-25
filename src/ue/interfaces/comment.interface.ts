@@ -58,6 +58,7 @@ export type UEComment = Omit<UERawComment, 'upvotes' | 'deletedAt' | 'validatedA
   upvoted: boolean;
   status: CommentStatus;
   answers: UECommentReply[];
+  lastValidatedBody?: string | undefined;
 };
 
 /**
@@ -85,6 +86,7 @@ export function SelectComment<T>(
   userId: string,
   includeDeletedReplied = false,
   includeReportedReplies = false,
+  includeLastValidatedBody = false,
 ): T & typeof COMMENT_SELECT_FILTER {
   Object.assign(COMMENT_SELECT_FILTER.select.answers.where, {
     deletedAt: includeDeletedReplied ? undefined : null,
@@ -101,6 +103,7 @@ export function SelectComment<T>(
       },
     ],
   });
+  Object.assign(COMMENT_SELECT_FILTER.select, { lastValidatedBody: includeLastValidatedBody });
   return {
     ...arg,
     ...COMMENT_SELECT_FILTER,

@@ -87,7 +87,7 @@ export class UEController {
       ))
     )
       throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
-    if (await this.ueService.isUserCommentAuthor(user.id, commentId))
+    if ((await this.ueService.isUserCommentAuthor(user.id, commentId)) || user.permissions.includes('commentModerator'))
       return this.ueService.updateComment(body, commentId, user.id, user.permissions.includes('commentModerator'));
     throw new AppException(ERROR_CODE.NOT_COMMENT_AUTHOR);
   }
@@ -97,8 +97,8 @@ export class UEController {
   async DiscardUEComment(@UUIDParam('commentId') commentId: string, @GetUser() user: User) {
     if (!(await this.ueService.doesCommentExist(commentId, user.id, user.permissions.includes('commentModerator'))))
       throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
-    if (await this.ueService.isUserCommentAuthor(user.id, commentId))
-      return this.ueService.deleteComment(commentId, user.id);
+    if ((await this.ueService.isUserCommentAuthor(user.id, commentId)) || user.permissions.includes('commentModerator'))
+      return this.ueService.deleteComment(commentId, user.id, user.permissions.includes('commentModerator'));
     throw new AppException(ERROR_CODE.NOT_COMMENT_AUTHOR);
   }
 
@@ -262,7 +262,10 @@ export class UEController {
   ) {
     if (!(await this.ueService.doesUEExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     if (!(await this.ueService.isUEAnnalSender(user.id, annalId))) throw new AppException(ERROR_CODE.NOT_ANNAL_SENDER);
-    if ((await this.ueService.getUEAnnal(annalId, user.id)).status !== CommentStatus.PROCESSING)
+    if (
+      (await this.ueService.getUEAnnal(annalId, user.id, user.permissions.includes('annalModerator'))).status !==
+      CommentStatus.PROCESSING
+    )
       throw new AppException(ERROR_CODE.ANNAL_ALREADY_UPLOADED);
     const rotation = Number(rotate);
     return this.ueService.uploadAnnalFile(
@@ -332,10 +335,13 @@ export class UEController {
   }
 
   // Routes to create
-  // - Get lastValidatedBody from comment (for admins)
+  // Module for file upload and manipulation (image, etc)
   // - Add lastSemester in comments
   // --- User report for : comments, replies, annals
   // -- Validation for : comments, annals
   // --- Display reports for : comments, replies, annals
   // -- Display pending validations for : comments, annals
+
+  // Todo then:
+  // Timetable UI
 }
