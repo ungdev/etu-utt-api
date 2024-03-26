@@ -58,12 +58,12 @@ function createPrismaClientExtension(prisma: ReturnType<typeof createPrismaClien
 // UTILITIES TO GENERATE CUSTOM MODEL FUNCTIONS
 type ModelNameType = keyof PrismaClient;
 type FunctionNameType<ModelName extends ModelNameType> = {
-  [K in keyof PrismaClient[ModelName]]: PrismaClient[ModelName][K] extends (arg: any) => any ? K : never;
+  [K in keyof PrismaClient[ModelName]]: PrismaClient[ModelName][K] extends (arg: any) => void ? K : never;
 }[Exclude<keyof PrismaClient[ModelName], 'groupBy'>]; // Don't ask why, but groupBy produces a circular dependency. Anyway, this function seems mostly useless.
 export type RequestType<
   ModelName extends ModelNameType,
   FunctionName extends FunctionNameType<ModelName> = FunctionNameType<ModelName>,
-> = PrismaClient[ModelName][FunctionName] extends (arg: infer P extends object) => any ? P : never;
+> = PrismaClient[ModelName][FunctionName] extends (arg: infer P extends object) => void ? P : never;
 export type UserFriendlyRequestType<
   ModelName extends ModelNameType,
   FunctionName extends FunctionNameType<ModelName>,
