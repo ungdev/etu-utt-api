@@ -1,5 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
-import Spec, { prototype as SpecProto } from 'pactum/src/models/Spec';
+import Spec from 'pactum/src/models/Spec';
 import { JsonLikeVariant } from './declarations.d';
 import { ERROR_CODE, ErrorData, ExtrasTypeBuilder } from '../src/exceptions';
 import { UEComment } from '../src/ue/comments/interfaces/comment.interface';
@@ -22,7 +22,7 @@ function expectOkOrCreate<T>(obj: JsonLikeVariant<T>, created = false) {
   return (<Spec>this).expectStatus(created ? HttpStatus.CREATED : HttpStatus.OK).expectJsonLike(obj);
 }
 
-SpecProto.expectAppError = function <ErrorCode extends ERROR_CODE>(
+Spec.prototype.expectAppError = function <ErrorCode extends ERROR_CODE>(
   errorCode: ErrorCode,
   ...args: ExtrasTypeBuilder<(typeof ErrorData)[ErrorCode]['message']>
 ) {
@@ -31,7 +31,7 @@ SpecProto.expectAppError = function <ErrorCode extends ERROR_CODE>(
     error: (args as string[]).reduce((arg, extra) => arg.replaceAll('%', extra), ErrorData[errorCode].message),
   });
 };
-SpecProto.expectUE = function (ue: FakeUE, rates: Array<{ criterionId: string; value: number }> = []) {
+Spec.prototype.expectUE = function (ue: FakeUE, rates: Array<{ criterionId: string; value: number }> = []) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJson({
     ...omit(ue, 'id', 'validationRate', 'createdAt', 'updatedAt', 'openSemesters'),
     info: omit(ue.info, 'id', 'ueId'),
@@ -49,7 +49,7 @@ SpecProto.expectUE = function (ue: FakeUE, rates: Array<{ criterionId: string; v
     starVotes: Object.fromEntries(rates.map((rate) => [rate.criterionId, rate.value])),
   });
 };
-SpecProto.expectUEs = function (app: AppProvider, ues: FakeUE[], count: number) {
+Spec.prototype.expectUEs = function (app: AppProvider, ues: FakeUE[], count: number) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonLike({
     items: ues.map((ue) => ({
       ...omit(ue, 'id', 'validationRate', 'createdAt', 'updatedAt', 'openSemesters', 'workTime'),
@@ -69,17 +69,17 @@ SpecProto.expectUEs = function (app: AppProvider, ues: FakeUE[], count: number) 
     itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
   });
 };
-SpecProto.expectUEComment = expectOkOrCreate<SetPartial<UEComment, 'author'>>;
-SpecProto.expectUEComments = expect<Pagination<UEComment>>;
-SpecProto.expectUECommentReply = expectOkOrCreate<UECommentReply>;
-SpecProto.expectUECriteria = expect<Criterion[]>;
-SpecProto.expectUERate = expect<UERating>;
-SpecProto.expectUERates = expect<UERating[]>;
-SpecProto.expectUEAnnalMetadata = expect<{
+Spec.prototype.expectUEComment = expectOkOrCreate<SetPartial<UEComment, 'author'>>;
+Spec.prototype.expectUEComments = expect<Pagination<UEComment>>;
+Spec.prototype.expectUECommentReply = expectOkOrCreate<UECommentReply>;
+Spec.prototype.expectUECriteria = expect<Criterion[]>;
+Spec.prototype.expectUERate = expect<UERating>;
+Spec.prototype.expectUERates = expect<UERating[]>;
+Spec.prototype.expectUEAnnalMetadata = expect<{
   types: FakeUEAnnalType[];
   semesters: string[];
 }>;
-SpecProto.expectUEAnnal = expectOkOrCreate<UEAnnalFile>;
-SpecProto.expectUEAnnals = expect<UEAnnalFile[]>;
+Spec.prototype.expectUEAnnal = expectOkOrCreate<UEAnnalFile>;
+Spec.prototype.expectUEAnnals = expect<UEAnnalFile[]>;
 
 export { Spec, JsonLikeVariant };

@@ -3,6 +3,7 @@ import { User } from '@prisma/client';
 import { createWriteStream, createReadStream } from 'fs';
 import { writeFile } from 'fs/promises';
 import sharp from 'sharp';
+import PDFDocument from 'pdfkit';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MulterWithMime } from '../../upload.interceptor';
 import { CreateAnnal } from './dto/create-annal.dto';
@@ -105,26 +106,23 @@ export class AnnalsService {
       // Add support for WebP, AVIF and TIFF
       // We convert the picture to PNG in order to be able to add it in the pdf
       if (file.mime === 'image/webp' || file.mime === 'image/avif' || file.mime === 'image/tiff') {
-        const sharp = await import('sharp');
-        file.multer.buffer = (await (sharp as any)(file.multer.buffer).png().toBuffer()) as Buffer;
+        file.multer.buffer = await sharp(file.multer.buffer).png().toBuffer();
         file.mime = 'image/png';
       }
       // It is always more enjoyable for a user to have all files in the same format
       // The file format chosen is PDF as it can include original exam files, keeping them clean
       // Our library pdfkit only supports PNG and JPEG images
       if (file.mime === 'image/png' || file.mime === 'image/jpeg') {
-        const sharp = await import('sharp');
-        const metadata = (await (sharp as any)(file.multer.buffer).metadata()) as sharp.Metadata;
+        const metadata = await sharp(file.multer.buffer).metadata();
         const size = [metadata.width, metadata.height];
         if (rotation) {
           // Rotate the picture if asked by the user
-          file.multer.buffer = await ((sharp as any)(file.multer.buffer) as sharp.Sharp)
+          file.multer.buffer = await sharp(file.multer.buffer)
             .rotate(rotation * 90)
             .toBuffer();
           size.reverse();
         }
 
-        const PDFDocument = (await import('pdfkit')) as unknown as PDFKit.PDFDocument;
         // Create the PDF document
         const pdf = new PDFDocument({
           margin: 0,
