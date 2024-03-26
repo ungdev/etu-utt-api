@@ -42,6 +42,7 @@ export const enum ERROR_CODE {
   INVALID_TOKEN_FORMAT = 3003,
   INVALID_CREDENTIALS = 3004,
   FORBIDDEN_INVALID_ROLE = 3005,
+  INVALID_CAS_TICKET = 3006,
   FORBIDDEN_ALREADY_COMMENTED = 3101,
   FORBIDDEN_ALREADY_UPVOTED = 3102,
   FORBIDDEN_ALREADY_UNUPVOTED = 3103,
@@ -185,6 +186,10 @@ export const ErrorData = Object.freeze({
   },
   [ERROR_CODE.FORBIDDEN_INVALID_ROLE]: {
     message: 'Role % is required to access this resource',
+    httpCode: HttpStatus.UNAUTHORIZED,
+  },
+  [ERROR_CODE.INVALID_CAS_TICKET]: {
+    message: 'The ticket or the service is invalid',
     httpCode: HttpStatus.UNAUTHORIZED,
   },
   [ERROR_CODE.FORBIDDEN_ALREADY_COMMENTED]: {

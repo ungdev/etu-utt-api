@@ -8,6 +8,7 @@ import PostCommmentReply from './post-reply.e2e-spec';
 import PostUpvote from './post-upvote.e2e-spec';
 import UpdateComment from './update-comment.e2e-spec';
 import UpdateCommentReply from './update-reply.e2e-spec';
+import GetCommentFromIdE2ESpec from './get-comment-from-id.e2e-spec';
 
 export default function CommentsE2ESpec(app: () => INestApplication) {
   describe('Comments', () => {
@@ -20,5 +21,6 @@ export default function CommentsE2ESpec(app: () => INestApplication) {
     DeleteCommentReply(app);
     PostUpvote(app);
     DeleteUpvote(app);
+    GetCommentFromIdE2ESpec(app);
   });
 }

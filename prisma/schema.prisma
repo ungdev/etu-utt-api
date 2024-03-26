@@ -222,7 +222,7 @@ model Translation {
 model UE {
   id              String   @id @default(uuid())
   code            String   @unique @db.VarChar(10)
-  inscriptionCode String   @unique @db.VarChar(4)
+  inscriptionCode String   @unique @db.Char(4)
   name            String   @db.VarChar(255)
   validationRate  Float?
   createdAt       DateTime @default(now())
@@ -519,7 +519,8 @@ model UserPermissionAssignement {
 model User {
   id        String  @id @default(uuid())
   login     String  @unique @db.VarChar(50)
-  hash      String
+  hash      String?
+  // TODO : maybe a field accountType (that is either CAS or login-password), but this may be implemented in the centralized authentication
   studentId Int?
   firstName String
   lastName  String
@@ -631,17 +632,17 @@ model UserFormation {
 }
 
 model UserInfos {
-  id          String   @id @default(uuid())
-  sex         Sex
-  nationality String?  @db.VarChar(50)
-  birthday    DateTime @db.Date
-  avatar      String   @default("default.png") @db.VarChar(255)
-  nickname    String?  @db.VarChar(50)
-  passions    String?  @db.Text
-  website     String?  @db.VarChar(255)
-  userId      String   @unique
+  id          String    @id @default(uuid())
+  sex         Sex?
+  nationality String?   @db.VarChar(50)
+  birthday    DateTime? @db.Date
+  avatar      String    @default("default.png") @db.VarChar(255)
+  nickname    String?   @db.VarChar(50)
+  passions    String?   @db.Text
+  website     String?   @db.VarChar(255)
+  userId      String    @unique
 
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model UserMailsPhones {
@@ -651,7 +652,7 @@ model UserMailsPhones {
   phoneNumber  String? @db.VarChar(100)
   userId       String  @unique
 
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model UserOtherAttribut {

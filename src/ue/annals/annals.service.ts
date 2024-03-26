@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { User } from '@prisma/client';
 import { createWriteStream, createReadStream } from 'fs';
 import { writeFile } from 'fs/promises';
@@ -9,10 +8,11 @@ import { MulterWithMime } from '../../upload.interceptor';
 import { CreateAnnal } from './dto/create-annal.dto';
 import { UpdateAnnal } from './dto/update-annal.dto';
 import { SelectUEAnnalFile, FormatAnnal } from './interfaces/annal.interface';
+import { ConfigModule } from '../../config/config.module';
 
 @Injectable()
 export class AnnalsService {
-  constructor(readonly prisma: PrismaService, readonly config: ConfigService) {}
+  constructor(readonly prisma: PrismaService, readonly config: ConfigModule) {}
 
   async getUEAnnalMetadata(user: User, ueCode: string, isModerator: boolean) {
     const ue = await this.prisma.uE.findUnique({
@@ -87,7 +87,7 @@ export class AnnalsService {
     });
     dbFilter.select.ue = { select: { code: true } };
     const fileEntry = await this.prisma.uEAnnal.findUnique(dbFilter);
-    let rootDirectory = this.config.get<string>('ANNAL_UPLOAD_DIR');
+    let rootDirectory = this.config.ANNAL_UPLOAD_DIR;
     if (rootDirectory.endsWith('/')) rootDirectory = rootDirectory.slice(0, -1);
     // We won't wait for the file to be processed to send the response.
     // Files do not need to be processed instantly and will only be displayed to all users when processed
@@ -298,7 +298,7 @@ export class AnnalsService {
     );
     if (!rawAnnal) return null;
     const metadata = FormatAnnal(rawAnnal);
-    let rootDirectory = this.config.get<string>('ANNAL_UPLOAD_DIR');
+    let rootDirectory = this.config.ANNAL_UPLOAD_DIR;
     if (rootDirectory.endsWith('/')) rootDirectory = rootDirectory.slice(0, -1);
     return {
       metadata,

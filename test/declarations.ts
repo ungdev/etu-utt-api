@@ -4,12 +4,14 @@ import { JsonLikeVariant } from './declarations.d';
 import { ERROR_CODE, ErrorData, ExtrasTypeBuilder } from '../src/exceptions';
 import { UEComment } from '../src/ue/comments/interfaces/comment.interface';
 import { UECommentReply } from '../src/ue/comments/interfaces/comment-reply.interface';
-import { UEOverView } from 'src/ue/interfaces/ue-overview.interface';
-import { UEDetail } from 'src/ue/interfaces/ue-detail.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { UERating } from 'src/ue/interfaces/rate.interface';
 import { FakeUEAnnalType } from './utils/fakedb';
 import { UEAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
+import { FakeUE } from './utils/fakedb';
+import { ConfigModule } from '../src/config/config.module';
+import { AppProvider } from './utils/test_utils';
+import { omit, pick } from '../src/utils';
 
 /** Shortcut function for `this.expectStatus(200).expectJsonLike` */
 function expect<T>(obj: JsonLikeVariant<T>) {
@@ -29,9 +31,45 @@ SpecProto.expectAppError = function <ErrorCode extends ERROR_CODE>(
     error: (args as string[]).reduce((arg, extra) => arg.replaceAll('%', extra), ErrorData[errorCode].message),
   });
 };
-SpecProto.expectUE = expect<UEDetail>;
-SpecProto.expectUEs = expect<Pagination<UEOverView>>;
-SpecProto.expectUEComment = expectOkOrCreate<UEComment>;
+SpecProto.expectUE = function (ue: FakeUE, rates: Array<{ criterionId: string; value: number }> = []) {
+  return (<Spec>this).expectStatus(HttpStatus.OK).expectJson({
+    ...omit(ue, 'id', 'validationRate', 'createdAt', 'updatedAt', 'openSemesters'),
+    info: omit(ue.info, 'id', 'ueId'),
+    workTime: omit(ue.workTime, 'id', 'ueId'),
+    credits: ue.credits.map((credit) => omit(credit, 'id', 'ueId', 'categoryId')),
+    branchOption: ue.branchOption.map((branchOption) => ({
+      ...pick(branchOption, 'code', 'name'),
+      branch: pick(branchOption.branch, 'code', 'name'),
+    })),
+    openSemester: ue.openSemesters.map((semester) => ({
+      ...semester,
+      start: semester.start.toISOString(),
+      end: semester.end.toISOString(),
+    })),
+    starVotes: Object.fromEntries(rates.map((rate) => [rate.criterionId, rate.value])),
+  });
+};
+SpecProto.expectUEs = function (app: AppProvider, ues: FakeUE[], count: number) {
+  return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonLike({
+    items: ues.map((ue) => ({
+      ...omit(ue, 'id', 'validationRate', 'createdAt', 'updatedAt', 'openSemesters', 'workTime'),
+      info: omit(ue.info, 'id', 'ueId'),
+      credits: ue.credits.map((credit) => omit(credit, 'id', 'ueId', 'categoryId')),
+      branchOption: ue.branchOption.map((branchOption) => ({
+        ...pick(branchOption, 'code', 'name'),
+        branch: pick(branchOption.branch, 'code', 'name'),
+      })),
+      openSemester: ue.openSemesters.map((semester) => ({
+        ...semester,
+        start: semester.start.toISOString(),
+        end: semester.end.toISOString(),
+      })),
+    })),
+    itemCount: count,
+    itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
+  });
+};
+SpecProto.expectUEComment = expectOkOrCreate<SetPartial<UEComment, 'author'>>;
 SpecProto.expectUEComments = expect<Pagination<UEComment>>;
 SpecProto.expectUECommentReply = expectOkOrCreate<UECommentReply>;
 SpecProto.expectUECriteria = expect<Criterion[]>;

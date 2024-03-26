@@ -37,6 +37,19 @@ export class CommentsController {
     return this.commentsService.createComment(body, user.id);
   }
 
+  @Get(':commentId')
+  async getUECommentFromId(@UUIDParam('commentId') commentId: string, @GetUser() user: User) {
+    const comment = await this.commentsService.getCommentFromId(
+      commentId,
+      user.id,
+      user.permissions.includes('commentModerator'),
+    );
+    if (!comment) {
+      throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
+    }
+    return comment;
+  }
+
   @Patch(':commentId')
   @RequireRole('STUDENT', 'FORMER_STUDENT')
   async EditUEComment(
@@ -83,7 +96,7 @@ export class CommentsController {
 
   @Post(':commentId/upvote')
   @RequireRole('STUDENT')
-  @HttpCode(HttpStatus.CREATED)
+  @HttpCode(HttpStatus.OK)
   async UpvoteUEComment(@UUIDParam('commentId') commentId: string, @GetUser() user: User) {
     if (
       !(await this.commentsService.doesCommentExist(
@@ -99,11 +112,12 @@ export class CommentsController {
     if (await this.commentsService.hasAlreadyUpvoted(user.id, commentId))
       throw new AppException(ERROR_CODE.FORBIDDEN_ALREADY_UPVOTED);
     await this.commentsService.upvoteComment(user.id, commentId);
+    return { upvoted: true };
   }
 
   @Delete(':commentId/upvote')
   @RequireRole('STUDENT', 'FORMER_STUDENT')
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @HttpCode(HttpStatus.OK)
   async UnUpvoteUEComment(@UUIDParam('commentId') commentId: string, @GetUser() user: User) {
     if (
       !(await this.commentsService.doesCommentExist(
@@ -119,6 +133,7 @@ export class CommentsController {
     if (!(await this.commentsService.hasAlreadyUpvoted(user.id, commentId)))
       throw new AppException(ERROR_CODE.FORBIDDEN_ALREADY_UNUPVOTED);
     await this.commentsService.deUpvoteComment(user.id, commentId);
+    return { upvoted: false };
   }
 
   @Post(':commentId/reply')

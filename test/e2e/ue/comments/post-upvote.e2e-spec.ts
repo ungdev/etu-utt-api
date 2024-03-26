@@ -19,7 +19,7 @@ const PostUpvote = e2eSuite('POST /ue/comments/{commentId}/upvote', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUE(app, { semesters: [semester], branchOption });
+  const ue = createUE(app, { openSemesters: [semester], branchOption: [branchOption] });
   const comment = createComment(app, { ue, user, semester });
 
   it('should return a 401 as user is not authenticated', () => {
@@ -55,7 +55,8 @@ const PostUpvote = e2eSuite('POST /ue/comments/{commentId}/upvote', (app) => {
       .spec()
       .withBearerToken(user2.token)
       .post(`/ue/comments/${comment.id}/upvote`)
-      .expectStatus(HttpStatus.CREATED);
+      .expectStatus(HttpStatus.OK)
+      .expectJson({ upvoted: true });
     return app().get(PrismaService).uECommentUpvote.deleteMany();
   });
 

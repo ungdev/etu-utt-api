@@ -19,7 +19,7 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUE(app, { semesters: [semester], branchOption });
+  const ue = createUE(app, { openSemesters: [semester], branchOption: [branchOption] });
   const comment = createComment(app, { ue, user, semester });
   createCommentUpvote(app, { user: user2, comment });
 

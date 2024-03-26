@@ -23,7 +23,7 @@ const DeleteAnnal = e2eSuite('DELETE /ue/annals/{annalId}', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUE(app, { semesters: [semester], branchOption });
+  const ue = createUE(app, { openSemesters: [semester], branchOption: [branchOption] });
   createUESubscription(app, { user: senderUser, ue, semester });
   const annal_validated = createAnnal(app, { semester, sender: senderUser, type: annalType, ue });
 

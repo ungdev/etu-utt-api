@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RawUserUESubscription } from 'src/prisma/types';
 import { UeCommentPostDto } from './dto/ue-comment-post.dto';
@@ -8,10 +7,11 @@ import { UeCommentUpdateDto } from './dto/ue-comment-update.dto';
 import { GetUECommentsDto } from './dto/ue-get-comments.dto';
 import { FormatReply, SelectCommentReply, UECommentReply } from './interfaces/comment-reply.interface';
 import { SelectComment, FormatComment, UEComment } from './interfaces/comment.interface';
+import { ConfigModule } from '../../config/config.module';
 
 @Injectable()
 export class CommentsService {
-  constructor(readonly prisma: PrismaService, readonly config: ConfigService) {}
+  constructor(readonly prisma: PrismaService, readonly config: ConfigModule) {}
 
   /**
    * Retrieves a page of {@link UEComment} matching the user query
@@ -67,8 +67,8 @@ export class CommentsService {
                 createdAt: 'desc',
               },
             ],
-            take: Number(this.config.get('PAGINATION_PAGE_SIZE')),
-            skip: ((dto.page ?? 1) - 1) * Number(this.config.get('PAGINATION_PAGE_SIZE')),
+            take: this.config.PAGINATION_PAGE_SIZE,
+            skip: ((dto.page ?? 1) - 1) * this.config.PAGINATION_PAGE_SIZE,
           },
           userId,
           dto.ueCode,
@@ -89,8 +89,37 @@ export class CommentsService {
     return {
       items: comments.map((comment) => FormatComment(comment, userId)),
       itemCount: commentCount,
-      itemsPerPage: Number(this.config.get('PAGINATION_PAGE_SIZE')),
+      itemsPerPage: this.config.PAGINATION_PAGE_SIZE,
     };
+  }
+
+  /**
+   * Retrieves a single {@link UEComment} from a comment UUID
+   * @param commentId the UUID of the comment
+   * @param userId the user fetching the comments. Used to determine if an anonymous comment should include its author
+   * @param bypassAnonymousData if true, the author of an anonymous comment will be included in the response (this is the case if the user is a moderator)
+   * @returns a page of {@link UEComment} matching the user query
+   */
+  async getCommentFromId(commentId: string, userId: string, bypassAnonymousData: boolean) {
+    const comment = await this.prisma.uEComment.findUnique(
+      SelectComment(
+        {
+          where: {
+            id: commentId,
+          },
+        },
+        userId,
+        undefined,
+        bypassAnonymousData,
+        bypassAnonymousData,
+        bypassAnonymousData,
+      ),
+    );
+    if (comment === null) {
+      return null;
+    }
+    if (comment.isAnonymous && !bypassAnonymousData && comment.author?.id !== userId) delete comment.author;
+    return FormatComment(comment, userId);
   }
 
   /**
