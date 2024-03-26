@@ -577,7 +577,7 @@ export class UEService {
     return this.prisma.uEStarVote.upsert({
       where: {
         ueId_userId_criterionId: {
-          ueId: ueId,
+          ueId,
           userId,
           criterionId: dto.criterion,
         },
@@ -585,7 +585,7 @@ export class UEService {
       create: {
         value: dto.value,
         criterionId: dto.criterion,
-        ueId: ueId,
+        ueId,
         userId,
       },
       update: {
