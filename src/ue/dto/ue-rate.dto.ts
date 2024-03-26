@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsNumber, IsString, Max, Min } from 'class-validator';
+import { IsInt, IsNotEmpty, IsNumber, IsString, Max, Min } from 'class-validator';
 
 /**
  * Body of the request to rate an UE.
@@ -13,6 +13,7 @@ export class UERateDto {
 
   @Type(() => Number)
   @IsNumber()
+  @IsInt()
   @Max(5)
   @Min(1)
   value: number;

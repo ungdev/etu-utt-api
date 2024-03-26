@@ -1,5 +1,5 @@
 import axios from 'axios';
-import * as nock from 'nock';
+import nock from 'nock';
 import { HttpStatus } from '@nestjs/common';
 import { faker } from '@faker-js/faker';
 import { RegisterData } from '../../src/auth/auth.service';
