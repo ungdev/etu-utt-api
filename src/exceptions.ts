@@ -37,6 +37,7 @@ export const enum ERROR_CODE {
   NO_TOKEN = 3002,
   INVALID_TOKEN_FORMAT = 3003,
   INVALID_CREDENTIALS = 3004,
+  INVALID_CAS_TICKET = 3005,
   FORBIDDEN_ALREADY_COMMENTED = 3101,
   FORBIDDEN_ALREADY_UPVOTED = 3102,
   FORBIDDEN_ALREADY_UNUPVOTED = 3103,
@@ -156,6 +157,10 @@ export const ErrorData = Object.freeze({
   },
   [ERROR_CODE.INVALID_CREDENTIALS]: {
     message: 'Credentials incorrect',
+    httpCode: HttpStatus.UNAUTHORIZED,
+  },
+  [ERROR_CODE.INVALID_CAS_TICKET]: {
+    message: 'The ticket or the service is invalid',
     httpCode: HttpStatus.UNAUTHORIZED,
   },
   [ERROR_CODE.FORBIDDEN_ALREADY_COMMENTED]: {

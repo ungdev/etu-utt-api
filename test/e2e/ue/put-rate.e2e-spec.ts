@@ -11,6 +11,7 @@ import * as pactum from 'pactum';
 import { ERROR_CODE } from 'src/exceptions';
 import { e2eSuite } from '../../utils/test_utils';
 import { PrismaService } from '../../../src/prisma/prisma.service';
+import { faker } from '@faker-js/faker';
 
 const PutRate = e2eSuite('PUT /ue/{ueCode}/rate', (app) => {
   const user = createUser(app);
@@ -98,16 +99,17 @@ const PutRate = e2eSuite('PUT /ue/{ueCode}/rate', (app) => {
       .expectAppError(ERROR_CODE.NO_SUCH_CRITERION);
   });
 
-  it('should return a 404 as the UE does not exist', () => {
-    return pactum
+  it('should return a 404 as the UE does not exist', async () => {
+    const nonExistentCode = faker.db.ue.code();
+    await pactum
       .spec()
       .withBearerToken(user2.token)
-      .put(`/ue/${ue.code.slice(0, 3)}9/rate`)
+      .put(`/ue/${nonExistentCode}/rate`)
       .withBody({
         criterion: criterion.id,
         value: 1,
       })
-      .expectAppError(ERROR_CODE.NO_SUCH_UE, `${ue.code.slice(0, 3)}9`);
+      .expectAppError(ERROR_CODE.NO_SUCH_UE, nonExistentCode);
   });
 
   it('should return the updated rate for specific criterion', async () => {

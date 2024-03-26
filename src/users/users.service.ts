@@ -67,6 +67,10 @@ export default class UsersService {
     return transformedUser;
   }
 
+  async doesUserExist(search: { id?: string; login?: string }): Promise<boolean> {
+    return (await this.prisma.user.count({ where: search })) > 0;
+  }
+
   filterPublicInfo(user: User) {
     return {
       id: user.id,
