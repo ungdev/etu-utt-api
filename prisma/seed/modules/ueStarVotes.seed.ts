@@ -12,7 +12,7 @@ export default function ueStarVotesSeed(
   const votes: Promise<RawUEStarVote>[] = [];
   for (const user of users) {
     // Some will not vote at all
-    if (!faker.datatype.boolean()) continue;
+    if (faker.datatype.boolean()) continue;
     const votedForUEs = faker.helpers.arrayElements(ues, faker.datatype.number(10));
     for (const ue of votedForUEs) {
       const votedWithCriterions = faker.helpers.arrayElements(
