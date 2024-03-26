@@ -22,6 +22,7 @@ export class ConfigModule {
   public readonly JWT_SECRET: string;
   public readonly JWT_EXPIRES_IN: string;
   public readonly SALT_ROUNDS: string;
+  public readonly CAS_URL: string;
 
   // DEV ENVIRONMENT ONLY
 
@@ -33,7 +34,8 @@ export class ConfigModule {
     this.DATABASE_URL = config.get('DATABASE_URL');
     this.JWT_SECRET = config.get('JWT_SECRET');
     this.JWT_EXPIRES_IN = config.get('JWT_EXPIRES_IN');
-    this.SALT_ROUNDS = isTestEnv ? undefined : config.get('SALT_ROUNDS');
+    this.SALT_ROUNDS = config.get('SALT_ROUNDS');
+    this.CAS_URL = config.get('CAS_URL');
 
     this._FAKER_SEED = isTestEnv ? Number(config.get('FAKER_SEED')) : undefined;
   }

@@ -26,14 +26,20 @@ export class AuthSignUpDto {
   @IsOptional()
   studentId?: number;
 
+  @IsString()
+  @IsOptional()
+  mail?: string;
+
   @IsEnum(Sex)
   @IsNotEmpty()
-  sex: Sex;
+  @IsOptional()
+  sex?: Sex;
 
   @IsDate()
   @IsNotEmpty()
   @Type(() => Date)
-  birthday: Date;
+  @IsOptional()
+  birthday?: Date;
 
   @IsEnum(UserRole)
   @IsNotEmpty()

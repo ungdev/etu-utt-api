@@ -10,10 +10,12 @@ import { UEModule } from './ue/ue.module';
 import { JwtGuard } from './auth/guard';
 import { TimetableModule } from './timetable/timetable.module';
 import { ConfigModule } from './config/config.module';
+import { HttpModule } from './http/http.module';
 
 @Module({
   imports: [
     ConfigModule,
+    HttpModule,
     PrismaModule,
     AuthModule,
     ProfileModule,
