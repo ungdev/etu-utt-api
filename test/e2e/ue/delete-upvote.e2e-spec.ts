@@ -19,7 +19,7 @@ const DeleteUpvote = e2eSuite('DELETE /ue/comments/{commentId}/upvote', (app) =>
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUE(app, { semesters: [semester], branchOption });
+  const ue = createUE(app, { openSemesters: [semester], branchOption: [branchOption] });
   const comment1 = createComment(app, { user, ue, semester });
   const upvote = createCommentUpvote(app, { user: user2, comment: comment1 });
 
@@ -56,7 +56,8 @@ const DeleteUpvote = e2eSuite('DELETE /ue/comments/{commentId}/upvote', (app) =>
       .spec()
       .withBearerToken(user2.token)
       .delete(`/ue/comments/${comment1.id}/upvote`)
-      .expectStatus(HttpStatus.NO_CONTENT);
+      .expectStatus(HttpStatus.OK)
+      .expectJson({ upvoted: false });
     return createCommentUpvote(app, { user: user2, comment: comment1 }, upvote, true);
   });
 
