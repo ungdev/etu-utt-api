@@ -11,6 +11,7 @@ import { lastValueFrom } from 'rxjs';
 import { XMLParser } from 'fast-xml-parser';
 import { doesEntryIncludeSome, omit } from '../utils';
 import { LdapAccountGroup, LdapModule } from 'src/ldap/ldap.module';
+import { UEService } from 'src/ue/ue.service';
 
 export type RegisterData = { login: string; mail: string; lastName: string; firstName: string };
 export type ExtendedRegisterData = RegisterData & { studentId: string; role: UserRole };
@@ -23,6 +24,7 @@ export class AuthService {
     private config: ConfigModule,
     private httpService: HttpService,
     private ldap: LdapModule,
+    private ueService: UEService,
   ) {}
 
   /**
@@ -36,6 +38,9 @@ export class AuthService {
     const branch: string[] = [];
     const branchOption: string[] = [];
     const ues: string[] = [];
+    const currentSemesterCode = `${new Date().getMonth() < 7 && new Date().getMonth() > 0 ? 'P' : 'A'}${
+      new Date().getFullYear() % 100
+    }`;
 
     if (fetchLdap) {
       const ldapUser = await this.ldap.fetch(dto.login);
@@ -64,6 +69,54 @@ export class AuthService {
           studentId: dto.studentId,
           infos: {
             create: { sex: dto.sex, birthday: dto.birthday },
+          },
+          ...(branch.length && branchOption.length
+            ? {
+                branch: {
+                  create: {
+                    semesterNumber: Number(branch[0].slice(-1)),
+                    branch: {
+                      connect: {
+                        code: branch[0].slice(0, -1).split('_')[0],
+                      },
+                    },
+                    branchOption: {
+                      connect: {
+                        code: branchOption[0],
+                      },
+                    },
+                    semester: {
+                      connect: {
+                        code: currentSemesterCode,
+                      },
+                    },
+                  },
+                },
+              }
+            : {}),
+          UEsSubscriptions: {
+            createMany: {
+              data: (
+                await this.ueService.getIdFromCode(...ues)
+              ).map((id) => ({
+                ueId: id,
+                semesterId: currentSemesterCode,
+              })),
+            },
+          },
+          formation: {
+            create: {
+              followingMethod: {
+                connect: {
+                  name: branch[0].slice(0, -1).split('_')[1] === 'APPR' ? 'Apprentissage' : 'Formation Initiale',
+                },
+              },
+              formation: {
+                connect: {
+                  name: formation,
+                },
+              },
+            },
           },
           mailsPhones: {
             create: {

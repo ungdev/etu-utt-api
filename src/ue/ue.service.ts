@@ -13,11 +13,26 @@ import { SelectCommentReply, UECommentReply } from './interfaces/comment-reply.i
 import { Criterion, SelectCriterion } from './interfaces/criterion.interface';
 import { SelectRate, UERating } from './interfaces/rate.interface';
 import { RawUserUESubscription } from '../prisma/types';
-import { ConfigModule } from "../config/config.module";
+import { ConfigModule } from '../config/config.module';
 
 @Injectable()
 export class UEService {
   constructor(readonly prisma: PrismaService, readonly config: ConfigModule) {}
+
+  async getIdFromCode(...ueCodes: string[]) {
+    return (
+      await this.prisma.uE.findMany({
+        where: {
+          code: {
+            in: ueCodes,
+          },
+        },
+        select: {
+          id: true,
+        },
+      })
+    ).map((ue) => ue.id);
+  }
 
   /**
    * Retrieves a page of {@link UEOverView} matching the user query. This query searchs for a text in
