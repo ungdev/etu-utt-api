@@ -12,7 +12,7 @@ import { UECommentReply } from './interfaces/comment-reply.interface';
 import { Criterion } from './interfaces/criterion.interface';
 import { UERating } from './interfaces/rate.interface';
 import { RawUserUESubscription } from '../prisma/types';
-import { ConfigModule } from "../config/config.module";
+import { ConfigModule } from '../config/config.module';
 
 @Injectable()
 export class UEService {
@@ -92,8 +92,8 @@ export class UEService {
     };
     const items = await this.prisma.uE.findMany({
       where,
-      take: Number(this.config.get('PAGINATION_PAGE_SIZE')),
-      skip: ((query.page ?? 1) - 1) * Number(this.config.get<number>('PAGINATION_PAGE_SIZE')),
+      take: this.config.PAGINATION_PAGE_SIZE,
+      skip: ((query.page ?? 1) - 1) * this.config.PAGINATION_PAGE_SIZE,
     });
     const itemCount = await this.prisma.uE.count({ where });
     // Data pagination
@@ -143,8 +143,8 @@ export class UEService {
             code: ueCode,
           },
         },
-        take: Number(this.config.get('PAGINATION_PAGE_SIZE')),
-        skip: ((dto.page ?? 1) - 1) * Number(this.config.get('PAGINATION_PAGE_SIZE')),
+        take: this.config.PAGINATION_PAGE_SIZE,
+        skip: ((dto.page ?? 1) - 1) * this.config.PAGINATION_PAGE_SIZE,
       },
       userId,
     );

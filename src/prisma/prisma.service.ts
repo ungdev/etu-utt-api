@@ -18,7 +18,7 @@ export interface PrismaService extends ReturnType<typeof createPrismaClientExten
 @Injectable()
 export class PrismaService implements ReturnType<typeof createPrismaClientExtension> {
   readonly withDefaultBehaviour: PrismaClient;
-  constructor(config: ConfigService) {
+  constructor(config: ConfigModule) {
     this.withDefaultBehaviour = createPrismaClient(config);
     const prisma = createPrismaClientExtension(this.withDefaultBehaviour);
     return new Proxy(this, {
@@ -40,7 +40,7 @@ export class PrismaService implements ReturnType<typeof createPrismaClientExtens
   }
 }
 
-function createPrismaClient(config: ConfigService) {
+function createPrismaClient(config: ConfigModule) {
   return new PrismaClient({
     datasources: {
       db: {

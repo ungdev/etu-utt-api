@@ -1,7 +1,6 @@
 import { e2eSuite } from '../../utils/test_utils';
 import * as pactum from 'pactum';
 import { faker } from '@faker-js/faker';
-import { HttpStatus } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as fakedb from '../../utils/fakedb';
 import { AuthService, RegisterData } from '../../../src/auth/auth.service';
@@ -24,7 +23,11 @@ const CasSignUpE2ESpec = e2eSuite('/auth/signup/cas', (app) => {
     const token = app()
       .get(JwtService)
       .sign({ a: 'b' }, { expiresIn: 60, secret: app().get(ConfigService).get('JWT_SECRET') });
-    pactum.spec().post('/auth/signup/cas').withJson({ registerToken: token }).expectAppError(ERROR_CODE.INVALID_TOKEN_FORMAT);
+    pactum
+      .spec()
+      .post('/auth/signup/cas')
+      .withJson({ registerToken: token })
+      .expectAppError(ERROR_CODE.INVALID_TOKEN_FORMAT);
   });
 
   it('should fail as the user already exists', async () => {

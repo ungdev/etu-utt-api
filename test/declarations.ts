@@ -39,7 +39,7 @@ SpecProto.expectUE = function (ue: FakeUE, rates: Array<{ criterionId: string; v
       ...pick(branchOption, 'code', 'name'),
       branch: pick(branchOption.branch, 'code', 'name'),
     })),
-    openSemester: ue.openSemesters.map((semester) => ({
+    openSemester: sortArray(ue.openSemesters, (semester) => semester.start.toISOString()).map((semester) => ({
       ...semester,
       start: semester.start.toISOString(),
       end: semester.end.toISOString(),

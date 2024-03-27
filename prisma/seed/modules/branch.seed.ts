@@ -15,7 +15,7 @@ export default function branchSeed(prisma: PrismaClient): Promise<RawBranch[]> {
         descriptionTranslation: {
           create: {
             fr: "2 années de cycle préparatoire au cycle ingénieur (aucune idée de si c'est la vraie description :eyes:)",
-            en: "2 years of preparatory cycle to the engineering cycle"
+            en: '2 years of preparatory cycle to the engineering cycle',
           },
         },
       },
