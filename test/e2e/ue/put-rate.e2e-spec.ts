@@ -48,7 +48,7 @@ const PutRate = e2eSuite('PUT /ue/{ueCode}/rate', (app) => {
         criterion: criterion.id,
         value: 'helloWorld',
       })
-      .expectAppError(ERROR_CODE.PARAM_NOT_NUMBER, 'value');
+      .expectAppError(ERROR_CODE.PARAM_NOT_INT, 'value');
   });
 
   it('should return a 400 as value is not an int', () => {

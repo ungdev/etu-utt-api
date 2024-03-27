@@ -15,12 +15,12 @@ import { AnnalsService } from './annals.service';
 import { UEService } from '../ue.service';
 import { Response as ExpressResponse } from 'express';
 import { UUIDParam } from '../../app.pipe';
-import { RequireRole, GetUser } from '../../auth/decorator';
+import { RequireUserType, GetUser } from '../../auth/decorator';
 import { AppException, ERROR_CODE } from '../../exceptions';
 import { UploadRoute, UserFile, FileSize, MulterWithMime } from '../../upload.interceptor';
 import { CommentStatus } from '../comments/interfaces/comment.interface';
 import { CreateAnnal } from './dto/create-annal.dto';
-import { UpdateAnnal } from './dto/update-annal.dto';
+import { UpdateAnnalDto } from './dto/update-annal.dto';
 import { User } from '../../users/interfaces/user.interface';
 import { GetFromUeCodeDto } from './dto/get-from-ue.dto';
 import { UploadAnnalDto } from './dto/upload-annal.dto';
@@ -30,17 +30,18 @@ export class AnnalsController {
   constructor(readonly annalsService: AnnalsService, readonly ueService: UEService) {}
 
   @Get()
-  @RequireRole('STUDENT', 'FORMER_STUDENT')
+  @RequireUserType('STUDENT', 'FORMER_STUDENT')
   async getUeAnnalList(@Query() { ueCode }: GetFromUeCodeDto, @GetUser() user: User) {
     if (!(await this.ueService.doesUEExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     return this.annalsService.getUEAnnalsList(user, ueCode, user.permissions.includes('annalModerator'));
   }
 
   @Post()
-  @RequireRole('STUDENT')
+  @RequireUserType('STUDENT')
   @UploadRoute('file')
   async createUeAnnal(@Body() { ueCode, semester, typeId }: CreateAnnal, @GetUser() user: User) {
     if (!(await this.ueService.doesUEExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
+    if (!(await this.annalsService.doesAnnalTypeExist(typeId))) throw new AppException(ERROR_CODE.NO_SUCH_ANNAL_TYPE);
     if (
       !(await this.ueService.hasDoneThisUEInSemester(user.id, ueCode, semester)) &&
       !user.permissions.includes('annalUploader')
@@ -50,7 +51,7 @@ export class AnnalsController {
   }
 
   @Get('metadata')
-  @RequireRole('STUDENT', 'FORMER_STUDENT')
+  @RequireUserType('STUDENT', 'FORMER_STUDENT')
   async getUeAnnalMetadata(@Query() { ueCode }: GetFromUeCodeDto, @GetUser() user: User) {
     if (!(await this.ueService.doesUEExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     if (!(await this.ueService.hasAlreadyDoneThisUE(user.id, ueCode)) && !user.permissions.includes('annalUploader'))
@@ -59,7 +60,7 @@ export class AnnalsController {
   }
 
   @Put(':annalId')
-  @RequireRole('STUDENT')
+  @RequireUserType('STUDENT')
   @UploadRoute('file')
   async uploadUeAnnal(
     @UserFile(
@@ -82,13 +83,13 @@ export class AnnalsController {
   }
 
   @Get(':annalId')
-  @RequireRole('STUDENT', 'FORMER_STUDENT')
+  @RequireUserType('STUDENT', 'FORMER_STUDENT')
   async getUeAnnal(
     @UUIDParam('annalId') annalId: string,
     @GetUser() user: User,
     @Response() response: ExpressResponse,
   ) {
-    if (!(await this.annalsService.doesUEAnnalExist(user.id, annalId, user.permissions.includes('annalModerator'))))
+    if (!(await this.annalsService.isAnnalAccessible(user.id, annalId, user.permissions.includes('annalModerator'))))
       throw new AppException(ERROR_CODE.NO_SUCH_ANNAL, annalId);
     const annalFile = await this.annalsService.getUEAnnalFile(
       annalId,
@@ -105,9 +106,9 @@ export class AnnalsController {
   }
 
   @Patch(':annalId')
-  @RequireRole('STUDENT', 'FORMER_STUDENT')
-  async updateUeAnnal(@UUIDParam('annalId') annalId: string, @Body() body: UpdateAnnal, @GetUser() user: User) {
-    if (!(await this.annalsService.doesUEAnnalExist(user.id, annalId, user.permissions.includes('annalModerator'))))
+  @RequireUserType('STUDENT', 'FORMER_STUDENT')
+  async updateUeAnnal(@UUIDParam('annalId') annalId: string, @Body() body: UpdateAnnalDto, @GetUser() user: User) {
+    if (!(await this.annalsService.isAnnalAccessible(user.id, annalId, user.permissions.includes('annalModerator'))))
       throw new AppException(ERROR_CODE.NO_SUCH_ANNAL, annalId);
     if (!(await this.annalsService.isUEAnnalSender(user.id, annalId)) && !user.permissions.includes('annalModerator'))
       throw new AppException(ERROR_CODE.NOT_ANNAL_SENDER);
@@ -115,9 +116,9 @@ export class AnnalsController {
   }
 
   @Delete(':annalId')
-  @RequireRole('STUDENT', 'FORMER_STUDENT')
+  @RequireUserType('STUDENT', 'FORMER_STUDENT')
   async deleteUeAnnal(@UUIDParam('annalId') annalId: string, @GetUser() user: User) {
-    if (!(await this.annalsService.doesUEAnnalExist(user.id, annalId, user.permissions.includes('annalModerator'))))
+    if (!(await this.annalsService.isAnnalAccessible(user.id, annalId, user.permissions.includes('annalModerator'))))
       throw new AppException(ERROR_CODE.NO_SUCH_ANNAL, annalId);
     if (!(await this.annalsService.isUEAnnalSender(user.id, annalId)) && !user.permissions.includes('annalModerator'))
       throw new AppException(ERROR_CODE.NOT_ANNAL_SENDER);

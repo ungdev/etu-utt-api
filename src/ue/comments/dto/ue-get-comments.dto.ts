@@ -1,9 +1,8 @@
 import { Type } from 'class-transformer';
 import {
   IsAlphanumeric,
-  IsDefined,
+  IsInt,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
   IsPositive,
   IsString,
@@ -17,16 +16,15 @@ import {
  */
 export class GetUECommentsDto {
   @Type(() => Number)
-  @IsNumber()
+  @IsInt()
   @IsPositive()
   @IsOptional()
   page?: number;
 
   @IsString()
-  @IsDefined()
   @IsNotEmpty()
+  @IsAlphanumeric()
   @MinLength(3)
   @MaxLength(5)
-  @IsAlphanumeric()
   ueCode: string;
 }

@@ -12,7 +12,7 @@ import {
 import { e2eSuite } from '../../../utils/test_utils';
 import { ERROR_CODE } from '../../../../src/exceptions';
 import { UEAnnalFile } from '../../../../src/ue/annals/interfaces/annal.interface';
-import { RawUEAnnal } from '../../../../src/prisma/types';
+import { RawAnnal } from '../../../../src/prisma/types';
 import { JsonLikeVariant } from 'test/declarations';
 import { pick } from '../../../../src/utils';
 import { CommentStatus } from '../../../../src/ue/comments/interfaces/comment.interface';
@@ -100,7 +100,7 @@ const GetAnnal = e2eSuite('GET /ue/annals', (app) => {
       .expectUEAnnals([annal_not_validated, annal_validated, annal_not_uploaded, annal_deleted].map(formatAnnalFile));
   });
 
-  const formatAnnalFile = (from: Partial<RawUEAnnal>): JsonLikeVariant<UEAnnalFile> => {
+  const formatAnnalFile = (from: Partial<RawAnnal>): JsonLikeVariant<UEAnnalFile> => {
     return {
       ...pick(from, 'id', 'semesterId'),
       status: from.deletedAt

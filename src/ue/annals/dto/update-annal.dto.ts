@@ -1,16 +1,15 @@
-import { Optional } from '@nestjs/common';
-import { IsNotEmpty, IsString, Length, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsString, Length, IsUUID, IsOptional } from 'class-validator';
 
-export class UpdateAnnal {
+export class UpdateAnnalDto {
   @IsNotEmpty()
   @IsString()
   @Length(3)
-  @Optional()
+  @IsOptional()
   semester?: string;
 
   @IsNotEmpty()
   @IsString()
   @IsUUID()
-  @Optional()
+  @IsOptional()
   typeId?: string;
 }

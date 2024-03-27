@@ -1,21 +1,20 @@
-import { IsAlphanumeric, IsDefined, IsNotEmpty, IsString, IsUUID, Length, MaxLength, MinLength } from 'class-validator';
+import { IsAlphanumeric, IsNotEmpty, IsString, IsUUID, Length, MaxLength, MinLength } from 'class-validator';
 
 export class CreateAnnal {
-  @IsNotEmpty()
   @IsString()
+  @IsNotEmpty()
   @Length(3)
   semester: string;
 
-  @IsNotEmpty()
   @IsString()
+  @IsNotEmpty()
   @IsUUID()
   typeId: string;
 
   @IsString()
-  @IsDefined()
   @IsNotEmpty()
+  @IsAlphanumeric()
   @MinLength(3)
   @MaxLength(5)
-  @IsAlphanumeric()
   ueCode: string;
 }

@@ -62,6 +62,7 @@ export const enum ERROR_CODE {
   NO_SUCH_TIMETABLE_GROUP = 4406,
   NO_SUCH_USER = 4407,
   NO_SUCH_ANNAL = 4408,
+  NO_SUCH_ANNAL_TYPE = 4409,
   ANNAL_ALREADY_UPLOADED = 4901,
   CREDENTIALS_ALREADY_TAKEN = 5001,
 }
@@ -266,6 +267,10 @@ export const ErrorData = Object.freeze({
   },
   [ERROR_CODE.NO_SUCH_ANNAL]: {
     message: 'The annal % does not exist',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
+  [ERROR_CODE.NO_SUCH_ANNAL_TYPE]: {
+    message: 'The annal type does not exist',
     httpCode: HttpStatus.NOT_FOUND,
   },
   [ERROR_CODE.ANNAL_ALREADY_UPLOADED]: {

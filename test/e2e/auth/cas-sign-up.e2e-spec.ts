@@ -24,7 +24,11 @@ const CasSignUpE2ESpec = e2eSuite('/auth/signup/cas', (app) => {
     const token = app()
       .get(JwtService)
       .sign({ a: 'b' }, { expiresIn: 60, secret: app().get(ConfigService).get('JWT_SECRET') });
-    pactum.spec().post('/auth/signup/cas').withJson({ registerToken: token }).expectAppError(ERROR_CODE.INVALID_TOKEN_FORMAT);
+    pactum
+      .spec()
+      .post('/auth/signup/cas')
+      .withJson({ registerToken: token })
+      .expectAppError(ERROR_CODE.INVALID_TOKEN_FORMAT);
   });
 
   it('should fail as the user already exists', async () => {

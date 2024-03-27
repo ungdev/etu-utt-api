@@ -1,6 +1,6 @@
 import { Controller, Get, Query, Post, Body, Patch, Delete, HttpCode, HttpStatus } from '@nestjs/common';
 import { UUIDParam } from '../../app.pipe';
-import { RequireRole, GetUser } from '../../auth/decorator';
+import { RequireUserType, GetUser } from '../../auth/decorator';
 import { AppException, ERROR_CODE } from '../../exceptions';
 import { UeCommentPostDto } from './dto/ue-comment-post.dto';
 import { CommentReplyDto } from './dto/ue-comment-reply.dto';
@@ -15,7 +15,7 @@ export class CommentsController {
   constructor(readonly commentsService: CommentsService, readonly ueService: UEService) {}
 
   @Get()
-  @RequireRole('STUDENT', 'FORMER_STUDENT')
+  @RequireUserType('STUDENT', 'FORMER_STUDENT')
   async getUEComments(@GetUser() user: User, @Query() dto: GetUECommentsDto) {
     if (!(await this.ueService.doesUEExist(dto.ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, dto.ueCode);
     return this.commentsService.getComments(
@@ -27,7 +27,7 @@ export class CommentsController {
   }
 
   @Post()
-  @RequireRole('STUDENT')
+  @RequireUserType('STUDENT')
   async PostUEComment(@GetUser() user: User, @Body() body: UeCommentPostDto) {
     if (!(await this.ueService.doesUEExist(body.ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, body.ueCode);
     if (!(await this.ueService.hasAlreadyDoneThisUE(user.id, body.ueCode)))
@@ -51,7 +51,7 @@ export class CommentsController {
   }
 
   @Patch(':commentId')
-  @RequireRole('STUDENT', 'FORMER_STUDENT')
+  @RequireUserType('STUDENT', 'FORMER_STUDENT')
   async EditUEComment(
     @UUIDParam('commentId') commentId: string,
     @GetUser() user: User,
@@ -80,7 +80,7 @@ export class CommentsController {
   }
 
   @Delete(':commentId')
-  @RequireRole('STUDENT', 'FORMER_STUDENT')
+  @RequireUserType('STUDENT', 'FORMER_STUDENT')
   async DiscardUEComment(@UUIDParam('commentId') commentId: string, @GetUser() user: User) {
     if (
       !(await this.commentsService.doesCommentExist(commentId, user.id, user.permissions.includes('commentModerator')))
@@ -95,7 +95,7 @@ export class CommentsController {
   }
 
   @Post(':commentId/upvote')
-  @RequireRole('STUDENT')
+  @RequireUserType('STUDENT')
   @HttpCode(HttpStatus.OK)
   async UpvoteUEComment(@UUIDParam('commentId') commentId: string, @GetUser() user: User) {
     if (
@@ -116,7 +116,7 @@ export class CommentsController {
   }
 
   @Delete(':commentId/upvote')
-  @RequireRole('STUDENT', 'FORMER_STUDENT')
+  @RequireUserType('STUDENT', 'FORMER_STUDENT')
   @HttpCode(HttpStatus.OK)
   async UnUpvoteUEComment(@UUIDParam('commentId') commentId: string, @GetUser() user: User) {
     if (
@@ -137,7 +137,7 @@ export class CommentsController {
   }
 
   @Post(':commentId/reply')
-  @RequireRole('STUDENT')
+  @RequireUserType('STUDENT')
   async CreateReplyComment(
     @GetUser() user: User,
     @UUIDParam('commentId') commentId: string,
@@ -156,7 +156,7 @@ export class CommentsController {
   }
 
   @Patch('reply/:replyId')
-  @RequireRole('STUDENT', 'FORMER_STUDENT')
+  @RequireUserType('STUDENT', 'FORMER_STUDENT')
   async EditReplyComment(@GetUser() user: User, @UUIDParam('replyId') replyId: string, @Body() body: CommentReplyDto) {
     if (!(await this.commentsService.doesReplyExist(replyId, user.id, user.permissions.includes('commentModerator'))))
       throw new AppException(ERROR_CODE.NO_SUCH_REPLY);
@@ -169,7 +169,7 @@ export class CommentsController {
   }
 
   @Delete('reply/:replyId')
-  @RequireRole('STUDENT', 'FORMER_STUDENT')
+  @RequireUserType('STUDENT', 'FORMER_STUDENT')
   async DeleteReplyComment(@GetUser() user: User, @UUIDParam('replyId') replyId: string) {
     if (!(await this.commentsService.doesReplyExist(replyId, user.id, user.permissions.includes('commentModerator'))))
       throw new AppException(ERROR_CODE.NO_SUCH_REPLY);

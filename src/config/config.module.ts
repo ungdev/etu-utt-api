@@ -37,7 +37,8 @@ export class ConfigModule {
     this.JWT_EXPIRES_IN = config.get('JWT_EXPIRES_IN');
     this.SALT_ROUNDS = config.get('SALT_ROUNDS');
     this.CAS_URL = config.get('CAS_URL');
-    this.ANNAL_UPLOAD_DIR = config.get('ANNAL_UPLOAD_DIR');
+    this.ANNAL_UPLOAD_DIR = config.get<string>('ANNAL_UPLOAD_DIR');
+    if (this.ANNAL_UPLOAD_DIR.endsWith('/')) this.ANNAL_UPLOAD_DIR = this.ANNAL_UPLOAD_DIR.slice(0, -1);
 
     this._FAKER_SEED = isTestEnv ? Number(config.get('FAKER_SEED')) : undefined;
   }

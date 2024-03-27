@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { User } from '../../users/interfaces/user.interface';
-import { findRequiredRoles } from '../decorator';
+import { findRequiredUserTypes } from '../decorator';
 import { AppException, ERROR_CODE } from '../../exceptions';
 
 @Injectable()
@@ -9,7 +9,7 @@ export class RoleGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
   canActivate(context: ExecutionContext): boolean {
     // Retrieve the set of roles needed to access the current route
-    const requiredRoles = findRequiredRoles(this.reflector, context);
+    const requiredRoles = findRequiredUserTypes(this.reflector, context);
     // If there is no required role, serve the route
     if (!requiredRoles || !requiredRoles.length) return true;
     const user = context.switchToHttp().getRequest().user as User;

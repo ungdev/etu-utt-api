@@ -10,6 +10,7 @@ import {
 } from '../../../utils/fakedb';
 import { JsonLike, e2eSuite } from '../../../utils/test_utils';
 import { ERROR_CODE } from '../../../../src/exceptions';
+import { ConfigModule } from '../../../../src/config/config.module';
 import { CommentStatus } from 'src/ue/comments/interfaces/comment.interface';
 import { pick } from '../../../../src/utils';
 import { mkdirSync, rmSync } from 'fs';
@@ -70,15 +71,15 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
 
   describe('should create the annal', () => {
     beforeAll(() => {
-      mkdirSync('uploads/exams', { recursive: true });
+      mkdirSync(app().get(ConfigModule).ANNAL_UPLOAD_DIR, { recursive: true });
     });
 
     afterAll(() => {
-      rmSync('uploads', { recursive: true });
+      rmSync(app().get(ConfigModule).ANNAL_UPLOAD_DIR.split('/')[0], { recursive: true });
     });
 
     const testFunction =
-      (fileExt: 'pdf' | 'png' | 'jpg' | 'avif' | 'tiff' | 'webp', rotation: 1 | 0 | -1) => async () => {
+      (fileExt: 'pdf' | 'png' | 'jpg' | 'avif' | 'tiff' | 'webp', rotation: 0 | 1 | 2 | 3) => async () => {
         const ueAnnalFile = (
           await pactum
             .spec()
@@ -113,9 +114,9 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
       };
     it('from a pdf', testFunction('pdf', 0));
     it('from a png', testFunction('png', 1));
-    it('from a jpg', testFunction('jpg', -1));
-    it('from a webp', testFunction('webp', 0));
-    it('from a avif', testFunction('avif', 1));
+    it('from a jpg', testFunction('jpg', 2));
+    it('from a webp', testFunction('webp', 3));
+    it('from a avif', testFunction('avif', 0));
     it('not from a gif', async () => {
       const ueAnnalFile = (
         await pactum

@@ -4,8 +4,8 @@ import {
   RawTimetableEntryOverride,
   RawTimetableGroup,
   RawUE,
-  RawUEAnnal,
-  RawUEAnnalType,
+  RawAnnal,
+  RawAnnalType,
   RawUEComment,
   RawUECommentReply,
   RawUECommentUpvote,
@@ -56,8 +56,8 @@ export type FakeCommentReply = Partial<RawUECommentReply> & {
   status: Exclude<CommentStatus, CommentStatus.PROCESSING | CommentStatus.UNVERIFIED>;
 };
 export type FakeUECreditCategory = Partial<RawCreditCategory>;
-export type FakeUEAnnalType = Partial<RawUEAnnalType>;
-export type FakeUEAnnal = Partial<RawUEAnnal>;
+export type FakeUEAnnalType = Partial<RawAnnalType>;
+export type FakeUEAnnal = Partial<RawAnnal>;
 
 export interface FakeEntityMap {
   timetableEntryOverride: {
@@ -164,6 +164,7 @@ export const createUser = entityFaker(
     role: 'STUDENT' as UserRole,
     birthday: new Date(0),
     password: faker.internet.password,
+    permissions: [],
   },
   async (app, params) => {
     const permissions = await app()
@@ -171,7 +172,7 @@ export const createUser = entityFaker(
       .userPermission.findMany({
         where: {
           id: {
-            in: params.permissions ?? [],
+            in: params.permissions,
           },
         },
       });

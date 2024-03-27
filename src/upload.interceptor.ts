@@ -33,11 +33,13 @@ class FileValidationPipe extends ParseFilePipe {
     // function.
     const fileType = (await new Function("return import('file-type')")()) as typeof import('file-type');
     const fileTypeResult = await fileType.fileTypeFromBuffer(file.buffer);
-    if (!fileTypeResult || !this.#mimeTypes.includes(fileTypeResult.mime))
-      throw new AppException(ERROR_CODE.FILE_INVALID_TYPE, this.#mimeTypes.join(', '));
-    if (!file.originalname.endsWith(`.${fileTypeResult.ext}`))
-      // Check local extension was correct. The file is supposed to be renamed during upload
-      // but we check the extension to avoid a potential security issue.
+    // Check file type using magic codes, also check local extension was correct.
+    // The file is supposed to be renamed during upload but we check the extension to avoid a potential security issue.
+    if (
+      !fileTypeResult ||
+      !this.#mimeTypes.includes(fileTypeResult.mime) ||
+      !file.originalname.endsWith(`.${fileTypeResult.ext}`)
+    )
       throw new AppException(ERROR_CODE.FILE_INVALID_TYPE, this.#mimeTypes.join(', '));
     return { mime: fileTypeResult.mime, multer: await super.transform(file) };
   }
