@@ -1,4 +1,5 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
+import { generateCustomModel } from '../../prisma/prisma.service';
 
 const REPLY_SELECT_FILTER = {
   select: {
@@ -17,30 +18,8 @@ const REPLY_SELECT_FILTER = {
   },
 } as const;
 
-export type UECommentReply = DeepWritable<Prisma.UECommentReplyGetPayload<typeof REPLY_SELECT_FILTER>>;
+export type UECommentReply = Prisma.UECommentReplyGetPayload<typeof REPLY_SELECT_FILTER>;
 
-/**
- * Generates the argument to use in prisma function to retrieve an object containing the necessary
- * properties to match against the {@link UECommentReply} type.
- * @param arg extra arguments to provide to the prisma function. This includes `where` or `data` fields.
- * Sub arguments of the ones provided in {@link REPLY_SELECT_FILTER} will be ignored
- * @returns arguments to use in prisma function.
- *
- * @example
- * return this.prisma.uECommentReply.update(
- *   SelectCommentReply({
- *     data: {
- *       body: reply.body,
- *     },
- *     where: {
- *       id: replyId,
- *     },
- *   }),
- * );
- */
-export function SelectCommentReply<T>(arg: T): T & typeof REPLY_SELECT_FILTER {
-  return {
-    ...arg,
-    ...REPLY_SELECT_FILTER,
-  } as const;
+export function generateCustomUECommentReplyModel(prisma: PrismaClient) {
+  return generateCustomModel(prisma, 'uECommentReply', REPLY_SELECT_FILTER, (comment: UECommentReply) => comment);
 }

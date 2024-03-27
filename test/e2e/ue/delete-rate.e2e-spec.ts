@@ -11,7 +11,7 @@ import {
 import * as pactum from 'pactum';
 import { ERROR_CODE } from 'src/exceptions';
 import { Dummies, e2eSuite } from '../../utils/test_utils';
-import { faker } from "@faker-js/faker";
+import { faker } from '@faker-js/faker';
 
 const DeleteRate = e2eSuite('DELETE /ue/{ueCode}/rate/{critetionId}', (app) => {
   const user = createUser(app);
