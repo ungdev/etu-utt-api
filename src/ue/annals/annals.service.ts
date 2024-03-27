@@ -10,7 +10,6 @@ import { CreateAnnal } from './dto/create-annal.dto';
 import { UpdateAnnalDto } from './dto/update-annal.dto';
 import { SelectUEAnnalFile, FormatAnnal } from './interfaces/annal.interface';
 import { ConfigModule } from '../../config/config.module';
-import { sortArray } from '../../utils';
 
 @Injectable()
 export class AnnalsService {
@@ -171,48 +170,47 @@ export class AnnalsService {
   }
 
   async getUEAnnalsList(user: User, ueCode: string, includeAll: boolean) {
-    return sortArray(
-      (
-        await this.prisma.uEAnnal.findMany(
-          SelectUEAnnalFile({
-            where: {
-              ue: {
-                code: ueCode,
-              },
-              deletedAt: includeAll ? undefined : null,
-              ...(includeAll
-                ? {}
-                : {
-                    OR: [
-                      {
-                        uploadComplete: true,
-                        validatedAt: {
-                          not: null,
-                        },
-                        reports: {
-                          none: {
-                            mitigated: false,
-                          },
-                        },
-                      },
-                      {
-                        sender: {
-                          id: user.id,
-                        },
-                      },
-                    ],
-                  }),
+    return (
+      await this.prisma.uEAnnal.findMany(
+        SelectUEAnnalFile({
+          where: {
+            ue: {
+              code: ueCode,
             },
-          }),
-        )
-      ).map(FormatAnnal),
-      (annal) => [
+            deletedAt: includeAll ? undefined : null,
+            ...(includeAll
+              ? {}
+              : {
+                  OR: [
+                    {
+                      uploadComplete: true,
+                      validatedAt: {
+                        not: null,
+                      },
+                      reports: {
+                        none: {
+                          mitigated: false,
+                        },
+                      },
+                    },
+                    {
+                      sender: {
+                        id: user.id,
+                      },
+                    },
+                  ],
+                }),
+          },
+        }),
+      )
+    )
+      .map(FormatAnnal)
+      .mappedSort((annal) => [
         annal.semesterId.slice(1),
         annal.semesterId.slice(0, 1) === 'A' ? 1 : 0, // P should be listed before A
         annal.type.name,
         annal.createdAt.getTime(),
-      ],
-    );
+      ]);
   }
 
   async isAnnalAccessible(userId: string, annalId: string, includeAll: boolean) {
