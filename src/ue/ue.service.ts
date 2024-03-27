@@ -178,9 +178,6 @@ export class UEService {
       },
       userId,
     );
-    if (comment === null) {
-      return null;
-    }
     return comment;
   }
 
