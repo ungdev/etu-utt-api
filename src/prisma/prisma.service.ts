@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { PrismaClient } from '@prisma/client';
+import { ConfigModule } from '../config/config.module';
 import { generateCustomUserModel } from '../users/interfaces/user.interface';
 import { omit } from '../utils';
 import { generateCustomCommentModel } from '../ue/interfaces/comment.interface';
@@ -44,7 +44,7 @@ function createPrismaClient(config: ConfigService) {
   return new PrismaClient({
     datasources: {
       db: {
-        url: config.get('DATABASE_URL'),
+        url: config.DATABASE_URL,
       },
     },
   });

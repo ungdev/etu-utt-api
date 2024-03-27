@@ -1,4 +1,4 @@
-import { RawSemester, RawUE, RawUEComment, RawUser } from '../../../src/prisma/types';
+import { RawSemester, RawUE, RawUEComment, RawUser, RawUserUESubscription } from '../../../src/prisma/types';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { faker } from '@faker-js/faker';
 
@@ -9,24 +9,15 @@ export default function ueCommentSeed(
   users: RawUser[],
   ues: RawUE[],
   semester: RawSemester[],
+  ueSubscriptions: RawUserUESubscription[],
 ): Promise<RawUEComment[]> {
   console.log('Seeding UE comments...');
   const comments: Promise<RawUEComment>[] = [];
-  const ueAuthorPairs: Array<{ ue: string; author: string }> = [];
-  for (let i = 0; i < FAKER_ROUNDS; i++) {
+
+  const ueSubscriptionsThatEndedInAComment = faker.helpers.arrayElements(ueSubscriptions, FAKER_ROUNDS);
+  for (const subscription of ueSubscriptionsThatEndedInAComment) {
     const date: Date = faker.date.past();
     const anonymous = faker.datatype.boolean();
-    let ueAuthorPair: { ue: string; author: string } | null = null;
-    while (
-      ueAuthorPair === null ||
-      ueAuthorPairs.some(({ ue, author }) => ue === ueAuthorPair.ue && author === ueAuthorPair.author)
-    ) {
-      ueAuthorPair = {
-        ue: faker.helpers.arrayElement(ues).code,
-        author: faker.helpers.arrayElement(users).id,
-      };
-    }
-    ueAuthorPairs.push(ueAuthorPair);
     const answers: Prisma.UECommentReplyCreateWithoutCommentInput[] = new Array(faker.datatype.number(4))
       .fill(undefined)
       .map(() => {
@@ -44,12 +35,12 @@ export default function ueCommentSeed(
           isAnonymous: anonymous,
           author: {
             connect: {
-              id: ueAuthorPair.author,
+              id: subscription.userId,
             },
           },
           ue: {
             connect: {
-              code: ueAuthorPair.ue,
+              id: subscription.ueId,
             },
           },
           semester: {
@@ -69,5 +60,6 @@ export default function ueCommentSeed(
       }),
     );
   }
+
   return Promise.all(comments);
 }

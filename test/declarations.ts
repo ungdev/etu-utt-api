@@ -7,7 +7,7 @@ import { UECommentReply } from '../src/ue/interfaces/comment-reply.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { UERating } from 'src/ue/interfaces/rate.interface';
 import { FakeParkingWidget, FakeUE } from './utils/fakedb';
-import { ConfigService } from '@nestjs/config';
+import { ConfigModule } from '../src/config/config.module';
 import { AppProvider } from './utils/test_utils';
 import { omit, pick, sortArray } from '../src/utils';
 
@@ -39,7 +39,7 @@ SpecProto.expectUE = function (ue: FakeUE, rates: Array<{ criterionId: string; v
       ...pick(branchOption, 'code', 'name'),
       branch: pick(branchOption.branch, 'code', 'name'),
     })),
-    openSemester: sortArray(ue.openSemesters, (semester) => [semester.start.getTime()]).map((semester) => ({
+    openSemester: ue.openSemesters.map((semester) => ({
       ...semester,
       start: semester.start.toISOString(),
       end: semester.end.toISOString(),
@@ -64,10 +64,10 @@ SpecProto.expectUEs = function (app: AppProvider, ues: FakeUE[], count: number) 
       })),
     })),
     itemCount: count,
-    itemsPerPage: Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')),
+    itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
   });
 };
-SpecProto.expectUEComment = expectOkOrCreate<PartiallyPartial<UEComment, 'author'>>;
+SpecProto.expectUEComment = expectOkOrCreate<SetPartial<UEComment, 'author'>>;
 SpecProto.expectUEComments = expect<Pagination<UEComment>>;
 SpecProto.expectUECommentReply = expectOkOrCreate<UECommentReply>;
 SpecProto.expectUECriteria = expect<Criterion[]>;

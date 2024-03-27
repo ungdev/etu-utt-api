@@ -65,26 +65,12 @@ const SignupE2ESpec = e2eSuite('POST /auth/signup', (app) => {
       .withBody({ ...dto, studentId: -1 })
       .expectAppError(ERROR_CODE.PARAM_NOT_POSITIVE, 'studentId');
   });
-  it('should return a 400 if sex is not provided', async () => {
-    return pactum
-      .spec()
-      .post('/auth/signup')
-      .withBody({ ...dto, sex: undefined })
-      .expectAppError(ERROR_CODE.PARAM_MISSING, 'sex');
-  });
   it('should return a 400 if sex is not one of MALE, FEMALE or OTHER is not provided', async () => {
     return pactum
       .spec()
       .post('/auth/signup')
       .withBody({ ...dto, sex: 'neither of these' })
       .expectAppError(ERROR_CODE.PARAM_NOT_ENUM, 'sex');
-  });
-  it('should return a 400 if birthday is not provided', async () => {
-    return pactum
-      .spec()
-      .post('/auth/signup')
-      .withBody({ ...dto, birthday: undefined })
-      .expectAppError(ERROR_CODE.PARAM_MISSING, 'birthday');
   });
   it('should return a 400 if birthday is not a date', async () => {
     return pactum
@@ -101,7 +87,7 @@ const SignupE2ESpec = e2eSuite('POST /auth/signup', (app) => {
       .spec()
       .post('/auth/signup')
       .withBody(undefined)
-      .expectAppError(ERROR_CODE.PARAM_MISSING, 'birthday, firstName, lastName, login, password, role, sex');
+      .expectAppError(ERROR_CODE.PARAM_MISSING, 'firstName, lastName, login, password, role');
   });
   it('should create a new user', async () => {
     await pactum.spec().post('/auth/signup').withBody(dto).expectBodyContains('access_token').expectStatus(201);

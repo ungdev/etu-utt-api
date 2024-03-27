@@ -10,6 +10,8 @@ import UEE2ESpec from './ue';
 import '../declarations';
 import * as testUtils from '../utils/test_utils';
 import { AppValidationPipe } from '../../src/app.pipe';
+import * as cas from '../external_services/cas';
+import { ConfigModule } from '../../src/config/config.module';
 
 describe('EtuUTT API e2e testing', () => {
   let app: INestApplication;
@@ -30,6 +32,7 @@ describe('EtuUTT API e2e testing', () => {
 
     testUtils.init(() => app);
     pactum.request.setBaseUrl('http://localhost:3001/v1');
+    cas.enable(app.get(ConfigModule).CAS_URL);
   });
 
   afterAll(() => {

@@ -11,7 +11,7 @@ import {
   createUser,
 } from '../../utils/fakedb';
 import { e2eSuite } from '../../utils/test_utils';
-import { ConfigService } from '@nestjs/config';
+import { ConfigModule } from '../../../src/config/config.module';
 import { ERROR_CODE } from 'src/exceptions';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 
@@ -84,7 +84,7 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/{ueCode}/comments', (app) => {
               ? (<Date>b.createdAt).getTime() - (<Date>a.createdAt).getTime()
               : b.upvotes - a.upvotes,
           )
-          .slice(0, Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')))
+          .slice(0, app().get(ConfigModule).PAGINATION_PAGE_SIZE)
           .map((comment) => ({
             ...comment,
             answers: comment.answers.map((answer) => ({
@@ -100,7 +100,7 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/{ueCode}/comments', (app) => {
             return comment;
           }),
         itemCount: comments.length,
-        itemsPerPage: Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')),
+        itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
       });
   });
 
@@ -118,10 +118,7 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/{ueCode}/comments', (app) => {
               ? (<Date>b.createdAt).getTime() - (<Date>a.createdAt).getTime()
               : b.upvotes - a.upvotes,
           )
-          .slice(
-            Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')),
-            Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')) * 2,
-          )
+          .slice(app().get(ConfigModule).PAGINATION_PAGE_SIZE, app().get(ConfigModule).PAGINATION_PAGE_SIZE * 2)
           .map((comment) => ({
             ...comment,
             answers: comment.answers.map((answer) => ({
@@ -137,7 +134,7 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/{ueCode}/comments', (app) => {
             return comment;
           }),
         itemCount: comments.length,
-        itemsPerPage: Number(app().get(ConfigService).get<number>('PAGINATION_PAGE_SIZE')),
+        itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
       });
   });
 });

@@ -1,9 +1,9 @@
 import { FakeUE, createBranch, createBranchOption, createSemester, createUE, createUser } from '../../utils/fakedb';
 import * as pactum from 'pactum';
-import { ConfigService } from '@nestjs/config';
 import { ERROR_CODE } from 'src/exceptions';
 import { e2eSuite } from '../../utils/test_utils';
 import { registerUniqueValue } from '../../../prisma/seed/utils';
+import { ConfigModule } from '../../../src/config/config.module';
 
 const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
   const user = createUser(app);
@@ -61,6 +61,14 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
       .expectAppError(ERROR_CODE.PARAM_NOT_POSITIVE, 'page');
   });
 
+  it('should return a list of all ues (within the first page)', () => {
+    return pactum
+      .spec()
+      .withBearerToken(user.token)
+      .get('/ue')
+      .expectUEs(app, ues.slice(0, app().get(ConfigModule).PAGINATION_PAGE_SIZE), ues.length);
+  });
+
   it('should return a list of all ues (within the second page)', () => {
     return pactum
       .spec()
@@ -70,8 +78,8 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
       .expectUEs(
         app,
         ues.slice(
-          Number(app().get(ConfigService).get('PAGINATION_PAGE_SIZE')),
-          Math.min(30, Number(app().get(ConfigService).get('PAGINATION_PAGE_SIZE') * 2)),
+          app().get(ConfigModule).PAGINATION_PAGE_SIZE,
+          Math.min(30, app().get(ConfigModule).PAGINATION_PAGE_SIZE * 2),
         ),
         ues.length,
       );

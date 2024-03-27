@@ -117,7 +117,7 @@ export class UEController {
   }
 
   @Post('/comments/:commentId/upvote')
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @HttpCode(HttpStatus.OK)
   async UpvoteUEComment(
     @Param(
       'commentId',
@@ -134,10 +134,11 @@ export class UEController {
     if (await this.ueService.hasAlreadyUpvoted(user.id, commentId))
       throw new AppException(ERROR_CODE.FORBIDDEN_ALREADY_UPVOTED);
     await this.ueService.upvoteComment(user.id, commentId);
+    return { upvoted: true };
   }
 
   @Delete('/comments/:commentId/upvote')
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @HttpCode(HttpStatus.OK)
   async UnUpvoteUEComment(
     @Param(
       'commentId',
@@ -154,6 +155,7 @@ export class UEController {
     if (!(await this.ueService.hasAlreadyUpvoted(user.id, commentId)))
       throw new AppException(ERROR_CODE.FORBIDDEN_ALREADY_UNUPVOTED);
     await this.ueService.deUpvoteComment(user.id, commentId);
+    return { upvoted: false };
   }
 
   @Post('/comments/:commentId/reply')

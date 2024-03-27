@@ -15,6 +15,7 @@ export default function ueStarCriterionSeed(prisma: PrismaClient): Promise<RawUE
           descriptionTranslation: {
             create: {
               fr: faker.random.words(),
+              en: faker.random.words(),
             },
           },
         },

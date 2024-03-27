@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { UESearchDto } from './dto/ue-search.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { ConfigService } from '@nestjs/config';
 import { UeCommentPostDto } from './dto/ue-comment-post.dto';
 import { UERateDto } from './dto/ue-rate.dto';
 import { UeCommentUpdateDto } from './dto/ue-comment-update.dto';
@@ -13,10 +12,11 @@ import { UECommentReply } from './interfaces/comment-reply.interface';
 import { Criterion } from './interfaces/criterion.interface';
 import { UERating } from './interfaces/rate.interface';
 import { RawUserUESubscription } from '../prisma/types';
+import { ConfigModule } from "../config/config.module";
 
 @Injectable()
 export class UEService {
-  constructor(readonly prisma: PrismaService, readonly config: ConfigService) {}
+  constructor(readonly prisma: PrismaService, readonly config: ConfigModule) {}
 
   /**
    * Retrieves a page of {@link UE} matching the user query. This query searchs for a text in
@@ -90,8 +90,6 @@ export class UEService {
         },
       },
     };
-    // Use a prisma transaction to execute two requests at once:
-    // We fetch a page of items matching our filters and retrieve the total count of items matching our filters
     const items = await this.prisma.uE.findMany({
       where,
       take: Number(this.config.get('PAGINATION_PAGE_SIZE')),
@@ -102,7 +100,7 @@ export class UEService {
     return {
       items,
       itemCount,
-      itemsPerPage: Number(this.config.get('PAGINATION_PAGE_SIZE')),
+      itemsPerPage: this.config.PAGINATION_PAGE_SIZE,
     };
   }
 
@@ -161,7 +159,7 @@ export class UEService {
     return {
       items: comments,
       itemCount: commentCount,
-      itemsPerPage: Number(this.config.get('PAGINATION_PAGE_SIZE')),
+      itemsPerPage: this.config.PAGINATION_PAGE_SIZE,
     };
   }
 
@@ -176,7 +174,7 @@ export class UEService {
     commentId: string,
     userId: string,
     bypassAnonymousData: boolean,
-  ): Promise<PartiallyPartial<UEComment, 'author'>> {
+  ): Promise<SetPartial<UEComment, 'author'>> {
     const comment = await this.prisma.uEComment.findUnique(
       {
         where: {
@@ -609,5 +607,18 @@ export class UEService {
 
   private async getUEIdFromCode(ueCode: string): Promise<string> {
     return (await this.prisma.withDefaultBehaviour.uE.findUnique({ where: { code: ueCode }, select: { id: true } })).id;
+  }
+
+  computeRate(rates: Array<{ createdAt: Date; value: number }>) {
+    let coefficients = 0;
+    let ponderation = 0;
+    const newestCreationTimestamp = rates.reduce((acc, rate) => Math.max(rate.createdAt.getTime(), acc), 0);
+    for (const { value, createdAt } of rates) {
+      const dt = (newestCreationTimestamp - createdAt.getTime()) / 1000;
+      const dp = Math.exp(-dt / 10e7);
+      ponderation += dp * value;
+      coefficients += dp;
+    }
+    return Math.round((ponderation / coefficients) * 10) / 10;
   }
 }

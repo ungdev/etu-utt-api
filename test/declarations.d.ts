@@ -35,7 +35,7 @@ declare module './declarations' {
      * depending on the {@link created} property.
      */
     expectUEComment(
-      comment: JsonLikeVariant<RecursivelyPartiallyPartial<UEComment, 'author', 'answers.author'>>,
+      comment: JsonLikeVariant<RecursivelySetPartial<UEComment, 'author', 'answers.author'>>,
       created = false,
     ): this;
     /** expects to return the given {@link commentPage | page of comments} */
