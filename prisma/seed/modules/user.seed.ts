@@ -9,7 +9,7 @@ export async function userSeed(prisma: PrismaClient): Promise<RawUser[]> {
   console.log('Seeding users...');
   const users: Promise<RawUser>[] = [];
   const saltRounds = Number.parseInt(process.env.SALT_ROUNDS);
-  const hash = await bcrypt.hash('etuutt', saltRounds); // TODO: write this in the docs
+  const hash = await bcrypt.hash('etuutt', saltRounds);
   for (let i = 0; i < FAKER_ROUNDS; i++) {
     const firstName = faker.name.firstName();
     const lastName = faker.name.lastName();

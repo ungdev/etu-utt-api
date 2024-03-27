@@ -7,7 +7,7 @@ import { generateCustomCommentModel } from '../ue/interfaces/comment.interface';
 import { generateCustomCriterionModel } from '../ue/interfaces/criterion.interface';
 import { generateCustomUECommentReplyModel } from '../ue/interfaces/comment-reply.interface';
 import { generateCustomRateModel } from '../ue/interfaces/rate.interface';
-import { generateCustomUEModel } from '../ue/interfaces/ue-detail.interface';
+import { generateCustomUEModel } from '../ue/interfaces/ue.interface';
 
 // This interface is used to tell typescript that, even tho it does not understand it, PrismaService IS actually a ReturnType<typeof createPrismaClientExtension>
 // TS cannot infer it alone as the construction of the class is made using reflection.

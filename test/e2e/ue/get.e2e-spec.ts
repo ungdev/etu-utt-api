@@ -13,7 +13,7 @@ import {
 import { e2eSuite } from '../../utils/test_utils';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
-import { computeRate } from '../../../src/ue/interfaces/ue-detail.interface';
+import { computeRate } from '../../../src/ue/interfaces/ue.interface';
 
 const GetE2ESpec = e2eSuite('GET /ue/{ueCode}', (app) => {
   const user = createUser(app);

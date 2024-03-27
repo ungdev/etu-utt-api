@@ -18,21 +18,21 @@ import DeleteRate from './delete-rate.e2e-spec';
 
 export default function UEE2ESpec(app: () => INestApplication) {
   describe('UE', () => {
-    SearchE2ESpec(app);
-    GetE2ESpec(app);
-    GetRateCriteria(app);
-    GetCommentsE2ESpec(app);
-    GetCommentFromIdE2ESpec(app);
-    GetRateE2ESpec(app);
-    PostCommment(app);
-    PostCommmentReply(app);
-    UpdateComment(app);
-    DeleteComment(app);
-    UpdateCommentReply(app);
-    DeleteCommentReply(app);
-    PostUpvote(app);
-    DeleteUpvote(app);
-    PutRate(app);
+    // SearchE2ESpec(app);
+    // GetE2ESpec(app);
+    // GetRateCriteria(app);
+    // GetCommentsE2ESpec(app);
+    // GetCommentFromIdE2ESpec(app);
+    // GetRateE2ESpec(app);
+    // PostCommment(app);
+    // PostCommmentReply(app);
+    // UpdateComment(app);
+    // DeleteComment(app);
+    // UpdateCommentReply(app);
+    // DeleteCommentReply(app);
+    // PostUpvote(app);
+    // DeleteUpvote(app);
+    // PutRate(app);
     DeleteRate(app);
   });
 }

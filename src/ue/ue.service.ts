@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { UESearchDto } from './dto/ue-search.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { UeCommentPostDto } from './dto/ue-comment-post.dto';
+import { UECommentPostDto } from './dto/ue-comment-post.dto';
 import { UERateDto } from './dto/ue-rate.dto';
 import { UeCommentUpdateDto } from './dto/ue-comment-update.dto';
 import { CommentReplyDto } from './dto/ue-comment-reply.dto';
 import { GetUECommentsDto } from './dto/ue-get-comments.dto';
-import { UE } from './interfaces/ue-detail.interface';
+import { UE } from './interfaces/ue.interface';
 import { UEComment } from './interfaces/comment.interface';
 import { UECommentReply } from './interfaces/comment-reply.interface';
 import { Criterion } from './interfaces/criterion.interface';
@@ -167,14 +167,9 @@ export class UEService {
    * Retrieves a single {@link UEComment} from a comment UUID
    * @param commentId the UUID of the comment
    * @param userId the user fetching the comments. Used to determine if an anonymous comment should include its author
-   * @param bypassAnonymousData if true, the author of an anonymous comment will be included in the response (this is the case if the user is a moderator)
    * @returns a page of {@link UEComment} matching the user query
    */
-  async getCommentFromId(
-    commentId: string,
-    userId: string,
-    bypassAnonymousData: boolean,
-  ): Promise<SetPartial<UEComment, 'author'>> {
+  async getCommentFromId(commentId: string, userId: string): Promise<UEComment> {
     const comment = await this.prisma.uEComment.findUnique(
       {
         where: {
@@ -186,7 +181,6 @@ export class UEService {
     if (comment === null) {
       return null;
     }
-    if (comment.isAnonymous && !bypassAnonymousData && comment.author?.id !== userId) delete comment.author;
     return comment;
   }
 
@@ -322,7 +316,7 @@ export class UEService {
    * @param ueCode the code of the ue to post the comment to
    * @returns the created {@link UEComment}
    */
-  async createComment(body: UeCommentPostDto, userId: string, ueCode: string): Promise<UEComment> {
+  async createComment(body: UECommentPostDto, userId: string, ueCode: string): Promise<UEComment> {
     return this.prisma.uEComment.create(
       {
         data: {

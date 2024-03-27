@@ -15,6 +15,7 @@ const mappedErrors = {
   isString: ERROR_CODE.PARAM_NOT_STRING,
   isAlphanumeric: ERROR_CODE.PARAM_NOT_ALPHANUMERIC,
   isNumber: ERROR_CODE.PARAM_NOT_NUMBER,
+  isInt: ERROR_CODE.PARAM_NOT_INTEGER,
   isEnum: ERROR_CODE.PARAM_NOT_ENUM,
   isDate: ERROR_CODE.PARAM_NOT_DATE,
   isUuid: ERROR_CODE.PARAM_NOT_UUID,
@@ -26,7 +27,6 @@ const mappedErrors = {
   isPositive: ERROR_CODE.PARAM_NOT_POSITIVE,
   min: ERROR_CODE.PARAM_TOO_LOW,
   max: ERROR_CODE.PARAM_TOO_HIGH,
-  isInt: ERROR_CODE.PARAM_NOT_INTEGER,
 } satisfies {
   [constraint: string]: ERROR_CODE;
 };

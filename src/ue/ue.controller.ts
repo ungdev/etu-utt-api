@@ -16,13 +16,13 @@ import { UESearchDto } from './dto/ue-search.dto';
 import { UEService } from './ue.service';
 import { GetUser, IsPublic } from '../auth/decorator';
 import { User } from '../users/interfaces/user.interface';
-import { UeCommentPostDto } from './dto/ue-comment-post.dto';
+import { UECommentPostDto } from './dto/ue-comment-post.dto';
 import { AppException, ERROR_CODE } from '../exceptions';
 import { UERateDto } from './dto/ue-rate.dto';
 import { UeCommentUpdateDto } from './dto/ue-comment-update.dto';
 import { CommentReplyDto } from './dto/ue-comment-reply.dto';
 import { GetUECommentsDto } from './dto/ue-get-comments.dto';
-import { UE } from './interfaces/ue-detail.interface';
+import { UE } from './interfaces/ue.interface';
 
 @Controller('ue')
 export class UEController {
@@ -52,7 +52,7 @@ export class UEController {
   }
 
   @Post('/:ueCode/comments')
-  async PostUEComment(@Param('ueCode') ueCode: string, @GetUser() user: User, @Body() body: UeCommentPostDto) {
+  async PostUEComment(@Param('ueCode') ueCode: string, @GetUser() user: User, @Body() body: UECommentPostDto) {
     if (!(await this.ueService.doesUEExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     if (!(await this.ueService.hasAlreadyDoneThisUE(user.id, ueCode)))
       throw new AppException(ERROR_CODE.NOT_ALREADY_DONE_UE);
@@ -70,14 +70,12 @@ export class UEController {
     commentId: string,
     @GetUser() user: User,
   ) {
-    const comment = await this.ueService.getCommentFromId(
-      commentId,
-      user.id,
-      user.permissions.includes('commentModerator'),
-    );
+    const comment = await this.ueService.getCommentFromId(commentId, user.id);
     if (!comment) {
       throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
     }
+    if (comment.isAnonymous && !user.permissions.includes('commentModerator') && comment.author?.id !== user.id)
+      delete comment.author;
     return comment;
   }
 
