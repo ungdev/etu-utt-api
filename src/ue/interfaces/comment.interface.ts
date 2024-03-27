@@ -1,5 +1,5 @@
 import { Prisma, PrismaClient } from '@prisma/client';
-import { generateCustomModelWithCustomFormatting, RequestType } from '../../prisma/prisma.service';
+import { RequestType, generateCustomModel } from '../../prisma/prisma.service';
 
 const COMMENT_SELECT_FILTER = {
   select: {
@@ -62,7 +62,7 @@ export type UEComment = Omit<UnformattedUEComment, 'upvotes'> & {
 };
 
 export function generateCustomCommentModel(prisma: PrismaClient) {
-  return generateCustomModelWithCustomFormatting(prisma, 'uEComment', COMMENT_SELECT_FILTER, formatComment);
+  return generateCustomModel(prisma, 'uEComment', COMMENT_SELECT_FILTER, formatComment);
 }
 
 export function formatComment(comment: UnformattedUEComment, userId?: string): UEComment {

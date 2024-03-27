@@ -21,5 +21,5 @@ const REPLY_SELECT_FILTER = {
 export type UECommentReply = Prisma.UECommentReplyGetPayload<typeof REPLY_SELECT_FILTER>;
 
 export function generateCustomUECommentReplyModel(prisma: PrismaClient) {
-  return generateCustomModel<'uECommentReply', UECommentReply>(prisma, 'uECommentReply', REPLY_SELECT_FILTER);
+  return generateCustomModel(prisma, 'uECommentReply', REPLY_SELECT_FILTER, (comment: UECommentReply) => comment);
 }

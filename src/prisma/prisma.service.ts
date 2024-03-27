@@ -80,40 +80,44 @@ export type UserFriendlyRequestType<
 function generateCustomModelFunction<
   ModelName extends ModelNameType,
   FunctionName extends FunctionNameType<ModelName>,
-  FormatFunction extends (param: any) => any,
+  Raw,
+  Formatted,
+  FormatterArgs extends any[],
 >(
   prisma: PrismaClient,
   modelName: ModelName,
   functionName: FunctionName,
   selectFilter: Partial<RequestType<ModelName, FunctionName>>,
-  format: FormatFunction,
-): (params: UserFriendlyRequestType<ModelName, FunctionName>) => Promise<ReturnType<FormatFunction>> {
-  return async (args) => {
-    const res = await (prisma[modelName][functionName] as (arg: RequestType<ModelName, FunctionName>) => any)({
+  format: (raw: Raw, ...args: FormatterArgs) => Formatted,
+): (params: UserFriendlyRequestType<ModelName, FunctionName>, ...args: FormatterArgs) => Promise<Formatted> {
+  return async (args, ...formatterArgs) => {
+    const res = await (prisma[modelName][functionName] as (arg: RequestType<ModelName, FunctionName>) => Raw)({
       ...args,
       ...selectFilter,
     } as RequestType<ModelName, FunctionName>);
-    return res ? format(res) : res;
+    return res ? format(res, ...formatterArgs) : (res as null);
   };
 }
 
 const singleValueMethods = ['findUnique', 'update', 'findFirst', 'create', 'delete', 'upsert'] as const;
 const multiValueMethods = ['findMany'] as const;
 
-export function generateCustomModel<ModelName extends ModelNameType, Type>(
+export function generateCustomModel<ModelName extends ModelNameType, Raw, Formatted, FormatterArgs extends any[]>(
   prisma: PrismaClient,
   modelName: ModelName,
   selectFilter: Partial<RequestType<ModelName, FunctionNameType<ModelName>>>,
-  format: (param: any) => Type = (param) => param,
+  format: (param: Raw, ...args: FormatterArgs) => Formatted,
 ) {
   const customModel: {
     [K in (typeof singleValueMethods)[number]]?: (
       arg: UserFriendlyRequestType<ModelName, FunctionNameType<ModelName> & K>,
-    ) => Promise<Type>;
+      ...formatterArgs: FormatterArgs
+    ) => Promise<Formatted>;
   } & {
     [K in (typeof multiValueMethods)[number]]?: (
       arg: UserFriendlyRequestType<ModelName, FunctionNameType<ModelName> & K>,
-    ) => Promise<Type[]>;
+      ...formatterArgs: FormatterArgs
+    ) => Promise<Formatted[]>;
   } = {};
   for (const functionName of singleValueMethods) {
     customModel[functionName] = generateCustomModelFunction(
@@ -132,41 +136,8 @@ export function generateCustomModel<ModelName extends ModelNameType, Type>(
       modelName,
       functionName as FunctionNameType<ModelName>,
       selectFilter,
-      (values: any[]) => values.map(format),
+      (values: Raw[], ...args: FormatterArgs) => values.map((value) => format(value, ...args)),
     );
   }
   return customModel as Required<typeof customModel>;
-}
-
-export function generateCustomModelWithCustomFormatting<
-  ModelName extends ModelNameType,
-  Raw,
-  Formatted,
-  FormatterArgs extends any[],
->(
-  prisma: PrismaClient,
-  modelName: ModelName,
-  selectFilter: Partial<RequestType<ModelName, FunctionNameType<ModelName>>>,
-  format: (param: Raw, ...args: FormatterArgs) => Formatted,
-) {
-  const model = generateCustomModel<ModelName, Raw>(prisma, modelName, selectFilter);
-  const modelWithFormatting: Partial<{
-    [K in keyof typeof model]: (typeof model)[K] extends (arg: infer Arg) => Promise<infer R>
-      ? (arg: Arg, ...formatterArgs: FormatterArgs) => R extends any[] ? Promise<Formatted[]> : Promise<Formatted>
-      : (typeof model)[K];
-  }> = {};
-  for (const [key, func] of Object.entries(model)) {
-    modelWithFormatting[key] = async (
-      arg: (typeof modelWithFormatting)[keyof typeof modelWithFormatting] extends (arg: infer Arg) => void
-        ? Arg
-        : never,
-      ...args: FormatterArgs
-    ) =>
-      func(arg).then((comment: Raw | Raw[]) => {
-        if (!comment) return null;
-        if (Array.isArray(comment)) return (comment as Raw[]).map((c) => format(c, ...args));
-        return format(comment, ...args);
-      });
-  }
-  return modelWithFormatting as Required<typeof modelWithFormatting>;
 }

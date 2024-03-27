@@ -87,7 +87,7 @@ export type UE = Omit<UnformattedUE, 'starVotes'> & {
 };
 
 export function generateCustomUEModel(prisma: PrismaClient) {
-  return generateCustomModel<'uE', UE>(prisma, 'uE', UE_SELECT_FILTER, formatUE);
+  return generateCustomModel(prisma, 'uE', UE_SELECT_FILTER, formatUE);
 }
 
 function formatUE(ue: UnformattedUE): UE {
