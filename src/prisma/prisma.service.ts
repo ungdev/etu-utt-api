@@ -137,3 +137,36 @@ export function generateCustomModel<ModelName extends ModelNameType, Type>(
   }
   return customModel as Required<typeof customModel>;
 }
+
+export function generateCustomModelWithCustomFormatting<
+  ModelName extends ModelNameType,
+  Raw,
+  Formatted,
+  FormatterArgs extends any[],
+>(
+  prisma: PrismaClient,
+  modelName: ModelName,
+  selectFilter: Partial<RequestType<ModelName, FunctionNameType<ModelName>>>,
+  format: (param: Raw, ...args: FormatterArgs) => Formatted,
+) {
+  const model = generateCustomModel<ModelName, Raw>(prisma, modelName, selectFilter);
+  const modelWithFormatting: Partial<{
+    [K in keyof typeof model]: (typeof model)[K] extends (arg: infer Arg) => Promise<infer R>
+      ? (arg: Arg, ...formatterArgs: FormatterArgs) => R extends any[] ? Promise<Formatted[]> : Promise<Formatted>
+      : (typeof model)[K];
+  }> = {};
+  for (const [key, func] of Object.entries(model)) {
+    modelWithFormatting[key] = async (
+      arg: (typeof modelWithFormatting)[keyof typeof modelWithFormatting] extends (arg: infer Arg) => void
+        ? Arg
+        : never,
+      ...args: FormatterArgs
+    ) =>
+      func(arg).then((comment: Raw | Raw[]) => {
+        if (!comment) return null;
+        if (Array.isArray(comment)) return (comment as Raw[]).map((c) => format(c, ...args));
+        return format(comment, ...args);
+      });
+  }
+  return modelWithFormatting as Required<typeof modelWithFormatting>;
+}

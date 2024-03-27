@@ -1,6 +1,5 @@
 import { Prisma, PrismaClient } from '@prisma/client';
-import { generateCustomModel, RequestType } from '../../prisma/prisma.service';
-import { isArray } from 'class-validator';
+import { generateCustomModelWithCustomFormatting, RequestType } from '../../prisma/prisma.service';
 
 const COMMENT_SELECT_FILTER = {
   select: {
@@ -63,23 +62,7 @@ export type UEComment = Omit<UnformattedUEComment, 'upvotes'> & {
 };
 
 export function generateCustomCommentModel(prisma: PrismaClient) {
-  const model = generateCustomModel<'uEComment', UnformattedUEComment>(prisma, 'uEComment', COMMENT_SELECT_FILTER);
-  const modelWithFormatting: Partial<{
-    [K in keyof typeof model]: (typeof model)[K] extends (arg: infer Arg) => Promise<infer R>
-      ? (arg: Arg, userId?: string) => R extends any[] ? Promise<UEComment[]> : Promise<UEComment>
-      : (typeof model)[K];
-  }> = {};
-  for (const [key, func] of Object.entries(model)) {
-    modelWithFormatting[key] = async (args, userId?: string) =>
-      func(args).then((comment: UnformattedUEComment | UnformattedUEComment[]) => {
-        if (!comment) return null;
-        if (isArray(comment)) {
-          return (comment as UnformattedUEComment[]).map((c) => formatComment(c, userId));
-        }
-        return formatComment(comment as UnformattedUEComment, userId);
-      });
-  }
-  return modelWithFormatting as Required<typeof modelWithFormatting>;
+  return generateCustomModelWithCustomFormatting(prisma, 'uEComment', COMMENT_SELECT_FILTER, formatComment);
 }
 
 export function formatComment(comment: UnformattedUEComment, userId?: string): UEComment {
