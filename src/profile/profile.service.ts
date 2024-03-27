@@ -1,6 +1,6 @@
 import { PrismaService } from '../prisma/prisma.service';
 import { RawParkingWidget } from '../prisma/types';
-import { ParkingUpdateDto } from './dto/parking-update.dto';
+import { ParkingUpdateElement } from './dto/parking-update.dto';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
@@ -15,13 +15,13 @@ export class ProfileService {
     });
   }
 
-  async setParking(userId: string, parking: ParkingUpdateDto[]): Promise<RawParkingWidget[]> {
+  async setParking(userId: string, parking: ParkingUpdateElement[]): Promise<RawParkingWidget[]> {
     return (
       await this.prisma.withDefaultBehaviour.user.update({
         where: { id: userId },
-        data: { userParkingWidget: { deleteMany: {}, createMany: { data: parking } } },
-        select: { userParkingWidget: true },
+        data: { parkingWidgets: { deleteMany: {}, createMany: { data: parking } } },
+        select: { parkingWidgets: true },
       })
-    ).userParkingWidget;
+    ).parkingWidgets;
   }
 }

@@ -525,8 +525,8 @@ model User {
   courseExchanges       UECourseExchange[]
   courseExchangeReplies UECourseExchangeReply[]
   commentUpvotes        UECommentUpvote[]
-  userTimetableGroup    UserTimetableGroup[]
-  userParkingWidget     UserParkingWidget[]
+  timetableGroups       UserTimetableGroup[]
+  parkingWidgets        UserParkingWidget[]
 }
 
 model UserAddress {

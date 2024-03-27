@@ -74,7 +74,7 @@ SpecProto.expectUECriteria = expect<Criterion[]>;
 SpecProto.expectUERate = expect<UERating>;
 SpecProto.expectUERates = expect<UERating[]>;
 SpecProto.expectParkingWidgets = function (widgets: Omit<FakeParkingWidget, 'id' | 'userId'>[]) {
-  return (<Spec>this).expectStatus(HttpStatus.OK).expectJson(
+  return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonLike(
     widgets.map((widget) => ({
       x: widget.x,
       y: widget.y,

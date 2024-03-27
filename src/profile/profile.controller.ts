@@ -32,7 +32,7 @@ export class ProfileController {
   }
 
   @Put('/parking')
-  async setParking(@GetUser() user: User, @Body() dto: ParkingUpdateDto[]) {
+  async setParking(@GetUser() user: User, @Body() dto: ParkingUpdateDto) {
     for (let i = 0; i < dto.length; i++) {
       for (let j = 0; j < dto.length; j++) {
         if (

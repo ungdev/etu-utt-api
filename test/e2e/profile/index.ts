@@ -9,6 +9,6 @@ export default function ProfileE2ESpec(app: E2EAppProvider) {
     GetE2ESpec(app);
     UpdateE2ESpec(app);
     GetParkingE2ESpec(app);
-    SetParkingE2ESpec;
+    SetParkingE2ESpec(app);
   });
 }

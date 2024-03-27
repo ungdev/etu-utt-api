@@ -22,7 +22,7 @@ import { UERateDto } from './dto/ue-rate.dto';
 import { UeCommentUpdateDto } from './dto/ue-comment-update.dto';
 import { CommentReplyDto } from './dto/ue-comment-reply.dto';
 import { GetUECommentsDto } from './dto/ue-get-comments.dto';
-import { UE } from "./interfaces/ue-detail.interface";
+import { UE } from './interfaces/ue-detail.interface';
 
 @Controller('ue')
 export class UEController {

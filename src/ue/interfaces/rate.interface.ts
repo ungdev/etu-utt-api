@@ -1,5 +1,5 @@
 import { Prisma, PrismaClient } from '@prisma/client';
-import { generateCustomModel } from "../../prisma/prisma.service";
+import { generateCustomModel } from '../../prisma/prisma.service';
 
 const RATE_SELECT_FILTER = {
   select: {

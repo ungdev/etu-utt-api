@@ -3,13 +3,14 @@ import { RawUser } from '../../../src/prisma/types';
 import { faker } from '@faker-js/faker';
 import * as bcrypt from 'bcryptjs';
 
+const FAKER_ROUNDS = 100;
+
 export async function userSeed(prisma: PrismaClient): Promise<RawUser[]> {
   console.log('Seeding users...');
   const users: Promise<RawUser>[] = [];
-  const fakerRounds = 100;
   const saltRounds = Number.parseInt(process.env.SALT_ROUNDS);
   const hash = await bcrypt.hash('etuutt', saltRounds); // TODO: write this in the docs
-  for (let i = 0; i < fakerRounds; i++) {
+  for (let i = 0; i < FAKER_ROUNDS; i++) {
     const firstName = faker.name.firstName();
     const lastName = faker.name.lastName();
     users.push(

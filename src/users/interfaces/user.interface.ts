@@ -1,5 +1,4 @@
 import { Prisma, PrismaClient } from '@prisma/client';
-import { getPrismaClient } from '@prisma/client/runtime/library';
 import { generateCustomModel, RequestType } from '../../prisma/prisma.service';
 
 const USER_SELECT_FILTER = {

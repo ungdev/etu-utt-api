@@ -7,7 +7,7 @@ import { generateCustomCommentModel } from '../ue/interfaces/comment.interface';
 import { generateCustomCriterionModel } from '../ue/interfaces/criterion.interface';
 import { generateCustomUECommentReplyModel } from '../ue/interfaces/comment-reply.interface';
 import { generateCustomRateModel } from '../ue/interfaces/rate.interface';
-import { generateCustomUEModel } from "../ue/interfaces/ue-detail.interface";
+import { generateCustomUEModel } from '../ue/interfaces/ue-detail.interface';
 
 // This interface is used to tell typescript that, even tho it does not understand it, PrismaService IS actually a ReturnType<typeof createPrismaClientExtension>
 // TS cannot infer it alone as the construction of the class is made using reflection.
@@ -22,6 +22,14 @@ export class PrismaService implements ReturnType<typeof createPrismaClientExtens
     this.withDefaultBehaviour = createPrismaClient(config);
     const prisma = createPrismaClientExtension(this.withDefaultBehaviour);
     return new Proxy(this, {
+      // So, basically, every time a property will be accessed, this function will be called :
+      // - target is equivalent to this
+      // - prop is the name of the property
+      // - receiver is something else, we don't need it here and I don't want to search the internet
+      // What we do here is :
+      // - try to return the property as normal. For example, if we do prismaService.withDefaultBehaviour, this will act as normal
+      // - if we can't find a value for it, return the same value but for the prisma client.
+      // That way, we are simulating an inheritance, but without actually doing one : the class that needs to be extended is generated in the constructor
       get(target, prop, receiver) {
         if (prop in target) {
           return Reflect.get(target, prop, receiver);

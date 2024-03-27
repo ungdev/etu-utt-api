@@ -2,6 +2,8 @@ import { RawSemester, RawUE, RawUEComment, RawUser } from '../../../src/prisma/t
 import { Prisma, PrismaClient } from '@prisma/client';
 import { faker } from '@faker-js/faker';
 
+const FAKER_ROUNDS = 100;
+
 export default function ueCommentSeed(
   prisma: PrismaClient,
   users: RawUser[],
@@ -10,9 +12,8 @@ export default function ueCommentSeed(
 ): Promise<RawUEComment[]> {
   console.log('Seeding UE comments...');
   const comments: Promise<RawUEComment>[] = [];
-  const fakerRounds = 100;
   const ueAuthorPairs: Array<{ ue: string; author: string }> = [];
-  for (let i = 0; i < fakerRounds; i++) {
+  for (let i = 0; i < FAKER_ROUNDS; i++) {
     const date: Date = faker.date.past();
     const anonymous = faker.datatype.boolean();
     let ueAuthorPair: { ue: string; author: string } | null = null;

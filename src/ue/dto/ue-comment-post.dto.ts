@@ -7,7 +7,7 @@ import { IsBoolean, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-va
  * @property isAnonymous Whether the comment should be anonymous or not. Defaults to false.
  */
 export class UeCommentPostDto {
-  @IsNotEmpty()
+  @IsNotEmpty({})
   @IsString()
   @MinLength(5)
   body: string;

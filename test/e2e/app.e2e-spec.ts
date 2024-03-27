@@ -7,9 +7,9 @@ import ProfileE2ESpec from './profile';
 import UsersE2ESpec from './users';
 import TimetableE2ESpec from './timetable';
 import UEE2ESpec from './ue';
-import { getValidationPipe } from '../../src/validation';
 import '../declarations';
 import * as testUtils from '../utils/test_utils';
+import { AppValidationPipe } from '../../src/app.pipe';
 
 describe('EtuUTT API e2e testing', () => {
   let app: INestApplication;
@@ -24,7 +24,7 @@ describe('EtuUTT API e2e testing', () => {
       defaultVersion: '1',
     });
 
-    app.useGlobalPipes(getValidationPipe());
+    app.useGlobalPipes(new AppValidationPipe());
     await app.init();
     await app.listen(3001);
 

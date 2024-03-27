@@ -31,6 +31,7 @@ export const enum ERROR_CODE {
   PARAM_NOT_POSITIVE = 2015,
   PARAM_TOO_LOW = 2016,
   PARAM_TOO_HIGH = 2017,
+  PARAM_NOT_INTEGER = 2018,
   PARAM_DOES_NOT_MATCH_REGEX = 2102,
   NO_FIELD_PROVIDED = 2201,
   WIDGET_OVERLAPPING = 2301,
@@ -133,6 +134,10 @@ export const ErrorData = Object.freeze({
   },
   [ERROR_CODE.PARAM_TOO_HIGH]: {
     message: 'The following parameters must be lower: %',
+    httpCode: HttpStatus.BAD_REQUEST,
+  },
+  [ERROR_CODE.PARAM_NOT_INTEGER]: {
+    message: 'The following parameters must be integer: %',
     httpCode: HttpStatus.BAD_REQUEST,
   },
   [ERROR_CODE.PARAM_DOES_NOT_MATCH_REGEX]: {
