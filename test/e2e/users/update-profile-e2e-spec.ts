@@ -47,6 +47,7 @@ const UpdateProfile = e2eSuite('PATCH /users/profile', (app) => {
           displayMailPersonal: user.displayMailPersonal,
           displayPhone: user.displayPhone,
           displaySex: user.displaySex,
+          displayTimetable: user.displayTimetable
         },
         instagram: user.instagram,
         lastName: user.lastName,

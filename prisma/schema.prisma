@@ -224,7 +224,7 @@ model Translation {
 model UE {
   id              String   @id @default(uuid())
   code            String   @unique @db.VarChar(10)
-  inscriptionCode String   @unique @db.VarChar(4)
+  inscriptionCode String   @unique @db.Char(4)
   name            String   @db.VarChar(255)
   validationRate  Float?
   createdAt       DateTime @default(now())
@@ -489,7 +489,7 @@ model UserPermissionAssignement {
 model User {
   id              String  @id @default(uuid())
   login           String  @unique @db.VarChar(50)
-  hash            String
+  hash            String?
   studentId       Int?
   firstName       String
   lastName        String
@@ -605,9 +605,9 @@ model UserFormation {
 
 model UserInfos {
   id          String   @id @default(uuid())
-  sex         Sex
+  sex         Sex?
   nationality String?  @db.VarChar(50)
-  birthday    DateTime @db.Date
+  birthday    DateTime? @db.Date
   avatar      String   @default("default.png") @db.VarChar(255)
   nickname    String?  @db.VarChar(50)
   passions    String?  @db.Text
@@ -654,6 +654,7 @@ model UserPreference {
   displayPhone           Boolean  @default(false)
   displayAddresse        Boolean  @default(false)
   displayDiscord         Boolean  @default(false)
+  displayTimetable       Boolean  @default(false)
 
   user User?
 }

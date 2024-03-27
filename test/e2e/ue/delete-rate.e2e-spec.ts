@@ -11,6 +11,7 @@ import {
 import * as pactum from 'pactum';
 import { ERROR_CODE } from 'src/exceptions';
 import { Dummies, e2eSuite } from '../../utils/test_utils';
+import { faker } from "@faker-js/faker";
 
 const DeleteRate = e2eSuite('DELETE /ue/{ueCode}/rate/{critetionId}', (app) => {
   const user = createUser(app);
@@ -18,7 +19,7 @@ const DeleteRate = e2eSuite('DELETE /ue/{ueCode}/rate/{critetionId}', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUE(app, { semesters: [semester], branchOption });
+  const ue = createUE(app, { openSemesters: [semester], branchOption: [branchOption] });
   const criterion = createCriterion(app);
   createUESubscription(app, { user, ue, semester });
   const rating = createUERating(app, { user, ue, criterion });
@@ -36,11 +37,12 @@ const DeleteRate = e2eSuite('DELETE /ue/{ueCode}/rate/{critetionId}', (app) => {
   });
 
   it('should return a 404 as the UE does not exist', () => {
+    const nonExistentCode = faker.db.ue.code();
     return pactum
       .spec()
       .withBearerToken(user2.token)
-      .delete(`/ue/${ue.code.slice(0, 3)}9/rate/${criterion.id}`)
-      .expectAppError(ERROR_CODE.NO_SUCH_UE, `${ue.code.slice(0, 3)}9`);
+      .delete(`/ue/${nonExistentCode}/rate/${criterion.id}`)
+      .expectAppError(ERROR_CODE.NO_SUCH_UE, nonExistentCode);
   });
 
   it('should return a 404 as the criterion does not exist', () => {

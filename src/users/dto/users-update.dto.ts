@@ -96,4 +96,8 @@ export class UserUpdateDto {
   @IsBoolean()
   @IsOptional()
   displayDiscord?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  displayTimetable?: boolean;
 }

@@ -17,8 +17,8 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'UTT Arena'
-copyright = '2021, UTT Net Group'
+project = 'EtuUTT'
+copyright = '2024, UTT Net Group'
 author = 'UTT Net Group'
 
 
@@ -39,7 +39,7 @@ templates_path = []
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = 'en'
+language = 'fr'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.

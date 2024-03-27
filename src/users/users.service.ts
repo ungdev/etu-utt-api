@@ -65,7 +65,7 @@ export default class UsersService {
     });
     if (!user) return null;
     const transformedUser: User = { ...user, permissions: undefined };
-    transformedUser.permissions = user.permissions.map((permssion) => permssion.userPermissionId);
+    transformedUser.permissions = user.permissions.map((permission) => permission.userPermissionId);
     return transformedUser;
   }
 
@@ -83,7 +83,12 @@ export default class UsersService {
     });
   }
 
-  filterInfo(user: UserComplete, isCurrentUser: Boolean) {
+  
+  async doesUserExist(search: { id?: string; login?: string }): Promise<boolean> {
+    return (await this.prisma.user.count({ where: search })) > 0;
+  }
+
+  filterInfo(user: UserComplete, isCurrentUser: boolean) {
     return {
       id: user.id,
       firstName: user.firstName,
@@ -137,6 +142,7 @@ export default class UsersService {
             displayAddresse: user.preference.displayAddresse,
             displaySex: user.preference.displaySex,
             displayDiscord: user.preference.displayDiscord,
+            displayTimetable:user.preference.displayTimetable
           }
         : undefined,
     };
@@ -214,6 +220,7 @@ export default class UsersService {
             displayAddresse: dto.displayAddresse,
             displaySex: dto.displaySex,
             displayDiscord: dto.displayDiscord,
+            displayTimetable: dto.displayTimetable
           },
         },
       },
