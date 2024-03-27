@@ -2,16 +2,19 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthSignInDto, AuthSignUpDto } from './dto';
 import * as bcrypt from 'bcryptjs';
-import { Prisma } from '@prisma/client';
+import { Prisma, UserRole } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
 import { AppException, ERROR_CODE } from '../exceptions';
 import { ConfigModule } from '../config/config.module';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import { XMLParser } from 'fast-xml-parser';
-import { omit } from '../utils';
+import { doesEntryIncludeSome, omit } from '../utils';
+import { LdapAccountGroup, LdapModule } from 'src/ldap/ldap.module';
+import { UEService } from 'src/ue/ue.service';
 
 export type RegisterData = { login: string; mail: string; lastName: string; firstName: string };
+export type ExtendedRegisterData = RegisterData & { studentId: string; role: UserRole };
 
 @Injectable()
 export class AuthService {
@@ -20,6 +23,8 @@ export class AuthService {
     private jwt: JwtService,
     private config: ConfigModule,
     private httpService: HttpService,
+    private ldap: LdapModule,
+    private ueService: UEService,
   ) {}
 
   /**
@@ -27,7 +32,32 @@ export class AuthService {
    * It returns an access token that the user can then use to authenticate their requests.
    * @param dto Data about the user to create.
    */
-  async signup(dto: SetPartial<AuthSignUpDto, 'password'>): Promise<string> {
+  async signup(dto: SetPartial<AuthSignUpDto, 'password'>, fetchLdap = false): Promise<string> {
+    let phoneNumber: string = undefined;
+    let formation: string = undefined;
+    const branch: string[] = [];
+    const branchOption: string[] = [];
+    const ues: string[] = [];
+    const currentSemesterCode = `${new Date().getMonth() < 7 && new Date().getMonth() > 0 ? 'P' : 'A'}${
+      new Date().getFullYear() % 100
+    }`;
+
+    if (fetchLdap) {
+      const ldapUser = await this.ldap.fetch(dto.login);
+      if (ldapUser.gidNumber === LdapAccountGroup.STUDENTS) {
+        dto.studentId = Number(ldapUser.supannEtuId);
+        dto.role = 'STUDENT';
+        branch.push(...(Array.isArray(ldapUser.niveau) ? ldapUser.niveau : [ldapUser.niveau]));
+        ues.push(...(Array.isArray(ldapUser.uv) ? ldapUser.uv : [ldapUser.uv]));
+        branchOption.push(...(Array.isArray(ldapUser.filiere) ? ldapUser.filiere : [ldapUser.filiere]));
+        [formation] = ldapUser.formation; // TODO: this is wrong, students can have multiple formations !
+      } else if (ldapUser.gidNumber === LdapAccountGroup.EMPLOYEES) {
+        dto.role = doesEntryIncludeSome(ldapUser.eduPersonAffiliation, 'faculty') ? 'TEACHER' : 'EMPLOYEE';
+        phoneNumber = ldapUser.telephonenumber;
+      } else {
+        dto.role = 'OTHER';
+      }
+    }
     try {
       const isUTTMail = dto.mail?.endsWith('@utt.fr');
       const user = await this.prisma.user.create({
@@ -40,10 +70,59 @@ export class AuthService {
           infos: {
             create: { sex: dto.sex, birthday: dto.birthday },
           },
+          ...(branch.length && branchOption.length
+            ? {
+                branch: {
+                  create: {
+                    semesterNumber: Number(branch[0].slice(-1)),
+                    branch: {
+                      connect: {
+                        code: branch[0].slice(0, -1).split('_')[0],
+                      },
+                    },
+                    branchOption: {
+                      connect: {
+                        code: branchOption[0],
+                      },
+                    },
+                    semester: {
+                      connect: {
+                        code: currentSemesterCode,
+                      },
+                    },
+                  },
+                },
+              }
+            : {}),
+          UEsSubscriptions: {
+            createMany: {
+              data: (
+                await this.ueService.getIdFromCode(...ues)
+              ).map((id) => ({
+                ueId: id,
+                semesterId: currentSemesterCode,
+              })),
+            },
+          },
+          formation: {
+            create: {
+              followingMethod: {
+                connect: {
+                  name: branch[0].slice(0, -1).split('_')[1] === 'APPR' ? 'Apprentissage' : 'Formation Initiale',
+                },
+              },
+              formation: {
+                connect: {
+                  name: formation,
+                },
+              },
+            },
+          },
           mailsPhones: {
             create: {
               mailUTT: isUTTMail ? dto.mail : undefined,
               mailPersonal: isUTTMail ? undefined : dto.mail,
+              phoneNumber,
             },
           },
           role: dto.role,
@@ -139,7 +218,6 @@ export class AuthService {
       mail: resData['cas:serviceResponse']['cas:authenticationSuccess']['cas:attributes']['cas:mail'],
       lastName: resData['cas:serviceResponse']['cas:authenticationSuccess']['cas:attributes']['cas:sn'],
       firstName: resData['cas:serviceResponse']['cas:authenticationSuccess']['cas:attributes']['cas:givenName'],
-      // TODO : fetch other infos from LDAP
     };
     const user = await this.prisma.user.findUnique({ where: { login: data.login } });
     if (!user) {
