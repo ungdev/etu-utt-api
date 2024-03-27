@@ -122,7 +122,7 @@ export default class UsersService {
       facebook: user.socialNetwork === null ? undefined : user.socialNetwork.facebook,
       twitter: user.socialNetwork === null ? undefined : user.socialNetwork.twitter,
       instagram: user.socialNetwork === null ? undefined : user.socialNetwork.instagram,
-      linkendIn: user.socialNetwork === null ? undefined : user.socialNetwork.linkedin,
+      linkedin: user.socialNetwork === null ? undefined : user.socialNetwork.linkedin,
       twitch: user.socialNetwork === null ? undefined : user.socialNetwork.twitch,
       spotify: user.socialNetwork === null ? undefined : user.socialNetwork.spotify,
       discord:
@@ -168,9 +168,9 @@ export default class UsersService {
     return membership;
   }
 
-  async updateUserProfil(user: UserComplete, dto: UserUpdateDto) {
-    await this.prisma.user.update({
-      where: { id: user.id },
+  async updateUserProfil(userId: string, dto: UserUpdateDto) {
+    return this.prisma.user.update({
+      where: { id: userId },
       data: {
         infos: {
           update: {
@@ -199,10 +199,11 @@ export default class UsersService {
             facebook: dto.facebook,
             twitter: dto.twitter,
             instagram: dto.instagram,
-            linkedin: dto.linkendIn,
+            linkedin: dto.linkedin,
             twitch: dto.twitch,
             spotify: dto.spotify,
-            pseudoDiscord: dto.discord,
+            pseudoDiscord: dto.pseudoDiscord,
+            wantDiscordUTT: dto.wantDiscordUTT,
           },
         },
         preference: {
@@ -216,6 +217,6 @@ export default class UsersService {
           },
         },
       },
-    });
+    } as const);
   }
 }

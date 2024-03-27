@@ -16,6 +16,7 @@ import { GetUser } from '../auth/decorator';
 import { User } from '../users/interfaces/user.interface';
 import UsersService from './users.service';
 import { AppException, ERROR_CODE } from '../exceptions';
+import { Console } from 'console';
 
 @Controller('users')
 export default class UsersController {
@@ -67,15 +68,13 @@ export default class UsersController {
     return assos;
   }
 
-  @Patch('/current')
-  @UseGuards(JwtGuard)
+  @Patch('/profile')
+  //@UseGuards(JwtGuard)
   async updateInfos(@GetUser() user: User, @Body() dto: UserUpdateDto) {
-    Object.values(dto).every((element) => {
-      if (element === undefined) {
-        throw new BadRequestException('You must provide at least one field to update');
-      }
-    });
-    const completeUser = await this.usersService.fetchWholeUser(user.id);
-    this.usersService.updateUserProfil(completeUser, dto);
+    //console.log(dto);
+    if (Object.values(dto).every((element) => element === undefined))
+      throw new BadRequestException('You must provide at least one field to update');
+    await this.usersService.updateUserProfil(user.id, dto);
+    return this.usersService.filterInfo(await this.usersService.fetchWholeUser(user.id), true);
   }
 }

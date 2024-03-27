@@ -21,6 +21,10 @@ import {
   RawAssoMembership,
   RawAsso,
   RawAssoMembershipRole,
+  RawUserMailsPhones,
+  RawUserAddress,
+  RawUserSocialNetwork,
+  RawUserPreference,
 } from '../../src/prisma/types';
 import { faker } from '@faker-js/faker';
 import { AuthService } from '../../src/auth/auth.service';
@@ -33,7 +37,13 @@ import { omit, pick } from '../../src/utils';
  * The fake entities can be used like normal entities in the <code>it(string, () => void)</code> functions.
  * They are what is returned by the functions in this file.
  */
-export type FakeUser = Partial<RawUser & RawUserInfos & { permissions: string[]; token: string }>;
+export type FakeUser = Partial<
+  RawUser &
+    RawUserInfos & { permissions: string[]; token: string } & RawUserMailsPhones &
+    RawUserAddress &
+    RawUserSocialNetwork &
+    RawUserPreference
+>;
 export type FakeTimetableGroup = Partial<RawTimetableGroup>;
 export type FakeTimetableEntry = Partial<RawTimetableEntry>;
 export type FakeTimetableEntryOverride = Partial<RawTimetableEntryOverride>;
@@ -169,6 +179,9 @@ export const createUser = entityFaker(
           preference: {
             create: {},
           },
+          mailsPhones: { create: {} },
+          addresse: { create: {} },
+          socialNetwork: { create: {} },
         },
         include: {
           infos: true,
@@ -177,10 +190,18 @@ export const createUser = entityFaker(
               userPermissionId: true,
             },
           },
+          mailsPhones: true,
+          addresse: true,
+          socialNetwork: true,
+          preference: true,
         },
       });
     return {
-      ...omit(user, 'infos', 'permissions'),
+      ...omit(user, 'infos', 'preference', 'mailsPhones', 'socialNetwork', 'addresse'),
+      ...omit(user.mailsPhones, 'id'),
+      ...omit(user.socialNetwork, 'id'),
+      ...omit(user.addresse, 'id'),
+      ...omit(user.preference, 'id'),
       ...omit(user.infos, 'id'),
       permissions: user.permissions.map((perm) => perm.userPermissionId),
       token: await app().get(AuthService).signToken(user.id, user.login),

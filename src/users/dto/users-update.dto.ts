@@ -55,7 +55,7 @@ export class UserUpdateDto {
 
   @IsString()
   @IsOptional()
-  linkendIn?: string;
+  linkedin?: string;
 
   @IsString()
   @IsOptional()
@@ -67,7 +67,11 @@ export class UserUpdateDto {
 
   @IsString()
   @IsOptional()
-  discord?: string;
+  pseudoDiscord?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  wantDiscordUTT?: boolean;
 
   @IsBoolean()
   @IsOptional()

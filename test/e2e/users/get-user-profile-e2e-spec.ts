@@ -49,7 +49,7 @@ const GetUserProfileE2ESpec = e2eSuite('GET /users/profile', (app) => {
       facebook: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.facebook,
       twitter: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.twitter,
       instagram: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.instagram,
-      linkendIn: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.linkedin,
+      linkedin: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.linkedin,
       twitch: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.twitch,
       spotify: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.spotify,
       discord: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.pseudoDiscord,

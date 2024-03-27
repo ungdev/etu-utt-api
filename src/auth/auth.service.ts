@@ -25,6 +25,9 @@ export class AuthService {
           },
           preference: { create: {} },
           rgpd: { create: {} },
+          mailsPhones: { create: {} },
+          addresse: { create: {} },
+          socialNetwork: { create: {} },
           userType: dto.type,
         },
       });
