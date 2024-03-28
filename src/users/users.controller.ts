@@ -25,4 +25,14 @@ export default class UsersController {
     }
     return this.usersService.filterPublicInfo(user);
   }
+
+  @Get('/birthdays/today')
+  async getTodaysBirthdays() {
+    return (await this.usersService.getBirthdayOfDay(new Date())).map((user) => ({
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      nickname: user.infos.nickname,
+    }));
+  }
 }

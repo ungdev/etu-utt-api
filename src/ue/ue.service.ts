@@ -13,7 +13,7 @@ import { SelectCommentReply, UECommentReply } from './interfaces/comment-reply.i
 import { Criterion, SelectCriterion } from './interfaces/criterion.interface';
 import { SelectRate, UERating } from './interfaces/rate.interface';
 import { RawUserUESubscription } from '../prisma/types';
-import { ConfigModule } from "../config/config.module";
+import { ConfigModule } from '../config/config.module';
 
 @Injectable()
 export class UEService {

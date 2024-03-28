@@ -147,7 +147,14 @@ export const createUser = entityFaker(
         data: {
           hash: params.hash ?? (await app().get(AuthService).getHash(params.password)),
           ...pick(params, 'id', 'login', 'studentId', 'firstName', 'lastName', 'role'),
-          infos: { create: pick(params, 'birthday', 'sex', 'nickname') },
+          infos: {
+            create: {
+              ...pick(params, 'sex', 'nickname'),
+              ...(params.birthday
+                ? { birthday: new Date(params.birthday.getTime() - params.birthday.getTimezoneOffset() * 60000) } // Add the 1h timezone offset (in you are in France ^^) to make the time the same as the one expected if you don't look at the timezone offset
+                : {}),
+            },
+          },
         },
         include: {
           infos: true,

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { User } from './interfaces/user.interface';
+import { SelectUser, User } from './interfaces/user.interface';
 import { UsersSearchDto } from './dto/users-search.dto';
 
 @Injectable()
@@ -80,5 +80,16 @@ export default class UsersService {
       nickname: user.infos.nickname,
       sex: user.infos.sex,
     };
+  }
+
+  async getBirthdayOfDay(date: Date): Promise<User[]> {
+    // We can't filter by day / month directly in classic calls, we need to use raw SQL.
+    const userIds = (await this.prisma.$queryRaw`
+        SELECT userId
+        FROM UserInfos
+        WHERE EXTRACT(DAY FROM birthday) = ${date.getUTCDate()}
+          AND EXTRACT(MONTH FROM birthday) = ${date.getUTCMonth() + 1}`) as Array<{ userId: string }>;
+    const users = await this.prisma.user.findMany(SelectUser({ where: { id: { in: userIds.map((u) => u.userId) } } }));
+    return users.map((user) => ({ ...user, permissions: user.permissions.map((permission) => permission.id) }));
   }
 }

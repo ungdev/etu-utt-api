@@ -11,7 +11,7 @@ import { JwtGuard } from './auth/guard';
 import { TimetableModule } from './timetable/timetable.module';
 import { ConfigModule } from './config/config.module';
 import { HttpModule } from './http/http.module';
-import { BranchModule } from "./branch/branch.module";
+import { BranchModule } from './branch/branch.module';
 
 @Module({
   imports: [
