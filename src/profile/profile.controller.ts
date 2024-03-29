@@ -5,8 +5,8 @@ import { ProfileUpdateDto } from './dto/profile-update.dto';
 import { AppException, ERROR_CODE } from '../exceptions';
 import { ProfileService } from './profile.service';
 import UsersService from '../users/users.service';
-import { ParkingUpdateDto } from './dto/parking-update.dto';
-import { RawParkingWidget } from '../prisma/types';
+import { HomepageWidgetsUpdateDto } from './dto/homepage-widgets-update.dto';
+import { RawHomepageWidget } from '../prisma/types';
 
 @Controller('profile')
 export class ProfileController {
@@ -26,13 +26,13 @@ export class ProfileController {
     return this.formatProfile(updatedUser);
   }
 
-  @Get('/parking')
-  async getParking(@GetUser() user: User) {
-    return this.formatParking(await this.profileService.getParking(user.id));
+  @Get('/homepage')
+  async getHomepageWidgets(@GetUser() user: User) {
+    return this.formatHomepageWidgets(await this.profileService.getHomepageWidgets(user.id));
   }
 
-  @Put('/parking')
-  async setParking(@GetUser() user: User, @Body() dto: ParkingUpdateDto) {
+  @Put('/homepage')
+  async setHomepageWidget(@GetUser() user: User, @Body() dto: HomepageWidgetsUpdateDto) {
     for (let i = 0; i < dto.length; i++) {
       for (let j = 0; j < dto.length; j++) {
         if (
@@ -46,7 +46,7 @@ export class ProfileController {
         }
       }
     }
-    return this.formatParking(await this.profileService.setParking(user.id, dto));
+    return this.formatHomepageWidgets(await this.profileService.setHomepageWidgets(user.id, dto));
   }
 
   private formatProfile(user: User) {
@@ -64,8 +64,8 @@ export class ProfileController {
     };
   }
 
-  private formatParking(parking: RawParkingWidget[]) {
-    return parking.map((widget) => ({
+  private formatHomepageWidgets(widgets: RawHomepageWidget[]) {
+    return widgets.map((widget) => ({
       x: widget.x,
       y: widget.y,
       width: widget.width,

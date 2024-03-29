@@ -527,7 +527,7 @@ model User {
   courseExchangeReplies UECourseExchangeReply[]
   commentUpvotes        UECommentUpvote[]
   timetableGroups       UserTimetableGroup[]
-  parkingWidgets        UserParkingWidget[]
+  homepageWidgets       UserHomepageWidget[]
 }
 
 model UserAddress {
@@ -640,7 +640,7 @@ model UserOtherAttributValue {
   attribut UserOtherAttribut @relation(fields: [attributId], references: [name])
 }
 
-model UserParkingWidget {
+model UserHomepageWidget {
   id     String @id @default(uuid())
   widget String @db.VarChar(20)
   x      Int

@@ -6,7 +6,7 @@ import { UEComment } from '../src/ue/interfaces/comment.interface';
 import { UECommentReply } from '../src/ue/interfaces/comment-reply.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { UERating } from 'src/ue/interfaces/rate.interface';
-import { FakeParkingWidget, FakeUE } from './utils/fakedb';
+import { FakeHomepageWidget, FakeUE } from './utils/fakedb';
 import { ConfigModule } from '../src/config/config.module';
 import { AppProvider } from './utils/test_utils';
 import { omit, pick, sortArray } from '../src/utils';
@@ -73,7 +73,7 @@ SpecProto.expectUECommentReply = expectOkOrCreate<UECommentReply>;
 SpecProto.expectUECriteria = expect<Criterion[]>;
 SpecProto.expectUERate = expect<UERating>;
 SpecProto.expectUERates = expect<UERating[]>;
-SpecProto.expectParkingWidgets = function (widgets: Omit<FakeParkingWidget, 'id' | 'userId'>[]) {
+SpecProto.expectHomepageWidgets = function (widgets: Omit<FakeHomepageWidget, 'id' | 'userId'>[]) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonLike(
     widgets.map((widget) => ({
       x: widget.x,

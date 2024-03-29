@@ -1,27 +1,27 @@
 import { PrismaService } from '../prisma/prisma.service';
-import { RawParkingWidget } from '../prisma/types';
-import { ParkingUpdateElement } from './dto/parking-update.dto';
+import { RawHomepageWidget } from '../prisma/types';
+import { HomepageWidgetsUpdateElement } from './dto/homepage-widgets-update.dto';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class ProfileService {
   constructor(private prisma: PrismaService) {}
 
-  getParking(userId: string): Promise<RawParkingWidget[]> {
-    return this.prisma.userParkingWidget.findMany({
+  getHomepageWidgets(userId: string): Promise<RawHomepageWidget[]> {
+    return this.prisma.userHomepageWidget.findMany({
       where: {
         userId,
       },
     });
   }
 
-  async setParking(userId: string, parking: ParkingUpdateElement[]): Promise<RawParkingWidget[]> {
+  async setHomepageWidgets(userId: string, widgets: HomepageWidgetsUpdateElement[]): Promise<RawHomepageWidget[]> {
     return (
       await this.prisma.withDefaultBehaviour.user.update({
         where: { id: userId },
-        data: { parkingWidgets: { deleteMany: {}, createMany: { data: parking } } },
-        select: { parkingWidgets: true },
+        data: { homepageWidgets: { deleteMany: {}, createMany: { data: widgets } } },
+        select: { homepageWidgets: true },
       })
-    ).parkingWidgets;
+    ).homepageWidgets;
   }
 }

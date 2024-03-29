@@ -18,7 +18,7 @@ import {
   RawUser,
   RawUserInfos,
   RawUserUESubscription,
-  RawParkingWidget,
+  RawHomepageWidget,
 } from '../../src/prisma/types';
 import { faker } from '@faker-js/faker';
 import { AuthService } from '../../src/auth/auth.service';
@@ -52,7 +52,7 @@ export type FakeComment = Partial<RawUEComment>;
 export type FakeCommentUpvote = Partial<RawUECommentUpvote>;
 export type FakeCommentReply = Partial<RawUECommentReply>;
 export type FakeUECreditCategory = Partial<RawCreditCategory>;
-export type FakeParkingWidget = Partial<RawParkingWidget>;
+export type FakeHomepageWidget = Partial<RawHomepageWidget>;
 
 export interface FakeEntityMap {
   timetableEntryOverride: {
@@ -122,9 +122,9 @@ export interface FakeEntityMap {
     entity: FakeUECreditCategory;
     params: CreateUECreditCategoryParameters;
   };
-  parkingWidget: {
-    entity: FakeParkingWidget;
-    params: CreateParkingWidgetParameters;
+  homepageWidget: {
+    entity: FakeHomepageWidget;
+    params: CreateHomepageWidgetParameters;
     deps: { user: FakeUser };
   };
 }
@@ -573,9 +573,9 @@ export const createUECreditCategory = entityFaker(
   async (app, params) => app().get(PrismaService).uECreditCategory.create({ data: params }),
 );
 
-export type CreateParkingWidgetParameters = FakeParkingWidget;
-export const createParkingWidget = entityFaker(
-  'parkingWidget',
+export type CreateHomepageWidgetParameters = FakeHomepageWidget;
+export const createHomepageWidget = entityFaker(
+  'homepageWidget',
   {
     widget: faker.datatype.string(),
     x: faker.datatype.number(10),
@@ -586,7 +586,7 @@ export const createParkingWidget = entityFaker(
   async (app, deps, params) =>
     app()
       .get(PrismaService)
-      .userParkingWidget.create({ data: { ...omit(params, 'userId'), user: { connect: { id: deps.user.id } } } }),
+      .userHomepageWidget.create({ data: { ...omit(params, 'userId'), user: { connect: { id: deps.user.id } } } }),
 );
 
 /**

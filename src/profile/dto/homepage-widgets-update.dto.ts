@@ -2,7 +2,7 @@ import { IsInt, IsNumber, IsPositive, IsString, Min, ValidateNested } from 'clas
 import { Type } from 'class-transformer';
 import { ArrayDto } from '../../app.pipe';
 
-export class ParkingUpdateElement {
+export class HomepageWidgetsUpdateElement {
   @IsNumber()
   @IsInt()
   @Min(0)
@@ -27,12 +27,12 @@ export class ParkingUpdateElement {
   widget: string;
 }
 
-export class ParkingUpdateDto extends ArrayDto<ParkingUpdateElement> {
-  public constructor(items: ParkingUpdateElement[]) {
+export class HomepageWidgetsUpdateDto extends ArrayDto<HomepageWidgetsUpdateElement> {
+  public constructor(items: HomepageWidgetsUpdateElement[]) {
     super();
     this.items = items;
   }
   @ValidateNested({ each: true })
-  @Type(() => ParkingUpdateElement)
-  items: ParkingUpdateElement[];
+  @Type(() => HomepageWidgetsUpdateElement)
+  items: HomepageWidgetsUpdateElement[];
 }
