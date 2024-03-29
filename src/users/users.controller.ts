@@ -33,6 +33,7 @@ export default class UsersController {
       firstName: user.firstName,
       lastName: user.lastName,
       nickname: user.infos.nickname,
+      age: new Date(Date.now() - user.infos.birthday.getTime()).getUTCFullYear() - 1970,
     }));
   }
 }
