@@ -18,4 +18,5 @@ export {
   UEComment as RawUEComment,
   UECommentReply as RawUECommentReply,
   UECommentUpvote as RawUECommentUpvote,
+  UserHomepageWidget as RawHomepageWidget,
 } from '@prisma/client';

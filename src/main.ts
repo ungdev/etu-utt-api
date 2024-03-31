@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { getValidationPipe } from './validation';
+import { AppValidationPipe } from './app.pipe';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -10,7 +10,7 @@ async function bootstrap() {
     type: VersioningType.URI,
     defaultVersion: '1',
   });
-  app.useGlobalPipes(getValidationPipe());
+  app.useGlobalPipes(new AppValidationPipe());
   app.enableCors({ origin: '*' });
 
   const config = new DocumentBuilder()

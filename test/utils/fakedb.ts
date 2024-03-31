@@ -18,6 +18,7 @@ import {
   RawUser,
   RawUserInfos,
   RawUserUESubscription,
+  RawHomepageWidget,
 } from '../../src/prisma/types';
 import { faker } from '@faker-js/faker';
 import { AuthService } from '../../src/auth/auth.service';
@@ -51,6 +52,7 @@ export type FakeComment = Partial<RawUEComment>;
 export type FakeCommentUpvote = Partial<RawUECommentUpvote>;
 export type FakeCommentReply = Partial<RawUECommentReply>;
 export type FakeUECreditCategory = Partial<RawCreditCategory>;
+export type FakeHomepageWidget = Partial<RawHomepageWidget>;
 
 export interface FakeEntityMap {
   timetableEntryOverride: {
@@ -120,6 +122,11 @@ export interface FakeEntityMap {
     entity: FakeUECreditCategory;
     params: CreateUECreditCategoryParameters;
   };
+  homepageWidget: {
+    entity: FakeHomepageWidget;
+    params: CreateHomepageWidgetParameters;
+    deps: { user: FakeUser };
+  };
 }
 
 /**
@@ -149,19 +156,10 @@ export const createUser = entityFaker(
           ...pick(params, 'id', 'login', 'studentId', 'firstName', 'lastName', 'role'),
           infos: { create: pick(params, 'birthday', 'sex', 'nickname') },
         },
-        include: {
-          infos: true,
-          permissions: {
-            select: {
-              userPermissionId: true,
-            },
-          },
-        },
       });
     return {
-      ...omit(user, 'infos', 'permissions'),
-      ...omit(user.infos, 'id'),
-      permissions: user.permissions.map((perm) => perm.userPermissionId),
+      ...omit(user, 'infos'),
+      ...user.infos,
       token: await app().get(AuthService).signToken(user.id, user.login),
     };
   },
@@ -346,7 +344,7 @@ export const createUE = entityFaker(
   async (app, params) =>
     app()
       .get(PrismaService)
-      .uE.create({
+      .withDefaultBehaviour.uE.create({
         data: {
           ...omit(params, 'credits', 'info', 'workTime', 'inscriptionCode', 'openSemesters'),
           inscriptionCode: params.inscriptionCode ?? params.code,
@@ -464,7 +462,7 @@ export const createUERating = entityFaker(
   async (app, dependencies, params) =>
     app()
       .get(PrismaService)
-      .uEStarVote.create({
+      .withDefaultBehaviour.uEStarVote.create({
         data: {
           ...omit(params, 'criterionId', 'ueId', 'userId'),
           criterion: {
@@ -496,7 +494,7 @@ export const createComment = entityFaker(
   async (app, dependencies, params) =>
     app()
       .get(PrismaService)
-      .uEComment.create({
+      .withDefaultBehaviour.uEComment.create({
         data: {
           ...omit(params, 'ueId', 'authorId', 'semesterId'),
           ue: {
@@ -548,7 +546,7 @@ export const createCommentReply = entityFaker(
   async (app, dependencies, params) =>
     app()
       .get(PrismaService)
-      .uECommentReply.create({
+      .withDefaultBehaviour.uECommentReply.create({
         data: {
           ...omit(params, 'commentId', 'authorId'),
           comment: {
@@ -573,6 +571,22 @@ export const createUECreditCategory = entityFaker(
     code: faker.db.ueCreditCategory.code,
   },
   async (app, params) => app().get(PrismaService).uECreditCategory.create({ data: params }),
+);
+
+export type CreateHomepageWidgetParameters = FakeHomepageWidget;
+export const createHomepageWidget = entityFaker(
+  'homepageWidget',
+  {
+    widget: faker.datatype.string(),
+    x: faker.datatype.number(10),
+    y: faker.datatype.number(10),
+    width: faker.datatype.number(10),
+    height: faker.datatype.number(10),
+  },
+  async (app, deps, params) =>
+    app()
+      .get(PrismaService)
+      .userHomepageWidget.create({ data: { ...omit(params, 'userId'), user: { connect: { id: deps.user.id } } } }),
 );
 
 /**
