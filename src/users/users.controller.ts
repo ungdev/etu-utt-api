@@ -10,7 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { JwtGuard } from '../auth/guard';
-import { UsersSearchDto } from './dto/users-search.dto';
+import UsersSearchDto from './dto/users-search.dto';
 import { UserUpdateDto } from './dto/users-update.dto';
 import { GetUser } from '../auth/decorator';
 import { User } from '../users/interfaces/user.interface';
@@ -23,13 +23,8 @@ export default class UsersController {
   constructor(private usersService: UsersService) {}
 
   @Get()
-  async searchUsers(@Query() query: UsersSearchDto) {
-    return (await this.usersService.searchUsers(query)).map((user) => ({
-      id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      nickname: user.infos.nickname,
-    }));
+  async searchUser(@Query() queryParams: UsersSearchDto) {
+    return this.usersService.searchUsers(queryParams)
   }
 
   @Get('/profile')

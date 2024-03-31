@@ -25,6 +25,7 @@ import {
   RawUserAddress,
   RawUserSocialNetwork,
   RawUserPreference,
+  RawUserBranch,
 } from '../../src/prisma/types';
 import { faker } from '@faker-js/faker';
 import { AuthService } from '../../src/auth/auth.service';
@@ -37,13 +38,20 @@ import { omit, pick } from '../../src/utils';
  * The fake entities can be used like normal entities in the <code>it(string, () => void)</code> functions.
  * They are what is returned by the functions in this file.
  */
-export type FakeUser = Partial<
-  RawUser &
-    RawUserInfos & { permissions: string[]; token: string } & RawUserMailsPhones &
-    RawUserAddress &
-    RawUserSocialNetwork &
-    RawUserPreference
->;
+export type FakeUser = Partial<RawUser> & {
+  infos?: Partial<RawUserInfos>;
+  permissions?: string[];
+  token?: string;
+  mailsPhones?: Partial<RawUserMailsPhones>;
+  address?: Partial<RawUserAddress>;
+  socialNetwork?: Partial<RawUserSocialNetwork>;
+  preference?: Partial<RawUserPreference>;
+  branch?: Partial<RawUserBranch> & {
+    branch?: Partial<RawBranch>;
+    branchOption?: Partial<RawBranchOption>;
+    semester?: Partial<RawSemester>;
+  };
+};
 export type FakeTimetableGroup = Partial<RawTimetableGroup>;
 export type FakeTimetableEntry = Partial<RawTimetableEntry>;
 export type FakeTimetableEntryOverride = Partial<RawTimetableEntryOverride>;
@@ -94,7 +102,7 @@ export interface FakeEntityMap {
   };
   user: {
     entity: FakeUser;
-    params: FakeUser & { password?: string };
+    params: CreateUserParameters;
   };
   branch: {
     entity: FakeBranch;
@@ -148,6 +156,7 @@ export interface FakeEntityMap {
   };
 }
 
+export type CreateUserParameters = FakeUser & { password: string };
 /**
  * Creates a user in the database.
  * @param app The function that returns the app.
@@ -159,12 +168,27 @@ export const createUser = entityFaker(
   {
     login: faker.internet.userName,
     studentId: faker.datatype.number,
-    sex: 'OTHER' as Sex,
+    infos: {
+      sex: 'OTHER' as Sex,
+      birthday: new Date(0),
+      nickname: faker.datatype.string,
+    },
     lastName: faker.name.lastName,
     firstName: faker.name.firstName,
     userType: 'STUDENT' as UserType,
-    birthday: new Date(0),
     password: faker.internet.password,
+    branch: {
+      semesterNumber: faker.datatype.number,
+      branch: {
+        code: faker.datatype.string,
+      },
+      branchOption: {
+        code: faker.datatype.string,
+      },
+      semester:{
+        code : faker.datatype.string,
+      }
+    },
   },
   async (app, params) => {
     const user = await app()
@@ -173,7 +197,7 @@ export const createUser = entityFaker(
         data: {
           hash: params.hash ?? (await app().get(AuthService).getHash(params.password)),
           ...pick(params, 'id', 'login', 'studentId', 'firstName', 'lastName', 'userType'),
-          infos: { create: pick(params, 'birthday', 'sex', 'nickname') },
+          infos: { create: pick(params.infos, 'birthday', 'sex', 'nickname') },
           rgpd: { create: {} },
           preference: {
             create: {},
@@ -181,6 +205,22 @@ export const createUser = entityFaker(
           mailsPhones: { create: {} },
           addresse: { create: {} },
           socialNetwork: { create: {} },
+          branch: { 
+            create: {
+              
+              ...pick(params.branch, 'semesterNumber'),
+              ...(params.branch.branch.code
+                ? { branch: { connect: pick(params.branch.branch, 'code') } }
+                : {}),
+              ...(params.branch.branchOption.code
+                ? { branchOption: { connect: pick(params.branch.branchOption, 'code') } }
+                : {}),
+              ...(params.branch.semester.code
+                  ? { branchOption: { connect: pick(params.branch.branchOption, 'code') } }
+                  : {}),
+            },
+            
+          },
         },
         include: {
           infos: true,
@@ -193,15 +233,29 @@ export const createUser = entityFaker(
           addresse: true,
           socialNetwork: true,
           preference: true,
+          branch: {
+            select: {
+              semesterNumber: true,
+              branch: {
+                select: { code: true },
+              },
+              branchOption: {
+                select: { code: true },
+              },
+            },
+          },
         },
       });
     return {
-      ...omit(user, 'infos', 'preference', 'mailsPhones', 'socialNetwork', 'addresse'),
+      ...omit(user, 'infos', 'preference', 'mailsPhones', 'socialNetwork', 'addresse', 'branch'),
       ...omit(user.mailsPhones, 'id'),
       ...omit(user.socialNetwork, 'id'),
       ...omit(user.addresse, 'id'),
       ...omit(user.preference, 'id'),
       ...omit(user.infos, 'id'),
+      ...omit(user.branch, 'id', 'branch', 'branchOption'),
+      ...omit(user.branch.branch, 'id'),
+      ...omit(user.branch.branchOption, 'id'),
       permissions: user.permissions.map((perm) => perm.userPermissionId),
       token: await app().get(AuthService).signToken(user.id, user.login),
     };

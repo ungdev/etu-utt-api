@@ -1,61 +1,102 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { User, UserAssoMembership, UserComplete } from './interfaces/user.interface';
-import { UsersSearchDto } from './dto/users-search.dto';
+import UsersSearchDto from './dto/users-search.dto';
 import { UserUpdateDto } from './dto/users-update.dto';
 import { omit } from '../utils';
+import { SelectUsersOverview, UserOverView } from '../users/interfaces/user-overview.interface';
+import { ConfigModule } from '../config/config.module';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export default class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, readonly config: ConfigModule) {}
 
   async searchUsers(dto: UsersSearchDto) {
-    return this.prisma.user.findMany({
-      where: {
-        AND: [
-          {
-            firstName: {
-              contains: dto.firstName,
-            },
-          },
-          {
-            lastName: {
-              contains: dto.lastName,
-            },
-          },
-          {
-            infos: {
-              nickname: {
-                contains: dto.nickname,
-              },
-            },
-          },
-          {
+    const where = {
+      firstName: dto.firstName ? { contains: dto.firstName } : undefined,
+      lastName: dto.lastName ? { contains: dto.lastName } : undefined,
+      studentId: dto.studentId ?? undefined,
+      infos: {
+        nickname: dto.nickname ? { contains: dto.nickname } : undefined,
+      },
+      mailsPhones: {
+        OR: [
+          { mailUTT: dto.mail ? { contains: dto.mail } : undefined },
+          { mailPersonal: dto.mail ? { contains: dto.mail } : undefined },
+        ],
+        phoneNumber: dto.phone ? { contains: dto.phone } : undefined,
+      },
+      branch: {
+        semesterNumber: dto.semesterNumber,
+        branch: {
+          code: { contains: dto.branchCode },
+        },
+        branchOption: {
+          code: { contains: dto.branchOptionCode },
+        },
+      },
+      ...(dto.q
+        ? {
             OR: [
+              { firstName: { contains: dto.q } },
+              { lastName: { contains: dto.q } },
+              { infos: { nickname: { contains: dto.q } } },
               {
-                firstName: {
-                  contains: dto.name,
-                },
-              },
-              {
-                lastName: {
-                  contains: dto.name,
-                },
-              },
-              {
-                infos: {
-                  nickname: {
-                    contains: dto.name,
-                  },
+                mailsPhones: {
+                  mailUTT: { contains: dto.q },
+                  mailPersonal: { contains: dto.q },
+                  phoneNumber: { contains: dto.q },
                 },
               },
             ],
+          }
+        : {}),
+    } satisfies Prisma.UserWhereInput;
+    const [items, itemCount] = await this.prisma.$transaction([
+      SelectUsersOverview(
+        this.prisma.user.findMany({
+          where: where,
+          take: this.config.PAGINATION_PAGE_SIZE,
+          skip: ((dto.page ?? 1) - 1) * this.config.PAGINATION_PAGE_SIZE,
+          include: {
+            infos: true,
+            mailsPhones: true,
+            branch: {
+              include: {
+                branch: true,
+                branchOption: true,
+              },
+            },
           },
-        ],
-      },
-      include: { infos: true },
-      orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
-    });
+          orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
+        }),
+      ),
+      this.prisma.user.count({ where }),
+    ]);
+    console.log(
+      await this.prisma.user.findMany({
+        where: where,
+        take: this.config.PAGINATION_PAGE_SIZE,
+        skip: ((dto.page ?? 1) - 1) * this.config.PAGINATION_PAGE_SIZE,
+        include: {
+          infos: true,
+          mailsPhones: true,
+          branch: {
+            include: {
+              branch: true,
+              branchOption: true,
+            },
+          },
+        },
+        orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
+      }),
+    );
+    return {
+      items,
+      itemCount,
+      itemsPerPage: this.config.PAGINATION_PAGE_SIZE,
+    };
   }
 
   async fetchUser(userId: string): Promise<User> {
@@ -83,7 +124,6 @@ export default class UsersService {
     });
   }
 
-  
   async doesUserExist(search: { id?: string; login?: string }): Promise<boolean> {
     return (await this.prisma.user.count({ where: search })) > 0;
   }
@@ -142,7 +182,7 @@ export default class UsersService {
             displayAddresse: user.preference.displayAddresse,
             displaySex: user.preference.displaySex,
             displayDiscord: user.preference.displayDiscord,
-            displayTimetable:user.preference.displayTimetable
+            displayTimetable: user.preference.displayTimetable,
           }
         : undefined,
     };
@@ -220,7 +260,7 @@ export default class UsersService {
             displayAddresse: dto.displayAddresse,
             displaySex: dto.displaySex,
             displayDiscord: dto.displayDiscord,
-            displayTimetable: dto.displayTimetable
+            displayTimetable: dto.displayTimetable,
           },
         },
       },

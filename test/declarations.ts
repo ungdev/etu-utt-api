@@ -6,7 +6,7 @@ import { UEComment } from '../src/ue/interfaces/comment.interface';
 import { UECommentReply } from '../src/ue/interfaces/comment-reply.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { UERating } from 'src/ue/interfaces/rate.interface';
-import { FakeUE } from './utils/fakedb';
+import { FakeUE, FakeUser } from './utils/fakedb';
 import { ConfigModule } from '../src/config/config.module';
 import { AppProvider } from './utils/test_utils';
 import { omit, pick } from '../src/utils';
@@ -45,6 +45,15 @@ SpecProto.expectUE = function (ue: FakeUE, rates: Array<{ criterionId: string; v
       end: semester.end.toISOString(),
     })),
     starVotes: Object.fromEntries(rates.map((rate) => [rate.criterionId, rate.value])),
+  });
+};
+SpecProto.expectUsers = function (app: AppProvider, users: FakeUser[], count: number) {
+  return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonLike({
+    items: users.map((user) => ({
+      ...omit(user, 'id'),
+    })),
+    itemCount: count,
+    itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
   });
 };
 SpecProto.expectUEs = function (app: AppProvider, ues: FakeUE[], count: number) {
