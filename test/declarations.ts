@@ -6,10 +6,10 @@ import { UEComment } from '../src/ue/interfaces/comment.interface';
 import { UECommentReply } from '../src/ue/interfaces/comment-reply.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { UERating } from 'src/ue/interfaces/rate.interface';
-import { FakeUE } from './utils/fakedb';
+import { FakeHomepageWidget, FakeUE } from './utils/fakedb';
 import { ConfigModule } from '../src/config/config.module';
 import { AppProvider } from './utils/test_utils';
-import { omit, pick } from '../src/utils';
+import { omit, pick, sortArray } from '../src/utils';
 
 /** Shortcut function for `this.expectStatus(200).expectJsonLike` */
 function expect<T>(obj: JsonLikeVariant<T>) {
@@ -39,7 +39,7 @@ SpecProto.expectUE = function (ue: FakeUE, rates: Array<{ criterionId: string; v
       ...pick(branchOption, 'code', 'name'),
       branch: pick(branchOption.branch, 'code', 'name'),
     })),
-    openSemester: ue.openSemesters.map((semester) => ({
+    openSemester: sortArray(ue.openSemesters, (semester) => semester.start.toISOString()).map((semester) => ({
       ...semester,
       start: semester.start.toISOString(),
       end: semester.end.toISOString(),
@@ -73,5 +73,16 @@ SpecProto.expectUECommentReply = expectOkOrCreate<UECommentReply>;
 SpecProto.expectUECriteria = expect<Criterion[]>;
 SpecProto.expectUERate = expect<UERating>;
 SpecProto.expectUERates = expect<UERating[]>;
+SpecProto.expectHomepageWidgets = function (widgets: Omit<FakeHomepageWidget, 'id' | 'userId'>[]) {
+  return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonLike(
+    widgets.map((widget) => ({
+      x: widget.x,
+      y: widget.y,
+      width: widget.width,
+      height: widget.height,
+      widget: widget.widget,
+    })),
+  );
+};
 
 export { Spec, JsonLikeVariant };

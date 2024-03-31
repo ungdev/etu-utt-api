@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { User } from './interfaces/user.interface';
 import { UsersSearchDto } from './dto/users-search.dto';
+import { ProfileUpdateDto } from '../profile/dto/profile-update.dto';
 
 @Injectable()
 export default class UsersService {
@@ -51,20 +52,20 @@ export default class UsersService {
           },
         ],
       },
-      include: { infos: true },
-      orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
     });
   }
 
-  async fetchUser(userId: string): Promise<User> {
-    const user = await this.prisma.user.findUnique({
+  fetchUser(userId: string): Promise<User> {
+    return this.prisma.user.findUnique({
       where: { id: userId },
-      include: { infos: true, permissions: true },
     });
-    if (!user) return null;
-    const transformedUser: User = { ...user, permissions: undefined };
-    transformedUser.permissions = user.permissions.map((permission) => permission.userPermissionId);
-    return transformedUser;
+  }
+
+  updateUser(userId: string, dto: ProfileUpdateDto): Promise<User> {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { infos: { update: { nickname: dto.nickname, website: dto.website, passions: dto.passions } } },
+    });
   }
 
   async doesUserExist(search: { id?: string; login?: string }): Promise<boolean> {

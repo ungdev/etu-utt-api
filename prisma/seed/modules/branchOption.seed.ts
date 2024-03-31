@@ -2,6 +2,8 @@ import { faker } from '@faker-js/faker';
 import { RawBranch, RawBranchOption } from '../../../src/prisma/types';
 import { PrismaClient } from '@prisma/client';
 
+const MAX_FAKER_ROUNDS = 4;
+
 export default function branchOptionSeed(prisma: PrismaClient, branches: RawBranch[]): Promise<RawBranchOption[]> {
   console.log('Seeding branch options...');
   const branchOptions: Promise<RawBranchOption>[] = [];
@@ -15,12 +17,13 @@ export default function branchOptionSeed(prisma: PrismaClient, branches: RawBran
           descriptionTranslation: {
             create: {
               fr: "C'est avant la filière x)",
+              en: 'Before the filière',
             },
           },
         },
       }),
     );
-    const branchOptionsCount = faker.datatype.number({ min: 0, max: 4 });
+    const branchOptionsCount = faker.datatype.number({ min: 0, max: MAX_FAKER_ROUNDS });
     for (let i = 0; i < branchOptionsCount; i++) {
       branchOptions.push(
         prisma.uTTBranchOption.create({
@@ -31,6 +34,7 @@ export default function branchOptionSeed(prisma: PrismaClient, branches: RawBran
             descriptionTranslation: {
               create: {
                 fr: faker.random.words(10),
+                en: faker.random.words(10),
               },
             },
           },

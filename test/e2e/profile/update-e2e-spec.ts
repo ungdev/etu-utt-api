@@ -96,9 +96,7 @@ const UpdateE2ESpec = e2eSuite('Update', (app) => {
         passions: "testing, that's fun, i swear",
       })
       .expectStatus(201);
-    const user = await app()
-      .get(PrismaService)
-      .user.findUnique({ where: { id }, include: { infos: true } });
+    const user = await app().get(PrismaService).user.findUnique({ where: { id } });
     expect(user.infos.website).toBe('https://ent.utt.fr');
     expect(user.infos.nickname).toBe('EtuUTT');
     expect(user.infos.passions).toBe("testing, that's fun, i swear");
@@ -111,9 +109,7 @@ const UpdateE2ESpec = e2eSuite('Update', (app) => {
       .withBearerToken(token)
       .withBody({ website: 'https://etu.utt.fr' })
       .expectStatus(201);
-    const user = await app()
-      .get(PrismaService)
-      .user.findUnique({ where: { id }, include: { infos: true } });
+    const user = await app().get(PrismaService).user.findUnique({ where: { id } });
     expect(user.infos.website).toBe('https://etu.utt.fr');
     expect(user.infos.nickname).toBe('EtuUTT');
     expect(user.infos.passions).toBe("testing, that's fun, i swear");

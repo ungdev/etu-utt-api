@@ -526,7 +526,8 @@ model User {
   courseExchanges       UECourseExchange[]
   courseExchangeReplies UECourseExchangeReply[]
   commentUpvotes        UECommentUpvote[]
-  userTimetableGroup    UserTimetableGroup[]
+  timetableGroups       UserTimetableGroup[]
+  homepageWidgets       UserHomepageWidget[]
 }
 
 model UserAddress {
@@ -637,6 +638,18 @@ model UserOtherAttributValue {
 
   user     User              @relation(fields: [userId], references: [id])
   attribut UserOtherAttribut @relation(fields: [attributId], references: [name])
+}
+
+model UserHomepageWidget {
+  id     String @id @default(uuid())
+  widget String @db.VarChar(20)
+  x      Int
+  y      Int
+  width  Int
+  height Int
+  userId String
+
+  user User @relation(fields: [userId], references: [id])
 }
 
 model UserPreference {

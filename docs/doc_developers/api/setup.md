@@ -69,17 +69,22 @@ Si vous avez une erreur, c'est peut-être que votre service n'est pas démarré.
 Vous allez avoir besoin de créer un utilisateur `dev` :
 
 ```sql
-CREATE USER 'dev'@'localhost' IDENTIFIED BY 'dev';
-GRANT ALL PRIVILEGES ON *.* TO 'dev'@'localhost' WITH GRANT OPTION;
-FLUSH PRIVILEGES;
+CREATE
+USER 'dev'@'localhost' IDENTIFIED BY 'dev';
+GRANT ALL PRIVILEGES ON *.* TO
+'dev'@'localhost' WITH GRANT OPTION;
+FLUSH
+PRIVILEGES;
 ```
 
 Puis de créer 2 bases de données : une base de données pour l'environnement de dev, et une pour l'environnement de
 test :
 
 ```sql
-CREATE DATABASE etuutt_dev;
-CREATE DATABASE etuutt_test;
+CREATE
+DATABASE etuutt_dev;
+CREATE
+DATABASE etuutt_test;
 ```
 
 Vous pouvez maintenant quitter MariaDB avec la commande `exit`.
@@ -150,7 +155,7 @@ Les commandes suivantes sont utiles pour administrer la base de données :
 pnpm db:reset
 # Lance l'interface de Prisma pour visualiser et interagir avec la base de données. Il est disponible à l'adresse http://localhost:5555.
 pnpm db:studio
-# Rempli la base de données avec des données de test.
+# Rempli la base de données avec des données de test. Les mots de passe seront tous "etuutt".
 pnpm db:seed
 ```
 
