@@ -30,6 +30,28 @@ export class TimetableController {
     }));
   }
 
+  @Get('/current/:daysCount/:date/:month/:year')
+  async getSelfTimetable(
+    @Param('daysCount', ParseIntPipe) daysCount: number,
+    @Param('date', ParseIntPipe) date: number,
+    @Param('month', ParseIntPipe) month: number,
+    @Param('year', ParseIntPipe) year: number,
+    @GetUser() user: User,
+  ) {
+    const dateObject = new Date(year, month - 1, date);
+    const timetable = await this.timetableService.getTimetableOfUserInNextXMs(
+      user.id,
+      dateObject,
+      daysCount * 24 * 3_600_000,
+    );
+    return timetable.map((timetable) => ({
+      id: `${timetable.index}@${timetable.entryId}`,
+      start: timetable.start,
+      end: timetable.end,
+      location: timetable.location,
+    }));
+  }
+
   @Get('/:entryId')
   async getEntryDetails(
     @Param('entryId', new RegexPipe(regex.timetableOccurrenceId)) entryId: string,
