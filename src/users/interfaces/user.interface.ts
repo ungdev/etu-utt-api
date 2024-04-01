@@ -69,7 +69,7 @@ const USER_SELECT_FILTER = {
         language: true,
         birthdayDisplayOnlyAge: true,
         wantDaymail: true,
-        displayAddresse: true,
+        displayAddress: true,
         displayBirthday: true,
         displayDiscord: true,
         displayMailPersonal: true,
@@ -78,7 +78,7 @@ const USER_SELECT_FILTER = {
         displayTimetable: true,
       },
     },
-    addresse: {
+    address: {
       select: {
         street: true,
         postalCode: true,

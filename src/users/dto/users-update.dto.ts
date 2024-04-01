@@ -87,7 +87,7 @@ export class UserUpdateDto {
 
   @IsBoolean()
   @IsOptional()
-  displayAddresse?: boolean;
+  displayAddress?: boolean;
 
   @IsBoolean()
   @IsOptional()

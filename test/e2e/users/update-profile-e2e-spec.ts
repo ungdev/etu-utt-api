@@ -29,7 +29,7 @@ const UpdateProfile = e2eSuite('PATCH /users/profile', (app) => {
       .patch(`/users/profile`)
       .withBody({
         facebook: 'fbProfile',
-        displayAddresse: true,
+        displayAddress: true,
       })
       .expectJson({
         avatar: user.infos.avatar,

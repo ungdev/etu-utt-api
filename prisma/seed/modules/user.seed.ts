@@ -36,7 +36,7 @@ export async function userSeed(prisma: PrismaClient): Promise<RawUser[]> {
             },
           },
           preference: { create: {} },
-          addresse: { create: {} },
+          address: { create: {} },
           socialNetwork: { create: {} },
         },
       }),

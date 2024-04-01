@@ -204,7 +204,7 @@ export const createUser = entityFaker(
             create: {},
           },
           mailsPhones: { create: {} },
-          addresse: {
+          address: {
             create: {
               street: params.address.street,
               postalCode: params.address.postalCode,
@@ -237,7 +237,7 @@ export const createUser = entityFaker(
             },
           },
           mailsPhones: true,
-          addresse: true,
+          address: true,
           socialNetwork: true,
           preference: true,
           branch: {
@@ -251,8 +251,7 @@ export const createUser = entityFaker(
         },
       });
     return {
-      ...omit(user, 'addresse'),
-      address: user.addresse,
+      ...user,
       permissions: user.permissions.map((perm) => perm.userPermissionId),
       token: await app().get(AuthService).signToken(user.id, user.login),
     };

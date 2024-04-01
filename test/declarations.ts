@@ -68,7 +68,7 @@ SpecProto.expectUsers = function (app: AppProvider, users: FakeUser[], count: nu
         branch: user.branch ? pick(user.branch, 'id') : null,
         mailsPhones: omit(user.mailsPhones, 'id'),
         socialNetwork: omit(user.socialNetwork, 'id'),
-        addresse: omit(user.address, 'id'),
+        address: omit(user.address, 'id'),
         preference: omit(user.preference, 'id'),
       })),
       itemCount: count,

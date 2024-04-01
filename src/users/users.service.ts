@@ -111,17 +111,14 @@ export default class UsersService {
           ? user.mailsPhones.phoneNumber
           : undefined,
       street:
-        (user.preference.displayAddresse || isCurrentUser) && user.addresse !== null ? user.addresse.street : undefined,
+        (user.preference.displayAddress || isCurrentUser) && user.address !== null ? user.address.street : undefined,
       postalCode:
-        (user.preference.displayAddresse || isCurrentUser) && user.addresse !== null
-          ? user.addresse.postalCode
+        (user.preference.displayAddress || isCurrentUser) && user.address !== null
+          ? user.address.postalCode
           : undefined,
-      city:
-        (user.preference.displayAddresse || isCurrentUser) && user.addresse !== null ? user.addresse.city : undefined,
+      city: (user.preference.displayAddress || isCurrentUser) && user.address !== null ? user.address.city : undefined,
       country:
-        (user.preference.displayAddresse || isCurrentUser) && user.addresse !== null
-          ? user.addresse.country
-          : undefined,
+        (user.preference.displayAddress || isCurrentUser) && user.address !== null ? user.address.country : undefined,
       facebook: user.socialNetwork === null ? undefined : user.socialNetwork.facebook,
       twitter: user.socialNetwork === null ? undefined : user.socialNetwork.twitter,
       instagram: user.socialNetwork === null ? undefined : user.socialNetwork.instagram,
@@ -137,7 +134,7 @@ export default class UsersService {
             displayBirthday: user.preference.displayBirthday,
             displayMailPersonal: user.preference.displayMailPersonal,
             displayPhone: user.preference.displayPhone,
-            displayAddress: user.preference.displayAddresse,
+            displayAddress: user.preference.displayAddress,
             displaySex: user.preference.displaySex,
             displayDiscord: user.preference.displayDiscord,
             displayTimetable: user.preference.displayTimetable,
@@ -190,7 +187,7 @@ export default class UsersService {
             phoneNumber: dto.phone,
           },
         },
-        addresse: {
+        address: {
           update: {
             street: dto.street,
             postalCode: dto.postalCode,
@@ -215,7 +212,7 @@ export default class UsersService {
             displayBirthday: dto.displayBirthday,
             displayMailPersonal: dto.displayMailPersonal,
             displayPhone: dto.displayPhone,
-            displayAddresse: dto.displayAddresse,
+            displayAddress: dto.displayAddress,
             displaySex: dto.displaySex,
             displayDiscord: dto.displayDiscord,
             displayTimetable: dto.displayTimetable,

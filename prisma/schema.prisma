@@ -496,7 +496,7 @@ model User {
   rgpdId          String  @unique
   preferenceId    String  @unique
   infosId         String  @unique
-  addresseId      String  @unique
+  addressId       String  @unique
   branchId        String? @unique
   mailsPhonesId   String  @unique
   socialNetworkId String  @unique
@@ -512,7 +512,7 @@ model User {
   formation             UserFormation?
   preference            UserPreference              @relation(fields: [preferenceId], references: [id])
   infos                 UserInfos                   @relation(fields: [infosId], references: [id])
-  addresse              UserAddress                 @relation(fields: [addresseId], references: [id])
+  address               UserAddress                 @relation(fields: [addressId], references: [id])
   mailsPhones           UserMailsPhones             @relation(fields: [mailsPhonesId], references: [id])
   otherAttributes       UserOtherAttributValue[]
   UEsSubscriptions      UserUESubscription[]

@@ -30,7 +30,7 @@ const GetCurrentUserE2ESpec = e2eSuite('GET /users/current', (app) => {
       website: userFromDb.infos.website,
       branche: userFromDb.branch === null ? undefined : userFromDb.branch.branch.code,
       semestre: userFromDb.branch === null ? undefined : userFromDb.branch.semesterNumber,
-      filiere: userFromDb.branch === null ? undefined : userFromDb.branch.branchOption.code,
+      branchOption: userFromDb.branch === null ? undefined : userFromDb.branch.branchOption.code,
       mailUTT: userFromDb.mailsPhones === null ? undefined : userFromDb.mailsPhones.mailUTT,
       mailPersonal:
         userFromDb.preference.displayMailPersonal && !(userFromDb.mailsPhones === null)
@@ -40,10 +40,10 @@ const GetCurrentUserE2ESpec = e2eSuite('GET /users/current', (app) => {
         userFromDb.preference.displayPhone && !(userFromDb.mailsPhones === null)
           ? userFromDb.mailsPhones.phoneNumber
           : undefined,
-      street: userFromDb.preference.displayAddresse ? userFromDb.addresse.street : undefined,
-      postalCode: userFromDb.preference.displayAddresse ? userFromDb.addresse.postalCode : undefined,
-      city: userFromDb.preference.displayAddresse ? userFromDb.addresse.city : undefined,
-      country: userFromDb.preference.displayAddresse ? userFromDb.addresse.country : undefined,
+      street: userFromDb.preference.displayAddress ? userFromDb.address.street : undefined,
+      postalCode: userFromDb.preference.displayAddress ? userFromDb.address.postalCode : undefined,
+      city: userFromDb.preference.displayAddress ? userFromDb.address.city : undefined,
+      country: userFromDb.preference.displayAddress ? userFromDb.address.country : undefined,
       facebook: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.facebook,
       twitter: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.twitter,
       instagram: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.instagram,
