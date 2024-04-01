@@ -3,7 +3,7 @@ import { UEComment } from 'src/ue/interfaces/comment.interface';
 import { UECommentReply } from 'src/ue/interfaces/comment-reply.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { UERating } from 'src/ue/interfaces/rate.interface';
-import { FakeUE, FakeUser } from './utils/fakedb';
+import { FakeUE, FakeUser, FakeHomepageWidget } from './utils/fakedb';
 import { AppProvider } from './utils/test_utils';
 
 type JsonLikeVariant<T> = {
@@ -54,5 +54,7 @@ declare module './declarations' {
     expectUERate(rate: JsonLikeVariant<UERating>): this;
     /** expects to return the given {@link rate} list */
     expectUERates(rate: JsonLikeVariant<UERating[]>): this;
+    /** expects to return the given {@link FakeHomepageWidget}s */
+    expectHomepageWidgets(widgets: JsonLikeVariant<FakeHomepageWidget[]>): this;
   }
 }

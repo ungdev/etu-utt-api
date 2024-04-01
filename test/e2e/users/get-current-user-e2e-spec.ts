@@ -16,29 +16,21 @@ const GetCurrentUserE2ESpec = e2eSuite('GET /users/current', (app) => {
       .get(PrismaService)
       .user.findUnique({
         where: { login: user.login },
-        include: {
-          infos: true,
-          branch: true,
-          mailsPhones: true,
-          socialNetwork: true,
-          preference: true,
-          addresse: true,
-        },
       });
     const expectedBody = {
       id: userFromDb.id,
       firstName: userFromDb.firstName,
       lastName: userFromDb.lastName,
-      nickName: userFromDb.infos.nickname,
+      nickname: userFromDb.infos.nickname,
       avatar: userFromDb.infos.avatar,
       sex: userFromDb.preference.displaySex ? userFromDb.infos.sex : undefined,
       nationality: userFromDb.infos.nationality,
       birthday: userFromDb.preference.displayBirthday ? userFromDb.infos.birthday : undefined,
       passions: userFromDb.infos.passions,
       website: userFromDb.infos.website,
-      branche: userFromDb.branch === null ? undefined : userFromDb.branch.branchId,
+      branche: userFromDb.branch === null ? undefined : userFromDb.branch.branch.code,
       semestre: userFromDb.branch === null ? undefined : userFromDb.branch.semesterNumber,
-      filiere: userFromDb.branch === null ? undefined : userFromDb.branch.branchOptionId,
+      filiere: userFromDb.branch === null ? undefined : userFromDb.branch.branchOption.code,
       mailUTT: userFromDb.mailsPhones === null ? undefined : userFromDb.mailsPhones.mailUTT,
       mailPersonal:
         userFromDb.preference.displayMailPersonal && !(userFromDb.mailsPhones === null)

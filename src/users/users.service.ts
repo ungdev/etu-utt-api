@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { User, UserAssoMembership, UserComplete } from './interfaces/user.interface';
+import { User, UserAssoMembership } from './interfaces/user.interface';
 import UsersSearchDto from './dto/users-search.dto';
 import { UserUpdateDto } from './dto/users-update.dto';
 import { omit } from '../utils';
-import { SelectUsersOverview, UserOverView } from '../users/interfaces/user-overview.interface';
 import { ConfigModule } from '../config/config.module';
 import { Prisma } from '@prisma/client';
 
@@ -53,45 +52,12 @@ export default class UsersService {
           }
         : {}),
     } satisfies Prisma.UserWhereInput;
-    const [items, itemCount] = await this.prisma.$transaction([
-      SelectUsersOverview(
-        this.prisma.user.findMany({
-          where: where,
-          take: this.config.PAGINATION_PAGE_SIZE,
-          skip: ((dto.page ?? 1) - 1) * this.config.PAGINATION_PAGE_SIZE,
-          include: {
-            infos: true,
-            mailsPhones: true,
-            branch: {
-              include: {
-                branch: true,
-                branchOption: true,
-              },
-            },
-          },
-          orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
-        }),
-      ),
-      this.prisma.user.count({ where }),
-    ]);
-    console.log(
-      await this.prisma.user.findMany({
-        where: where,
-        take: this.config.PAGINATION_PAGE_SIZE,
-        skip: ((dto.page ?? 1) - 1) * this.config.PAGINATION_PAGE_SIZE,
-        include: {
-          infos: true,
-          mailsPhones: true,
-          branch: {
-            include: {
-              branch: true,
-              branchOption: true,
-            },
-          },
-        },
-        orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
-      }),
-    );
+    const items = await this.prisma.user.findMany({
+      where,
+      take: this.config.PAGINATION_PAGE_SIZE,
+      skip: ((dto.page ?? 1) - 1) * this.config.PAGINATION_PAGE_SIZE,
+    });
+    const itemCount = await this.prisma.user.count({ where });
     return {
       items,
       itemCount,
@@ -99,28 +65,15 @@ export default class UsersService {
     };
   }
 
-  async fetchUser(userId: string): Promise<User> {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      include: { infos: true, permissions: true },
-    });
-    if (!user) return null;
-    const transformedUser: User = { ...user, permissions: undefined };
-    transformedUser.permissions = user.permissions.map((permission) => permission.userPermissionId);
-    return transformedUser;
-  }
-
-  async fetchWholeUser(userId: string): Promise<UserComplete> {
+  fetchUser(userId: string): Promise<User> {
     return this.prisma.user.findUnique({
       where: { id: userId },
-      include: {
-        infos: true,
-        branch: true,
-        mailsPhones: true,
-        socialNetwork: true,
-        preference: true,
-        addresse: true,
-      },
+    });
+  }
+
+  async fetchWholeUser(userId: string): Promise<User> {
+    return this.prisma.user.findUnique({
+      where: { id: userId },
     });
   }
 
@@ -128,21 +81,21 @@ export default class UsersService {
     return (await this.prisma.user.count({ where: search })) > 0;
   }
 
-  filterInfo(user: UserComplete, isCurrentUser: boolean) {
+  filterInfo(user: User, isCurrentUser: boolean) {
     return {
       id: user.id,
       firstName: user.firstName,
       lastName: user.lastName,
-      nickName: user.infos.nickname,
+      nickname: user.infos.nickname,
       avatar: user.infos.avatar,
       sex: user.preference.displaySex || isCurrentUser ? user.infos.sex : undefined,
       nationality: user.infos.nationality,
       birthday: user.preference.displayBirthday || isCurrentUser ? user.infos.birthday : undefined,
       passions: user.infos.passions,
       website: user.infos.website,
-      branch: user.branch === null ? undefined : user.branch.branchId,
-      semestre: user.branch === null ? undefined : user.branch.semesterNumber,
-      branchOption: user.branch === null ? undefined : user.branch.branchOptionId,
+      branch: user.branch === null ? undefined : user.branch.branch.code,
+      semester: user.branch === null ? undefined : user.branch.semesterNumber,
+      branchOption: user.branch === null ? undefined : user.branch.branchOption.code,
       mailUTT: user.mailsPhones === null ? undefined : user.mailsPhones.mailUTT,
       mailPersonal:
         (user.preference.displayMailPersonal || isCurrentUser) && user.mailsPhones !== null
@@ -179,7 +132,7 @@ export default class UsersService {
             displayBirthday: user.preference.displayBirthday,
             displayMailPersonal: user.preference.displayMailPersonal,
             displayPhone: user.preference.displayPhone,
-            displayAddresse: user.preference.displayAddresse,
+            displayAddress: user.preference.displayAddresse,
             displaySex: user.preference.displaySex,
             displayDiscord: user.preference.displayDiscord,
             displayTimetable: user.preference.displayTimetable,

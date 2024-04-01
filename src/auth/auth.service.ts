@@ -72,7 +72,7 @@ export class AuthService {
    */
   async signin(dto: AuthSignInDto): Promise<string> {
     // find the user by login, if it does not exist, throw exception
-    const user = await this.prisma.user.findUnique({
+    const user = await this.prisma.withDefaultBehaviour.user.findUnique({
       where: {
         login: dto.login,
       },
@@ -190,7 +190,7 @@ export class AuthService {
    * @param data {@link RegisterData} that should be contained in the token.
    */
   signRegisterToken(data: RegisterData): string {
-    return this.jwt.sign(data, { expiresIn: 60, secret: this.config.get('JWT_SECRET') });
+    return this.jwt.sign(data, { expiresIn: 60, secret: this.config.JWT_SECRET });
   }
 
   /**
@@ -198,7 +198,7 @@ export class AuthService {
    * @param password The password to hash.
    */
   getHash(password: string): Promise<string> {
-    const saltRounds = Number.parseInt(this.config.SALT_ROUNDS);
+    const saltRounds = this.config.SALT_ROUNDS;
     return bcrypt.hash(password, saltRounds);
   }
 }

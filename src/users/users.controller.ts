@@ -24,7 +24,7 @@ export default class UsersController {
 
   @Get()
   async searchUser(@Query() queryParams: UsersSearchDto) {
-    return this.usersService.searchUsers(queryParams)
+    return this.usersService.searchUsers(queryParams);
   }
 
   @Get('/profile')

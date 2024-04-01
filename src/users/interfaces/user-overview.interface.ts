@@ -4,7 +4,7 @@ const USER_OVERVIEW_SELECT_FILTER = {
   select: {
     firstName: true,
     lastName: true,
-    nickName: true,
+    nickname: true,
     avatar: true,
     semester: true,
     branch: true,

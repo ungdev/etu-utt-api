@@ -147,7 +147,7 @@ model Semester {
   courses               UECourse[]
   BDEContributionsStart UserBDEContribution[] @relation("startSemester")
   BDEContributionsEnd   UserBDEContribution[] @relation("endSemester")
-  branchs              UserBranch[]
+  branchs               UserBranch[]
   UESubscriptions       UserUESubscription[]
   etuUTTTeams           UserEtuUTTTeam[]
 }
@@ -496,14 +496,14 @@ model User {
   rgpdId          String  @unique
   preferenceId    String  @unique
   infosId         String  @unique
-  addresseId      String @unique
-  branchId       String? @unique
-  mailsPhonesId   String @unique
-  socialNetworkId String @unique
+  addresseId      String  @unique
+  branchId        String? @unique
+  mailsPhonesId   String  @unique
+  socialNetworkId String  @unique
 
   userType              UserType
   timestamps            UserTimestamps?
-  socialNetwork         UserSocialNetwork          @relation(fields: [socialNetworkId], references: [id])
+  socialNetwork         UserSocialNetwork           @relation(fields: [socialNetworkId], references: [id])
   bans                  UserBan[]
   rgpd                  UserRGPD                    @relation(fields: [rgpdId], references: [id])
   bdeContributions      UserBDEContribution[]
@@ -512,8 +512,8 @@ model User {
   formation             UserFormation?
   preference            UserPreference              @relation(fields: [preferenceId], references: [id])
   infos                 UserInfos                   @relation(fields: [infosId], references: [id])
-  addresse              UserAddress                @relation(fields: [addresseId], references: [id])
-  mailsPhones           UserMailsPhones            @relation(fields: [mailsPhonesId], references: [id])
+  addresse              UserAddress                 @relation(fields: [addresseId], references: [id])
+  mailsPhones           UserMailsPhones             @relation(fields: [mailsPhonesId], references: [id])
   otherAttributes       UserOtherAttributValue[]
   UEsSubscriptions      UserUESubscription[]
   UEStarVotes           UEStarVote[]
@@ -533,11 +533,12 @@ model User {
   courseExchanges       UECourseExchange[]
   courseExchangeReplies UECourseExchangeReply[]
   commentUpvotes        UECommentUpvote[]
-  userTimetableGroup    UserTimetableGroup[]
+  timetableGroups       UserTimetableGroup[]
+  homepageWidgets       UserHomepageWidget[]
 }
 
 model UserAddress {
-  id         String @id @default(uuid())
+  id         String  @id @default(uuid())
   street     String? @db.VarChar(255)
   postalCode String? @db.VarChar(20)
   city       String? @db.VarChar(255)
@@ -569,16 +570,16 @@ model UserBDEContribution {
 }
 
 model UserBranch {
-  id             String   @id @default(uuid())
-  semesterNumber Int      @db.SmallInt
-  createdAt      DateTime @default(now())
-  branchId       String
-  branchOptionId String
-  semesterId     String
+  id               String   @id @default(uuid())
+  semesterNumber   Int      @db.SmallInt
+  createdAt        DateTime @default(now())
+  branchCode       String
+  branchOptionCode String
+  semesterId       String
 
   user         User?
-  branch       UTTBranch       @relation(fields: [branchId], references: [code])
-  branchOption UTTBranchOption @relation(fields: [branchOptionId], references: [code])
+  branch       UTTBranch       @relation(fields: [branchCode], references: [code])
+  branchOption UTTBranchOption @relation(fields: [branchOptionCode], references: [code])
   semester     Semester        @relation(fields: [semesterId], references: [code])
 }
 
@@ -604,14 +605,14 @@ model UserFormation {
 }
 
 model UserInfos {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   sex         Sex?
-  nationality String?  @db.VarChar(50)
+  nationality String?   @db.VarChar(50)
   birthday    DateTime? @db.Date
-  avatar      String   @default("default.png") @db.VarChar(255)
-  nickname    String?  @db.VarChar(50)
-  passions    String?  @db.Text
-  website     String?  @db.VarChar(255)
+  avatar      String    @default("default.png") @db.VarChar(255)
+  nickname    String?   @db.VarChar(50)
+  passions    String?   @db.Text
+  website     String?   @db.VarChar(255)
 
   user User?
 }
@@ -642,6 +643,18 @@ model UserOtherAttributValue {
   attribut UserOtherAttribut @relation(fields: [attributId], references: [name])
 }
 
+model UserHomepageWidget {
+  id     String @id @default(uuid())
+  widget String @db.VarChar(20)
+  x      Int
+  y      Int
+  width  Int
+  height Int
+  userId String
+
+  user User @relation(fields: [userId], references: [id])
+}
+
 model UserPreference {
   id                     String   @id @default(uuid())
   birthdayDisplayOnlyAge Boolean  @default(false)
@@ -652,7 +665,7 @@ model UserPreference {
   displayBirthday        Boolean  @default(false)
   displayMailPersonal    Boolean  @default(false)
   displayPhone           Boolean  @default(false)
-  displayAddresse        Boolean  @default(false)
+  displayAddress         Boolean  @default(false)
   displayDiscord         Boolean  @default(false)
   displayTimetable       Boolean  @default(false)
 
@@ -729,7 +742,7 @@ model UTTBranch {
 
   descriptionTranslation Translation       @relation(fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
   branchOptions          UTTBranchOption[]
-  userBranchs           UserBranch[]
+  userBranchs            UserBranch[]
 }
 
 model UTTBranchOption {
@@ -741,7 +754,7 @@ model UTTBranchOption {
   branch                 UTTBranch    @relation(fields: [branchId], references: [code])
   descriptionTranslation Translation  @relation(fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
   ues                    UE[]
-  userBranchs           UserBranch[]
+  userBranchs            UserBranch[]
 }
 
 model UTTFormation {

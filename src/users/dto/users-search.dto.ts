@@ -3,10 +3,10 @@ import { IsOptional, IsString, IsNumber, IsPositive } from 'class-validator';
 
 /**
  * Query parameters of the request to search users.
- * @property {string} q - The query to search. Can be part of a code, name, comment, objective or programme.
+ * @property {string} q - The query to search. Can be part of a first name, last name, nickname, email address or phone number.
  * @property {string} firstName - The first name of the user. Optional.
  * @property {string} lastName - The last name of the user. Optional.
- * @property {string} nickName - The mail of the user. Optional.
+ * @property {string} nickname - The nickname of the user. Optional.
  * @property {string} branch - The branch of the user. Optional.
  * @property {string} branchOption - The branch option of the user. Optional.
  * @property {string} UE - An UE of the user. Optional.

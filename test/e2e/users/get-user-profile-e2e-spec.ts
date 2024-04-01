@@ -16,29 +16,21 @@ const GetUserProfileE2ESpec = e2eSuite('GET /users/profile', (app) => {
       .get(PrismaService)
       .user.findUnique({
         where: { login: user.login },
-        include: {
-          infos: true,
-          branch: true,
-          mailsPhones: true,
-          socialNetwork: true,
-          preference: true,
-          addresse: true,
-        },
       });
     const expectedBody = {
       id: userFromDb.id,
       firstName: userFromDb.firstName,
       lastName: userFromDb.lastName,
-      nickName: userFromDb.infos.nickname,
+      nickname: userFromDb.infos.nickname,
       avatar: userFromDb.infos.avatar,
       sex: userFromDb.infos.sex,
       nationality: userFromDb.infos.nationality,
       birthday: userFromDb.infos.birthday.toISOString(),
       passions: userFromDb.infos.passions,
       website: userFromDb.infos.website,
-      branche: userFromDb.branch === null ? undefined : userFromDb.branch.branchId,
-      semestre: userFromDb.branch === null ? undefined : userFromDb.branch.semesterNumber,
-      filiere: userFromDb.branch === null ? undefined : userFromDb.branch.branchOptionId,
+      branche: userFromDb.branch === null ? undefined : userFromDb.branch.branch.code,
+      semester: userFromDb.branch === null ? undefined : userFromDb.branch.semesterNumber,
+      branchOption: userFromDb.branch === null ? undefined : userFromDb.branch.branchOption.code,
       mailUTT: userFromDb.mailsPhones === null ? undefined : userFromDb.mailsPhones.mailUTT,
       mailPersonal: userFromDb.mailsPhones === null ? undefined : userFromDb.mailsPhones.mailPersonal,
       phone: userFromDb.mailsPhones === null ? undefined : userFromDb.mailsPhones.phoneNumber,
@@ -57,7 +49,7 @@ const GetUserProfileE2ESpec = e2eSuite('GET /users/profile', (app) => {
         displayBirthday: userFromDb.preference.displayBirthday,
         displayMailPersonal: userFromDb.preference.displayMailPersonal,
         displayPhone: userFromDb.preference.displayPhone,
-        displayAddresse: userFromDb.preference.displayAddresse,
+        displayAddress: userFromDb.preference.displayAddresse,
         displaySex: userFromDb.preference.displaySex,
         displayDiscord: userFromDb.preference.displayDiscord,
         displayTimetable: userFromDb.preference.displayTimetable

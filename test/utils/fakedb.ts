@@ -26,6 +26,7 @@ import {
   RawUserSocialNetwork,
   RawUserPreference,
   RawUserBranch,
+  RawHomepageWidget,
 } from '../../src/prisma/types';
 import { faker } from '@faker-js/faker';
 import { AuthService } from '../../src/auth/auth.service';
@@ -76,6 +77,7 @@ export type FakeComment = Partial<RawUEComment>;
 export type FakeCommentUpvote = Partial<RawUECommentUpvote>;
 export type FakeCommentReply = Partial<RawUECommentReply>;
 export type FakeUECreditCategory = Partial<RawCreditCategory>;
+export type FakeHomepageWidget = Partial<RawHomepageWidget>;
 
 export interface FakeEntityMap {
   assoMembership: {
@@ -154,6 +156,11 @@ export interface FakeEntityMap {
     entity: FakeUECreditCategory;
     params: CreateUECreditCategoryParameters;
   };
+  homepageWidget: {
+    entity: FakeHomepageWidget;
+    params: CreateHomepageWidgetParameters;
+    deps: { user: FakeUser };
+  };
 }
 
 export type CreateUserParameters = FakeUser & { password: string };
@@ -168,32 +175,26 @@ export const createUser = entityFaker(
   {
     login: faker.internet.userName,
     studentId: faker.datatype.number,
+    lastName: faker.name.lastName,
+    firstName: faker.name.firstName,
+    userType: 'STUDENT' as UserType,
+    password: faker.internet.password,
     infos: {
       sex: 'OTHER' as Sex,
       birthday: new Date(0),
       nickname: faker.datatype.string,
     },
-    lastName: faker.name.lastName,
-    firstName: faker.name.firstName,
-    userType: 'STUDENT' as UserType,
-    password: faker.internet.password,
-    branch: {
-      semesterNumber: faker.datatype.number,
-      branch: {
-        code: faker.datatype.string,
-      },
-      branchOption: {
-        code: faker.datatype.string,
-      },
-      semester:{
-        code : faker.datatype.string,
-      }
+    address: {
+      street: faker.address.street,
+      postalCode: faker.address.zipCode,
+      city: faker.address.city,
+      country: faker.address.country,
     },
   },
   async (app, params) => {
     const user = await app()
       .get(PrismaService)
-      .user.create({
+      .withDefaultBehaviour.user.create({
         data: {
           hash: params.hash ?? (await app().get(AuthService).getHash(params.password)),
           ...pick(params, 'id', 'login', 'studentId', 'firstName', 'lastName', 'userType'),
@@ -203,24 +204,30 @@ export const createUser = entityFaker(
             create: {},
           },
           mailsPhones: { create: {} },
-          addresse: { create: {} },
-          socialNetwork: { create: {} },
-          branch: { 
+          addresse: {
             create: {
-              
-              ...pick(params.branch, 'semesterNumber'),
-              ...(params.branch.branch.code
-                ? { branch: { connect: pick(params.branch.branch, 'code') } }
-                : {}),
-              ...(params.branch.branchOption.code
-                ? { branchOption: { connect: pick(params.branch.branchOption, 'code') } }
-                : {}),
-              ...(params.branch.semester.code
-                  ? { branchOption: { connect: pick(params.branch.branchOption, 'code') } }
-                  : {}),
+              street: params.address.street,
+              postalCode: params.address.postalCode,
+              city: params.address.city,
+              country: params.address.country,
             },
-            
           },
+          socialNetwork: { create: {} },
+          ...(params.branch?.branch?.code &&
+          params.branch?.semesterNumber &&
+          params.branch?.branchOption?.code &&
+          params.branch?.semester?.code
+            ? {
+                branch: {
+                  create: {
+                    semesterNumber: params.branch.semesterNumber,
+                    semester: { connect: { code: params.branch.semester.code } },
+                    branch: { connect: { code: params.branch.branch.code } },
+                    branchOption: { connect: { code: params.branch.branchOption.code } },
+                  },
+                },
+              }
+            : {}),
         },
         include: {
           infos: true,
@@ -236,26 +243,16 @@ export const createUser = entityFaker(
           branch: {
             select: {
               semesterNumber: true,
-              branch: {
-                select: { code: true },
-              },
-              branchOption: {
-                select: { code: true },
-              },
+              branch: { select: { code: true } },
+              branchOption: { select: { code: true } },
+              semester: { select: { code: true } },
             },
           },
         },
       });
     return {
-      ...omit(user, 'infos', 'preference', 'mailsPhones', 'socialNetwork', 'addresse', 'branch'),
-      ...omit(user.mailsPhones, 'id'),
-      ...omit(user.socialNetwork, 'id'),
-      ...omit(user.addresse, 'id'),
-      ...omit(user.preference, 'id'),
-      ...omit(user.infos, 'id'),
-      ...omit(user.branch, 'id', 'branch', 'branchOption'),
-      ...omit(user.branch.branch, 'id'),
-      ...omit(user.branch.branchOption, 'id'),
+      ...omit(user, 'addresse'),
+      address: user.addresse,
       permissions: user.permissions.map((perm) => perm.userPermissionId),
       token: await app().get(AuthService).signToken(user.id, user.login),
     };
@@ -526,7 +523,7 @@ export const createUE = entityFaker(
   async (app, params) =>
     app()
       .get(PrismaService)
-      .uE.create({
+      .withDefaultBehaviour.uE.create({
         data: {
           ...omit(params, 'credits', 'info', 'workTime', 'inscriptionCode', 'openSemesters'),
           inscriptionCode: params.inscriptionCode ?? params.code,
@@ -641,10 +638,10 @@ export const createUERating = entityFaker(
   {
     value: faker.db.ueStarVote.value,
   },
-  async (app, dependencies, params) =>
-    app()
+  async (app, dependencies, params) => {
+    return app()
       .get(PrismaService)
-      .uEStarVote.create({
+      .withDefaultBehaviour.uEStarVote.create({
         data: {
           ...omit(params, 'criterionId', 'ueId', 'userId'),
           criterion: {
@@ -663,7 +660,8 @@ export const createUERating = entityFaker(
             },
           },
         },
-      }),
+      });
+  },
 );
 
 export type CreateCommentParameters = FakeComment;
@@ -676,7 +674,7 @@ export const createComment = entityFaker(
   async (app, dependencies, params) =>
     app()
       .get(PrismaService)
-      .uEComment.create({
+      .withDefaultBehaviour.uEComment.create({
         data: {
           ...omit(params, 'ueId', 'authorId', 'semesterId'),
           ue: {
@@ -728,7 +726,7 @@ export const createCommentReply = entityFaker(
   async (app, dependencies, params) =>
     app()
       .get(PrismaService)
-      .uECommentReply.create({
+      .withDefaultBehaviour.uECommentReply.create({
         data: {
           ...omit(params, 'commentId', 'authorId'),
           comment: {
@@ -753,6 +751,22 @@ export const createUECreditCategory = entityFaker(
     code: faker.db.ueCreditCategory.code,
   },
   async (app, params) => app().get(PrismaService).uECreditCategory.create({ data: params }),
+);
+
+export type CreateHomepageWidgetParameters = FakeHomepageWidget;
+export const createHomepageWidget = entityFaker(
+  'homepageWidget',
+  {
+    widget: faker.datatype.string(),
+    x: faker.datatype.number(10),
+    y: faker.datatype.number(10),
+    width: faker.datatype.number(10),
+    height: faker.datatype.number(10),
+  },
+  async (app, deps, params) =>
+    app()
+      .get(PrismaService)
+      .userHomepageWidget.create({ data: { ...omit(params, 'userId'), user: { connect: { id: deps.user.id } } } }),
 );
 
 /**
