@@ -25,7 +25,7 @@ async function bootstrap() {
     .addSecurityRequirements('bearer')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('', app, document);
+  SwaggerModule.setup(process.env.API_PREFIX, app, document);
 
   await app.listen(3000);
 }
