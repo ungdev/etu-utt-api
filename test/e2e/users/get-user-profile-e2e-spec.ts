@@ -52,7 +52,7 @@ const GetUserProfileE2ESpec = e2eSuite('GET /users/profile', (app) => {
         displayAddress: userFromDb.preference.displayAddresse,
         displaySex: userFromDb.preference.displaySex,
         displayDiscord: userFromDb.preference.displayDiscord,
-        displayTimetable: userFromDb.preference.displayTimetable
+        displayTimetable: userFromDb.preference.displayTimetable,
       },
     };
 

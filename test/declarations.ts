@@ -10,6 +10,7 @@ import { FakeUE, FakeUser, FakeHomepageWidget } from './utils/fakedb';
 import { ConfigModule } from '../src/config/config.module';
 import { AppProvider } from './utils/test_utils';
 import { omit, pick, sortArray } from '../src/utils';
+import { isArray } from 'class-validator';
 
 /** Shortcut function for `this.expectStatus(200).expectJsonLike` */
 function expect<T>(obj: JsonLikeVariant<T>) {
@@ -18,6 +19,15 @@ function expect<T>(obj: JsonLikeVariant<T>) {
 /** Shortcut function for `this.expectStatus(200|204).expectJsonLike` */
 function expectOkOrCreate<T>(obj: JsonLikeVariant<T>, created = false) {
   return (<Spec>this).expectStatus(created ? HttpStatus.CREATED : HttpStatus.OK).expectJsonLike(obj);
+}
+
+function deepDateToString<T>(obj: T): JsonLikeVariant<T> {
+  if (obj instanceof Date) return obj.toISOString() as JsonLikeVariant<T>;
+  if (isArray(obj)) return obj.map(deepDateToString) as JsonLikeVariant<T>;
+  if (obj === null || typeof obj !== 'object') return obj as JsonLikeVariant<T>;
+  return Object.fromEntries(
+    Object.entries(obj).map(([key, value]) => [key, deepDateToString(value)]),
+  ) as JsonLikeVariant<T>;
 }
 
 SpecProto.expectAppError = function <ErrorCode extends ERROR_CODE>(
@@ -30,31 +40,41 @@ SpecProto.expectAppError = function <ErrorCode extends ERROR_CODE>(
   });
 };
 SpecProto.expectUE = function (ue: FakeUE, rates: Array<{ criterionId: string; value: number }> = []) {
-  return (<Spec>this).expectStatus(HttpStatus.OK).expectJson({
-    ...omit(ue, 'id', 'validationRate', 'createdAt', 'updatedAt', 'openSemesters'),
-    info: omit(ue.info, 'id', 'ueId'),
-    workTime: omit(ue.workTime, 'id', 'ueId'),
-    credits: ue.credits.map((credit) => omit(credit, 'id', 'ueId', 'categoryId')),
-    branchOption: ue.branchOption.map((branchOption) => ({
-      ...pick(branchOption, 'code', 'name'),
-      branch: pick(branchOption.branch, 'code', 'name'),
-    })),
-    openSemester: sortArray(ue.openSemesters, (semester) => semester.start.toISOString()).map((semester) => ({
-      ...semester,
-      start: semester.start.toISOString(),
-      end: semester.end.toISOString(),
-    })),
-    starVotes: Object.fromEntries(rates.map((rate) => [rate.criterionId, rate.value])),
-  });
+  return (<Spec>this).expectStatus(HttpStatus.OK).expectJson(
+    deepDateToString({
+      ...omit(ue, 'id', 'validationRate', 'createdAt', 'updatedAt', 'openSemesters'),
+      info: omit(ue.info, 'id', 'ueId'),
+      workTime: omit(ue.workTime, 'id', 'ueId'),
+      credits: ue.credits.map((credit) => omit(credit, 'id', 'ueId', 'categoryId')),
+      branchOption: ue.branchOption.map((branchOption) => ({
+        ...pick(branchOption, 'code', 'name'),
+        branch: pick(branchOption.branch, 'code', 'name'),
+      })),
+      openSemester: sortArray(ue.openSemesters, (semester) => semester.start.toISOString()).map((semester) => ({
+        ...semester,
+        start: semester.start.toISOString(),
+        end: semester.end.toISOString(),
+      })),
+      starVotes: Object.fromEntries(rates.map((rate) => [rate.criterionId, rate.value])),
+    }),
+  );
 };
 SpecProto.expectUsers = function (app: AppProvider, users: FakeUser[], count: number) {
-  return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonLike({
-    items: users.map((user) => ({
-      ...omit(user, 'id'),
-    })),
-    itemCount: count,
-    itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
-  });
+  return (<Spec>this).expectStatus(HttpStatus.OK).expectJson(
+    deepDateToString({
+      items: users.map((user) => ({
+        ...pick(user, 'id', 'firstName', 'lastName', 'login', 'studentId', 'permissions'),
+        infos: omit(user.infos, 'id'),
+        branch: user.branch ? pick(user.branch, 'id') : null,
+        mailsPhones: omit(user.mailsPhones, 'id'),
+        socialNetwork: omit(user.socialNetwork, 'id'),
+        addresse: omit(user.address, 'id'),
+        preference: omit(user.preference, 'id'),
+      })),
+      itemCount: count,
+      itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
+    }),
+  );
 };
 SpecProto.expectUEs = function (app: AppProvider, ues: FakeUE[], count: number) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonLike({

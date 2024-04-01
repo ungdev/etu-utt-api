@@ -1,12 +1,3 @@
-import {
-  RawUser,
-  RawUserInfos,
-  RawUserMailsPhones,
-  RawUserSocialNetwork,
-  RawUserPreference,
-  RawUserAddress,
-  RawUserBranch,
-} from '../../prisma/types';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { generateCustomModel, RequestType } from '../../prisma/prisma.service';
 

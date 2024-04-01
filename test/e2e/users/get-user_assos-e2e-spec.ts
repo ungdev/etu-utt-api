@@ -8,7 +8,7 @@ import { omit } from '../../../src/utils';
 const GetUserAssociationE2ESpec = e2eSuite('GET /users/:userId/associations', (app) => {
   const user = createUser(app);
   const asso = createAsso(app);
-  const assoMembership = createAssoMembership(app, { asso: asso, user: user });
+  createAssoMembership(app, { asso: asso, user: user });
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum.spec().get(`/users/${user.id}/associations`).expectStatus(HttpStatus.UNAUTHORIZED);

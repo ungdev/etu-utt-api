@@ -13,10 +13,9 @@ import { JwtGuard } from '../auth/guard';
 import UsersSearchDto from './dto/users-search.dto';
 import { UserUpdateDto } from './dto/users-update.dto';
 import { GetUser } from '../auth/decorator';
-import { User } from '../users/interfaces/user.interface';
+import { User } from './interfaces/user.interface';
 import UsersService from './users.service';
 import { AppException, ERROR_CODE } from '../exceptions';
-import { Console } from 'console';
 
 @Controller('users')
 export default class UsersController {
@@ -64,9 +63,8 @@ export default class UsersController {
   }
 
   @Patch('/profile')
-  //@UseGuards(JwtGuard)
+  // @UseGuards(JwtGuard) // TODO : uncomment
   async updateInfos(@GetUser() user: User, @Body() dto: UserUpdateDto) {
-    //console.log(dto);
     if (Object.values(dto).every((element) => element === undefined))
       throw new BadRequestException('You must provide at least one field to update');
     await this.usersService.updateUserProfil(user.id, dto);

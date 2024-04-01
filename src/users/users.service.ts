@@ -19,21 +19,24 @@ export default class UsersService {
       infos: {
         nickname: dto.nickname ? { contains: dto.nickname } : undefined,
       },
-      mailsPhones: {
-        OR: [
-          { mailUTT: dto.mail ? { contains: dto.mail } : undefined },
-          { mailPersonal: dto.mail ? { contains: dto.mail } : undefined },
-        ],
-        phoneNumber: dto.phone ? { contains: dto.phone } : undefined,
-      },
+      mailsPhones: dto.mail
+        ? {
+            OR: [{ mailUTT: { contains: dto.mail } }, { mailPersonal: { contains: dto.mail } }],
+            phoneNumber: dto.phone ? { contains: dto.phone } : undefined,
+          }
+        : {},
       branch: {
-        semesterNumber: dto.semesterNumber,
-        branch: {
-          code: { contains: dto.branchCode },
-        },
-        branchOption: {
-          code: { contains: dto.branchOptionCode },
-        },
+        semesterNumber: dto.semesterNumber ?? undefined,
+        branch: dto.branchCode
+          ? {
+              code: { contains: dto.branchCode },
+            }
+          : undefined,
+        branchOption: dto.branchOptionCode
+          ? {
+              code: { contains: dto.branchOptionCode },
+            }
+          : undefined,
       },
       ...(dto.q
         ? {
@@ -43,9 +46,11 @@ export default class UsersService {
               { infos: { nickname: { contains: dto.q } } },
               {
                 mailsPhones: {
-                  mailUTT: { contains: dto.q },
-                  mailPersonal: { contains: dto.q },
-                  phoneNumber: { contains: dto.q },
+                  OR: [
+                    { mailUTT: { contains: dto.q } },
+                    { mailPersonal: { contains: dto.q } },
+                    { phoneNumber: { contains: dto.q } },
+                  ],
                 },
               },
             ],
