@@ -20,7 +20,7 @@ export async function userSeed(prisma: PrismaClient): Promise<RawUser[]> {
           lastName,
           studentId: faker.datatype.number(),
           login: faker.internet.userName(),
-          role: 'STUDENT',
+          userType: 'STUDENT',
           hash,
           rgpd: { create: {} },
           infos: {
@@ -35,6 +35,8 @@ export async function userSeed(prisma: PrismaClient): Promise<RawUser[]> {
               mailUTT: faker.internet.email(firstName, lastName, 'utt.fr'),
             },
           },
+          preference: { create: {} },
+          socialNetwork: { create: {} },
         },
       }),
     );

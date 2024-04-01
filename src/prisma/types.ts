@@ -18,5 +18,13 @@ export {
   UEComment as RawUEComment,
   UECommentReply as RawUECommentReply,
   UECommentUpvote as RawUECommentUpvote,
+  UserMailsPhones as RawUserMailsPhones,
+  UserSocialNetwork as RawUserSocialNetwork,
+  UserPreference as RawUserPreference,
+  UserAddress as RawUserAddress,
+  UserBranchSubscription as RawUserBranchSubscription,
+  Asso as RawAsso,
+  AssoMembershipRole as RawAssoMembershipRole,
+  AssoMembership as RawAssoMembership,
   UserHomepageWidget as RawHomepageWidget,
 } from '@prisma/client';

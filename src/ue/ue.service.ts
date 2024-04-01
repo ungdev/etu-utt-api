@@ -21,7 +21,7 @@ export class UEService {
   /**
    * Retrieves a page of {@link UE} matching the user query. This query searchs for a text in
    * the ue code, name, comment, objectives and program. The user can restrict his research to a branch,
-   * a filiere, a credit type or a semester.
+   * a branch option, a credit type or a semester.
    * @param query the query parameters of this route
    * @returns a page of {@link UE} matching the user query
    */

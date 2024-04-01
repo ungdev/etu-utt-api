@@ -18,25 +18,52 @@ import {
   RawUser,
   RawUserInfos,
   RawUserUESubscription,
+  RawAssoMembership,
+  RawAsso,
+  RawAssoMembershipRole,
+  RawUserMailsPhones,
+  RawUserAddress,
+  RawUserSocialNetwork,
+  RawUserPreference,
+  RawUserBranchSubscription,
   RawHomepageWidget,
 } from '../../src/prisma/types';
 import { faker } from '@faker-js/faker';
 import { AuthService } from '../../src/auth/auth.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { AppProvider } from './test_utils';
-import { Sex, TimetableEntryType, UserRole } from '@prisma/client';
+import { Sex, TimetableEntryType, UserType } from '@prisma/client';
 import { omit, pick } from '../../src/utils';
 
 /**
  * The fake entities can be used like normal entities in the <code>it(string, () => void)</code> functions.
  * They are what is returned by the functions in this file.
  */
-export type FakeUser = Partial<RawUser & RawUserInfos & { permissions: string[]; token: string }>;
+export type FakeUser = Partial<RawUser> & {
+  infos?: Partial<RawUserInfos>;
+  permissions?: string[];
+  token?: string;
+  mailsPhones?: Partial<RawUserMailsPhones>;
+  addresses?: Array<Partial<RawUserAddress>>;
+  socialNetwork?: Partial<RawUserSocialNetwork>;
+  preference?: Partial<RawUserPreference>;
+  branchSubscriptions?: Array<
+    Partial<RawUserBranchSubscription> & {
+      branch?: Partial<RawBranch>;
+      branchOption?: Partial<RawBranchOption>;
+      semester?: Partial<RawSemester>;
+    }
+  >;
+};
 export type FakeTimetableGroup = Partial<RawTimetableGroup>;
 export type FakeTimetableEntry = Partial<RawTimetableEntry>;
 export type FakeTimetableEntryOverride = Partial<RawTimetableEntryOverride>;
 export type FakeBranch = Partial<RawBranch>;
 export type FakeBranchOption = Partial<RawBranchOption>;
+export type FakeAssoMembership = Partial<RawAssoMembership> & {
+  role?: Partial<RawAssoMembershipRole>;
+};
+export type FakeAsso = Partial<RawAsso>;
 export type FakeSemester = Partial<RawSemester>;
 export type FakeUE = Partial<RawUE> & {
   credits?: (Partial<RawUECredit> & { category: RawCreditCategory })[];
@@ -55,6 +82,15 @@ export type FakeUECreditCategory = Partial<RawCreditCategory>;
 export type FakeHomepageWidget = Partial<RawHomepageWidget>;
 
 export interface FakeEntityMap {
+  assoMembership: {
+    entity: FakeAssoMembership;
+    params: CreateAssoMembership;
+    deps: { asso: FakeAsso; user: FakeUser };
+  };
+  association: {
+    entity: FakeAsso;
+    params: CreateAsso;
+  };
   timetableEntryOverride: {
     entity: Partial<FakeTimetableEntryOverride>;
     params: CreateTimetableEntryOverrideParameters;
@@ -70,7 +106,7 @@ export interface FakeEntityMap {
   };
   user: {
     entity: FakeUser;
-    params: FakeUser & { password?: string };
+    params: CreateUserParameters;
   };
   branch: {
     entity: FakeBranch;
@@ -129,6 +165,7 @@ export interface FakeEntityMap {
   };
 }
 
+export type CreateUserParameters = FakeUser & { password: string };
 /**
  * Creates a user in the database.
  * @param app The function that returns the app.
@@ -140,29 +177,178 @@ export const createUser = entityFaker(
   {
     login: faker.internet.userName,
     studentId: faker.datatype.number,
-    sex: 'OTHER' as Sex,
     lastName: faker.name.lastName,
     firstName: faker.name.firstName,
-    role: 'STUDENT' as UserRole,
-    birthday: new Date(0),
+    userType: 'STUDENT' as UserType,
     password: faker.internet.password,
+    infos: {
+      sex: 'OTHER' as Sex,
+      birthday: new Date(0),
+      nickname: faker.datatype.string,
+    },
+    addresses: [
+      {
+        street: faker.address.street,
+        postalCode: faker.address.zipCode,
+        city: faker.address.city,
+        country: faker.address.country,
+      },
+    ],
+    branchSubscriptions: [],
   },
   async (app, params) => {
     const user = await app()
       .get(PrismaService)
-      .user.create({
+      .withDefaultBehaviour.user.create({
         data: {
           hash: params.hash ?? (await app().get(AuthService).getHash(params.password)),
-          ...pick(params, 'id', 'login', 'studentId', 'firstName', 'lastName', 'role'),
-          infos: { create: pick(params, 'birthday', 'sex', 'nickname') },
+          ...pick(params, 'id', 'login', 'studentId', 'firstName', 'lastName', 'userType'),
+          infos: { create: pick(params.infos, 'birthday', 'sex', 'nickname') },
+          rgpd: { create: {} },
+          preference: {
+            create: {},
+          },
+          mailsPhones: { create: {} },
+          addresses: {
+            createMany: {
+              data: params.addresses.map((address) => ({
+                street: address.street,
+                postalCode: address.postalCode,
+                city: address.city,
+                country: address.country,
+              })),
+            },
+          },
+          socialNetwork: { create: {} },
+          branchSubscriptions: {
+            createMany: {
+              data: params.branchSubscriptions.map((branch) => ({
+                semesterNumber: branch.semesterNumber,
+                semesterCode: branch.semester.code,
+                branchCode: branch.branch.code,
+                branchOptionCode: branch.branchOption.code,
+              })),
+            },
+          },
+        },
+        include: {
+          infos: true,
+          permissions: {
+            select: {
+              userPermissionId: true,
+            },
+          },
+          mailsPhones: true,
+          addresses: {
+            select: {
+              street: true,
+              postalCode: true,
+              city: true,
+              country: true,
+            },
+          },
+          socialNetwork: true,
+          preference: true,
+          branchSubscriptions: {
+            select: {
+              semesterNumber: true,
+              branchOption: { select: { code: true, branch: { select: { code: true } } } },
+              semester: { select: { code: true } },
+            },
+          },
         },
       });
     return {
-      ...omit(user, 'infos'),
-      ...user.infos,
+      ...user,
+      permissions: user.permissions.map((perm) => perm.userPermissionId),
       token: await app().get(AuthService).signToken(user.id, user.login),
     };
   },
+);
+
+export type CreateAssoMembership = FakeAssoMembership;
+/**
+ * Creates an association membership in the database.
+ * @param app The function that returns the app.
+ * @param rawParams The parameters to use to create the user.
+ * @returns {@link FakeAssoMembership}
+ */
+export const createAssoMembership = entityFaker(
+  'assoMembership',
+  {
+    startAt: new Date(0),
+    endAt: new Date(0),
+    createdAt: new Date(0),
+    userId: faker.datatype.uuid,
+    assoId: faker.datatype.uuid,
+    role: {
+      role: faker.random.words,
+    },
+  },
+  async (app, dependencies, params) =>
+    app()
+      .get(PrismaService)
+      .assoMembership.create({
+        data: {
+          ...omit(params, 'userId', 'assoId', 'roleId'),
+          asso: {
+            connect: {
+              id: dependencies.asso.id,
+            },
+          },
+          user: {
+            connect: {
+              id: dependencies.user.id,
+            },
+          },
+          role: {
+            create: {
+              role: params.role.role,
+            },
+          },
+        },
+        include: {
+          role: true,
+        },
+      }),
+);
+
+export type CreateAsso = FakeAsso;
+/**
+ * Creates an association in the database.
+ * @param app The function that returns the app.
+ * @param rawParams The parameters to use to create the association.
+ * @returns {@link FakeAsso}
+ */
+export const createAsso = entityFaker(
+  'association',
+  {
+    login: faker.internet.userName,
+    name: faker.name.firstName,
+    mail: faker.datatype.string,
+    deletedAt: new Date(0),
+  },
+  async (app, params) =>
+    app()
+      .get(PrismaService)
+      .asso.create({
+        data: {
+          ...omit(params, 'login', 'name', 'descriptionShortTranslationId', 'descriptionTranslationId'),
+          login: params.login,
+          name: params.name,
+          mail: params.mail,
+          descriptionTranslation: {
+            create: {
+              id: params.descriptionTranslationId,
+            },
+          },
+          descriptionShortTranslation: {
+            create: {
+              id: params.descriptionShortTranslationId,
+            },
+          },
+        },
+      }),
 );
 
 export type CreateTimetableGroupParams = { users?: Array<{ user: FakeUser; priority: number }> };
@@ -459,8 +645,8 @@ export const createUERating = entityFaker(
   {
     value: faker.db.ueStarVote.value,
   },
-  async (app, dependencies, params) =>
-    app()
+  async (app, dependencies, params) => {
+    return app()
       .get(PrismaService)
       .withDefaultBehaviour.uEStarVote.create({
         data: {
@@ -481,7 +667,8 @@ export const createUERating = entityFaker(
             },
           },
         },
-      }),
+      });
+  },
 );
 
 export type CreateCommentParameters = FakeComment;

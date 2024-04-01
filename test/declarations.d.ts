@@ -3,7 +3,7 @@ import { UEComment } from 'src/ue/interfaces/comment.interface';
 import { UECommentReply } from 'src/ue/interfaces/comment-reply.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { UERating } from 'src/ue/interfaces/rate.interface';
-import { FakeHomepageWidget, FakeUE } from './utils/fakedb';
+import { FakeUE, FakeUser, FakeHomepageWidget } from './utils/fakedb';
 import { AppProvider } from './utils/test_utils';
 
 type JsonLikeVariant<T> = {
@@ -26,6 +26,9 @@ declare module './declarations' {
       errorCode: ErrorCode,
       ...customMessage: ExtrasTypeBuilder<(typeof ErrorData)[ErrorCode]['message']>
     ): this;
+
+    /** expects to return the given {@link page | page of UserOverView} */
+    expectUsers(app: AppProvider, users: FakeUser[], count: number): this;
     /** expects to return the given {@link UEDetail} */
     expectUE(ue: FakeUE, rates?: Array<{ criterionId: string; value: number }>): this;
     /** expects to return the given {@link page | page of UEOverView} */
