@@ -17,6 +17,9 @@ const GetCurrentUserE2ESpec = e2eSuite('GET /users/current', (app) => {
       .user.findUnique({
         where: { login: user.login },
       });
+    const branch = userFromDb.branch.find(
+      (branch) => branch.semester.start >= new Date() && branch.semester.end <= new Date(),
+    );
     const expectedBody = {
       id: userFromDb.id,
       firstName: userFromDb.firstName,
@@ -28,9 +31,9 @@ const GetCurrentUserE2ESpec = e2eSuite('GET /users/current', (app) => {
       birthday: userFromDb.preference.displayBirthday ? userFromDb.infos.birthday : undefined,
       passions: userFromDb.infos.passions,
       website: userFromDb.infos.website,
-      branche: userFromDb.branch === null ? undefined : userFromDb.branch.branch.code,
-      semestre: userFromDb.branch === null ? undefined : userFromDb.branch.semesterNumber,
-      branchOption: userFromDb.branch === null ? undefined : userFromDb.branch.branchOption.code,
+      branche: branch?.branch.code ?? undefined,
+      semestre: branch?.semesterNumber ?? undefined,
+      branchOption: branch?.branchOption.code ?? undefined,
       mailUTT: userFromDb.mailsPhones === null ? undefined : userFromDb.mailsPhones.mailUTT,
       mailPersonal:
         userFromDb.preference.displayMailPersonal && !(userFromDb.mailsPhones === null)

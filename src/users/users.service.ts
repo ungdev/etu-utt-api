@@ -25,19 +25,20 @@ export default class UsersService {
             phoneNumber: dto.phone ? { contains: dto.phone } : undefined,
           }
         : {},
-      branch: {
-        semesterNumber: dto.semesterNumber ?? undefined,
-        branch: dto.branchCode
+      branch:
+        dto.semesterNumber || dto.branchCode || dto.branchOptionCode
           ? {
-              code: { contains: dto.branchCode },
+              some: {
+                semesterNumber: dto.semesterNumber ?? undefined,
+                branch: dto.branchCode ? { code: { contains: dto.branchCode } } : undefined,
+                branchOption: dto.branchOptionCode ? { code: { contains: dto.branchOptionCode } } : undefined,
+                semester: {
+                  start: { gte: new Date() },
+                  end: { lte: new Date() },
+                },
+              },
             }
           : undefined,
-        branchOption: dto.branchOptionCode
-          ? {
-              code: { contains: dto.branchOptionCode },
-            }
-          : undefined,
-      },
       ...(dto.q
         ? {
             OR: [
@@ -87,6 +88,9 @@ export default class UsersService {
   }
 
   filterInfo(user: User, isCurrentUser: boolean) {
+    const branch = user.branch.find(
+      (branch) => branch.semester.start >= new Date() && branch.semester.end <= new Date(),
+    );
     return {
       id: user.id,
       firstName: user.firstName,
@@ -98,9 +102,9 @@ export default class UsersService {
       birthday: user.preference.displayBirthday || isCurrentUser ? user.infos.birthday : undefined,
       passions: user.infos.passions,
       website: user.infos.website,
-      branch: user.branch === null ? undefined : user.branch.branch.code,
-      semester: user.branch === null ? undefined : user.branch.semesterNumber,
-      branchOption: user.branch === null ? undefined : user.branch.branchOption.code,
+      branch: branch?.branch.code ?? undefined,
+      semester: branch?.semesterNumber ?? undefined,
+      branchOption: branch?.branchOption.code ?? undefined,
       mailUTT: user.mailsPhones === null ? undefined : user.mailsPhones.mailUTT,
       mailPersonal:
         (user.preference.displayMailPersonal || isCurrentUser) && user.mailsPhones !== null

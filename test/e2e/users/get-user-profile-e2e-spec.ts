@@ -17,6 +17,9 @@ const GetUserProfileE2ESpec = e2eSuite('GET /users/profile', (app) => {
       .user.findUnique({
         where: { login: user.login },
       });
+    const branch = userFromDb.branch.find(
+      (branch) => branch.semester.start >= new Date() && branch.semester.end <= new Date(),
+    );
     const expectedBody = {
       id: userFromDb.id,
       firstName: userFromDb.firstName,
@@ -28,9 +31,9 @@ const GetUserProfileE2ESpec = e2eSuite('GET /users/profile', (app) => {
       birthday: userFromDb.infos.birthday.toISOString(),
       passions: userFromDb.infos.passions,
       website: userFromDb.infos.website,
-      branche: userFromDb.branch === null ? undefined : userFromDb.branch.branch.code,
-      semester: userFromDb.branch === null ? undefined : userFromDb.branch.semesterNumber,
-      branchOption: userFromDb.branch === null ? undefined : userFromDb.branch.branchOption.code,
+      branche: branch?.branch.code ?? undefined,
+      semester: branch?.semesterNumber ?? undefined,
+      branchOption: branch?.branchOption.code ?? undefined,
       mailUTT: userFromDb.mailsPhones === null ? undefined : userFromDb.mailsPhones.mailUTT,
       mailPersonal: userFromDb.mailsPhones === null ? undefined : userFromDb.mailsPhones.mailPersonal,
       phone: userFromDb.mailsPhones === null ? undefined : userFromDb.mailsPhones.phoneNumber,

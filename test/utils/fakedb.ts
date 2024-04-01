@@ -47,11 +47,13 @@ export type FakeUser = Partial<RawUser> & {
   address?: Partial<RawUserAddress>;
   socialNetwork?: Partial<RawUserSocialNetwork>;
   preference?: Partial<RawUserPreference>;
-  branch?: Partial<RawUserBranch> & {
-    branch?: Partial<RawBranch>;
-    branchOption?: Partial<RawBranchOption>;
-    semester?: Partial<RawSemester>;
-  };
+  branch?: Array<
+    Partial<RawUserBranch> & {
+      branch?: Partial<RawBranch>;
+      branchOption?: Partial<RawBranchOption>;
+      semester?: Partial<RawSemester>;
+    }
+  >;
 };
 export type FakeTimetableGroup = Partial<RawTimetableGroup>;
 export type FakeTimetableEntry = Partial<RawTimetableEntry>;
@@ -190,6 +192,7 @@ export const createUser = entityFaker(
       city: faker.address.city,
       country: faker.address.country,
     },
+    branch: [],
   },
   async (app, params) => {
     const user = await app()
@@ -213,21 +216,16 @@ export const createUser = entityFaker(
             },
           },
           socialNetwork: { create: {} },
-          ...(params.branch?.branch?.code &&
-          params.branch?.semesterNumber &&
-          params.branch?.branchOption?.code &&
-          params.branch?.semester?.code
-            ? {
-                branch: {
-                  create: {
-                    semesterNumber: params.branch.semesterNumber,
-                    semester: { connect: { code: params.branch.semester.code } },
-                    branch: { connect: { code: params.branch.branch.code } },
-                    branchOption: { connect: { code: params.branch.branchOption.code } },
-                  },
-                },
-              }
-            : {}),
+          branch: {
+            createMany: {
+              data: params.branch.map((branch) => ({
+                semesterNumber: branch.semesterNumber,
+                semesterCode: branch.semester.code,
+                branchCode: branch.branch.code,
+                branchOptionCode: branch.branchOption.code,
+              })),
+            },
+          },
         },
         include: {
           infos: true,

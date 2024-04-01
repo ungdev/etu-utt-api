@@ -30,6 +30,8 @@ const USER_SELECT_FILTER = {
         semester: {
           select: {
             code: true,
+            start: true,
+            end: true,
           },
         },
         branch: {

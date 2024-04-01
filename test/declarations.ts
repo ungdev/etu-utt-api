@@ -65,7 +65,7 @@ SpecProto.expectUsers = function (app: AppProvider, users: FakeUser[], count: nu
       items: users.map((user) => ({
         ...pick(user, 'id', 'firstName', 'lastName', 'login', 'studentId', 'permissions'),
         infos: omit(user.infos, 'id'),
-        branch: user.branch ? pick(user.branch, 'id') : null,
+        branch: user.branch.map((branch) => pick(branch, 'id')),
         mailsPhones: omit(user.mailsPhones, 'id'),
         socialNetwork: omit(user.socialNetwork, 'id'),
         address: omit(user.address, 'id'),
