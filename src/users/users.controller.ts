@@ -1,15 +1,4 @@
-import {
-  Controller,
-  Get,
-  Body,
-  NotFoundException,
-  BadRequestException,
-  Param,
-  Patch,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
-import { JwtGuard } from '../auth/guard';
+import { Controller, Get, Body, BadRequestException, Param, Patch, Query } from '@nestjs/common';
 import UsersSearchDto from './dto/users-search.dto';
 import { UserUpdateDto } from './dto/users-update.dto';
 import { GetUser } from '../auth/decorator';
@@ -26,48 +15,35 @@ export default class UsersController {
     return this.usersService.searchUsers(queryParams);
   }
 
-  @Get('/profile')
-  @UseGuards(JwtGuard)
-  async getProfile(@GetUser() user: User) {
-    const completeUser = await this.usersService.fetchWholeUser(user.id);
-    if (!completeUser) {
-      throw new NotFoundException(`No user with id ${user.id}`);
-    }
-    return this.usersService.filterInfo(completeUser, true);
-  }
-
   @Get('/current')
-  @UseGuards(JwtGuard)
   async getCurrentUser(@GetUser() user: User) {
-    return this.getSingleUser(user.id);
+    return this.getSingleUser(user, user.id);
   }
 
   @Get('/:userId')
-  async getSingleUser(@Param('userId') userId: string) {
-    const user = await this.usersService.fetchWholeUser(userId);
-    if (!user) {
+  async getSingleUser(@GetUser() user: User, @Param('userId') userId: string) {
+    const userToFind = await this.usersService.fetchUser(userId);
+    if (!userToFind) {
       throw new AppException(ERROR_CODE.NO_SUCH_USER, userId);
     }
-    return this.usersService.filterInfo(user, false);
+    return this.usersService.filterInfo(userToFind, user.id === userId);
   }
 
   @Get('/:userId/associations')
-  @UseGuards(JwtGuard)
   async getUserAssociations(@Param('userId') userId: string) {
-    const user = await this.usersService.fetchWholeUser(userId);
+    const user = await this.usersService.fetchUser(userId);
     if (!user) {
       throw new AppException(ERROR_CODE.NO_SUCH_USER, userId);
     }
-    const assos = await this.usersService.fetchUserAssociation(userId);
+    const assos = await this.usersService.fetchUserAssoMemberships(userId);
     return assos;
   }
 
-  @Patch('/profile')
-  // @UseGuards(JwtGuard) // TODO : uncomment
+  @Patch('/current')
   async updateInfos(@GetUser() user: User, @Body() dto: UserUpdateDto) {
     if (Object.values(dto).every((element) => element === undefined))
       throw new BadRequestException('You must provide at least one field to update');
     await this.usersService.updateUserProfil(user.id, dto);
-    return this.usersService.filterInfo(await this.usersService.fetchWholeUser(user.id), true);
+    return this.usersService.filterInfo(await this.usersService.fetchUser(user.id), true);
   }
 }

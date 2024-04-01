@@ -14,7 +14,7 @@ const GetUserAssociationE2ESpec = e2eSuite('GET /users/:userId/associations', (a
     return pactum.spec().get(`/users/${user.id}/associations`).expectStatus(HttpStatus.UNAUTHORIZED);
   });
 
-  it('should return a 404 as asso was not found', () => {
+  it('should return a 404 as user was not found', () => {
     return pactum
       .spec()
       .get('/users/abcdefg/associations')

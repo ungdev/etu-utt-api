@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsOptional, IsString, IsNumber, IsPositive } from 'class-validator';
+import { IsOptional, IsString, IsNumber, IsPositive, IsInt } from "class-validator";
 
 /**
  * Query parameters of the request to search users.
@@ -59,15 +59,18 @@ export default class UsersSearchDto {
   type?: string;
 
   @IsNumber()
+  @IsInt()
   @IsOptional()
   semesterNumber?: number;
 
   @IsNumber()
+  @IsInt()
   @IsOptional()
   studentId?: number;
 
   @Type(() => Number)
   @IsNumber()
+  @IsInt()
   @IsPositive()
   @IsOptional()
   page?: number;

@@ -46,7 +46,6 @@ export class AuthService {
               mailPersonal: isUTTMail ? undefined : dto.mail,
             },
           },
-          address: { create: {} },
           socialNetwork: { create: {} },
           preference: { create: {} },
           rgpd: { create: {} },

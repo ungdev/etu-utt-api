@@ -25,13 +25,17 @@ export default class UsersService {
             phoneNumber: dto.phone ? { contains: dto.phone } : undefined,
           }
         : {},
-      branch:
+      branchSubscriptions:
         dto.semesterNumber || dto.branchCode || dto.branchOptionCode
           ? {
               some: {
                 semesterNumber: dto.semesterNumber ?? undefined,
-                branch: dto.branchCode ? { code: { contains: dto.branchCode } } : undefined,
-                branchOption: dto.branchOptionCode ? { code: { contains: dto.branchOptionCode } } : undefined,
+                branchOption: dto.branchOptionCode
+                  ? {
+                      code: { contains: dto.branchOptionCode },
+                      branch: dto.branchCode ? { code: { contains: dto.branchCode } } : undefined,
+                    }
+                  : undefined,
                 semester: {
                   start: { gte: new Date() },
                   end: { lte: new Date() },
@@ -39,6 +43,10 @@ export default class UsersService {
               },
             }
           : undefined,
+      preference: {
+        displayPhone: dto.phone ? { equals: true } : undefined,
+        displayMailPersonal: dto.mail ? { equals: true } : undefined,
+      },
       ...(dto.q
         ? {
             OR: [
@@ -77,19 +85,13 @@ export default class UsersService {
     });
   }
 
-  async fetchWholeUser(userId: string): Promise<User> {
-    return this.prisma.user.findUnique({
-      where: { id: userId },
-    });
-  }
-
   async doesUserExist(search: { id?: string; login?: string }): Promise<boolean> {
     return (await this.prisma.user.count({ where: search })) > 0;
   }
 
-  filterInfo(user: User, isCurrentUser: boolean) {
-    const branch = user.branch.find(
-      (branch) => branch.semester.start >= new Date() && branch.semester.end <= new Date(),
+  filterInfo(user: User, includeAll: boolean) {
+    const branch = user.branchSubscriptions.find(
+      (subscription) => subscription.semester.start >= new Date() && subscription.semester.end <= new Date(),
     );
     return {
       id: user.id,
@@ -97,32 +99,32 @@ export default class UsersService {
       lastName: user.lastName,
       nickname: user.infos.nickname,
       avatar: user.infos.avatar,
-      sex: user.preference.displaySex || isCurrentUser ? user.infos.sex : undefined,
+      sex: user.preference.displaySex || includeAll ? user.infos.sex : undefined,
       nationality: user.infos.nationality,
-      birthday: user.preference.displayBirthday || isCurrentUser ? user.infos.birthday : undefined,
+      birthday: user.preference.displayBirthday || includeAll ? user.infos.birthday : undefined,
       passions: user.infos.passions,
       website: user.infos.website,
-      branch: branch?.branch.code ?? undefined,
+      branch: branch?.branchOption.branch.code ?? undefined,
       semester: branch?.semesterNumber ?? undefined,
       branchOption: branch?.branchOption.code ?? undefined,
       mailUTT: user.mailsPhones === null ? undefined : user.mailsPhones.mailUTT,
       mailPersonal:
-        (user.preference.displayMailPersonal || isCurrentUser) && user.mailsPhones !== null
+        (user.preference.displayMailPersonal || includeAll) && user.mailsPhones !== null
           ? user.mailsPhones.mailPersonal
           : undefined,
       phone:
-        (user.preference.displayPhone || isCurrentUser) && user.mailsPhones !== null
+        (user.preference.displayPhone || includeAll) && user.mailsPhones !== null
           ? user.mailsPhones.phoneNumber
           : undefined,
-      street:
-        (user.preference.displayAddress || isCurrentUser) && user.address !== null ? user.address.street : undefined,
-      postalCode:
-        (user.preference.displayAddress || isCurrentUser) && user.address !== null
-          ? user.address.postalCode
-          : undefined,
-      city: (user.preference.displayAddress || isCurrentUser) && user.address !== null ? user.address.city : undefined,
-      country:
-        (user.preference.displayAddress || isCurrentUser) && user.address !== null ? user.address.country : undefined,
+      addresses:
+        user.preference.displayAddress || includeAll
+          ? user.addresses.map((address) => ({
+              street: address.street,
+              postalCode: address.postalCode,
+              city: address.city,
+              country: address.country,
+            }))
+          : [],
       facebook: user.socialNetwork === null ? undefined : user.socialNetwork.facebook,
       twitter: user.socialNetwork === null ? undefined : user.socialNetwork.twitter,
       instagram: user.socialNetwork === null ? undefined : user.socialNetwork.instagram,
@@ -130,10 +132,10 @@ export default class UsersService {
       twitch: user.socialNetwork === null ? undefined : user.socialNetwork.twitch,
       spotify: user.socialNetwork === null ? undefined : user.socialNetwork.spotify,
       discord:
-        (user.preference.displayDiscord || isCurrentUser) && user.socialNetwork !== null
+        (user.preference.displayDiscord || includeAll) && user.socialNetwork !== null
           ? user.socialNetwork.pseudoDiscord
           : undefined,
-      infoDisplayed: isCurrentUser
+      infoDisplayed: includeAll
         ? {
             displayBirthday: user.preference.displayBirthday,
             displayMailPersonal: user.preference.displayMailPersonal,
@@ -147,7 +149,7 @@ export default class UsersService {
     };
   }
 
-  async fetchUserAssociation(userId: string): Promise<UserAssoMembership[]> {
+  async fetchUserAssoMemberships(userId: string): Promise<UserAssoMembership[]> {
     const membership = (
       await this.prisma.assoMembership.findMany({
         where: { userId: userId },
@@ -173,7 +175,7 @@ export default class UsersService {
     return membership;
   }
 
-  async updateUserProfil(userId: string, dto: UserUpdateDto) {
+  async updateUserProfil(userId: string, dto: UserUpdateDto): Promise<User> {
     return this.prisma.user.update({
       where: { id: userId },
       data: {
@@ -191,14 +193,19 @@ export default class UsersService {
             phoneNumber: dto.phone,
           },
         },
-        address: {
-          update: {
-            street: dto.street,
-            postalCode: dto.postalCode,
-            city: dto.city,
-            country: dto.country,
-          },
-        },
+        addresses: dto.addresses
+          ? {
+              deleteMany: {},
+              createMany: {
+                data: dto.addresses.map((address) => ({
+                  postalCode: address.postalCode,
+                  city: address.city,
+                  country: address.country,
+                  street: address.street,
+                })),
+              },
+            }
+          : undefined,
         socialNetwork: {
           update: {
             facebook: dto.facebook,

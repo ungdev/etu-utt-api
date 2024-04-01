@@ -24,7 +24,7 @@ const USER_SELECT_FILTER = {
         userPermissionId: true,
       },
     },
-    branch: {
+    branchSubscriptions: {
       select: {
         semesterNumber: true,
         semester: {
@@ -34,14 +34,15 @@ const USER_SELECT_FILTER = {
             end: true,
           },
         },
-        branch: {
-          select: {
-            code: true,
-          },
-        },
+
         branchOption: {
           select: {
             code: true,
+            branch: {
+              select: {
+                code: true,
+              },
+            },
           },
         },
       },
@@ -80,7 +81,7 @@ const USER_SELECT_FILTER = {
         displayTimetable: true,
       },
     },
-    address: {
+    addresses: {
       select: {
         street: true,
         postalCode: true,

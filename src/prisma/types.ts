@@ -22,7 +22,7 @@ export {
   UserSocialNetwork as RawUserSocialNetwork,
   UserPreference as RawUserPreference,
   UserAddress as RawUserAddress,
-  UserBranch as RawUserBranch,
+  UserBranchSubscription as RawUserBranchSubscription,
   Asso as RawAsso,
   AssoMembershipRole as RawAssoMembershipRole,
   AssoMembership as RawAssoMembership,

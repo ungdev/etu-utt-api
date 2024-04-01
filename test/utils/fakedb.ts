@@ -25,7 +25,7 @@ import {
   RawUserAddress,
   RawUserSocialNetwork,
   RawUserPreference,
-  RawUserBranch,
+  RawUserBranchSubscription,
   RawHomepageWidget,
 } from '../../src/prisma/types';
 import { faker } from '@faker-js/faker';
@@ -44,11 +44,11 @@ export type FakeUser = Partial<RawUser> & {
   permissions?: string[];
   token?: string;
   mailsPhones?: Partial<RawUserMailsPhones>;
-  address?: Partial<RawUserAddress>;
+  addresses?: Array<Partial<RawUserAddress>>;
   socialNetwork?: Partial<RawUserSocialNetwork>;
   preference?: Partial<RawUserPreference>;
-  branch?: Array<
-    Partial<RawUserBranch> & {
+  branchSubscriptions?: Array<
+    Partial<RawUserBranchSubscription> & {
       branch?: Partial<RawBranch>;
       branchOption?: Partial<RawBranchOption>;
       semester?: Partial<RawSemester>;
@@ -186,13 +186,15 @@ export const createUser = entityFaker(
       birthday: new Date(0),
       nickname: faker.datatype.string,
     },
-    address: {
-      street: faker.address.street,
-      postalCode: faker.address.zipCode,
-      city: faker.address.city,
-      country: faker.address.country,
-    },
-    branch: [],
+    addresses: [
+      {
+        street: faker.address.street,
+        postalCode: faker.address.zipCode,
+        city: faker.address.city,
+        country: faker.address.country,
+      },
+    ],
+    branchSubscriptions: [],
   },
   async (app, params) => {
     const user = await app()
@@ -207,18 +209,20 @@ export const createUser = entityFaker(
             create: {},
           },
           mailsPhones: { create: {} },
-          address: {
-            create: {
-              street: params.address.street,
-              postalCode: params.address.postalCode,
-              city: params.address.city,
-              country: params.address.country,
+          addresses: {
+            createMany: {
+              data: params.addresses.map((address) => ({
+                street: address.street,
+                postalCode: address.postalCode,
+                city: address.city,
+                country: address.country,
+              })),
             },
           },
           socialNetwork: { create: {} },
-          branch: {
+          branchSubscriptions: {
             createMany: {
-              data: params.branch.map((branch) => ({
+              data: params.branchSubscriptions.map((branch) => ({
                 semesterNumber: branch.semesterNumber,
                 semesterCode: branch.semester.code,
                 branchCode: branch.branch.code,
@@ -235,14 +239,20 @@ export const createUser = entityFaker(
             },
           },
           mailsPhones: true,
-          address: true,
+          addresses: {
+            select: {
+              street: true,
+              postalCode: true,
+              city: true,
+              country: true,
+            },
+          },
           socialNetwork: true,
           preference: true,
-          branch: {
+          branchSubscriptions: {
             select: {
               semesterNumber: true,
-              branch: { select: { code: true } },
-              branchOption: { select: { code: true } },
+              branchOption: { select: { code: true, branch: { select: { code: true } } } },
               semester: { select: { code: true } },
             },
           },
@@ -280,7 +290,7 @@ export const createAssoMembership = entityFaker(
       .get(PrismaService)
       .assoMembership.create({
         data: {
-          ...omit(params, 'userId', 'assoId', 'assoMembershipId'),
+          ...omit(params, 'userId', 'assoId', 'roleId'),
           asso: {
             connect: {
               id: dependencies.asso.id,

@@ -1,4 +1,4 @@
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsOptional, IsString } from 'class-validator';
 
 export class UserUpdateDto {
   @IsString()
@@ -13,6 +13,10 @@ export class UserUpdateDto {
   @IsOptional()
   passions?: string;
 
+  @IsOptional()
+  @IsArray({ each: true })
+  addresses?: Address[];
+
   @IsString()
   @IsOptional()
   website?: string;
@@ -24,22 +28,6 @@ export class UserUpdateDto {
   @IsString()
   @IsOptional()
   phone?: string;
-
-  @IsString()
-  @IsOptional()
-  street?: string;
-
-  @IsString()
-  @IsOptional()
-  postalCode?: string;
-
-  @IsString()
-  @IsOptional()
-  city?: string;
-
-  @IsString()
-  @IsOptional()
-  country?: string;
 
   @IsString()
   @IsOptional()
@@ -100,4 +88,22 @@ export class UserUpdateDto {
   @IsBoolean()
   @IsOptional()
   displayTimetable?: boolean;
+}
+
+class Address {
+  @IsString()
+  @IsOptional()
+  street?: string;
+
+  @IsString()
+  @IsOptional()
+  postalCode?: string;
+
+  @IsString()
+  @IsOptional()
+  city?: string;
+
+  @IsString()
+  @IsOptional()
+  country?: string;
 }

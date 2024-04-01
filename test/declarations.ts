@@ -21,7 +21,7 @@ function expectOkOrCreate<T>(obj: JsonLikeVariant<T>, created = false) {
   return (<Spec>this).expectStatus(created ? HttpStatus.CREATED : HttpStatus.OK).expectJsonLike(obj);
 }
 
-function deepDateToString<T>(obj: T): JsonLikeVariant<T> {
+export function deepDateToString<T>(obj: T): JsonLikeVariant<T> {
   if (obj instanceof Date) return obj.toISOString() as JsonLikeVariant<T>;
   if (isArray(obj)) return obj.map(deepDateToString) as JsonLikeVariant<T>;
   if (obj === null || typeof obj !== 'object') return obj as JsonLikeVariant<T>;
@@ -65,10 +65,10 @@ SpecProto.expectUsers = function (app: AppProvider, users: FakeUser[], count: nu
       items: users.map((user) => ({
         ...pick(user, 'id', 'firstName', 'lastName', 'login', 'studentId', 'permissions'),
         infos: omit(user.infos, 'id'),
-        branch: user.branch.map((branch) => pick(branch, 'id')),
+        branchSubscriptions: user.branchSubscriptions.map((branch) => pick(branch, 'id')),
         mailsPhones: omit(user.mailsPhones, 'id'),
         socialNetwork: omit(user.socialNetwork, 'id'),
-        address: omit(user.address, 'id'),
+        addresses: user.addresses.map((address) => omit(address, 'id')),
         preference: omit(user.preference, 'id'),
       })),
       itemCount: count,

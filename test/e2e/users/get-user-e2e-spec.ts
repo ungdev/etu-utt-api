@@ -6,10 +6,7 @@ import { PrismaService } from '../../../src/prisma/prisma.service';
 
 const GetUserE2ESpec = e2eSuite('GET /users/:userId', (app) => {
   const user = createUser(app);
-  const userToSearch = createUser(app, {
-    login: 'userToSearch',
-    id: 'oui',
-  });
+  const userToSearch = createUser(app);
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum.spec().get(`/users/${userToSearch.id}`).expectStatus(HttpStatus.UNAUTHORIZED);
@@ -25,7 +22,7 @@ const GetUserE2ESpec = e2eSuite('GET /users/:userId', (app) => {
       .user.findUnique({
         where: { login: userToSearch.login },
       });
-    const branch = userFromDb.branch.find(
+    const branch = userFromDb.branchSubscriptions.find(
       (branch) => branch.semester.start >= new Date() && branch.semester.end <= new Date(),
     );
     const expectedBody = {
@@ -39,8 +36,8 @@ const GetUserE2ESpec = e2eSuite('GET /users/:userId', (app) => {
       birthday: userFromDb.preference.displayBirthday ? userFromDb.infos.birthday : undefined,
       passions: userFromDb.infos.passions,
       website: userFromDb.infos.website,
-      branche: branch?.branch.code ?? undefined,
-      semestre: branch?.semesterNumber ?? undefined,
+      branch: branch?.branchOption.branch.code ?? undefined,
+      semester: branch?.semesterNumber ?? undefined,
       branchOption: branch?.branchOption.code ?? undefined,
       mailUTT: userFromDb.mailsPhones === null ? undefined : userFromDb.mailsPhones.mailUTT,
       mailPersonal:
@@ -51,10 +48,14 @@ const GetUserE2ESpec = e2eSuite('GET /users/:userId', (app) => {
         userFromDb.preference.displayPhone && !(userFromDb.mailsPhones === null)
           ? userFromDb.mailsPhones.phoneNumber
           : undefined,
-      street: userFromDb.preference.displayAddress ? userFromDb.address.street : undefined,
-      postalCode: userFromDb.preference.displayAddress ? userFromDb.address.postalCode : undefined,
-      city: userFromDb.preference.displayAddress ? userFromDb.address.city : undefined,
-      country: userFromDb.preference.displayAddress ? userFromDb.address.country : undefined,
+      addresses: userFromDb.preference.displayAddress
+        ? userFromDb.addresses.map((address) => ({
+            street: address.street,
+            postalCode: address.postalCode,
+            city: address.city,
+            country: userFromDb.preference.displayAddress ? address.country : undefined,
+          }))
+        : [],
       facebook: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.facebook,
       twitter: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.twitter,
       instagram: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.instagram,
@@ -72,7 +73,7 @@ const GetUserE2ESpec = e2eSuite('GET /users/:userId', (app) => {
       .get(`/users/${userFromDb.id}`)
       .withBearerToken(user.token)
       .expectStatus(HttpStatus.OK)
-      .expectBody(Object.fromEntries(Object.entries(expectedBody).filter(([, value]) => value !== undefined)));
+      .expectJson(Object.fromEntries(Object.entries(expectedBody).filter(([, value]) => value !== undefined)));
   });
 });
 

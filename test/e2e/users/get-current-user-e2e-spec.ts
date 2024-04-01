@@ -3,6 +3,8 @@ import { createUser } from '../../utils/fakedb';
 import * as pactum from 'pactum';
 import { HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../../../src/prisma/prisma.service';
+import { pick } from "../../../src/utils";
+import { deepDateToString } from "../../declarations";
 
 const GetCurrentUserE2ESpec = e2eSuite('GET /users/current', (app) => {
   const user = createUser(app);
@@ -17,54 +19,51 @@ const GetCurrentUserE2ESpec = e2eSuite('GET /users/current', (app) => {
       .user.findUnique({
         where: { login: user.login },
       });
-    const branch = userFromDb.branch.find(
+    const branch = userFromDb.branchSubscriptions.find(
       (branch) => branch.semester.start >= new Date() && branch.semester.end <= new Date(),
     );
-    const expectedBody = {
+    const expectedBody = deepDateToString({
       id: userFromDb.id,
       firstName: userFromDb.firstName,
       lastName: userFromDb.lastName,
       nickname: userFromDb.infos.nickname,
       avatar: userFromDb.infos.avatar,
-      sex: userFromDb.preference.displaySex ? userFromDb.infos.sex : undefined,
+      sex: userFromDb.infos.sex,
       nationality: userFromDb.infos.nationality,
-      birthday: userFromDb.preference.displayBirthday ? userFromDb.infos.birthday : undefined,
+      birthday: userFromDb.infos.birthday,
       passions: userFromDb.infos.passions,
       website: userFromDb.infos.website,
-      branche: branch?.branch.code ?? undefined,
-      semestre: branch?.semesterNumber ?? undefined,
-      branchOption: branch?.branchOption.code ?? undefined,
-      mailUTT: userFromDb.mailsPhones === null ? undefined : userFromDb.mailsPhones.mailUTT,
-      mailPersonal:
-        userFromDb.preference.displayMailPersonal && !(userFromDb.mailsPhones === null)
-          ? userFromDb.mailsPhones.mailPersonal
-          : undefined,
-      phone:
-        userFromDb.preference.displayPhone && !(userFromDb.mailsPhones === null)
-          ? userFromDb.mailsPhones.phoneNumber
-          : undefined,
-      street: userFromDb.preference.displayAddress ? userFromDb.address.street : undefined,
-      postalCode: userFromDb.preference.displayAddress ? userFromDb.address.postalCode : undefined,
-      city: userFromDb.preference.displayAddress ? userFromDb.address.city : undefined,
-      country: userFromDb.preference.displayAddress ? userFromDb.address.country : undefined,
-      facebook: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.facebook,
-      twitter: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.twitter,
-      instagram: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.instagram,
-      linkedin: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.linkedin,
-      twitch: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.twitch,
-      spotify: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.spotify,
-      discord:
-        userFromDb.preference.displayDiscord && !(userFromDb.socialNetwork === null)
-          ? userFromDb.socialNetwork.pseudoDiscord
-          : undefined,
-    };
+      branch: branch?.branchOption.branch.code,
+      semester: branch?.semesterNumber,
+      branchOption: branch?.branchOption.code,
+      mailUTT: userFromDb.mailsPhones.mailUTT,
+      mailPersonal: userFromDb.mailsPhones.mailPersonal,
+      phone: userFromDb.mailsPhones.phoneNumber,
+      addresses: userFromDb.addresses.map((address) => pick(address, 'postalCode', 'city', 'country', 'street')),
+      facebook: userFromDb.socialNetwork.facebook,
+      twitter: userFromDb.socialNetwork.twitter,
+      instagram: userFromDb.socialNetwork.instagram,
+      linkedin: userFromDb.socialNetwork.linkedin,
+      twitch: userFromDb.socialNetwork.twitch,
+      spotify: userFromDb.socialNetwork.spotify,
+      discord: userFromDb.socialNetwork.pseudoDiscord,
+      infoDisplayed: {
+        displayBirthday: userFromDb.preference.displayBirthday,
+        displayMailPersonal: userFromDb.preference.displayMailPersonal,
+        displayPhone: userFromDb.preference.displayPhone,
+        displayAddress: userFromDb.preference.displayAddress,
+        displaySex: userFromDb.preference.displaySex,
+        displayDiscord: userFromDb.preference.displayDiscord,
+        displayTimetable: userFromDb.preference.displayTimetable,
+      },
+    });
 
     return pactum
       .spec()
       .get(`/users/current`)
       .withBearerToken(user.token)
       .expectStatus(HttpStatus.OK)
-      .expectBody(Object.fromEntries(Object.entries(expectedBody).filter(([, value]) => value !== undefined)));
+      .expectJson(Object.fromEntries(Object.entries(expectedBody).filter(([, value]) => value !== undefined)));
   });
 });
 

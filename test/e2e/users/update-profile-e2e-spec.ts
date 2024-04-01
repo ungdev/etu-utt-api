@@ -1,21 +1,21 @@
 import { HttpStatus } from '@nestjs/common';
-import { e2eSuite } from '../../../test/utils/test_utils';
+import { e2eSuite } from '../../utils/test_utils';
 import * as pactum from 'pactum';
 import { PrismaService } from '../../../src/prisma/prisma.service';
-import { createUser } from '../../../test/utils/fakedb';
+import { createUser } from '../../utils/fakedb';
 
-const UpdateProfile = e2eSuite('PATCH /users/profile', (app) => {
+const UpdateProfile = e2eSuite('PATCH /users/current', (app) => {
   const user = createUser(app);
 
   it('should return a 401 as user is not authenticated', () => {
-    return pactum.spec().get('/users/profile').expectStatus(HttpStatus.UNAUTHORIZED);
+    return pactum.spec().get('/users/current').expectStatus(HttpStatus.UNAUTHORIZED);
   });
 
   it('should return a 400 as the type of the value is wrong', async () => {
     await pactum
       .spec()
       .withBearerToken(user.token)
-      .patch(`/users/profile`)
+      .patch(`/users/current`)
       .withBody({
         facebook: true,
       })
@@ -26,7 +26,7 @@ const UpdateProfile = e2eSuite('PATCH /users/profile', (app) => {
     await pactum
       .spec()
       .withBearerToken(user.token)
-      .patch(`/users/profile`)
+      .patch(`/users/current`)
       .withBody({
         facebook: 'fbProfile',
         displayAddress: true,
@@ -34,8 +34,6 @@ const UpdateProfile = e2eSuite('PATCH /users/profile', (app) => {
       .expectJson({
         avatar: user.infos.avatar,
         birthday: user.infos.birthday.toISOString(),
-        city: user.address.city,
-        country: user.address.country,
         discord: user.socialNetwork.pseudoDiscord,
         facebook: 'fbProfile',
         firstName: user.firstName,
@@ -58,15 +56,21 @@ const UpdateProfile = e2eSuite('PATCH /users/profile', (app) => {
         nickname: user.infos.nickname,
         passions: user.infos.passions,
         phone: user.mailsPhones.phoneNumber,
-        postalCode: user.address.postalCode,
+        addresses: user.addresses.map((address) => ({
+          city: address.city,
+          country: address.country,
+          postalCode: address.postalCode,
+          street: address.street,
+        })),
         sex: user.infos.sex,
         spotify: user.socialNetwork.spotify,
-        street: user.address.street,
         twitch: user.socialNetwork.twitch,
         twitter: user.socialNetwork.twitter,
         website: user.infos.website,
       });
-    return app().get(PrismaService).user.deleteMany();
+    return app()
+      .get(PrismaService)
+      .user.update({ where: { id: user.id }, data: { socialNetwork: { update: { facebook: null } } } });
   });
 });
 
