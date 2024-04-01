@@ -105,7 +105,7 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
       .expectUEs(app, expectedUEs, expectedUEs.length);
   });
 
-  it('should return a list of ues filtered by filiere', () => {
+  it('should return a list of ues filtered by branch option', () => {
     const expectedUEs = ues.filter((ue) => ue.branchOption.some((branchOption) => branchOption.code === 'T1'));
     return pactum
       .spec()

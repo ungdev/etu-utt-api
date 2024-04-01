@@ -15,6 +15,8 @@ const USER_SELECT_FILTER = {
         passions: true,
         birthday: true,
         sex: true,
+        avatar: true,
+        nationality: true,
       },
     },
     permissions: {
@@ -22,11 +24,76 @@ const USER_SELECT_FILTER = {
         userPermissionId: true,
       },
     },
+    branchSubscriptions: {
+      select: {
+        semesterNumber: true,
+        semester: {
+          select: {
+            code: true,
+            start: true,
+            end: true,
+          },
+        },
+
+        branchOption: {
+          select: {
+            code: true,
+            branch: {
+              select: {
+                code: true,
+              },
+            },
+          },
+        },
+      },
+    },
+    mailsPhones: {
+      select: {
+        mailUTT: true,
+        mailPersonal: true,
+        phoneNumber: true,
+      },
+    },
+    socialNetwork: {
+      select: {
+        pseudoDiscord: true,
+        facebook: true,
+        instagram: true,
+        linkedin: true,
+        spotify: true,
+        twitch: true,
+        twitter: true,
+        wantDiscordUTT: true,
+      },
+    },
+    preference: {
+      select: {
+        wantDayNotif: true,
+        language: true,
+        birthdayDisplayOnlyAge: true,
+        wantDaymail: true,
+        displayAddress: true,
+        displayBirthday: true,
+        displayDiscord: true,
+        displayMailPersonal: true,
+        displayPhone: true,
+        displaySex: true,
+        displayTimetable: true,
+      },
+    },
+    addresses: {
+      select: {
+        street: true,
+        postalCode: true,
+        city: true,
+        country: true,
+      },
+    },
   },
   orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
 } satisfies Partial<RequestType<'user'>>;
 
-export type UnformattedUser = Prisma.UserGetPayload<typeof USER_SELECT_FILTER>;
+type UnformattedUser = Prisma.UserGetPayload<typeof USER_SELECT_FILTER>;
 export type User = Omit<UnformattedUser, 'permissions'> & {
   permissions: string[];
 };
@@ -40,3 +107,17 @@ export function formatUser(user: UnformattedUser): User {
     permissions: user.permissions.map((permission) => permission.userPermissionId),
   };
 }
+
+export type UserAssoMembership = {
+  startAt: Date;
+  endAt: Date;
+  role: string;
+  asso: AssoResume;
+};
+
+export type AssoResume = {
+  name: string;
+  logo: string;
+  descriptionShortTranslationId: string;
+  mail: string;
+};

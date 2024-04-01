@@ -39,9 +39,9 @@ describe('EtuUTT API e2e testing', () => {
     app.close();
   });
 
-  // AuthE2ESpec(() => app);
-  // ProfileE2ESpec(() => app);
-  // UsersE2ESpec(() => app);
-  // TimetableE2ESpec(() => app);
+  AuthE2ESpec(() => app);
+  ProfileE2ESpec(() => app);
+  UsersE2ESpec(() => app);
+  TimetableE2ESpec(() => app);
   UEE2ESpec(() => app);
 });
