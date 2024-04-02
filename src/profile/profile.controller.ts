@@ -1,13 +1,17 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Patch, Post, Put } from "@nestjs/common";
 import { GetUser } from '../auth/decorator';
 import { PrismaService } from '../prisma/prisma.service';
 import { User } from '../users/interfaces/user.interface';
 import { ProfileUpdateDto } from './dto/profile-update.dto';
 import { AppException, ERROR_CODE } from '../exceptions';
+import { FileSize, MulterWithMime, UploadRoute, UserFile } from '../upload.interceptor';
+import sharp from "sharp";
+import { writeFile } from "fs/promises";
+import { ConfigModule } from "../config/config.module";
 
 @Controller('profile')
 export class ProfileController {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private config: ConfigModule) {}
 
   @Get()
   async getProfile(@GetUser() user: User) {
@@ -42,5 +46,25 @@ export class ProfileController {
         },
       },
     });
+  }
+
+  @Patch('/avatar')
+  @UploadRoute('file')
+  async updateAvatar(
+    @GetUser() user: User,
+    @UserFile(['image/png', 'image/jpeg', 'image/webp', 'image/avif', 'image/tiff'], 8 * FileSize.MegaByte)
+    filePromise: Promise<MulterWithMime>,
+  ) {
+    const file = await filePromise;
+    if (file.mime === 'image/webp' || file.mime === 'image/avif' || file.mime === 'image/tiff') {
+      file.multer.buffer = await sharp(file.multer.buffer).webp().toBuffer();
+      file.mime = 'image/webp';
+    }
+    await writeFile(`${this.config.AVATAR_UPLOAD_DIR}/${user.id}.webp`, file.multer.buffer);
+    await this.prisma.userInfos.update({
+      where: { id: user.infos.id },
+      data: { avatar: `${this.config.AVATAR_UPLOAD_DIR}/${user.id}.webp` },
+    });
+    return { avatar: `${this.config.AVATAR_UPLOAD_DIR}/${user.id}.webp` };
   }
 }

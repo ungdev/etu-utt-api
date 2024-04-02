@@ -24,6 +24,7 @@ export class ConfigModule {
   public readonly SALT_ROUNDS: string;
   public readonly CAS_URL: string;
   public readonly ANNAL_UPLOAD_DIR: string;
+  public readonly AVATAR_UPLOAD_DIR: string;
 
   // DEV ENVIRONMENT ONLY
 
@@ -39,6 +40,7 @@ export class ConfigModule {
     this.CAS_URL = config.get('CAS_URL');
     this.ANNAL_UPLOAD_DIR = config.get<string>('ANNAL_UPLOAD_DIR');
     if (this.ANNAL_UPLOAD_DIR.endsWith('/')) this.ANNAL_UPLOAD_DIR = this.ANNAL_UPLOAD_DIR.slice(0, -1);
+    if (!this.ANNAL_UPLOAD_DIR.startsWith('/')) this.ANNAL_UPLOAD_DIR = '/' + this.ANNAL_UPLOAD_DIR;
 
     this._FAKER_SEED = isTestEnv ? Number(config.get('FAKER_SEED')) : undefined;
   }
