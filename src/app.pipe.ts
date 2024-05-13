@@ -1,4 +1,4 @@
-import { ArgumentMetadata, PipeTransform, ValidationPipe } from '@nestjs/common';
+import { ArgumentMetadata, BadRequestException, Injectable, PipeTransform, ValidationPipe } from "@nestjs/common";
 import { AppException, ERROR_CODE } from './exceptions';
 import { validationExceptionFactory } from './validation';
 
@@ -58,5 +58,19 @@ export class AppValidationPipe extends ValidationPipe {
       return toArray;
     }
     return super.transform(value, argumentMetadata);
+  }
+}
+
+@Injectable()
+export class PositiveNumberValidationPipe implements PipeTransform {
+  async transform(value: string) {
+    const asNumber = Number.parseInt(value);
+    if (Number.isNaN(asNumber)) {
+      throw new BadRequestException('value must be a positive number');
+    }
+    if (asNumber <= 0) {
+      throw new BadRequestException('value must be a positive number');
+    }
+    return asNumber;
   }
 }
