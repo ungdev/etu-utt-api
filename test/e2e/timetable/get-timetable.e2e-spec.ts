@@ -18,7 +18,7 @@ const GetTimetableE2ESpec = e2eSuite('GET /timetable/current/:daysCount/:day/:mo
   it('should fail as user is not authenticated', () =>
     pactum.spec().get('/timetable/current/2/1/2/3').expectStatus(HttpStatus.UNAUTHORIZED));
 
-  it('should fail as the value passed are not numbers', () =>
+  it('should fail as the value passed are not positive numbers', () =>
     Promise.all([
       pactum
         .spec()
@@ -40,6 +40,10 @@ const GetTimetableE2ESpec = e2eSuite('GET /timetable/current/:daysCount/:day/:mo
         .get('/timetable/current/2/1/2/yeahthatsanumber')
         .withBearerToken(user.token)
         .expectStatus(HttpStatus.BAD_REQUEST),
+      pactum.spec().get('/timetable/current/-1/2/3/4').withBearerToken(user.token).expectStatus(HttpStatus.BAD_REQUEST),
+      pactum.spec().get('/timetable/current/1/-2/3/4').withBearerToken(user.token).expectStatus(HttpStatus.BAD_REQUEST),
+      pactum.spec().get('/timetable/current/1/2/-3/4').withBearerToken(user.token).expectStatus(HttpStatus.BAD_REQUEST),
+      pactum.spec().get('/timetable/current/1/2/3/-4').withBearerToken(user.token).expectStatus(HttpStatus.BAD_REQUEST),
     ]));
 
   it('should return the events in the next 2 days', async () => {
