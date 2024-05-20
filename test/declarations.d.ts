@@ -5,6 +5,7 @@ import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { UERating } from 'src/ue/interfaces/rate.interface';
 import { FakeUE, FakeUser, FakeHomepageWidget } from './utils/fakedb';
 import { AppProvider } from './utils/test_utils';
+import { Language } from "@prisma/client";
 
 type JsonLikeVariant<T> = {
   [K in keyof T]: T[K] extends string | Date | DeepWritable<Date> ? string | RegExp : JsonLikeVariant<T[K]>;
@@ -56,5 +57,7 @@ declare module './declarations' {
     expectUERates(rate: JsonLikeVariant<UERating[]>): this;
     /** expects to return the given {@link FakeHomepageWidget}s */
     expectHomepageWidgets(widgets: JsonLikeVariant<FakeHomepageWidget[]>): this;
+    withLanguage(language: Language): this;
+    language: Language;
   }
 }

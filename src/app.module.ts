@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
-//import { ConfigModule } from '@nestjs/config';
 import { ProfileModule } from './profile/profile.module';
 import { UsersModule } from './users/users.module';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { PermissionGuard } from './auth/guard/permission.guard';
 import { UEModule } from './ue/ue.module';
 import { JwtGuard } from './auth/guard';
@@ -12,6 +11,7 @@ import { TimetableModule } from './timetable/timetable.module';
 import { ConfigModule } from './config/config.module';
 import { HttpModule } from './http/http.module';
 import { BranchModule } from './branch/branch.module';
+import { TranslationInterceptor } from './app.interceptor';
 
 @Module({
   imports: [
@@ -35,6 +35,10 @@ import { BranchModule } from './branch/branch.module';
     {
       provide: APP_GUARD,
       useClass: PermissionGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: TranslationInterceptor,
     },
   ],
 })
