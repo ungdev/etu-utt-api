@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { AuthSignInDto, AuthSignUpDto } from './dto';
 import * as bcrypt from 'bcryptjs';
 import { Prisma } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
@@ -10,6 +9,8 @@ import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import { XMLParser } from 'fast-xml-parser';
 import { omit } from '../utils';
+import AuthSignUpRequestDto from './dto/request/auth-sign-up-request.dto';
+import AuthSignInRequestDto from './dto/request/auth-sign-in-request.dto';
 
 export type RegisterData = { login: string; mail: string; lastName: string; firstName: string };
 
@@ -27,7 +28,7 @@ export class AuthService {
    * It returns an access token that the user can then use to authenticate their requests.
    * @param dto Data about the user to create.
    */
-  async signup(dto: SetPartial<AuthSignUpDto, 'password'>): Promise<string> {
+  async signup(dto: SetPartial<AuthSignUpRequestDto, 'password'>): Promise<string> {
     try {
       const isUTTMail = dto.mail?.endsWith('@utt.fr');
       const user = await this.prisma.user.create({
@@ -69,7 +70,7 @@ export class AuthService {
    * It then returns an access_token the user can use to authenticate their requests.
    * @param dto Data needed to sign in the user (login & password).
    */
-  async signin(dto: AuthSignInDto): Promise<string> {
+  async signin(dto: AuthSignInRequestDto): Promise<string> {
     // find the user by login, if it does not exist, throw exception
     const user = await this.prisma.withDefaultBehaviour.user.findUnique({
       where: {

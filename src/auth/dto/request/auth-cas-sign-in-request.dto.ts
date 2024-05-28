@@ -1,6 +1,6 @@
 import { IsString } from 'class-validator';
 
-export default class AuthCasSignInDto {
+export default class AuthCasSignInRequestDto {
   @IsString()
   ticket: string;
 

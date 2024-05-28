@@ -3,7 +3,7 @@ import { IsPositive } from 'class-validator';
 import { Type } from 'class-transformer';
 import { Sex, UserType } from '@prisma/client';
 
-export class AuthSignUpDto {
+export default class AuthSignUpRequestDto {
   @IsNotEmpty()
   @IsAlphanumeric()
   login: string;

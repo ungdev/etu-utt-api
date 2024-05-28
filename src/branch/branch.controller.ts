@@ -8,7 +8,7 @@ export class BranchController {
   constructor(private branchService: BranchService) {}
 
   @IsPublic()
-  @Get('')
+  @Get()
   async getBranches() {
     return (await this.branchService.getBranches()).map(this.formatBranch);
   }
