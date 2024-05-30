@@ -149,6 +149,16 @@ export default class UsersService {
     };
   }
 
+  async getBirthdayOfDay(date: Date): Promise<User[]> {
+    // We can't filter by day / month directly in classic calls, we need to use raw SQL.
+    const userIds = (await this.prisma.$queryRaw`
+        SELECT id
+        FROM UserInfos
+        WHERE EXTRACT(DAY FROM birthday) = ${date.getUTCDate()}
+          AND EXTRACT(MONTH FROM birthday) = ${date.getUTCMonth() + 1}`) as Array<{ id: string }>;
+    return this.prisma.user.findMany({ where: { infosId: { in: userIds.map((u) => u.id) } } });
+  }
+
   async fetchUserAssoMemberships(userId: string): Promise<UserAssoMembership[]> {
     const membership = (
       await this.prisma.assoMembership.findMany({

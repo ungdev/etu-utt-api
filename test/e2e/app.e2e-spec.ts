@@ -33,7 +33,7 @@ describe('EtuUTT API e2e testing', () => {
     await app.listen(3001);
 
     testUtils.init(() => app);
-    pactum.request.setBaseUrl(`http://localhost:3001${process.env.API_PREFIX}/v1`);
+    pactum.request.setBaseUrl(`http://localhost:3001${process.env.API_PREFIX}v1`);
     cas.enable(app.get(ConfigModule).CAS_URL);
   });
 
