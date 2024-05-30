@@ -1,5 +1,5 @@
-import { Language } from "@prisma/client";
-import { Translation } from "./prisma/types";
+import { Language } from '@prisma/client';
+import { Translation } from './prisma/types';
 
 /**
  * Sorts an array and returns it. The sort is done in place if the `inPlace` parameter is true.

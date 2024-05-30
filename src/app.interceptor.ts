@@ -2,13 +2,13 @@ import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nes
 import { map, Observable } from 'rxjs';
 import { Request } from 'express';
 import { Language } from '@prisma/client';
-import { getTranslation } from "./utils";
+import { getTranslation } from './utils';
 
 @Injectable()
 export class TranslationInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const headerLanguage = context.switchToHttp().getRequest<Request>().header('language');
-    const language = ['fr', 'en', 'de', 'es', 'zh'].includes(headerLanguage) ? (headerLanguage as Language) : 'fr';
+    const language = headerLanguage in Language ? headerLanguage as Language : 'fr';
     context.switchToHttp().getRequest<Request>().headers['language'] = language;
     return next.handle().pipe(map((item) => this.transform(item, language)));
   }
@@ -17,9 +17,10 @@ export class TranslationInterceptor implements NestInterceptor {
     if (typeof data !== 'object' || data === null || data instanceof Date) {
       return data;
     }
+    const languages = Object.keys(Language);
     if (
-      Object.keys(data).length === 5 &&
-      ['fr', 'en', 'de', 'es', 'zh'].every((key) => Object.keys(data).includes(key))
+      Object.keys(data).length === languages.length &&
+      languages.every((key) => Object.keys(data).includes(key))
     ) {
       return getTranslation(data, language);
     }

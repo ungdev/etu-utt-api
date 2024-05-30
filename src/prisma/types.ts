@@ -1,4 +1,4 @@
-import { Language, Translation as RawTranslation } from "@prisma/client";
+import { Language, Translation as RawTranslation } from '@prisma/client';
 
 export {
   User as RawUser,

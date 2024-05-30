@@ -26,7 +26,7 @@ import { GetUECommentsDto } from './dto/ue-get-comments.dto';
 import { UE } from './interfaces/ue.interface';
 import { Language } from '@prisma/client';
 import { Translation } from '../prisma/types';
-import { omit } from "../utils";
+import { omit } from '../utils';
 
 @Controller('ue')
 export class UEController {

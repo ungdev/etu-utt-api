@@ -1,6 +1,6 @@
 import { Prisma, PrismaClient } from '@prisma/client';
 import { generateCustomModel } from '../../prisma/prisma.service';
-import { translationSelect } from "../../utils";
+import { translationSelect } from '../../utils';
 
 const UE_SELECT_FILTER = {
   select: {
