@@ -46,4 +46,15 @@ export default class UsersController {
     await this.usersService.updateUserProfil(user.id, dto);
     return this.usersService.filterInfo(await this.usersService.fetchUser(user.id), true);
   }
+
+  @Get('/birthdays/today')
+  async getTodaysBirthdays() {
+    return (await this.usersService.getBirthdayOfDay(new Date())).map((user) => ({
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      nickname: user.infos.nickname,
+      age: new Date(Date.now() - user.infos.birthday.getTime()).getUTCFullYear() - 1970,
+    }));
+  }
 }
