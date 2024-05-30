@@ -1,5 +1,6 @@
 import { Faker, faker } from '@faker-js/faker';
 import { Entity, FakeEntityMap } from '../../test/utils/fakedb';
+import { Translation } from 'src/prisma/types';
 
 // While waiting to be able to recover the real data
 export const branchesCode = ['ISI', 'GM', 'RT', 'MTE', 'GI', 'SN', 'A2I', 'MM'];
@@ -115,6 +116,7 @@ declare module '@faker-js/faker' {
       ueStarVote: {
         value: () => number;
       };
+      translation: (rng?: () => string) => Omit<Translation, 'id'>;
     };
   }
 }
@@ -158,6 +160,23 @@ Faker.prototype.db = {
   ueStarVote: {
     value: () => faker.datatype.number({ min: 1, max: 5 }),
   },
+  translation: (rng = faker.random.words) => ({
+    fr: rng(),
+    en: rng(),
+    de: rng(),
+    zh: rng(),
+    es: rng(),
+  }),
 };
+
+export function generateTranslation(rng: () => string = faker.random.words) {
+  return {
+    create: {
+      fr: rng(),
+      en: rng(),
+      de: rng(),
+    },
+  };
+}
 
 export { Faker };

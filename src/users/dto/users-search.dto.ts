@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsOptional, IsString, IsNumber, IsPositive, IsInt } from "class-validator";
+import { IsOptional, IsString, IsNumber, IsPositive, IsInt } from 'class-validator';
 
 /**
  * Query parameters of the request to search users.

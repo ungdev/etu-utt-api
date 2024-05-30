@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Headers,
   HttpCode,
   HttpStatus,
   Param,
@@ -23,6 +24,9 @@ import { UeCommentUpdateDto } from './dto/ue-comment-update.dto';
 import { CommentReplyDto } from './dto/ue-comment-reply.dto';
 import { GetUECommentsDto } from './dto/ue-get-comments.dto';
 import { UE } from './interfaces/ue.interface';
+import { Language } from '@prisma/client';
+import { Translation } from '../prisma/types';
+import { omit } from '../utils';
 
 @Controller('ue')
 export class UEController {
@@ -30,8 +34,11 @@ export class UEController {
 
   @Get()
   @IsPublic()
-  async searchUE(@Query() queryParams: UESearchDto): Promise<Pagination<UEOverview>> {
-    const res = await this.ueService.searchUEs(queryParams);
+  async searchUE(
+    @Headers('language') language: Language,
+    @Query() queryParams: UESearchDto,
+  ): Promise<Pagination<UEOverview>> {
+    const res = await this.ueService.searchUEs(queryParams, language);
     return {
       ...res,
       items: res.items.map((ue) => this.formatUEOverview(ue)),
@@ -359,7 +366,7 @@ export class UEController {
 export type UEOverview = {
   code: string;
   inscriptionCode: string;
-  name: string;
+  name: Translation;
   credits: Array<{
     credits: number;
     category: {
@@ -377,12 +384,12 @@ export type UEOverview = {
   }>;
   info: {
     requirements: string[];
-    comment: string;
+    comment: Translation;
     degree: string;
     languages: string;
     minors: string;
-    objectives: string;
-    program: string;
+    objectives: Translation;
+    program: Translation;
   };
   openSemester: Array<{
     code: string;
@@ -394,7 +401,7 @@ export type UEOverview = {
 export type UEDetail = {
   code: string;
   inscriptionCode: string;
-  name: string;
+  name: Translation;
   credits: Array<{
     credits: number;
     category: {
@@ -412,12 +419,12 @@ export type UEDetail = {
   }>;
   info: {
     requirements: string[];
-    comment: string;
+    comment: Translation;
     degree: string;
     languages: string;
     minors: string;
-    objectives: string;
-    program: string;
+    objectives: Translation;
+    program: Translation;
   };
   openSemester: Array<{
     code: string;

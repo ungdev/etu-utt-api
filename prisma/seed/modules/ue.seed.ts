@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { faker } from '@faker-js/faker';
 import { RawBranchOption, RawCreditCategory, RawSemester, RawUE } from '../../../src/prisma/types';
+import { generateTranslation } from '../utils';
 
 const FAKER_ROUNDS = 20;
 
@@ -22,15 +23,15 @@ export default function ueSeed(
         data: {
           code,
           inscriptionCode: code.length === 3 ? `${code}X` : code.length === 4 ? code : code.substring(0, 4),
-          name: faker.name.jobTitle(),
+          name: generateTranslation(faker.name.jobTitle),
           validationRate: faker.datatype.number({ min: 0, max: 100 }),
           createdAt: date,
           updatedAt: date,
           info: {
             create: {
-              comment: faker.random.words(),
-              program: faker.random.words(),
-              objectives: faker.random.words(),
+              comment: generateTranslation(),
+              program: generateTranslation(),
+              objectives: generateTranslation(),
               languages: faker.random.word(),
             },
           },

@@ -3,8 +3,8 @@ import { createUser } from '../../utils/fakedb';
 import * as pactum from 'pactum';
 import { HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../../../src/prisma/prisma.service';
-import { pick } from "../../../src/utils";
-import { deepDateToString } from "../../declarations";
+import { pick } from '../../../src/utils';
+import { deepDateToString } from '../../declarations';
 
 const GetCurrentUserE2ESpec = e2eSuite('GET /users/current', (app) => {
   const user = createUser(app);

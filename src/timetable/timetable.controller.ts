@@ -2,13 +2,12 @@ import { Body, Controller, Delete, Get, Param, ParseIntPipe, ParseUUIDPipe, Patc
 import TimetableService from './timetable.service';
 import { GetUser } from '../auth/decorator';
 import { User } from '../users/interfaces/user.interface';
-import { PositiveNumberValidationPipe, regex, RegexPipe } from "../app.pipe";
+import { PositiveNumberValidationPipe, regex, RegexPipe } from '../app.pipe';
 import TimetableCreateEntryDto from './dto/timetable-create-entry.dto';
 import TimetableUpdateEntryDto from './dto/timetable-update-entry.dto';
 import { DetailedTimetableEntry, ResponseDetailedTimetableEntry } from './interfaces/timetable.interface';
 import TimetableDeleteOccurrencesDto from './dto/timetable-delete-occurrences.dto';
 import { AppException, ERROR_CODE } from '../exceptions';
-import { IsPositive } from "class-validator";
 
 @Controller('/timetable')
 export class TimetableController {

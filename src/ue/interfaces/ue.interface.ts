@@ -1,12 +1,13 @@
 import { Prisma, PrismaClient } from '@prisma/client';
 import { generateCustomModel } from '../../prisma/prisma.service';
+import { translationSelect } from '../../utils';
 
 const UE_SELECT_FILTER = {
   select: {
     id: true,
     code: true,
     inscriptionCode: true,
-    name: true,
+    name: translationSelect,
     info: {
       select: {
         requirements: {
@@ -14,12 +15,12 @@ const UE_SELECT_FILTER = {
             code: true,
           },
         },
-        comment: true,
+        comment: translationSelect,
         degree: true,
         languages: true,
         minors: true,
-        objectives: true,
-        program: true,
+        objectives: translationSelect,
+        program: translationSelect,
       },
     },
     openSemester: {
