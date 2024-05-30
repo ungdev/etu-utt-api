@@ -1,12 +1,14 @@
-import { Body, Controller, Delete, Get, Param, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Headers, Param, Put, Query } from '@nestjs/common';
 import { UESearchDto } from './dto/ue-search.dto';
 import { UEService } from './ue.service';
-import { UE } from './interfaces/ue.interface';
-import { UERateDto } from './dto/ue-rate.dto';
 import { GetUser, IsPublic, RequireUserType } from '../auth/decorator';
 import { User } from '../users/interfaces/user.interface';
 import { UUIDParam } from '../app.pipe';
 import { AppException, ERROR_CODE } from '../exceptions';
+import { UERateDto } from './dto/ue-rate.dto';
+import { UE } from './interfaces/ue.interface';
+import { Language } from '@prisma/client';
+import { Translation } from '../prisma/types';
 
 @Controller('ue')
 export class UEController {
@@ -14,8 +16,11 @@ export class UEController {
 
   @Get()
   @IsPublic()
-  async searchUE(@Query() queryParams: UESearchDto): Promise<Pagination<UEOverview>> {
-    const res = await this.ueService.searchUEs(queryParams);
+  async searchUE(
+    @Headers('language') language: Language,
+    @Query() queryParams: UESearchDto,
+  ): Promise<Pagination<UEOverview>> {
+    const res = await this.ueService.searchUEs(queryParams, language);
     return {
       ...res,
       items: res.items.map((ue) => this.formatUEOverview(ue)),
@@ -153,7 +158,7 @@ export class UEController {
 export type UEOverview = {
   code: string;
   inscriptionCode: string;
-  name: string;
+  name: Translation;
   credits: Array<{
     credits: number;
     category: {
@@ -171,12 +176,12 @@ export type UEOverview = {
   }>;
   info: {
     requirements: string[];
-    comment: string;
+    comment: Translation;
     degree: string;
     languages: string;
     minors: string;
-    objectives: string;
-    program: string;
+    objectives: Translation;
+    program: Translation;
   };
   openSemester: Array<{
     code: string;
@@ -188,7 +193,7 @@ export type UEOverview = {
 export type UEDetail = {
   code: string;
   inscriptionCode: string;
-  name: string;
+  name: Translation;
   credits: Array<{
     credits: number;
     category: {
@@ -206,12 +211,12 @@ export type UEDetail = {
   }>;
   info: {
     requirements: string[];
-    comment: string;
+    comment: Translation;
     degree: string;
     languages: string;
     minors: string;
-    objectives: string;
-    program: string;
+    objectives: Translation;
+    program: Translation;
   };
   openSemester: Array<{
     code: string;

@@ -10,8 +10,9 @@ import { FakeUEAnnalType, FakeUser, FakeUE, FakeHomepageWidget } from './utils/f
 import { UEAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
 import { ConfigModule } from '../src/config/config.module';
 import { AppProvider } from './utils/test_utils';
-import { omit, pick } from '../src/utils';
+import { getTranslation, omit, pick } from '../src/utils';
 import { isArray } from 'class-validator';
+import { Language } from '@prisma/client';
 
 /** Shortcut function for `this.expectStatus(200).expectJsonLike` */
 function expect<T>(obj: JsonLikeVariant<T>) {
@@ -31,6 +32,11 @@ export function deepDateToString<T>(obj: T): JsonLikeVariant<T> {
   ) as JsonLikeVariant<T>;
 }
 
+Spec.prototype.language = 'fr';
+Spec.prototype.withLanguage = function (language: Language) {
+  this.language = language;
+  return <Spec>this;
+};
 Spec.prototype.expectAppError = function <ErrorCode extends ERROR_CODE>(
   errorCode: ErrorCode,
   ...args: ExtrasTypeBuilder<(typeof ErrorData)[ErrorCode]['message']>
@@ -44,7 +50,13 @@ Spec.prototype.expectUE = function (ue: FakeUE, rates: Array<{ criterionId: stri
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonMatchStrict(
     deepDateToString({
       ...omit(ue, 'id', 'validationRate', 'createdAt', 'updatedAt', 'openSemesters'),
-      info: omit(ue.info, 'id', 'ueId'),
+      name: getTranslation(ue.name, this.language),
+      info: {
+        ...omit(ue.info, 'id'),
+        objectives: getTranslation(ue.info.objectives, this.language),
+        comment: getTranslation(ue.info.comment, this.language),
+        program: getTranslation(ue.info.program, this.language),
+      },
       workTime: omit(ue.workTime, 'id', 'ueId'),
       credits: ue.credits.map((credit) => omit(credit, 'id', 'ueId', 'categoryId')),
       branchOption: ue.branchOption.map((branchOption) => ({
@@ -83,7 +95,13 @@ Spec.prototype.expectUEs = function (app: AppProvider, ues: FakeUE[], count: num
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonLike({
     items: ues.map((ue) => ({
       ...omit(ue, 'id', 'validationRate', 'createdAt', 'updatedAt', 'openSemesters', 'workTime'),
-      info: omit(ue.info, 'id', 'ueId'),
+      name: getTranslation(ue.name, this.language),
+      info: {
+        ...omit(ue.info, 'id', 'comment', 'program', 'objectives'),
+        comment: getTranslation(ue.info.comment, this.language),
+        program: getTranslation(ue.info.program, this.language),
+        objectives: getTranslation(ue.info.objectives, this.language),
+      },
       credits: ue.credits.map((credit) => omit(credit, 'id', 'ueId', 'categoryId')),
       branchOption: ue.branchOption.map((branchOption) => ({
         ...pick(branchOption, 'code', 'name'),

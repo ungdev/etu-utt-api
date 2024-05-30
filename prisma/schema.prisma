@@ -210,8 +210,8 @@ model Translation {
   assoMessageTitleBody                 AssoMessage?                 @relation("bodyTranslation")
   eventDescription                     Event?                       @relation("descriptionTranslation")
   eventTitle                           Event?                       @relation("titleTranslation")
-  userPermissionName                   UserPermission[]             @relation("userPermissionName")
-  userPermissionDescription            UserPermission[]             @relation("userPermissionDescription")
+  userPermissionName                   UserPermission?              @relation("userPermissionName")
+  userPermissionDescription            UserPermission?              @relation("userPermissionDescription")
   annalReportReasonDescriptions        UEAnnalReportReason?
   commentReportReasonDescriptions      UECommentReportReason?
   starCriterionDescriptions            UEStarCriterion?
@@ -219,23 +219,29 @@ model Translation {
   branchOptionDescriptions             UTTBranchOption?
   formationDescriptions                UTTFormation?
   formationFollowingMethodDescriptions UTTFormationFollowingMethod?
+  ueNames                              UE?
+  ueInfoComments                       UEInfo?                      @relation("ueInfoCommentsTranslation")
+  ueInfo                               UEInfo?                      @relation("ueInfoObjectivesTranslation")
+  ueInfoPrograms                       UEInfo?                      @relation("ueInfoProgramTranslation")
 }
 
 model UE {
-  id              String   @id @default(uuid())
-  code            String   @unique @db.VarChar(10)
-  inscriptionCode String   @unique @db.Char(4)
-  name            String   @db.VarChar(255)
-  validationRate  Float?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                String   @id @default(uuid())
+  code              String   @unique @db.VarChar(10)
+  inscriptionCode   String   @unique @db.Char(4)
+  nameTranslationId String   @unique
+  validationRate    Float?
+  ueInfoId          String   @unique
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
+  name               Translation          @relation(fields: [nameTranslationId], references: [id], onDelete: Cascade)
   usersSubscriptions UserUESubscription[]
   credits            UECredit[]
   starVotes          UEStarVote[]
   openSemester       Semester[]
   workTime           UEWorkTime?
-  info               UEInfo?
+  info               UEInfo               @relation(fields: [ueInfoId], references: [id], onDelete: Cascade)
   subsequentUEs      UEInfo[]             @relation("ueRequirements")
   annals             UEAnnal[]
   comments           UEComment[]
@@ -446,17 +452,19 @@ model UECreditCategory {
 }
 
 model UEInfo {
-  id         String  @id @default(uuid())
-  degree     String? @db.Text
-  minors     String? @db.Text
-  languages  String? @db.Text
-  comment    String? @db.Text
-  objectives String? @db.Text
-  program    String? @db.Text
-  ueId       String  @unique
+  id                      String  @id @default(uuid())
+  degree                  String? @db.Text
+  minors                  String? @db.Text
+  languages               String? @db.Text
+  commentTranslationId    String? @unique
+  objectivesTranslationId String? @unique
+  programTranslationId    String? @unique
 
-  ue           UE   @relation(fields: [ueId], references: [id], onDelete: Cascade)
-  requirements UE[] @relation(name: "ueRequirements")
+  ue           UE?
+  comment      Translation? @relation("ueInfoCommentsTranslation", fields: [commentTranslationId], references: [id], onDelete: Cascade)
+  objectives   Translation? @relation("ueInfoObjectivesTranslation", fields: [objectivesTranslationId], references: [id], onDelete: Cascade)
+  program      Translation? @relation("ueInfoProgramTranslation", fields: [programTranslationId], references: [id], onDelete: Cascade)
+  requirements UE[]         @relation(name: "ueRequirements")
 }
 
 model UEStarCriterion {
@@ -498,8 +506,8 @@ model UEWorkTime {
 
 model UserPermission {
   id                       String  @id
-  nameTranslationId        String
-  descriptionTranslationId String?
+  nameTranslationId        String  @unique
+  descriptionTranslationId String? @unique
 
   name        Translation                 @relation(name: "userPermissionName", fields: [nameTranslationId], references: [id], onDelete: Cascade)
   description Translation?                @relation(name: "userPermissionDescription", fields: [descriptionTranslationId], references: [id], onDelete: SetNull)
@@ -690,7 +698,7 @@ model UserHomepageWidget {
 model UserPreference {
   id                     String   @id @default(uuid())
   birthdayDisplayOnlyAge Boolean  @default(false)
-  language               Language @default(FR)
+  language               Language @default(fr)
   wantDaymail            Boolean  @default(false)
   wantDayNotif           Boolean  @default(false)
   displaySex             Boolean  @default(false)
@@ -829,11 +837,11 @@ enum CourseType {
 }
 
 enum Language {
-  FR
-  EN
-  ES
-  DE
-  ZH
+  fr
+  en
+  es
+  de
+  zh
 }
 
 enum Sex {

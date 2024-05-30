@@ -1,3 +1,6 @@
+import { Language } from '@prisma/client';
+import { Translation } from './prisma/types';
+
 /**
  * Returns a new object built from the given object with only the specified keys.
  * @param obj The object to transform.
@@ -34,3 +37,17 @@ export function omit<T extends object, K extends keyof T>(objOrKey: T | K, ...ke
     ? (Object.fromEntries(Object.entries(objOrKey).filter(([key]) => !keys.includes(key as K))) as Omit<T, K>)
     : (value: T) => omit<T, K>(value, objOrKey as K, ...keys);
 }
+
+export function getTranslation(translation: Translation | null, language: Language) {
+  return translation?.[language] ?? translation?.fr ?? null;
+}
+
+export const translationSelect = {
+  select: {
+    fr: true,
+    en: true,
+    de: true,
+    es: true,
+    zh: true,
+  },
+};

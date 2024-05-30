@@ -28,15 +28,16 @@ import {
   RawUserPreference,
   RawUserBranchSubscription,
   RawHomepageWidget,
+  Translation,
 } from '../../src/prisma/types';
 import { faker } from '@faker-js/faker';
 import { AuthService } from '../../src/auth/auth.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { AppProvider } from './test_utils';
 import { Sex, TimetableEntryType, UserType } from '@prisma/client';
-import { omit, pick } from '../../src/utils';
 import { CommentStatus } from '../../src/ue/comments/interfaces/comment.interface';
 import { UEAnnalFile } from '../../src/ue/annals/interfaces/annal.interface';
+import { omit, pick, translationSelect } from '../../src/utils';
 
 /**
  * The fake entities can be used like normal entities in the <code>it(string, () => void)</code> functions.
@@ -68,9 +69,17 @@ export type FakeAssoMembership = Partial<RawAssoMembership> & {
 };
 export type FakeAsso = Partial<RawAsso>;
 export type FakeSemester = Partial<RawSemester>;
-export type FakeUE = Partial<RawUE> & {
+export type FakeUE = Partial<Omit<RawUE, 'nameTranslationId' | 'ueInfoId'>> & {
+  name?: Partial<Translation>;
   credits?: (Partial<RawUECredit> & { category: RawCreditCategory })[];
-  info?: Partial<RawUEInfo & { requirements: { code: string }[] }>;
+  info?: Partial<
+    Omit<RawUEInfo, 'commentTranslationId' | 'objectivesTranslationId' | 'programTranslationId'> & {
+      comment: Partial<Translation>;
+      objectives: Partial<Translation>;
+      program: Partial<Translation>;
+      requirements: { code: string }[];
+    }
+  >;
   workTime?: Partial<RawUEWorkTime>;
   openSemesters?: Partial<RawSemester>[];
   branchOption?: Partial<RawBranchOption & { branch: RawBranch }>[];
@@ -591,7 +600,7 @@ export const createUE = entityFaker(
   'ue',
   {
     code: faker.db.ue.code,
-    name: faker.name.jobTitle,
+    name: () => faker.db.translation(faker.name.jobTitle),
     credits: [
       {
         category: {
@@ -602,8 +611,8 @@ export const createUE = entityFaker(
       },
     ],
     info: {
-      program: faker.random.words,
-      objectives: faker.random.words,
+      program: faker.db.translation,
+      objectives: faker.db.translation,
     },
     workTime: {
       cm: () => faker.datatype.number({ min: 0, max: 100 }),
@@ -621,7 +630,8 @@ export const createUE = entityFaker(
       .get(PrismaService)
       .withDefaultBehaviour.uE.create({
         data: {
-          ...omit(params, 'credits', 'info', 'workTime', 'inscriptionCode', 'openSemesters'),
+          ...omit(params, 'name', 'credits', 'info', 'workTime', 'inscriptionCode', 'openSemesters'),
+          name: { create: params.name },
           inscriptionCode: params.inscriptionCode ?? params.code,
           credits: {
             create: params.credits.map((credit) => ({
@@ -635,7 +645,12 @@ export const createUE = entityFaker(
             })),
           },
           info: {
-            create: omit(params.info, 'ueId', 'requirements'),
+            create: {
+              ...omit(params.info, 'requirements', 'comment', 'objectives', 'program'),
+              comment: { create: params.info.comment },
+              objectives: { create: params.info.objectives },
+              program: { create: params.info.program },
+            },
           },
           workTime: {
             create: params.workTime,
@@ -652,6 +667,7 @@ export const createUE = entityFaker(
           },
         },
         include: {
+          name: translationSelect,
           info: {
             include: {
               requirements: {
@@ -659,6 +675,9 @@ export const createUE = entityFaker(
                   code: true,
                 },
               },
+              comment: translationSelect,
+              objectives: translationSelect,
+              program: translationSelect,
             },
           },
           workTime: true,
@@ -676,7 +695,8 @@ export const createUE = entityFaker(
         },
       })
       .then((ue) => ({
-        ...omit(ue, 'openSemester'),
+        ...omit(ue, 'openSemester', 'ueInfoId', 'nameTranslationId'),
+        info: omit(ue.info, 'commentTranslationId', 'objectivesTranslationId', 'programTranslationId'),
         openSemesters: ue.openSemester,
       })),
 );

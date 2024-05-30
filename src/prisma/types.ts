@@ -1,3 +1,5 @@
+import { Language, Translation as RawTranslation } from '@prisma/client';
+
 export {
   User as RawUser,
   UserInfos as RawUserInfos,
@@ -30,3 +32,6 @@ export {
   AssoMembership as RawAssoMembership,
   UserHomepageWidget as RawHomepageWidget,
 } from '@prisma/client';
+
+export { RawTranslation };
+export type Translation = Pick<Partial<RawTranslation>, Language>;

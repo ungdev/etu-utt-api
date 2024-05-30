@@ -7,6 +7,7 @@ import { Criterion } from './interfaces/criterion.interface';
 import { UERating } from './interfaces/rate.interface';
 import { RawUserUESubscription } from '../prisma/types';
 import { ConfigModule } from '../config/config.module';
+import { Language, Prisma } from '@prisma/client';
 
 @Injectable()
 export class UEService {
@@ -17,9 +18,10 @@ export class UEService {
    * the ue code, name, comment, objectives and program. The user can restrict his research to a branch,
    * a branch option, a credit type or a semester.
    * @param query the query parameters of this route
+   * @param language the language in which to search for text
    * @returns a page of {@link UE} matching the user query
    */
-  async searchUEs(query: UESearchDto): Promise<Pagination<UE>> {
+  async searchUEs(query: UESearchDto, language: Language): Promise<Pagination<UE>> {
     // The where query object for prisma
     const where = {
       // Search for the user query (if there is one)
@@ -41,12 +43,18 @@ export class UEService {
               },
               {
                 name: {
-                  contains: query.q,
+                  [language]: {
+                    contains: query.q,
+                  },
                 },
               },
               {
                 info: {
-                  OR: [{ comment: query.q }, { objectives: query.q }, { program: query.q }],
+                  OR: [
+                    { comment: { [language]: { contains: query.q } } },
+                    { objectives: { [language]: { contains: query.q } } },
+                    { program: { [language]: { contains: query.q } } },
+                  ],
                 },
               },
             ],
@@ -70,20 +78,28 @@ export class UEService {
           }
         : {}),
       // Filter per credit type
-      credits: {
-        some: {
-          category: {
-            code: query.creditType,
-          },
-        },
-      },
+      ...(query.creditType
+        ? {
+            credits: {
+              some: {
+                category: {
+                  code: query.creditType,
+                },
+              },
+            },
+          }
+        : {}),
       // Filter per semester
-      openSemester: {
-        some: {
-          code: query.availableAtSemester?.toUpperCase(),
-        },
-      },
-    };
+      ...(query.availableAtSemester
+        ? {
+            openSemester: {
+              some: {
+                code: query.availableAtSemester?.toUpperCase(),
+              },
+            },
+          }
+        : {}),
+    } satisfies Prisma.UEWhereInput;
     const items = await this.prisma.uE.findMany({
       where,
       take: this.config.PAGINATION_PAGE_SIZE,
