@@ -5,9 +5,11 @@ import { ERROR_CODE } from '../../../src/exceptions';
 
 const GetTodaysBirthdaysE2ESpec = e2eSuite('GET /users/birthday/today', (app) => {
   const now = new Date();
-  const user = createUser(app, { birthday: new Date(now.getTime() - 3_600_000 * 24) });
+  const user = createUser(app, { infos: { birthday: new Date(now.getTime() - 3_600_000 * 24) } });
   const otherUser = createUser(app, {
-    birthday: new Date(now.getUTCFullYear() - 15, now.getUTCMonth(), now.getUTCDate()),
+    infos: {
+      birthday: new Date(now.getUTCFullYear() - 15, now.getUTCMonth(), now.getUTCDate()),
+    }
   }); // Bro you are 15 years old wtf gaudry like
 
   it('should fail as user is not authenticated', () =>
@@ -24,7 +26,8 @@ const GetTodaysBirthdaysE2ESpec = e2eSuite('GET /users/birthday/today', (app) =>
           id: otherUser.id,
           firstName: otherUser.firstName,
           lastName: otherUser.lastName,
-          nickname: otherUser.nickname,
+          nickname: otherUser.infos.nickname,
+          age: 15,
         },
       ]);
   });

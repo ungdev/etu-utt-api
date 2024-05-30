@@ -3,8 +3,9 @@ import { UEComment } from 'src/ue/interfaces/comment.interface';
 import { UECommentReply } from 'src/ue/interfaces/comment-reply.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { UERating } from 'src/ue/interfaces/rate.interface';
-import { FakeUE } from './utils/fakedb';
+import { FakeUE, FakeUser, FakeHomepageWidget } from './utils/fakedb';
 import { AppProvider } from './utils/test_utils';
+import { Language } from '@prisma/client';
 
 type JsonLikeVariant<T> = {
   [K in keyof T]: T[K] extends string | Date | DeepWritable<Date> ? string | RegExp : JsonLikeVariant<T[K]>;
@@ -26,6 +27,9 @@ declare module './declarations' {
       errorCode: ErrorCode,
       ...customMessage: ExtrasTypeBuilder<(typeof ErrorData)[ErrorCode]['message']>
     ): this;
+
+    /** expects to return the given {@link page | page of UserOverView} */
+    expectUsers(app: AppProvider, users: FakeUser[], count: number): this;
     /** expects to return the given {@link UEDetail} */
     expectUE(ue: FakeUE, rates?: Array<{ criterionId: string; value: number }>): this;
     /** expects to return the given {@link page | page of UEOverView} */
@@ -51,5 +55,9 @@ declare module './declarations' {
     expectUERate(rate: JsonLikeVariant<UERating>): this;
     /** expects to return the given {@link rate} list */
     expectUERates(rate: JsonLikeVariant<UERating[]>): this;
+    /** expects to return the given {@link FakeHomepageWidget}s */
+    expectHomepageWidgets(widgets: JsonLikeVariant<FakeHomepageWidget[]>): this;
+    withLanguage(language: Language): this;
+    language: Language;
   }
 }

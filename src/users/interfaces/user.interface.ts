@@ -1,4 +1,5 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
+import { generateCustomModel, RequestType } from '../../prisma/prisma.service';
 
 const USER_SELECT_FILTER = {
   select: {
@@ -6,53 +7,117 @@ const USER_SELECT_FILTER = {
     firstName: true,
     lastName: true,
     login: true,
-    permissions: true,
-    hash: true,
     studentId: true,
-    rgpdId: true,
-    role: true,
     infos: {
       select: {
-        birthday: true,
         nickname: true,
-        sex: true,
-        nationality: true,
-        avatar: true,
-        passions: true,
         website: true,
+        passions: true,
+        birthday: true,
+        sex: true,
+        avatar: true,
+        nationality: true,
+      },
+    },
+    permissions: {
+      select: {
+        userPermissionId: true,
+      },
+    },
+    branchSubscriptions: {
+      select: {
+        semesterNumber: true,
+        semester: {
+          select: {
+            code: true,
+            start: true,
+            end: true,
+          },
+        },
+
+        branchOption: {
+          select: {
+            code: true,
+            branch: {
+              select: {
+                code: true,
+              },
+            },
+          },
+        },
+      },
+    },
+    mailsPhones: {
+      select: {
+        mailUTT: true,
+        mailPersonal: true,
+        phoneNumber: true,
+      },
+    },
+    socialNetwork: {
+      select: {
+        pseudoDiscord: true,
+        facebook: true,
+        instagram: true,
+        linkedin: true,
+        spotify: true,
+        twitch: true,
+        twitter: true,
+        wantDiscordUTT: true,
+      },
+    },
+    preference: {
+      select: {
+        wantDayNotif: true,
+        language: true,
+        birthdayDisplayOnlyAge: true,
+        wantDaymail: true,
+        displayAddress: true,
+        displayBirthday: true,
+        displayDiscord: true,
+        displayMailPersonal: true,
+        displayPhone: true,
+        displaySex: true,
+        displayTimetable: true,
+      },
+    },
+    addresses: {
+      select: {
+        street: true,
+        postalCode: true,
+        city: true,
+        country: true,
       },
     },
   },
-} as const satisfies Prisma.UserFindManyArgs;
+  orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
+} satisfies Partial<RequestType<'user'>>;
 
-export type UnformattedUser = Prisma.UserGetPayload<typeof USER_SELECT_FILTER>;
+type UnformattedUser = Prisma.UserGetPayload<typeof USER_SELECT_FILTER>;
 export type User = Omit<UnformattedUser, 'permissions'> & {
   permissions: string[];
 };
 
-/**
- * Generates the argument to use in prisma function to retrieve an object containing the necessary
- * properties to match against the {@link UEComment} type.
- * @param arg extra arguments to provide to the prisma function. This includes `where` or `data` fields.
- * Sub arguments of the ones provided in {@link USER_SELECT_FILTER} will be ignored
- * @returns arguments to use in prisma function.
- *
- * @example
- * const comment = await this.prisma.user.update(
- *   SelectUser({
- *     where: {
- *       id: userId,
- *     },
- *     data: {
- *       firstName: body.firstName,
- *       lastName: body.lastName,
- *     },
- *   }),
- * );
- */
-export function SelectUser<T>(arg: T): T & typeof USER_SELECT_FILTER {
+export const generateCustomUserModel = (prisma: PrismaClient) =>
+  generateCustomModel(prisma, 'user', USER_SELECT_FILTER, formatUser);
+
+export function formatUser(user: UnformattedUser): User {
   return {
-    ...arg,
-    ...USER_SELECT_FILTER,
-  } as const;
+    ...user,
+    permissions: user.permissions.map((permission) => permission.userPermissionId),
+  };
 }
+
+export type UserAssoMembership = {
+  startAt: Date;
+  endAt: Date;
+  role: string;
+  asso: AssoResume;
+};
+
+export type AssoResume = {
+  name: string;
+  logo: string;
+  descriptionShortTranslationId: string;
+  mail: string;
+};

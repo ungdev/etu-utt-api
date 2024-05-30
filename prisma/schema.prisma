@@ -43,10 +43,11 @@ model AssoMembership {
   createdAt DateTime @default(now())
   userId    String
   assoId    String
+  roleId    String
 
   user        User                       @relation(fields: [userId], references: [id])
   asso        Asso                       @relation(fields: [assoId], references: [id])
-  roles       AssoMembershipRole[]
+  role        AssoMembershipRole         @relation(fields: [roleId], references: [id])
   permissions AssoMembershipPermission[]
 }
 
@@ -57,7 +58,8 @@ model AssoMembershipPermission {
 }
 
 model AssoMembershipRole {
-  id String @id @default(uuid())
+  id   String @id @default(uuid())
+  role String
 
   assoMembership AssoMembership[]
   eventPrivacys  EventPrivacy[]
@@ -143,9 +145,9 @@ model Semester {
   annals                UEAnnal[]
   comments              UEComment[]
   courses               UECourse[]
-  BDEContributionsStart UserBDEContribution[] @relation("startSemester")
-  BDEContributionsEnd   UserBDEContribution[] @relation("endSemester")
-  branches              UserBranch[]
+  BDEContributionsStart UserBDEContribution[]    @relation("startSemester")
+  BDEContributionsEnd   UserBDEContribution[]    @relation("endSemester")
+  branchSubscriptions   UserBranchSubscription[]
   UESubscriptions       UserUESubscription[]
   etuUTTTeams           UserEtuUTTTeam[]
 }
@@ -208,8 +210,8 @@ model Translation {
   assoMessageTitleBody                 AssoMessage?                 @relation("bodyTranslation")
   eventDescription                     Event?                       @relation("descriptionTranslation")
   eventTitle                           Event?                       @relation("titleTranslation")
-  userPermissionName                   UserPermission[]             @relation("userPermissionName")
-  userPermissionDescription            UserPermission[]             @relation("userPermissionDescription")
+  userPermissionName                   UserPermission?              @relation("userPermissionName")
+  userPermissionDescription            UserPermission?              @relation("userPermissionDescription")
   annalReportReasonDescriptions        UEAnnalReportReason?
   commentReportReasonDescriptions      UECommentReportReason?
   starCriterionDescriptions            UEStarCriterion?
@@ -217,23 +219,29 @@ model Translation {
   branchOptionDescriptions             UTTBranchOption?
   formationDescriptions                UTTFormation?
   formationFollowingMethodDescriptions UTTFormationFollowingMethod?
+  ueNames                              UE?
+  ueInfoComments                       UEInfo?                      @relation("ueInfoCommentsTranslation")
+  ueInfo                               UEInfo?                      @relation("ueInfoObjectivesTranslation")
+  ueInfoPrograms                       UEInfo?                      @relation("ueInfoProgramTranslation")
 }
 
 model UE {
-  id              String   @id @default(uuid())
-  code            String   @unique @db.VarChar(10)
-  inscriptionCode String   @unique @db.Char(4)
-  name            String   @db.VarChar(255)
-  validationRate  Float?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                String   @id @default(uuid())
+  code              String   @unique @db.VarChar(10)
+  inscriptionCode   String   @unique @db.Char(4)
+  nameTranslationId String   @unique
+  validationRate    Float?
+  ueInfoId          String   @unique
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
+  name               Translation          @relation(fields: [nameTranslationId], references: [id], onDelete: Cascade)
   usersSubscriptions UserUESubscription[]
   credits            UECredit[]
   starVotes          UEStarVote[]
   openSemester       Semester[]
   workTime           UEWorkTime?
-  info               UEInfo?
+  info               UEInfo               @relation(fields: [ueInfoId], references: [id], onDelete: Cascade)
   subsequentUEs      UEInfo[]             @relation("ueRequirements")
   annals             UEAnnal[]
   comments           UEComment[]
@@ -412,17 +420,19 @@ model UECreditCategory {
 }
 
 model UEInfo {
-  id         String  @id @default(uuid())
-  degree     String? @db.Text
-  minors     String? @db.Text
-  languages  String? @db.Text
-  comment    String? @db.Text
-  objectives String? @db.Text
-  program    String? @db.Text
-  ueId       String  @unique
+  id                      String  @id @default(uuid())
+  degree                  String? @db.Text
+  minors                  String? @db.Text
+  languages               String? @db.Text
+  commentTranslationId    String? @unique
+  objectivesTranslationId String? @unique
+  programTranslationId    String? @unique
 
-  ue           UE   @relation(fields: [ueId], references: [id], onDelete: Cascade)
-  requirements UE[] @relation(name: "ueRequirements")
+  ue           UE?
+  comment      Translation? @relation("ueInfoCommentsTranslation", fields: [commentTranslationId], references: [id], onDelete: Cascade)
+  objectives   Translation? @relation("ueInfoObjectivesTranslation", fields: [objectivesTranslationId], references: [id], onDelete: Cascade)
+  program      Translation? @relation("ueInfoProgramTranslation", fields: [programTranslationId], references: [id], onDelete: Cascade)
+  requirements UE[]         @relation(name: "ueRequirements")
 }
 
 model UEStarCriterion {
@@ -464,8 +474,8 @@ model UEWorkTime {
 
 model UserPermission {
   id                       String  @id
-  nameTranslationId        String
-  descriptionTranslationId String?
+  nameTranslationId        String  @unique
+  descriptionTranslationId String? @unique
 
   name        Translation                 @relation(name: "userPermissionName", fields: [nameTranslationId], references: [id], onDelete: Cascade)
   description Translation?                @relation(name: "userPermissionDescription", fields: [descriptionTranslationId], references: [id], onDelete: SetNull)
@@ -485,28 +495,32 @@ model UserPermissionAssignement {
 }
 
 model User {
-  id        String  @id @default(uuid())
-  login     String  @unique @db.VarChar(50)
-  hash      String?
+  id              String  @id @default(uuid())
+  login           String  @unique @db.VarChar(50)
+  hash            String?
   // TODO : maybe a field accountType (that is either CAS or login-password), but this may be implemented in the centralized authentication
-  studentId Int?
-  firstName String
-  lastName  String
-  rgpdId    String? @unique
+  studentId       Int?
+  firstName       String
+  lastName        String
+  rgpdId          String  @unique
+  preferenceId    String  @unique
+  infosId         String  @unique
+  mailsPhonesId   String  @unique
+  socialNetworkId String  @unique
 
-  role                  UserRole
+  userType              UserType
   timestamps            UserTimestamps?
-  socialNetwork         UserSocialNetwork?
+  socialNetwork         UserSocialNetwork           @relation(fields: [socialNetworkId], references: [id])
   bans                  UserBan[]
-  rgpd                  UserRGPD?
-  BDEContributions      UserBDEContribution[]
+  rgpd                  UserRGPD                    @relation(fields: [rgpdId], references: [id])
+  bdeContributions      UserBDEContribution[]
   assoMembership        AssoMembership[]
-  branch                UserBranch?
+  branchSubscriptions   UserBranchSubscription[]
   formation             UserFormation?
-  preference            UserPreference?
-  infos                 UserInfos?
+  preference            UserPreference              @relation(fields: [preferenceId], references: [id])
+  infos                 UserInfos                   @relation(fields: [infosId], references: [id])
   addresses             UserAddress[]
-  mailsPhones           UserMailsPhones?
+  mailsPhones           UserMailsPhones             @relation(fields: [mailsPhonesId], references: [id])
   otherAttributes       UserOtherAttributValue[]
   UEsSubscriptions      UserUESubscription[]
   UEStarVotes           UEStarVote[]
@@ -526,7 +540,8 @@ model User {
   courseExchanges       UECourseExchange[]
   courseExchangeReplies UECourseExchangeReply[]
   commentUpvotes        UECommentUpvote[]
-  userTimetableGroup    UserTimetableGroup[]
+  timetableGroups       UserTimetableGroup[]
+  homepageWidgets       UserHomepageWidget[]
 }
 
 model UserAddress {
@@ -535,9 +550,9 @@ model UserAddress {
   postalCode String? @db.VarChar(20)
   city       String? @db.VarChar(255)
   country    String? @db.VarChar(50)
-  userId     String
+  userId     String?
 
-  user User @relation(fields: [userId], references: [id])
+  user User? @relation(fields: [userId], references: [id])
 }
 
 model UserBan {
@@ -562,19 +577,17 @@ model UserBDEContribution {
   endSemester   Semester @relation("endSemester", fields: [endSemesterId], references: [code])
 }
 
-model UserBranch {
-  id             String   @id @default(uuid())
-  semesterNumber Int      @db.SmallInt
-  createdAt      DateTime @default(now())
-  userId         String   @unique
-  branchId       String
-  branchOptionId String
-  semesterId     String
+model UserBranchSubscription {
+  id               String   @id @default(uuid())
+  userId           String
+  semesterNumber   Int      @db.SmallInt
+  createdAt        DateTime @default(now())
+  branchOptionCode String
+  semesterCode     String
 
   user         User            @relation(fields: [userId], references: [id])
-  branch       UTTBranch       @relation(fields: [branchId], references: [code])
-  branchOption UTTBranchOption @relation(fields: [branchOptionId], references: [code])
-  semester     Semester        @relation(fields: [semesterId], references: [code])
+  branchOption UTTBranchOption @relation(fields: [branchOptionCode], references: [code])
+  semester     Semester        @relation(fields: [semesterCode], references: [code])
 }
 
 model UserEtuUTTTeam {
@@ -607,9 +620,8 @@ model UserInfos {
   nickname    String?   @db.VarChar(50)
   passions    String?   @db.Text
   website     String?   @db.VarChar(255)
-  userId      String    @unique
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User?
 }
 
 model UserMailsPhones {
@@ -617,9 +629,8 @@ model UserMailsPhones {
   mailUTT      String? @db.VarChar(255)
   mailPersonal String? @db.VarChar(255)
   phoneNumber  String? @db.VarChar(100)
-  userId       String  @unique
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User?
 }
 
 model UserOtherAttribut {
@@ -639,24 +650,41 @@ model UserOtherAttributValue {
   attribut UserOtherAttribut @relation(fields: [attributId], references: [name])
 }
 
-model UserPreference {
-  id                     String   @id @default(uuid())
-  birthdayDisplayOnlyAge Boolean
-  language               Language
-  wantDaymail            Boolean
-  wantDayNotif           Boolean
-  userId                 String   @unique
+model UserHomepageWidget {
+  id     String @id @default(uuid())
+  widget String @db.VarChar(20)
+  x      Int
+  y      Int
+  width  Int
+  height Int
+  userId String
 
   user User @relation(fields: [userId], references: [id])
+}
+
+model UserPreference {
+  id                     String   @id @default(uuid())
+  birthdayDisplayOnlyAge Boolean  @default(false)
+  language               Language @default(fr)
+  wantDaymail            Boolean  @default(false)
+  wantDayNotif           Boolean  @default(false)
+  displaySex             Boolean  @default(false)
+  displayBirthday        Boolean  @default(false)
+  displayMailPersonal    Boolean  @default(false)
+  displayPhone           Boolean  @default(false)
+  displayAddress         Boolean  @default(false)
+  displayDiscord         Boolean  @default(false)
+  displayTimetable       Boolean  @default(false)
+
+  user User?
 }
 
 model UserRGPD {
   id                   String   @id @default(uuid())
   isKeepingAccount     Boolean?
   isDeletingEverything Boolean?
-  userId               String   @unique
 
-  user User @relation(fields: [userId], references: [id])
+  user User?
 }
 
 model UserSocialNetwork {
@@ -665,21 +693,21 @@ model UserSocialNetwork {
   twitter        String? @db.VarChar(255)
   instagram      String? @db.VarChar(255)
   linkedin       String? @db.VarChar(255)
+  twitch         String? @db.VarChar(255)
+  spotify        String? @db.VarChar(255)
   pseudoDiscord  String? @db.VarChar(255)
-  wantDiscordUTT Boolean
-  userId         String  @unique
+  wantDiscordUTT Boolean @default(false)
 
-  user User @relation(fields: [userId], references: [id])
+  user User?
 }
 
 model UserTimestamps {
-  id             String    @id @default(uuid())
-  firstLoginDate DateTime?
-  lastLoginDate  DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  deletedAt      DateTime?
-  userId         String    @unique
+  id            String    @id @default(uuid())
+  lastLoginDate DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+  userId        String    @unique
 
   user User @relation(fields: [userId], references: [id])
 }
@@ -721,7 +749,6 @@ model UTTBranch {
 
   descriptionTranslation Translation       @relation(fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
   branchOptions          UTTBranchOption[]
-  userBranches           UserBranch[]
 }
 
 model UTTBranchOption {
@@ -730,10 +757,10 @@ model UTTBranchOption {
   branchId                 String
   descriptionTranslationId String @unique
 
-  branch                 UTTBranch    @relation(fields: [branchId], references: [code])
-  descriptionTranslation Translation  @relation(fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
+  branch                 UTTBranch                @relation(fields: [branchId], references: [code])
+  descriptionTranslation Translation              @relation(fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
   ues                    UE[]
-  userBranches           UserBranch[]
+  branchSubscriptions    UserBranchSubscription[]
 }
 
 model UTTFormation {
@@ -752,7 +779,7 @@ model UTTFormationFollowingMethod {
   userFormations         UserFormation[]
 }
 
-enum UserRole {
+enum UserType {
   STUDENT
   TEACHER
   EMPLOYEE
@@ -775,11 +802,11 @@ enum CourseType {
 }
 
 enum Language {
-  FR
-  EN
-  ES
-  DE
-  ZH
+  fr
+  en
+  es
+  de
+  zh
 }
 
 enum Sex {

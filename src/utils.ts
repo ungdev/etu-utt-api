@@ -1,5 +1,8 @@
+import { Language } from '@prisma/client';
+import { Translation } from './prisma/types';
+
 /**
- * Sorts an array in place and returns it.
+ * Sorts an array and returns it. The sort is done in place if the `inPlace` parameter is true.
  * Array is sorted based on a mapper function, that returns in order the values by which to sort the array.
  * @example
  * const array = [
@@ -17,8 +20,10 @@
  * @param array The array to sort
  * @param mapper A function that returns a list of values that will be used for comparison.
  *               The length of the array should be fixed, not dependent on the value to map.
+ * @param inPlace Whether to sort the array in place or to create a new array.
  */
-export function sortArray<T>(array: T[], mapper: (e: T) => any[] | any): T[] {
+export function sortArray<T>(array: T[], mapper: (e: T) => any[] | any, inPlace = true): T[] {
+  array = inPlace ? array : array.slice();
   return array.sort((a, b) => {
     const aMapped = mapper(a);
     const bMapped = mapper(b);
@@ -67,8 +72,23 @@ export function omit<T extends object, K extends keyof T>(obj: T, ...keys: K[]):
  * @param keys The keys to omit.
  */
 export function omit<T extends object, K extends keyof T>(...keys: K[]): (obj: T) => Omit<T, K>;
+export function omit<T extends object, K extends keyof T>(obj: T, ...keys: K[]): Omit<T, K>;
 export function omit<T extends object, K extends keyof T>(objOrKey: T | K, ...keys: K[]) {
   return typeof objOrKey === 'object'
     ? (Object.fromEntries(Object.entries(objOrKey).filter(([key]) => !keys.includes(key as K))) as Omit<T, K>)
     : (value: T) => omit<T, K>(value, objOrKey as K, ...keys);
 }
+
+export function getTranslation(translation: Translation | null, language: Language) {
+  return translation?.[language] ?? translation?.fr ?? null;
+}
+
+export const translationSelect = {
+  select: {
+    fr: true,
+    en: true,
+    de: true,
+    es: true,
+    zh: true,
+  },
+};

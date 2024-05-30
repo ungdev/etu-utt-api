@@ -9,7 +9,7 @@ import { PrismaService } from '../../../src/prisma/prisma.service';
 import { FakeUser } from '../../utils/fakedb';
 import { string } from 'pactum-matchers';
 import { ERROR_CODE } from '../../../src/exceptions';
-import { ConfigService } from '@nestjs/config';
+import { ConfigModule } from '../../../src/config/config.module';
 
 const CasSignUpE2ESpec = e2eSuite('/auth/signup/cas', (app) => {
   it('should fail as the provided token is not jwt-generated', () =>
@@ -22,7 +22,7 @@ const CasSignUpE2ESpec = e2eSuite('/auth/signup/cas', (app) => {
   it('should fail as the provided token does not contains an object in the right form', async () => {
     const token = app()
       .get(JwtService)
-      .sign({ a: 'b' }, { expiresIn: 60, secret: app().get(ConfigService).get('JWT_SECRET') });
+      .sign({ a: 'b' }, { expiresIn: 60, secret: app().get(ConfigModule).JWT_SECRET });
     pactum
       .spec()
       .post('/auth/signup/cas')

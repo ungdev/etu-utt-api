@@ -6,10 +6,12 @@ import { UEComment } from '../src/ue/interfaces/comment.interface';
 import { UECommentReply } from '../src/ue/interfaces/comment-reply.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { UERating } from 'src/ue/interfaces/rate.interface';
-import { FakeUE } from './utils/fakedb';
+import { FakeUE, FakeUser, FakeHomepageWidget } from './utils/fakedb';
 import { ConfigModule } from '../src/config/config.module';
 import { AppProvider } from './utils/test_utils';
-import { omit, pick } from '../src/utils';
+import { getTranslation, omit, pick, sortArray } from '../src/utils';
+import { isArray } from 'class-validator';
+import { Language } from '@prisma/client';
 
 /** Shortcut function for `this.expectStatus(200).expectJsonLike` */
 function expect<T>(obj: JsonLikeVariant<T>) {
@@ -20,6 +22,20 @@ function expectOkOrCreate<T>(obj: JsonLikeVariant<T>, created = false) {
   return (<Spec>this).expectStatus(created ? HttpStatus.CREATED : HttpStatus.OK).expectJsonLike(obj);
 }
 
+export function deepDateToString<T>(obj: T): JsonLikeVariant<T> {
+  if (obj instanceof Date) return obj.toISOString() as JsonLikeVariant<T>;
+  if (isArray(obj)) return obj.map(deepDateToString) as JsonLikeVariant<T>;
+  if (obj === null || typeof obj !== 'object') return obj as JsonLikeVariant<T>;
+  return Object.fromEntries(
+    Object.entries(obj).map(([key, value]) => [key, deepDateToString(value)]),
+  ) as JsonLikeVariant<T>;
+}
+
+SpecProto.language = 'fr';
+SpecProto.withLanguage = function (language: Language) {
+  this.language = language;
+  return <Spec>this;
+};
 SpecProto.expectAppError = function <ErrorCode extends ERROR_CODE>(
   errorCode: ErrorCode,
   ...args: ExtrasTypeBuilder<(typeof ErrorData)[ErrorCode]['message']>
@@ -30,28 +46,59 @@ SpecProto.expectAppError = function <ErrorCode extends ERROR_CODE>(
   });
 };
 SpecProto.expectUE = function (ue: FakeUE, rates: Array<{ criterionId: string; value: number }> = []) {
-  return (<Spec>this).expectStatus(HttpStatus.OK).expectJson({
-    ...omit(ue, 'id', 'validationRate', 'createdAt', 'updatedAt', 'openSemesters'),
-    info: omit(ue.info, 'id', 'ueId'),
-    workTime: omit(ue.workTime, 'id', 'ueId'),
-    credits: ue.credits.map((credit) => omit(credit, 'id', 'ueId', 'categoryId')),
-    branchOption: ue.branchOption.map((branchOption) => ({
-      ...pick(branchOption, 'code', 'name'),
-      branch: pick(branchOption.branch, 'code', 'name'),
-    })),
-    openSemester: ue.openSemesters.map((semester) => ({
-      ...semester,
-      start: semester.start.toISOString(),
-      end: semester.end.toISOString(),
-    })),
-    starVotes: Object.fromEntries(rates.map((rate) => [rate.criterionId, rate.value])),
-  });
+  return (<Spec>this).expectStatus(HttpStatus.OK).expectJson(
+    deepDateToString({
+      ...omit(ue, 'id', 'validationRate', 'createdAt', 'updatedAt', 'openSemesters'),
+      name: getTranslation(ue.name, this.language),
+      info: {
+        ...omit(ue.info, 'id'),
+        objectives: getTranslation(ue.info.objectives, this.language),
+        comment: getTranslation(ue.info.comment, this.language),
+        program: getTranslation(ue.info.program, this.language),
+      },
+      workTime: omit(ue.workTime, 'id', 'ueId'),
+      credits: ue.credits.map((credit) => omit(credit, 'id', 'ueId', 'categoryId')),
+      branchOption: ue.branchOption.map((branchOption) => ({
+        ...pick(branchOption, 'code', 'name'),
+        branch: pick(branchOption.branch, 'code', 'name'),
+      })),
+      openSemester: sortArray(ue.openSemesters, (semester) => semester.start.toISOString()).map((semester) => ({
+        ...semester,
+        start: semester.start.toISOString(),
+        end: semester.end.toISOString(),
+      })),
+      starVotes: Object.fromEntries(rates.map((rate) => [rate.criterionId, rate.value])),
+    }),
+  );
+};
+SpecProto.expectUsers = function (app: AppProvider, users: FakeUser[], count: number) {
+  return (<Spec>this).expectStatus(HttpStatus.OK).expectJson(
+    deepDateToString({
+      items: users.map((user) => ({
+        ...pick(user, 'id', 'firstName', 'lastName', 'login', 'studentId', 'permissions'),
+        infos: omit(user.infos, 'id'),
+        branchSubscriptions: user.branchSubscriptions.map((branch) => pick(branch, 'id')),
+        mailsPhones: omit(user.mailsPhones, 'id'),
+        socialNetwork: omit(user.socialNetwork, 'id'),
+        addresses: user.addresses.map((address) => omit(address, 'id')),
+        preference: omit(user.preference, 'id'),
+      })),
+      itemCount: count,
+      itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
+    }),
+  );
 };
 SpecProto.expectUEs = function (app: AppProvider, ues: FakeUE[], count: number) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonLike({
     items: ues.map((ue) => ({
       ...omit(ue, 'id', 'validationRate', 'createdAt', 'updatedAt', 'openSemesters', 'workTime'),
-      info: omit(ue.info, 'id', 'ueId'),
+      name: getTranslation(ue.name, this.language),
+      info: {
+        ...omit(ue.info, 'id', 'comment', 'program', 'objectives'),
+        comment: getTranslation(ue.info.comment, this.language),
+        program: getTranslation(ue.info.program, this.language),
+        objectives: getTranslation(ue.info.objectives, this.language),
+      },
       credits: ue.credits.map((credit) => omit(credit, 'id', 'ueId', 'categoryId')),
       branchOption: ue.branchOption.map((branchOption) => ({
         ...pick(branchOption, 'code', 'name'),
@@ -73,5 +120,16 @@ SpecProto.expectUECommentReply = expectOkOrCreate<UECommentReply>;
 SpecProto.expectUECriteria = expect<Criterion[]>;
 SpecProto.expectUERate = expect<UERating>;
 SpecProto.expectUERates = expect<UERating[]>;
+SpecProto.expectHomepageWidgets = function (widgets: Omit<FakeHomepageWidget, 'id' | 'userId'>[]) {
+  return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonLike(
+    widgets.map((widget) => ({
+      x: widget.x,
+      y: widget.y,
+      width: widget.width,
+      height: widget.height,
+      widget: widget.widget,
+    })),
+  );
+};
 
 export { Spec, JsonLikeVariant };
