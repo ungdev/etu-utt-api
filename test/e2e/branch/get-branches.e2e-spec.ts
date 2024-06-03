@@ -14,7 +14,7 @@ export const GetBranchesE2ESpec = e2eSuite('GET /branch', (app) => {
       .spec()
       .get('/branch')
       .expectStatus(HttpStatus.OK)
-      .expectJson(
+      .expectJsonMatchStrict(
         [
           {
             code: branch1.code,

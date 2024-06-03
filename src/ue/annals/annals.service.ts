@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { User } from '@prisma/client';
 import { createWriteStream, createReadStream } from 'fs';
 import { writeFile } from 'fs/promises';
 import sharp from 'sharp';
@@ -10,6 +9,7 @@ import { CreateAnnal } from './dto/create-annal.dto';
 import { UpdateAnnalDto } from './dto/update-annal.dto';
 import { SelectUEAnnalFile, FormatAnnal } from './interfaces/annal.interface';
 import { ConfigModule } from '../../config/config.module';
+import { User } from '../../users/interfaces/user.interface';
 
 @Injectable()
 export class AnnalsService {
@@ -19,9 +19,6 @@ export class AnnalsService {
     const ue = await this.prisma.uE.findUnique({
       where: {
         code: ueCode,
-      },
-      include: {
-        openSemester: true,
       },
     });
     const semesters = !isModerator

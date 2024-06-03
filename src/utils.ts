@@ -28,6 +28,7 @@ export function omit<T extends object, K extends keyof T>(obj: T, ...keys: K[]):
  * @param keys The keys to omit.
  */
 export function omit<T extends object, K extends keyof T>(...keys: K[]): (obj: T) => Omit<T, K>;
+export function omit<T extends object, K extends keyof T>(obj: T, ...keys: K[]): Omit<T, K>;
 export function omit<T extends object, K extends keyof T>(objOrKey: T | K, ...keys: K[]) {
   return typeof objOrKey === 'object'
     ? (Object.fromEntries(Object.entries(objOrKey).filter(([key]) => !keys.includes(key as K))) as Omit<T, K>)

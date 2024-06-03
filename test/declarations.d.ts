@@ -6,7 +6,7 @@ import { FakeUEAnnalType } from './utils/fakedb';
 import { UEAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { UERating } from 'src/ue/interfaces/rate.interface';
-import { FakeUE } from './utils/fakedb';
+import { FakeUE, FakeUser, FakeHomepageWidget } from './utils/fakedb';
 import { AppProvider } from './utils/test_utils';
 
 type JsonLikeVariant<T> = Partial<{
@@ -33,6 +33,9 @@ declare module './declarations' {
       errorCode: ErrorCode,
       ...customMessage: ExtrasTypeBuilder<(typeof ErrorData)[ErrorCode]['message']>
     ): this;
+
+    /** expects to return the given {@link page | page of UserOverView} */
+    expectUsers(app: AppProvider, users: FakeUser[], count: number): this;
     /** expects to return the given {@link UEDetail} */
     expectUE(ue: FakeUE, rates?: Array<{ criterionId: string; value: number }>): this;
     /** expects to return the given {@link page | page of UEOverView} */
@@ -66,5 +69,7 @@ declare module './declarations' {
     ): this;
     expectUEAnnal(annals: JsonLikeVariant<UEAnnalFile>, created = false): this;
     expectUEAnnals(annals: JsonLikeVariant<UEAnnalFile>[]): this;
+    /** expects to return the given {@link FakeHomepageWidget}s */
+    expectHomepageWidgets(widgets: JsonLikeVariant<FakeHomepageWidget[]>): this;
   }
 }

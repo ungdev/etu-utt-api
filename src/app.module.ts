@@ -31,7 +31,7 @@ import { BranchModule } from './branch/branch.module';
     BranchModule,
   ],
   // The providers below are used for all the routes of the api.
-  // For example, the JwtGuard is used for all the routes and checks whether the user is authentified.
+  // For example, the JwtGuard is used for all the routes and checks whether the user is authenticated.
   providers: [
     {
       provide: APP_GUARD,

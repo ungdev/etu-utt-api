@@ -2,7 +2,7 @@ import { Controller, Get, Query, Post, Body, Patch, Delete, HttpCode, HttpStatus
 import { UUIDParam } from '../../app.pipe';
 import { RequireUserType, GetUser } from '../../auth/decorator';
 import { AppException, ERROR_CODE } from '../../exceptions';
-import { UeCommentPostDto } from './dto/ue-comment-post.dto';
+import { UECommentPostDto } from './dto/ue-comment-post.dto';
 import { CommentReplyDto } from './dto/ue-comment-reply.dto';
 import { UeCommentUpdateDto } from './dto/ue-comment-update.dto';
 import { GetUECommentsDto } from './dto/ue-get-comments.dto';
@@ -18,17 +18,12 @@ export class CommentsController {
   @RequireUserType('STUDENT', 'FORMER_STUDENT')
   async getUEComments(@GetUser() user: User, @Query() dto: GetUECommentsDto) {
     if (!(await this.ueService.doesUEExist(dto.ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, dto.ueCode);
-    return this.commentsService.getComments(
-      user.id,
-      dto,
-      user.permissions.includes('commentModerator'),
-      user.permissions.includes('commentModerator'),
-    );
+    return this.commentsService.getComments(user.id, dto, user.permissions.includes('commentModerator'));
   }
 
   @Post()
   @RequireUserType('STUDENT')
-  async PostUEComment(@GetUser() user: User, @Body() body: UeCommentPostDto) {
+  async PostUEComment(@GetUser() user: User, @Body() body: UECommentPostDto) {
     if (!(await this.ueService.doesUEExist(body.ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, body.ueCode);
     if (!(await this.ueService.hasAlreadyDoneThisUE(user.id, body.ueCode)))
       throw new AppException(ERROR_CODE.NOT_ALREADY_DONE_UE);
@@ -44,9 +39,7 @@ export class CommentsController {
       user.id,
       user.permissions.includes('commentModerator'),
     );
-    if (!comment) {
-      throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
-    }
+    if (!comment) throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
     return comment;
   }
 
@@ -67,7 +60,11 @@ export class CommentsController {
     )
       throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
     if (
-      (await this.commentsService.isUserCommentAuthor(user.id, commentId)) ||
+      (await this.commentsService.isUserCommentAuthor(
+        user.id,
+        commentId,
+        user.permissions.includes('commentModerator'),
+      )) ||
       user.permissions.includes('commentModerator')
     )
       return this.commentsService.updateComment(
@@ -87,10 +84,14 @@ export class CommentsController {
     )
       throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
     if (
-      (await this.commentsService.isUserCommentAuthor(user.id, commentId)) ||
+      (await this.commentsService.isUserCommentAuthor(
+        user.id,
+        commentId,
+        user.permissions.includes('commentModerator'),
+      )) ||
       user.permissions.includes('commentModerator')
     )
-      return this.commentsService.deleteComment(commentId, user.id, user.permissions.includes('commentModerator'));
+      return this.commentsService.deleteComment(commentId, user.id);
     throw new AppException(ERROR_CODE.NOT_COMMENT_AUTHOR);
   }
 
@@ -107,7 +108,9 @@ export class CommentsController {
       ))
     )
       throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
-    if (await this.commentsService.isUserCommentAuthor(user.id, commentId))
+    if (
+      await this.commentsService.isUserCommentAuthor(user.id, commentId, user.permissions.includes('commentModerator'))
+    )
       throw new AppException(ERROR_CODE.IS_COMMENT_AUTHOR);
     if (await this.commentsService.hasAlreadyUpvoted(user.id, commentId))
       throw new AppException(ERROR_CODE.FORBIDDEN_ALREADY_UPVOTED);
@@ -128,7 +131,9 @@ export class CommentsController {
       ))
     )
       throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
-    if (await this.commentsService.isUserCommentAuthor(user.id, commentId))
+    if (
+      await this.commentsService.isUserCommentAuthor(user.id, commentId, user.permissions.includes('commentModerator'))
+    )
       throw new AppException(ERROR_CODE.IS_COMMENT_AUTHOR);
     if (!(await this.commentsService.hasAlreadyUpvoted(user.id, commentId)))
       throw new AppException(ERROR_CODE.FORBIDDEN_ALREADY_UNUPVOTED);
@@ -158,8 +163,7 @@ export class CommentsController {
   @Patch('reply/:replyId')
   @RequireUserType('STUDENT', 'FORMER_STUDENT')
   async EditReplyComment(@GetUser() user: User, @UUIDParam('replyId') replyId: string, @Body() body: CommentReplyDto) {
-    if (!(await this.commentsService.doesReplyExist(replyId, user.id, user.permissions.includes('commentModerator'))))
-      throw new AppException(ERROR_CODE.NO_SUCH_REPLY);
+    if (!(await this.commentsService.doesReplyExist(replyId))) throw new AppException(ERROR_CODE.NO_SUCH_REPLY);
     if (
       (await this.commentsService.isUserCommentReplyAuthor(user.id, replyId)) ||
       user.permissions.includes('commentModerator')
@@ -171,8 +175,7 @@ export class CommentsController {
   @Delete('reply/:replyId')
   @RequireUserType('STUDENT', 'FORMER_STUDENT')
   async DeleteReplyComment(@GetUser() user: User, @UUIDParam('replyId') replyId: string) {
-    if (!(await this.commentsService.doesReplyExist(replyId, user.id, user.permissions.includes('commentModerator'))))
-      throw new AppException(ERROR_CODE.NO_SUCH_REPLY);
+    if (!(await this.commentsService.doesReplyExist(replyId))) throw new AppException(ERROR_CODE.NO_SUCH_REPLY);
     if (
       (await this.commentsService.isUserCommentReplyAuthor(user.id, replyId)) ||
       user.permissions.includes('commentModerator')

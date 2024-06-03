@@ -14,8 +14,6 @@ import { e2eSuite } from '../../../utils/test_utils';
 import { ConfigModule } from '../../../../src/config/config.module';
 import { ERROR_CODE } from 'src/exceptions';
 import { PrismaService } from '../../../../src/prisma/prisma.service';
-import { CommentStatus, SelectComment } from '../../../../src/ue/comments/interfaces/comment.interface';
-import { omit } from '../../../../src/utils';
 
 const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
   const user = createUser(app);
@@ -88,25 +86,18 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
           lastValidatedBody: 'I like to spread fake news in my comments !',
         },
       });
-    const extendedComments = (
-      await app()
-        .get(PrismaService)
-        .uEComment.findMany(
-          SelectComment(
-            {
-              select: {
-                upvotes: true,
-              },
-            },
-            user.id,
-            ue.code,
-          ),
-        )
-    ).map((comment) => ({
-      ...comment,
-      upvotes: comment.upvotes.length,
-      upvoted: comment.upvotes.some((upvote) => upvote.userId === user.id),
-    }));
+    const extendedComments = await app()
+      .get(PrismaService)
+      .uEComment.findMany(
+        {
+          args: {
+            userId: user.id,
+            includeDeletedReplied: false,
+            includeLastValidatedBody: false,
+          },
+        },
+        user.id,
+      );
     const commentsFiltered = {
       items: extendedComments
         .sort((a, b) =>
@@ -115,22 +106,6 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
             : b.upvotes - a.upvotes,
         )
         .slice(0, app().get(ConfigModule).PAGINATION_PAGE_SIZE)
-        .map((comment) => ({
-          ...omit(comment, 'validatedAt', 'deletedAt', 'author'),
-          author: {
-            ...omit(comment.author, 'UEsSubscriptions'),
-            commentValidForSemesters: comment.author.UEsSubscriptions.map((sub) => sub.semesterId),
-          },
-          answers: comment.answers.map((answer) => ({
-            ...omit(answer, 'deletedAt'),
-            createdAt: answer.createdAt.toISOString(),
-            updatedAt: answer.updatedAt.toISOString(),
-            status: CommentStatus.VALIDATED,
-          })),
-          updatedAt: comment.updatedAt.toISOString(),
-          createdAt: comment.createdAt.toISOString(),
-          status: CommentStatus.VALIDATED,
-        }))
         .map((comment) => {
           if (comment.isAnonymous && comment.author.id !== user.id) delete comment.author;
           return comment;
@@ -149,25 +124,18 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
   });
 
   it('should return the second page of comments', async () => {
-    const extendedComments = (
-      await app()
-        .get(PrismaService)
-        .uEComment.findMany(
-          SelectComment(
-            {
-              select: {
-                upvotes: true,
-              },
-            },
-            user.id,
-            ue.code,
-          ),
-        )
-    ).map((comment) => ({
-      ...comment,
-      upvotes: comment.upvotes.length,
-      upvoted: comment.upvotes.some((upvote) => upvote.userId === user.id),
-    }));
+    const extendedComments = await app()
+      .get(PrismaService)
+      .uEComment.findMany(
+        {
+          args: {
+            userId: user.id,
+            includeDeletedReplied: false,
+            includeLastValidatedBody: false,
+          },
+        },
+        user.id,
+      );
     return pactum
       .spec()
       .withBearerToken(user.token)
@@ -184,22 +152,6 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
               : b.upvotes - a.upvotes,
           )
           .slice(app().get(ConfigModule).PAGINATION_PAGE_SIZE, app().get(ConfigModule).PAGINATION_PAGE_SIZE * 2)
-          .map((comment) => ({
-            ...omit(comment, 'validatedAt', 'deletedAt', 'author'),
-            author: {
-              ...omit(comment.author, 'UEsSubscriptions'),
-              commentValidForSemesters: comment.author.UEsSubscriptions.map((sub) => sub.semesterId),
-            },
-            answers: comment.answers.map((answer) => ({
-              ...omit(answer, 'deletedAt'),
-              createdAt: answer.createdAt.toISOString(),
-              updatedAt: answer.updatedAt.toISOString(),
-              status: CommentStatus.VALIDATED,
-            })),
-            updatedAt: comment.updatedAt.toISOString(),
-            createdAt: comment.createdAt.toISOString(),
-            status: CommentStatus.VALIDATED,
-          }))
           .map((comment) => {
             if (comment.isAnonymous && comment.author.id !== user.id) delete comment.author;
             return comment;
@@ -217,27 +169,18 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
           lastValidatedBody: 'I like to spread fake news in my comments !',
         },
       });
-    const extendedComments = (
-      await app()
-        .get(PrismaService)
-        .uEComment.findMany(
-          SelectComment(
-            {
-              select: {
-                upvotes: true,
-              },
-            },
-            user.id,
-            ue.code,
-            true,
-            true,
-          ),
-        )
-    ).map((comment) => ({
-      ...comment,
-      upvotes: comment.upvotes.length,
-      upvoted: comment.upvotes.some((upvote) => upvote.userId === user.id),
-    }));
+    const extendedComments = await app()
+      .get(PrismaService)
+      .uEComment.findMany(
+        {
+          args: {
+            userId: user.id,
+            includeDeletedReplied: false,
+            includeLastValidatedBody: true,
+          },
+        },
+        user.id,
+      );
     const commentsFiltered = {
       items: extendedComments
         .sort((a, b) =>
@@ -245,24 +188,7 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
             ? (<Date>b.createdAt).getTime() - (<Date>a.createdAt).getTime()
             : b.upvotes - a.upvotes,
         )
-        .slice(0, app().get(ConfigModule).PAGINATION_PAGE_SIZE)
-        .map((comment) => ({
-          ...omit(comment, 'validatedAt', 'deletedAt', 'author'),
-          author: {
-            ...omit(comment.author, 'UEsSubscriptions'),
-            commentValidForSemesters: comment.author.UEsSubscriptions.map((sub) => sub.semesterId),
-          },
-          answers: comment.answers.map((answer) => ({
-            ...omit(answer, 'deletedAt'),
-            createdAt: answer.createdAt.toISOString(),
-            updatedAt: answer.updatedAt.toISOString(),
-            status: CommentStatus.VALIDATED,
-          })),
-          lastValidatedBody: 'I like to spread fake news in my comments !',
-          updatedAt: comment.updatedAt.toISOString(),
-          createdAt: comment.createdAt.toISOString(),
-          status: CommentStatus.VALIDATED,
-        })),
+        .slice(0, app().get(ConfigModule).PAGINATION_PAGE_SIZE),
       itemCount: comments.length,
       itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
     };

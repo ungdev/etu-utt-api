@@ -35,6 +35,7 @@ export const enum ERROR_CODE {
   NO_FILE_PROVIDED = 2019,
   PARAM_DOES_NOT_MATCH_REGEX = 2102,
   NO_FIELD_PROVIDED = 2201,
+  WIDGET_OVERLAPPING = 2301,
   FILE_INVALID_TYPE = 2901,
   FILE_TOO_HEAVY = 2902,
   FORBIDDEN_NOT_ENOUGH_PERMISSIONS = 3001,
@@ -167,6 +168,10 @@ export const ErrorData = Object.freeze({
   },
   [ERROR_CODE.FILE_TOO_HEAVY]: {
     message: 'Invalid file size: max size %',
+    httpCode: HttpStatus.BAD_REQUEST,
+  },
+  [ERROR_CODE.WIDGET_OVERLAPPING]: {
+    message: 'Widgets at index % and % are overlapping',
     httpCode: HttpStatus.BAD_REQUEST,
   },
   [ERROR_CODE.FORBIDDEN_NOT_ENOUGH_PERMISSIONS]: {

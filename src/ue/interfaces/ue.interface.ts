@@ -1,7 +1,9 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
+import { generateCustomModel } from '../../prisma/prisma.service';
 
-const UE_DETAIL_SELECT_FILTER = {
+const UE_SELECT_FILTER = {
   select: {
+    id: true,
     code: true,
     inscriptionCode: true,
     name: true,
@@ -74,41 +76,21 @@ const UE_DETAIL_SELECT_FILTER = {
       },
     },
   },
+  orderBy: {
+    code: 'asc',
+  },
 } as const satisfies Prisma.UEFindManyArgs;
 
-type UEUnComputedDetail = Prisma.UEGetPayload<typeof UE_DETAIL_SELECT_FILTER>;
-export type UEDetail = Omit<UEUnComputedDetail, 'openSemester' | 'starVotes'> & {
-  openSemester: Array<{ code: string; start: Date; end: Date }>;
+export type UnformattedUE = Prisma.UEGetPayload<typeof UE_SELECT_FILTER>;
+export type UE = Omit<UnformattedUE, 'starVotes'> & {
   starVotes: { [key: string]: number };
 };
 
-/**
- * Generates the argument to use in prisma function to retrieve an object containing the necessary
- * properties to match against the {@link UEUnComputedDetail} type.
- *
- * In order to turn the {@link UEUnComputedDetail} into a {@link UEDetail}, you shall populate the `openSemester`
- * and `starVotes` fields the same way as in {@link getUE}
- * @param arg extra arguments to provide to the prisma function. This includes `where` or `data` fields.
- * Sub arguments of the ones provided in {@link UE_DETAIL_SELECT_FILTER} will be ignored
- * @returns arguments to use in prisma function.
- *
- * @example
- * const ue = await this.prisma.uE.findUnique(
- *   SelectUEDetail({
- *     where: {
- *       code,
- *     },
- *   }),
- * );
- */
-export function SelectUEDetail<T>(arg: T): T & typeof UE_DETAIL_SELECT_FILTER {
-  return {
-    ...arg,
-    ...UE_DETAIL_SELECT_FILTER,
-  } as const;
+export function generateCustomUEModel(prisma: PrismaClient) {
+  return generateCustomModel(prisma, 'uE', UE_SELECT_FILTER, formatUE);
 }
 
-export function FormatUEDetail<T extends Prisma.UEGetPayload<typeof UE_DETAIL_SELECT_FILTER>>(ue: T): UEDetail & T {
+function formatUE(ue: UnformattedUE): UE {
   // We store rates in a object where the key is the criterion id and the value is a list ratings
   const starVoteCriteria: {
     [key: string]: {
@@ -138,7 +120,7 @@ export function FormatUEDetail<T extends Prisma.UEGetPayload<typeof UE_DETAIL_SE
   };
 }
 
-function computeRate(rates: Array<{ createdAt: Date; value: number }>) {
+export function computeRate(rates: Array<{ createdAt: Date; value: number }>) {
   let coefficients = 0;
   let ponderation = 0;
   const newestCreationTimestamp = rates.reduce((acc, rate) => Math.max(rate.createdAt.getTime(), acc), 0);

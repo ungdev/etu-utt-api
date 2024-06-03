@@ -79,6 +79,11 @@ const DeleteComment = e2eSuite('DELETE /ue/comments/{commentId}', (app) => {
     await app()
       .get(PrismaService)
       .uEComment.delete({
+        args: {
+          includeDeletedReplied: false,
+          includeLastValidatedBody: false,
+          userId: user.id,
+        },
         where: { id: comment1.id },
       });
     return createComment(app, { user, ue, semester }, comment1, true);

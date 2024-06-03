@@ -8,16 +8,16 @@ import { AppException, ERROR_CODE } from '../../exceptions';
 export class RoleGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
   canActivate(context: ExecutionContext): boolean {
-    // Retrieve the set of roles needed to access the current route
-    const requiredRoles = findRequiredUserTypes(this.reflector, context);
-    // If there is no required role, serve the route
-    if (!requiredRoles || !requiredRoles.length) return true;
+    // Retrieve the set of userTypes needed to access the current route
+    const requiredTypes = findRequiredUserTypes(this.reflector, context);
+    // If there is no required userType, serve the route
+    if (!requiredTypes || !requiredTypes.length) return true;
     const user = context.switchToHttp().getRequest().user as User;
     // Check whether the user is logged in
     if (!user) throw new AppException(ERROR_CODE.NOT_LOGGED_IN);
     // If the user has one of the needed permissions, serve the request
-    for (const requiredRole of requiredRoles) if (user.role === requiredRole) return true;
+    for (const requiredType of requiredTypes) if (user.userType === requiredType) return true;
     // The user has none of the required permissions, throw an error
-    throw new AppException(ERROR_CODE.FORBIDDEN_INVALID_ROLE, requiredRoles[0]);
+    throw new AppException(ERROR_CODE.FORBIDDEN_INVALID_ROLE, requiredTypes[0]);
   }
 }

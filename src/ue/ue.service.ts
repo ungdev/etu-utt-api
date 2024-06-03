@@ -2,10 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { UESearchDto } from './dto/ue-search.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { UERateDto } from './dto/ue-rate.dto';
-import { SelectUEOverview, UEOverView } from './interfaces/ue-overview.interface';
-import { FormatUEDetail, SelectUEDetail, UEDetail } from './interfaces/ue-detail.interface';
-import { Criterion, SelectCriterion } from './interfaces/criterion.interface';
-import { SelectRate, UERating } from './interfaces/rate.interface';
+import { UE } from './interfaces/ue.interface';
+import { Criterion } from './interfaces/criterion.interface';
+import { UERating } from './interfaces/rate.interface';
 import { RawUserUESubscription } from '../prisma/types';
 import { ConfigModule } from '../config/config.module';
 
@@ -14,13 +13,13 @@ export class UEService {
   constructor(readonly prisma: PrismaService, readonly config: ConfigModule) {}
 
   /**
-   * Retrieves a page of {@link UEOverView} matching the user query. This query searchs for a text in
+   * Retrieves a page of {@link UE} matching the user query. This query searchs for a text in
    * the ue code, name, comment, objectives and program. The user can restrict his research to a branch,
-   * a filiere, a credit type or a semester.
+   * a branch option, a credit type or a semester.
    * @param query the query parameters of this route
-   * @returns a page of {@link UEOverView} matching the user query
+   * @returns a page of {@link UE} matching the user query
    */
-  async searchUEs(query: UESearchDto): Promise<Pagination<UEOverView>> {
+  async searchUEs(query: UESearchDto): Promise<Pagination<UE>> {
     // The where query object for prisma
     const where = {
       // Search for the user query (if there is one)
@@ -85,21 +84,12 @@ export class UEService {
         },
       },
     };
-    // Use a prisma transaction to execute two requests at once:
-    // We fetch a page of items matching our filters and retrieve the total count of items matching our filters
-    const [items, itemCount] = await this.prisma.$transaction([
-      this.prisma.uE.findMany(
-        SelectUEOverview({
-          where,
-          take: this.config.PAGINATION_PAGE_SIZE,
-          skip: ((query.page ?? 1) - 1) * this.config.PAGINATION_PAGE_SIZE,
-          orderBy: {
-            code: 'asc',
-          },
-        }),
-      ),
-      this.prisma.uE.count({ where }),
-    ]);
+    const items = await this.prisma.uE.findMany({
+      where,
+      take: this.config.PAGINATION_PAGE_SIZE,
+      skip: ((query.page ?? 1) - 1) * this.config.PAGINATION_PAGE_SIZE,
+    });
+    const itemCount = await this.prisma.uE.count({ where });
     // Data pagination
     return {
       items,
@@ -109,22 +99,19 @@ export class UEService {
   }
 
   /**
-   * Retrieves a {@link UEDetail}
+   * Retrieves a {@link UE}
    * @remarks The ue must exist
    * @param code the code of the ue to retrieve
    * @returns the {@link UEDetail} of the ue matching the given code
    */
-  async getUE(code: string): Promise<UEDetail> {
-    // Fetch an ue from the database and formats it
-    return FormatUEDetail(
-      await this.prisma.uE.findUnique(
-        SelectUEDetail({
-          where: {
-            code,
-          },
-        }),
-      ),
-    );
+  getUE(code: string): Promise<UE> {
+    // Fetch an ue from the database. This ue shall not be returned as is because
+    // it is not formatted at that point.
+    return this.prisma.uE.findUnique({
+      where: {
+        code,
+      },
+    });
   }
 
   /**
@@ -224,13 +211,7 @@ export class UEService {
    * @returns the list of all criteria
    */
   async getRateCriteria(): Promise<Criterion[]> {
-    return this.prisma.uEStarCriterion.findMany(
-      SelectCriterion({
-        orderBy: {
-          name: 'asc',
-        },
-      }),
-    );
+    return this.prisma.uEStarCriterion.findMany({});
   }
 
   /**
@@ -246,19 +227,12 @@ export class UEService {
         code: ueCode,
       },
     });
-    return this.prisma.uEStarVote.findMany(
-      SelectRate({
-        where: {
-          userId: userId,
-          ueId: UE.id,
-        },
-        orderBy: {
-          criterion: {
-            name: 'asc',
-          },
-        },
-      }),
-    );
+    return this.prisma.uEStarVote.findMany({
+      where: {
+        userId: userId,
+        ueId: UE.id,
+      },
+    });
   }
 
   /**
@@ -270,46 +244,42 @@ export class UEService {
    * @returns the new rate of the {@link ueCode | ue} for the {@link user}
    */
   async doRateUE(userId: string, ueCode: string, dto: UERateDto): Promise<UERating> {
-    const UE = await this.prisma.uE.findUnique({
+    const ueId = await this.getUEIdFromCode(ueCode);
+    return this.prisma.uEStarVote.upsert({
       where: {
-        code: ueCode,
+        ueId_userId_criterionId: {
+          ueId,
+          userId,
+          criterionId: dto.criterion,
+        },
+      },
+      create: {
+        value: dto.value,
+        criterionId: dto.criterion,
+        ueId,
+        userId,
+      },
+      update: {
+        value: dto.value,
       },
     });
-    return this.prisma.uEStarVote.upsert(
-      SelectRate({
-        where: {
-          ueId_userId_criterionId: {
-            ueId: UE.id,
-            userId,
-            criterionId: dto.criterion,
-          },
-        },
-        create: {
-          value: dto.value,
-          criterionId: dto.criterion,
-          ueId: UE.id,
-          userId,
-        },
-        update: {
-          value: dto.value,
-        },
-      }),
-    );
   }
 
-  async unRateUE(userId: string, ueCode: string, criterionId: string) {
-    const ue = await this.prisma.uE.findUnique({ where: { code: ueCode } });
-    return this.prisma.uEStarVote.delete(
-      SelectRate({
-        where: {
-          ueId_userId_criterionId: {
-            ueId: ue.id,
-            userId,
-            criterionId,
-          },
+  async unRateUE(userId: string, ueCode: string, criterionId: string): Promise<UERating> {
+    const ueId = await this.getUEIdFromCode(ueCode);
+    return this.prisma.uEStarVote.delete({
+      where: {
+        ueId_userId_criterionId: {
+          ueId,
+          userId,
+          criterionId,
         },
-      }),
-    );
+      },
+    });
+  }
+
+  private async getUEIdFromCode(ueCode: string): Promise<string> {
+    return (await this.prisma.withDefaultBehaviour.uE.findUnique({ where: { code: ueCode }, select: { id: true } })).id;
   }
 
   computeRate(rates: Array<{ createdAt: Date; value: number }>) {

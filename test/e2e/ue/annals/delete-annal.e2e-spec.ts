@@ -18,7 +18,7 @@ import { PrismaService } from '../../../../src/prisma/prisma.service';
 const DeleteAnnal = e2eSuite('DELETE /ue/annals/{annalId}', (app) => {
   const senderUser = createUser(app);
   const nonUeUser = createUser(app, { login: 'user2', studentId: 2 });
-  const nonStudentUser = createUser(app, { login: 'nonStudent', studentId: 4, role: 'TEACHER' });
+  const nonStudentUser = createUser(app, { login: 'nonStudent', studentId: 4, userType: 'TEACHER' });
   const annalType = createAnnalType(app);
   const semester = createSemester(app);
   const branch = createBranch(app);

@@ -1,6 +1,7 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
+import { RequestType, generateCustomModel } from '../../../prisma/prisma.service';
+import { UECommentReply, formatReply } from './comment-reply.interface';
 import { omit } from '../../../utils';
-import { FormatReply, UECommentReply } from './comment-reply.interface';
 
 const COMMENT_SELECT_FILTER = {
   select: {
@@ -11,16 +12,6 @@ const COMMENT_SELECT_FILTER = {
         firstName: true,
         lastName: true,
         studentId: true,
-        UEsSubscriptions: {
-          where: {
-            ue: {
-              code: null,
-            },
-          },
-          select: {
-            semesterId: true,
-          },
-        },
       },
     },
     createdAt: true,
@@ -60,88 +51,70 @@ const COMMENT_SELECT_FILTER = {
       },
     },
   },
-} as const;
+  orderBy: [
+    {
+      upvotes: {
+        _count: 'desc',
+      },
+    },
+    {
+      createdAt: 'desc',
+    },
+  ],
+} satisfies Partial<RequestType<'uEComment'>>;
 
-type UERawComment = Prisma.UECommentGetPayload<typeof COMMENT_SELECT_FILTER>;
-export type UEComment = Omit<UERawComment, 'upvotes' | 'deletedAt' | 'validatedAt' | 'author'> & {
+export type UEExtraArgs = {
+  includeDeletedReplied: boolean;
+  includeLastValidatedBody: boolean;
+  userId: string;
+};
+
+export type UnformattedUEComment = Prisma.UECommentGetPayload<typeof COMMENT_SELECT_FILTER>;
+export type UEComment = Omit<UnformattedUEComment, 'upvotes' | 'deletedAt' | 'validatedAt' | 'answers'> & {
   upvotes: number;
   upvoted: boolean;
   status: CommentStatus;
   answers: UECommentReply[];
   lastValidatedBody?: string | undefined;
-  author?: Omit<UERawComment['author'], 'UEsSubscriptions'> & {
-    commentValidForSemesters: string[];
-  };
+};
+export type UECommentWithValidSemesters = UEComment & {
+  semesters: string[];
 };
 
-/**
- * Generates the argument to use in prisma function to retrieve an object containing the necessary
- * properties to match against the {@link UEComment} type.
- * @param arg extra arguments to provide to the prisma function. This includes `where` or `data` fields.
- * Sub arguments of the ones provided in {@link COMMENT_SELECT_FILTER} will be ignored
- * @returns arguments to use in prisma function.
- *
- * @example
- * const comment = await this.prisma.uEComment.update(
- *   SelectComment({
- *     where: {
- *       id: commentId,
- *     },
- *     data: {
- *       body: body.body,
- *       isAnonymous: body.isAnonymous,
- *     },
- *   }),
- * );
- */
-export function SelectComment<T>(
-  arg: T,
-  userId: string,
-  ueCode: string,
-  includeDeletedReplied = false,
-  includeReportedReplies = false,
-  includeLastValidatedBody = false,
-): T & typeof COMMENT_SELECT_FILTER {
-  Object.assign(COMMENT_SELECT_FILTER.select.answers.where, {
-    deletedAt: includeDeletedReplied ? undefined : null,
-    OR: [
-      {
-        reports: {
-          none: {
-            mitigated: false,
-          },
+export function generateCustomCommentModel(prisma: PrismaClient) {
+  return generateCustomModel(
+    prisma,
+    'uEComment',
+    COMMENT_SELECT_FILTER,
+    formatComment,
+    async (query, args: UEExtraArgs) => {
+      Object.assign(query.select.answers, {
+        where: {
+          deletedAt: args.includeDeletedReplied ? undefined : null,
+          OR: [
+            {
+              reports: {
+                none: {
+                  mitigated: false,
+                },
+              },
+            },
+            {
+              authorId: args.includeDeletedReplied ? undefined : args.userId,
+            },
+          ],
         },
-      },
-      {
-        authorId: includeReportedReplies ? undefined : userId,
-      },
-    ],
-  });
-  Object.assign(COMMENT_SELECT_FILTER.select, { lastValidatedBody: includeLastValidatedBody });
-  Object.assign(COMMENT_SELECT_FILTER.select.author.select.UEsSubscriptions.where.ue, {
-    code: ueCode,
-  });
-  return {
-    ...arg,
-    ...COMMENT_SELECT_FILTER,
-  } as const;
+      });
+      Object.assign(query.select, { lastValidatedBody: args.includeLastValidatedBody });
+      return query;
+    },
+  );
 }
 
-export function FormatComment<T extends Prisma.UECommentGetPayload<typeof COMMENT_SELECT_FILTER>>(
-  comment: T,
-  userId: string,
-): UEComment & Omit<T, 'deletedAt' | 'validatedAt' | 'author'> {
+export function formatComment(comment: UnformattedUEComment, userId?: string): UEComment {
   return {
-    ...omit(comment, 'deletedAt', 'validatedAt', 'author'),
-    ...(comment.author
-      ? {
-          author: {
-            ...omit(comment.author, 'UEsSubscriptions'),
-            commentValidForSemesters: comment.author.UEsSubscriptions.map((sub) => sub.semesterId),
-          },
-        }
-      : {}),
-    answers: comment.answers.map(FormatReply),
+    ...omit(comment, 'deletedAt', 'validatedAt'),
+    answers: comment.answers.map(formatReply),
     status: (comment.deletedAt && CommentStatus.DELETED) | (comment.validatedAt && CommentStatus.VALIDATED),
     upvotes: comment.upvotes.length,
     upvoted: comment.upvotes.some((upvote) => upvote.userId == userId),

@@ -1,46 +1,45 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Put } from '@nestjs/common';
 import { GetUser } from '../auth/decorator';
-import { PrismaService } from '../prisma/prisma.service';
 import { User } from '../users/interfaces/user.interface';
-import { ProfileUpdateDto } from './dto/profile-update.dto';
 import { AppException, ERROR_CODE } from '../exceptions';
+import { ProfileService } from './profile.service';
+import { HomepageWidgetsUpdateDto } from './dto/homepage-widgets-update.dto';
+import { RawHomepageWidget } from '../prisma/types';
 
 @Controller('profile')
 export class ProfileController {
-  constructor(private prisma: PrismaService) {}
+  constructor(private profileService: ProfileService) {}
 
-  @Get()
-  async getProfile(@GetUser() user: User) {
-    return {
-      id: user.id,
-      login: user.login,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      studentId: user.studentId,
-      sex: user.infos.sex,
-      nickname: user.infos.nickname,
-      passions: user.infos.passions,
-      website: user.infos.website,
-      birthday: user.infos.birthday,
-    };
+  @Get('/homepage')
+  async getHomepageWidgets(@GetUser() user: User) {
+    return this.formatHomepageWidgets(await this.profileService.getHomepageWidgets(user.id));
   }
 
-  @Post()
-  async updateProfile(@GetUser() user: User, @Body() dto: ProfileUpdateDto) {
-    if (dto.nickname === undefined && dto.website === undefined && dto.passions === undefined) {
-      throw new AppException(ERROR_CODE.NO_FIELD_PROVIDED);
+  @Put('/homepage')
+  async setHomepageWidget(@GetUser() user: User, @Body() dto: HomepageWidgetsUpdateDto) {
+    for (let i = 0; i < dto.length; i++) {
+      for (let j = 0; j < dto.length; j++) {
+        if (
+          i !== j &&
+          dto[i].x + dto[i].width > dto[j].x &&
+          dto[j].x + dto[j].width > dto[i].x &&
+          dto[i].y + dto[i].height > dto[j].y &&
+          dto[j].y + dto[j].height > dto[i].y
+        ) {
+          throw new AppException(ERROR_CODE.WIDGET_OVERLAPPING, `${i}`, `${j}`);
+        }
+      }
     }
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: {
-        infos: {
-          update: {
-            nickname: dto.nickname,
-            passions: dto.passions,
-            website: dto.website,
-          },
-        },
-      },
-    });
+    return this.formatHomepageWidgets(await this.profileService.setHomepageWidgets(user.id, dto));
+  }
+
+  private formatHomepageWidgets(widgets: RawHomepageWidget[]) {
+    return widgets.map((widget) => ({
+      x: widget.x,
+      y: widget.y,
+      width: widget.width,
+      height: widget.height,
+      widget: widget.widget,
+    }));
   }
 }
