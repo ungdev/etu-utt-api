@@ -38,7 +38,6 @@ export class AnnalsController {
 
   @Post()
   @RequireUserType('STUDENT')
-  @UploadRoute('file')
   async createUeAnnal(@Body() { ueCode, semester, typeId }: CreateAnnal, @GetUser() user: User) {
     if (!(await this.ueService.doesUEExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     if (!(await this.annalsService.doesAnnalTypeExist(typeId))) throw new AppException(ERROR_CODE.NO_SUCH_ANNAL_TYPE);

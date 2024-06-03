@@ -33,6 +33,7 @@ export class CommentsController {
   }
 
   @Get(':commentId')
+  @RequireUserType('STUDENT', 'FORMER_STUDENT')
   async getUECommentFromId(@UUIDParam('commentId') commentId: string, @GetUser() user: User) {
     const comment = await this.commentsService.getCommentFromId(
       commentId,
