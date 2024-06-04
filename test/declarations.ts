@@ -1,15 +1,16 @@
 import { HttpStatus } from '@nestjs/common';
-import Spec, { prototype as SpecProto } from 'pactum/src/models/Spec';
+import Spec from 'pactum/src/models/Spec';
 import { JsonLikeVariant } from './declarations.d';
 import { ERROR_CODE, ErrorData, ExtrasTypeBuilder } from '../src/exceptions';
-import { UEComment } from '../src/ue/interfaces/comment.interface';
-import { UECommentReply } from '../src/ue/interfaces/comment-reply.interface';
+import { UEComment } from '../src/ue/comments/interfaces/comment.interface';
+import { UECommentReply } from '../src/ue/comments/interfaces/comment-reply.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { UERating } from 'src/ue/interfaces/rate.interface';
-import { FakeUE, FakeUser, FakeHomepageWidget } from './utils/fakedb';
+import { FakeUEAnnalType, FakeUser, FakeUE, FakeHomepageWidget } from './utils/fakedb';
+import { UEAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
 import { ConfigModule } from '../src/config/config.module';
 import { AppProvider } from './utils/test_utils';
-import { getTranslation, omit, pick, sortArray } from '../src/utils';
+import { getTranslation, omit, pick } from '../src/utils';
 import { isArray } from 'class-validator';
 import { Language } from '@prisma/client';
 
@@ -31,12 +32,12 @@ export function deepDateToString<T>(obj: T): JsonLikeVariant<T> {
   ) as JsonLikeVariant<T>;
 }
 
-SpecProto.language = 'fr';
-SpecProto.withLanguage = function (language: Language) {
+Spec.prototype.language = 'fr';
+Spec.prototype.withLanguage = function (language: Language) {
   this.language = language;
   return <Spec>this;
 };
-SpecProto.expectAppError = function <ErrorCode extends ERROR_CODE>(
+Spec.prototype.expectAppError = function <ErrorCode extends ERROR_CODE>(
   errorCode: ErrorCode,
   ...args: ExtrasTypeBuilder<(typeof ErrorData)[ErrorCode]['message']>
 ) {
@@ -45,8 +46,8 @@ SpecProto.expectAppError = function <ErrorCode extends ERROR_CODE>(
     error: (args as string[]).reduce((arg, extra) => arg.replaceAll('%', extra), ErrorData[errorCode].message),
   });
 };
-SpecProto.expectUE = function (ue: FakeUE, rates: Array<{ criterionId: string; value: number }> = []) {
-  return (<Spec>this).expectStatus(HttpStatus.OK).expectJson(
+Spec.prototype.expectUE = function (ue: FakeUE, rates: Array<{ criterionId: string; value: number }> = []) {
+  return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonMatchStrict(
     deepDateToString({
       ...omit(ue, 'id', 'validationRate', 'createdAt', 'updatedAt', 'openSemesters'),
       name: getTranslation(ue.name, this.language),
@@ -62,20 +63,22 @@ SpecProto.expectUE = function (ue: FakeUE, rates: Array<{ criterionId: string; v
         ...pick(branchOption, 'code', 'name'),
         branch: pick(branchOption.branch, 'code', 'name'),
       })),
-      openSemester: sortArray(ue.openSemesters, (semester) => semester.start.toISOString()).map((semester) => ({
-        ...semester,
-        start: semester.start.toISOString(),
-        end: semester.end.toISOString(),
-      })),
+      openSemester: ue.openSemesters
+        .mappedSort((semester) => semester.start.toISOString())
+        .map((semester) => ({
+          ...semester,
+          start: semester.start.toISOString(),
+          end: semester.end.toISOString(),
+        })),
       starVotes: Object.fromEntries(rates.map((rate) => [rate.criterionId, rate.value])),
     }),
   );
 };
-SpecProto.expectUsers = function (app: AppProvider, users: FakeUser[], count: number) {
-  return (<Spec>this).expectStatus(HttpStatus.OK).expectJson(
+Spec.prototype.expectUsers = function (app: AppProvider, users: FakeUser[], count: number) {
+  return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonMatchStrict(
     deepDateToString({
       items: users.map((user) => ({
-        ...pick(user, 'id', 'firstName', 'lastName', 'login', 'studentId', 'permissions'),
+        ...pick(user, 'id', 'firstName', 'lastName', 'login', 'studentId', 'permissions', 'userType'),
         infos: omit(user.infos, 'id'),
         branchSubscriptions: user.branchSubscriptions.map((branch) => pick(branch, 'id')),
         mailsPhones: omit(user.mailsPhones, 'id'),
@@ -88,7 +91,7 @@ SpecProto.expectUsers = function (app: AppProvider, users: FakeUser[], count: nu
     }),
   );
 };
-SpecProto.expectUEs = function (app: AppProvider, ues: FakeUE[], count: number) {
+Spec.prototype.expectUEs = function (app: AppProvider, ues: FakeUE[], count: number) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonLike({
     items: ues.map((ue) => ({
       ...omit(ue, 'id', 'validationRate', 'createdAt', 'updatedAt', 'openSemesters', 'workTime'),
@@ -114,13 +117,45 @@ SpecProto.expectUEs = function (app: AppProvider, ues: FakeUE[], count: number) 
     itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
   });
 };
-SpecProto.expectUEComment = expectOkOrCreate<SetPartial<UEComment, 'author'>>;
-SpecProto.expectUEComments = expect<Pagination<UEComment>>;
-SpecProto.expectUECommentReply = expectOkOrCreate<UECommentReply>;
-SpecProto.expectUECriteria = expect<Criterion[]>;
-SpecProto.expectUERate = expect<UERating>;
-SpecProto.expectUERates = expect<UERating[]>;
-SpecProto.expectHomepageWidgets = function (widgets: Omit<FakeHomepageWidget, 'id' | 'userId'>[]) {
+Spec.prototype.expectUEComment = expectOkOrCreate<SetPartial<UEComment, 'author'>>;
+Spec.prototype.expectUEComments = function expect(obj: Pagination<UEComment>) {
+  return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonMatchStrict({
+    itemCount: obj.itemCount,
+    itemsPerPage: obj.itemsPerPage,
+    items: obj.items.map((comment) => ({
+      ...pick(
+        comment,
+        'id',
+        'author',
+        'body',
+        'isAnonymous',
+        'lastValidatedBody',
+        'semester',
+        'status',
+        'upvoted',
+        'upvotes',
+      ),
+      createdAt: comment.createdAt.toISOString(),
+      updatedAt: comment.updatedAt.toISOString(),
+      answers: comment.answers.map((answer) => ({
+        ...pick(answer, 'author', 'body', 'id', 'status'),
+        createdAt: answer.createdAt.toISOString(),
+        updatedAt: answer.updatedAt.toISOString(),
+      })),
+    })),
+  } satisfies JsonLikeVariant<Pagination<UEComment>>);
+};
+Spec.prototype.expectUECommentReply = expectOkOrCreate<UECommentReply>;
+Spec.prototype.expectUECriteria = expect<Criterion[]>;
+Spec.prototype.expectUERate = expect<UERating>;
+Spec.prototype.expectUERates = expect<UERating[]>;
+Spec.prototype.expectUEAnnalMetadata = expect<{
+  types: FakeUEAnnalType[];
+  semesters: string[];
+}>;
+Spec.prototype.expectUEAnnal = expectOkOrCreate<UEAnnalFile>;
+Spec.prototype.expectUEAnnals = expect<UEAnnalFile[]>;
+Spec.prototype.expectHomepageWidgets = function (widgets: Omit<FakeHomepageWidget, 'id' | 'userId'>[]) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonLike(
     widgets.map((widget) => ({
       x: widget.x,

@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsBoolean, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsAlphanumeric, IsBoolean, IsNotEmpty, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 /**
  * Body data required to create a new comment.
@@ -9,6 +9,7 @@ import { IsBoolean, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-va
 export class UECommentPostDto {
   @IsNotEmpty()
   @IsString()
+  @IsNotEmpty()
   @MinLength(5)
   body: string;
 
@@ -16,4 +17,11 @@ export class UECommentPostDto {
   @IsBoolean()
   @IsOptional()
   isAnonymous?: boolean;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsAlphanumeric()
+  @MinLength(3)
+  @MaxLength(5)
+  ueCode: string;
 }

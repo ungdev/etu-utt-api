@@ -9,7 +9,7 @@ const GetTodaysBirthdaysE2ESpec = e2eSuite('GET /users/birthday/today', (app) =>
   const otherUser = createUser(app, {
     infos: {
       birthday: new Date(now.getUTCFullYear() - 15, now.getUTCMonth(), now.getUTCDate()),
-    }
+    },
   }); // Bro you are 15 years old wtf gaudry like
 
   it('should fail as user is not authenticated', () =>
@@ -21,7 +21,7 @@ const GetTodaysBirthdaysE2ESpec = e2eSuite('GET /users/birthday/today', (app) =>
       .withBearerToken(user.token)
       .get('/users/birthdays/today')
       .expectStatus(200)
-      .expectJson([
+      .expectJsonMatchStrict([
         {
           id: otherUser.id,
           firstName: otherUser.firstName,

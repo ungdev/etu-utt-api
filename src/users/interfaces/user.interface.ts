@@ -8,6 +8,7 @@ const USER_SELECT_FILTER = {
     lastName: true,
     login: true,
     studentId: true,
+    userType: true,
     infos: {
       select: {
         nickname: true,

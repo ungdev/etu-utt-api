@@ -1,10 +1,10 @@
 import * as pactum from 'pactum';
-import * as fakedb from '../../utils/fakedb';
-import { e2eSuite } from '../../utils/test_utils';
+import * as fakedb from '../../../utils/fakedb';
+import { e2eSuite } from '../../../utils/test_utils';
 import { ERROR_CODE } from 'src/exceptions';
 import { faker } from '@faker-js/faker';
-import { omit } from '../../../src/utils';
-import { FakeComment } from '../../utils/fakedb';
+import { omit } from '../../../../src/utils';
+import { FakeComment } from '../../../utils/fakedb';
 
 const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) => {
   const user = fakedb.createUser(app);
@@ -41,7 +41,15 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
       .withBearerToken(user.token)
       .get(`/ue/comments/${comment.id}`)
       .expectUEComment({
-        ...(omit(comment, 'semesterId', 'authorId', 'deletedAt', 'ueId') as Required<FakeComment>),
+        ...(omit(
+          comment,
+          'semesterId',
+          'authorId',
+          'deletedAt',
+          'validatedAt',
+          'ueId',
+          'lastValidatedBody',
+        ) as Required<FakeComment>),
         answers: [
           {
             ...omit(reply, 'authorId', 'deletedAt', 'commentId'),
@@ -51,12 +59,12 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
               lastName: user.lastName,
               studentId: user.studentId,
             },
-            createdAt: `${(<Date>reply.createdAt).toISOString()}`,
-            updatedAt: `${(<Date>reply.updatedAt).toISOString()}`,
+            createdAt: reply.createdAt.toISOString(),
+            updatedAt: reply.updatedAt.toISOString(),
           },
         ],
-        updatedAt: `${(<Date>comment.updatedAt).toISOString()}`,
-        createdAt: `${(<Date>comment.createdAt).toISOString()}`,
+        updatedAt: comment.updatedAt.toISOString(),
+        createdAt: comment.createdAt.toISOString(),
         semester: { code: semester.code },
         upvotes: 1,
         upvoted: false,
@@ -68,16 +76,24 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
       .withBearerToken(user2.token)
       .get(`/ue/comments/${comment.id}`)
       .expectUEComment({
-        ...(omit(comment, 'semesterId', 'authorId', 'deletedAt', 'ueId') as Required<FakeComment>),
+        ...(omit(
+          comment,
+          'semesterId',
+          'authorId',
+          'deletedAt',
+          'validatedAt',
+          'ueId',
+          'lastValidatedBody',
+        ) as Required<FakeComment>),
         answers: [
           {
             ...omit(reply, 'authorId', 'deletedAt', 'commentId'),
-            createdAt: `${(<Date>reply.createdAt).toISOString()}`,
-            updatedAt: `${(<Date>reply.updatedAt).toISOString()}`,
+            createdAt: reply.createdAt.toISOString(),
+            updatedAt: reply.updatedAt.toISOString(),
           },
         ],
-        updatedAt: `${(<Date>comment.updatedAt).toISOString()}`,
-        createdAt: `${(<Date>comment.createdAt).toISOString()}`,
+        updatedAt: comment.updatedAt.toISOString(),
+        createdAt: comment.createdAt.toISOString(),
         semester: { code: semester.code },
         upvotes: 1,
         upvoted: true,

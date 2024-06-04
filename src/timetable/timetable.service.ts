@@ -6,7 +6,7 @@ import {
   TimetableEntryOccurrence,
 } from './interfaces/timetable.interface';
 import { RawTimetableEntry, RawTimetableEntryOverride, RawTimetableGroup } from '../prisma/types';
-import { omit, sortArray } from '../utils';
+import { omit } from '../utils';
 import TimetableCreateEntryDto from './dto/timetable-create-entry.dto';
 import TimetableUpdateEntryDto from './dto/timetable-update-entry.dto';
 import TimetableDeleteOccurrencesDto from './dto/timetable-delete-occurrences.dto';
@@ -156,7 +156,7 @@ export default class TimetableService {
       },
     });
     // Sort overrides by priority, then by creation date in ascending order.
-    sortArray(overrides, (e) => [
+    overrides.mappedSort((e) => [
       Math.max(...e.timetableGroups.map((group) => group.userTimetableGroups[0].priority)),
       e.createdAt.getTime(),
     ]);
@@ -221,10 +221,7 @@ export default class TimetableService {
       }
     }
     // Finally, remove null values (occurrences that have been removed) and sort by start, end and then entryId
-    return sortArray(
-      occurrences.filter((occurrence) => occurrence !== null),
-      (e) => [e.start, e.end, e.entryId],
-    );
+    return occurrences.filter((occurrence) => occurrence !== null).mappedSort((e) => [e.start, e.end, e.entryId]);
   }
 
   /**
@@ -265,16 +262,17 @@ export default class TimetableService {
    * @return {Promise<TimetableEntryGroupForUser[]>}
    */
   async getTimetableGroups(userId: string): Promise<TimetableEntryGroupForUser[]> {
-    return sortArray(
+    return (
       await this.prisma.timetableGroup.findMany({
         where: { userTimetableGroups: { some: { userId } } },
         include: { userTimetableGroups: { where: { userId } } },
-      }),
-      (group1) => [group1.userTimetableGroups[0].priority, group1.createdAt],
-    ).map((group) => ({
-      ...omit(group, 'userTimetableGroups'),
-      priority: group.userTimetableGroups[0].priority,
-    }));
+      })
+    )
+      .mappedSort((group1) => [group1.userTimetableGroups[0].priority, group1.createdAt])
+      .map((group) => ({
+        ...omit(group, 'userTimetableGroups'),
+        priority: group.userTimetableGroups[0].priority,
+      }));
   }
 
   /**
@@ -434,18 +432,18 @@ export default class TimetableService {
         ]),
     );
     // Sort entry.overwrittenBy, by priority and creation date in descending order.
-    sortArray(entry.overwrittenBy, (override) => [
+    entry.overwrittenBy.mappedSort((override) => [
       -Math.max(...override.timetableGroups.map((group) => timetableGroupInfo[group.id].priority)),
       -override.createdAt.getTime(),
     ]);
     // Sort entry.timetableGroups, by priority and creation date in descending order.
-    sortArray(entry.timetableGroups, (group) => [
+    entry.timetableGroups.mappedSort((group) => [
       -timetableGroupInfo[group.id].priority,
       -timetableGroupInfo[group.id].createdAt.getTime(),
     ]);
     // Sort entry.overwrittenBy.timetableGroups, by priority and creation date in descending order.
     for (const override of entry.overwrittenBy) {
-      sortArray(override.timetableGroups, (group) => [
+      override.timetableGroups.mappedSort((group) => [
         -timetableGroupInfo[group.id].priority,
         -timetableGroupInfo[group.id].createdAt.getTime(),
       ]);

@@ -31,7 +31,7 @@ const UpdateProfile = e2eSuite('PATCH /users/current', (app) => {
         facebook: 'fbProfile',
         displayAddress: true,
       })
-      .expectJson({
+      .expectJsonMatchStrict({
         avatar: user.infos.avatar,
         birthday: user.infos.birthday.toISOString(),
         discord: user.socialNetwork.pseudoDiscord,

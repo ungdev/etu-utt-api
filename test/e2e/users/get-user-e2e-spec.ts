@@ -73,7 +73,9 @@ const GetUserE2ESpec = e2eSuite('GET /users/:userId', (app) => {
       .get(`/users/${userFromDb.id}`)
       .withBearerToken(user.token)
       .expectStatus(HttpStatus.OK)
-      .expectJson(Object.fromEntries(Object.entries(expectedBody).filter(([, value]) => value !== undefined)));
+      .expectJsonMatchStrict(
+        Object.fromEntries(Object.entries(expectedBody).filter(([, value]) => value !== undefined)),
+      );
   });
 });
 

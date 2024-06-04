@@ -1,5 +1,14 @@
 import { Type } from 'class-transformer';
-import { IsNumber, IsOptional, IsPositive } from 'class-validator';
+import {
+  IsAlphanumeric,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsPositive,
+  IsString,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 /**
  * Query parameters to get comments.
@@ -7,8 +16,15 @@ import { IsNumber, IsOptional, IsPositive } from 'class-validator';
  */
 export class GetUECommentsDto {
   @Type(() => Number)
-  @IsNumber()
+  @IsInt()
   @IsPositive()
   @IsOptional()
   page?: number;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsAlphanumeric()
+  @MinLength(3)
+  @MaxLength(5)
+  ueCode: string;
 }

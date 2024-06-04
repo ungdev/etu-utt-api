@@ -35,25 +35,25 @@ const SetHomepageWidgetsE2ESpec = e2eSuite('PUT /profile/homepage', (app) => {
       .put('/profile/homepage')
       .withBearerToken(user.token)
       .withJson([{ ...body[0], x: 1.5 }])
-      .expectAppError(ERROR_CODE.PARAM_NOT_INTEGER, 'x');
+      .expectAppError(ERROR_CODE.PARAM_NOT_INT, 'x');
     await pactum
       .spec()
       .put('/profile/homepage')
       .withBearerToken(user.token)
       .withJson([{ ...body[0], y: 1.5 }])
-      .expectAppError(ERROR_CODE.PARAM_NOT_INTEGER, 'y');
+      .expectAppError(ERROR_CODE.PARAM_NOT_INT, 'y');
     await pactum
       .spec()
       .put('/profile/homepage')
       .withBearerToken(user.token)
       .withJson([{ ...body[0], width: 1.5 }])
-      .expectAppError(ERROR_CODE.PARAM_NOT_INTEGER, 'width');
+      .expectAppError(ERROR_CODE.PARAM_NOT_INT, 'width');
     await pactum
       .spec()
       .put('/profile/homepage')
       .withBearerToken(user.token)
       .withJson([{ ...body[0], height: 1.5 }])
-      .expectAppError(ERROR_CODE.PARAM_NOT_INTEGER, 'height');
+      .expectAppError(ERROR_CODE.PARAM_NOT_INT, 'height');
     await pactum
       .spec()
       .put('/profile/homepage')

@@ -6,13 +6,14 @@ import {
   createSemester,
   createUESubscription,
   createComment,
-} from '../../utils/fakedb';
+} from '../../../utils/fakedb';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '../../../src/exceptions';
-import { e2eSuite, JsonLike } from '../../utils/test_utils';
-import { PrismaService } from '../../../src/prisma/prisma.service';
+import { ERROR_CODE } from '../../../../src/exceptions';
+import { e2eSuite, JsonLike } from '../../../utils/test_utils';
+import { PrismaService } from '../../../../src/prisma/prisma.service';
+import { CommentStatus } from 'src/ue/comments/interfaces/comment.interface';
 
-const PostCommment = e2eSuite('POST /ue/{ueCode}/comments', (app) => {
+const PostCommment = e2eSuite('POST /ue/comments', (app) => {
   const user = createUser(app);
   const user2 = createUser(app, { login: 'user2' });
   const semester = createSemester(app);
@@ -24,8 +25,9 @@ const PostCommment = e2eSuite('POST /ue/{ueCode}/comments', (app) => {
   it('should return a 401 as user is not authenticated', () => {
     return pactum
       .spec()
-      .post(`/ue/${ue.code}/comments`)
+      .post(`/ue/comments`)
       .withBody({
+        ueCode: ue.code,
         body: 'Test comment',
       })
       .expectAppError(ERROR_CODE.NOT_LOGGED_IN);
@@ -35,8 +37,9 @@ const PostCommment = e2eSuite('POST /ue/{ueCode}/comments', (app) => {
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .post(`/ue/${ue.code}/comments`)
+      .post(`/ue/comments`)
       .withBody({
+        ueCode: ue.code,
         body: false,
         isAnonymous: true,
       })
@@ -47,8 +50,9 @@ const PostCommment = e2eSuite('POST /ue/{ueCode}/comments', (app) => {
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .post(`/ue/${ue.code}/comments`)
+      .post(`/ue/comments`)
       .withBody({
+        ueCode: ue.code,
         body: 'gg',
       })
       .expectAppError(ERROR_CODE.PARAM_TOO_SHORT, 'body');
@@ -58,8 +62,9 @@ const PostCommment = e2eSuite('POST /ue/{ueCode}/comments', (app) => {
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .post(`/ue/${ue.code.slice(0, ue.code.length - 1)}/comments`)
+      .post(`/ue/comments`)
       .withBody({
+        ueCode: ue.code.slice(0, ue.code.length - 1),
         body: 'heyhey',
       })
       .expectAppError(ERROR_CODE.NO_SUCH_UE, ue.code.slice(0, ue.code.length - 1));
@@ -69,8 +74,9 @@ const PostCommment = e2eSuite('POST /ue/{ueCode}/comments', (app) => {
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .post(`/ue/${ue.code}/comments`)
+      .post(`/ue/comments`)
       .withBody({
+        ueCode: ue.code,
         body: 'Cette  UE est troooop bien',
         isAnonymous: true,
       })
@@ -81,8 +87,9 @@ const PostCommment = e2eSuite('POST /ue/{ueCode}/comments', (app) => {
     await pactum
       .spec()
       .withBearerToken(user2.token)
-      .post(`/ue/${ue.code}/comments`)
+      .post(`/ue/comments`)
       .withBody({
+        ueCode: ue.code,
         body: 'Cette  UE est troooop bien',
         isAnonymous: true,
       })
@@ -105,6 +112,7 @@ const PostCommment = e2eSuite('POST /ue/{ueCode}/comments', (app) => {
           answers: [],
           upvotes: 0,
           upvoted: false,
+          status: CommentStatus.UNVERIFIED,
         },
         true,
       );
@@ -116,8 +124,9 @@ const PostCommment = e2eSuite('POST /ue/{ueCode}/comments', (app) => {
     await pactum
       .spec()
       .withBearerToken(user2.token)
-      .post(`/ue/${ue.code}/comments`)
+      .post(`/ue/comments`)
       .withBody({
+        ueCode: ue.code,
         body: 'Cette  UE est troooop bien',
       })
       .expectAppError(ERROR_CODE.FORBIDDEN_ALREADY_COMMENTED);
@@ -128,8 +137,9 @@ const PostCommment = e2eSuite('POST /ue/{ueCode}/comments', (app) => {
     await pactum
       .spec()
       .withBearerToken(user2.token)
-      .post(`/ue/${ue.code}/comments`)
+      .post(`/ue/comments`)
       .withBody({
+        ueCode: ue.code,
         body: 'Cette  UE est troooop bien',
       })
       .expectUEComment(
@@ -151,6 +161,7 @@ const PostCommment = e2eSuite('POST /ue/{ueCode}/comments', (app) => {
           answers: [],
           upvotes: 0,
           upvoted: false,
+          status: CommentStatus.UNVERIFIED,
         },
         true,
       );

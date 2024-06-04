@@ -6,12 +6,12 @@ import {
   createBranchOption,
   createSemester,
   createCommentUpvote,
-} from '../../utils/fakedb';
+} from '../../../utils/fakedb';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '../../../src/exceptions';
+import { ERROR_CODE } from '../../../../src/exceptions';
 import { HttpStatus } from '@nestjs/common';
-import { Dummies, e2eSuite } from '../../utils/test_utils';
-import { PrismaService } from '../../../src/prisma/prisma.service';
+import { Dummies, e2eSuite } from '../../../utils/test_utils';
+import { PrismaService } from '../../../../src/prisma/prisma.service';
 
 const DeleteUpvote = e2eSuite('DELETE /ue/comments/{commentId}/upvote', (app) => {
   const user = createUser(app);
@@ -57,7 +57,7 @@ const DeleteUpvote = e2eSuite('DELETE /ue/comments/{commentId}/upvote', (app) =>
       .withBearerToken(user2.token)
       .delete(`/ue/comments/${comment1.id}/upvote`)
       .expectStatus(HttpStatus.OK)
-      .expectJson({ upvoted: false });
+      .expectJsonMatchStrict({ upvoted: false });
     return createCommentUpvote(app, { user: user2, comment: comment1 }, upvote, true);
   });
 
