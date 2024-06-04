@@ -7,7 +7,6 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { MulterWithMime } from '../../upload.interceptor';
 import { CreateAnnal } from './dto/create-annal.dto';
 import { UpdateAnnalDto } from './dto/update-annal.dto';
-import { SelectUEAnnalFile, FormatAnnal } from './interfaces/annal.interface';
 import { ConfigModule } from '../../config/config.module';
 import { User } from '../../users/interfaces/user.interface';
 
@@ -50,38 +49,34 @@ export class AnnalsService {
 
   async createAnnalFile(user: User, params: CreateAnnal) {
     // Create upload/file entry
-    return this.prisma.uEAnnal
-      .create(
-        SelectUEAnnalFile({
-          data: {
-            type: {
-              connect: {
-                id: params.typeId,
-              },
-            },
-            semester: {
-              connect: {
-                code: params.semester,
-              },
-            },
-            sender: {
-              connect: {
-                id: user.id,
-              },
-            },
-            ue: {
-              connect: {
-                code: params.ueCode,
-              },
-            },
+    return this.prisma.uEAnnal.create({
+      data: {
+        type: {
+          connect: {
+            id: params.typeId,
           },
-        }),
-      )
-      .then(FormatAnnal);
+        },
+        semester: {
+          connect: {
+            code: params.semester,
+          },
+        },
+        sender: {
+          connect: {
+            id: user.id,
+          },
+        },
+        ue: {
+          connect: {
+            code: params.ueCode,
+          },
+        },
+      },
+    });
   }
 
   async uploadAnnalFile(file: MulterWithMime, fileEntryId: string, rotation: 0 | 1 | 2 | 3) {
-    const dbFilter = SelectUEAnnalFile({
+    const dbFilter = {
       where: {
         id: fileEntryId,
       },
@@ -92,8 +87,7 @@ export class AnnalsService {
           },
         },
       },
-    });
-    dbFilter.select.ue = { select: { code: true } };
+    };
     const fileEntry = await this.prisma.uEAnnal.findUnique(dbFilter);
     // We won't wait for the file to be processed to send the response.
     // Files do not need to be processed instantly and will only be displayed to all users when processed
@@ -163,51 +157,47 @@ export class AnnalsService {
     });
     // Jest cannot run async code
     if (process.env.NODE_ENV === 'test') await promise;
-    return FormatAnnal(fileEntry);
+    return fileEntry;
   }
 
   async getUEAnnalsList(user: User, ueCode: string, includeAll: boolean) {
     return (
-      await this.prisma.uEAnnal.findMany(
-        SelectUEAnnalFile({
-          where: {
-            ue: {
-              code: ueCode,
-            },
-            deletedAt: includeAll ? undefined : null,
-            ...(includeAll
-              ? {}
-              : {
-                  OR: [
-                    {
-                      uploadComplete: true,
-                      validatedAt: {
-                        not: null,
-                      },
-                      reports: {
-                        none: {
-                          mitigated: false,
-                        },
-                      },
-                    },
-                    {
-                      sender: {
-                        id: user.id,
-                      },
-                    },
-                  ],
-                }),
+      await this.prisma.uEAnnal.findMany({
+        where: {
+          ue: {
+            code: ueCode,
           },
-        }),
-      )
-    )
-      .map(FormatAnnal)
-      .mappedSort((annal) => [
-        annal.semesterId.slice(1),
-        annal.semesterId.slice(0, 1) === 'A' ? 1 : 0, // P should be listed before A
-        annal.type.name,
-        annal.createdAt.getTime(),
-      ]);
+          deletedAt: includeAll ? undefined : null,
+          ...(includeAll
+            ? {}
+            : {
+                OR: [
+                  {
+                    uploadComplete: true,
+                    validatedAt: {
+                      not: null,
+                    },
+                    reports: {
+                      none: {
+                        mitigated: false,
+                      },
+                    },
+                  },
+                  {
+                    sender: {
+                      id: user.id,
+                    },
+                  },
+                ],
+              }),
+        },
+      })
+    ).mappedSort((annal) => [
+      annal.semesterId.slice(1),
+      annal.semesterId.slice(0, 1) === 'A' ? 1 : 0, // P should be listed before A
+      annal.type.name,
+      annal.createdAt.getTime(),
+    ]);
   }
 
   async isAnnalAccessible(userId: string, annalId: string, includeAll: boolean) {
@@ -244,72 +234,66 @@ export class AnnalsService {
   }
 
   async getUEAnnal(annalId: string, userId: string, includeAll: boolean) {
-    const rawAnnal = await this.prisma.uEAnnal.findUnique(
-      SelectUEAnnalFile({
-        where: {
-          id: annalId,
-          deletedAt: includeAll ? undefined : null,
-          ...(includeAll
-            ? {}
-            : {
-                OR: [
-                  {
-                    uploadComplete: true,
-                    validatedAt: {
-                      not: null,
-                    },
-                    reports: {
-                      none: {
-                        mitigated: false,
-                      },
+    return this.prisma.uEAnnal.findUnique({
+      where: {
+        id: annalId,
+        deletedAt: includeAll ? undefined : null,
+        ...(includeAll
+          ? {}
+          : {
+              OR: [
+                {
+                  uploadComplete: true,
+                  validatedAt: {
+                    not: null,
+                  },
+                  reports: {
+                    none: {
+                      mitigated: false,
                     },
                   },
-                  {
-                    sender: {
-                      id: userId,
-                    },
+                },
+                {
+                  sender: {
+                    id: userId,
                   },
-                ],
-              }),
-        },
-      }),
-    );
-    return FormatAnnal(rawAnnal);
+                },
+              ],
+            }),
+      },
+    });
   }
 
   async getUEAnnalFile(annalId: string, userId: string, includeAll: boolean) {
-    const rawAnnal = await this.prisma.uEAnnal.findUnique(
-      SelectUEAnnalFile({
-        where: {
-          id: annalId,
-          deletedAt: includeAll ? undefined : null,
-          ...(includeAll
-            ? {}
-            : {
-                OR: [
-                  {
-                    uploadComplete: true,
-                    validatedAt: {
-                      not: null,
-                    },
-                    reports: {
-                      none: {
-                        mitigated: false,
-                      },
+    const metadata = await this.prisma.uEAnnal.findUnique({
+      where: {
+        id: annalId,
+        deletedAt: includeAll ? undefined : null,
+        ...(includeAll
+          ? {}
+          : {
+              OR: [
+                {
+                  uploadComplete: true,
+                  validatedAt: {
+                    not: null,
+                  },
+                  reports: {
+                    none: {
+                      mitigated: false,
                     },
                   },
-                  {
-                    sender: {
-                      id: userId,
-                    },
+                },
+                {
+                  sender: {
+                    id: userId,
                   },
-                ],
-              }),
-        },
-      }),
-    );
-    if (!rawAnnal) return null;
-    const metadata = FormatAnnal(rawAnnal);
+                },
+              ],
+            }),
+      },
+    });
+    if (!metadata) return null;
     return {
       metadata,
       stream: createReadStream(`${this.config.ANNAL_UPLOAD_DIR}/${metadata.id}.pdf`),
@@ -328,41 +312,33 @@ export class AnnalsService {
   }
 
   async updateAnnalMetadata(annalId: string, metadata: UpdateAnnalDto) {
-    return FormatAnnal(
-      await this.prisma.uEAnnal.update(
-        SelectUEAnnalFile({
-          where: {
-            id: annalId,
+    return this.prisma.uEAnnal.update({
+      where: {
+        id: annalId,
+      },
+      data: {
+        type: {
+          connect: {
+            id: metadata.typeId,
           },
-          data: {
-            type: {
-              connect: {
-                id: metadata.typeId,
-              },
-            },
-            semester: {
-              connect: {
-                code: metadata.semester,
-              },
-            },
+        },
+        semester: {
+          connect: {
+            code: metadata.semester,
           },
-        }),
-      ),
-    );
+        },
+      },
+    });
   }
 
   async deleteAnnal(annalId: string) {
-    return FormatAnnal(
-      await this.prisma.uEAnnal.update(
-        SelectUEAnnalFile({
-          where: {
-            id: annalId,
-          },
-          data: {
-            deletedAt: new Date(),
-          },
-        }),
-      ),
-    );
+    return this.prisma.uEAnnal.update({
+      where: {
+        id: annalId,
+      },
+      data: {
+        deletedAt: new Date(),
+      },
+    });
   }
 }

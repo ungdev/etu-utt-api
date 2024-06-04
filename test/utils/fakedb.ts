@@ -4,7 +4,6 @@ import {
   RawTimetableEntryOverride,
   RawTimetableGroup,
   RawUE,
-  RawAnnal,
   RawAnnalType,
   RawUEComment,
   RawUECommentReply,
@@ -36,7 +35,8 @@ import { PrismaService } from '../../src/prisma/prisma.service';
 import { AppProvider } from './test_utils';
 import { Sex, TimetableEntryType, UserType } from '@prisma/client';
 import { omit, pick } from '../../src/utils';
-import { CommentStatus } from 'src/ue/comments/interfaces/comment.interface';
+import { CommentStatus } from '../../src/ue/comments/interfaces/comment.interface';
+import { UEAnnalFile } from '../../src/ue/annals/interfaces/annal.interface';
 
 /**
  * The fake entities can be used like normal entities in the <code>it(string, () => void)</code> functions.
@@ -85,7 +85,7 @@ export type FakeCommentReply = Partial<RawUECommentReply> & {
 };
 export type FakeUECreditCategory = Partial<RawCreditCategory>;
 export type FakeUEAnnalType = Partial<RawAnnalType>;
-export type FakeUEAnnal = Partial<RawAnnal>;
+export type FakeUEAnnal = Partial<UEAnnalFile>;
 export type FakeHomepageWidget = Partial<RawHomepageWidget>;
 
 export interface FakeEntityMap {
@@ -175,7 +175,9 @@ export interface FakeEntityMap {
   };
   annal: {
     entity: FakeUEAnnal;
-    params: CreateAnnalParams;
+    params: {
+      status: CommentStatus;
+    };
     deps: {
       type: FakeUEAnnalType;
       semester: FakeSemester;
@@ -565,25 +567,17 @@ export const createAnnalType = entityFaker(
   },
 );
 
-export type CreateAnnalParams = Pick<FakeUEAnnal, 'uploadComplete'> & {
-  deleted?: boolean;
-  validated?: boolean;
-};
 export const createAnnal = entityFaker(
   'annal',
-  {
-    uploadComplete: true,
-    validated: true,
-    deleted: false,
-  },
-  async (app, { semester, sender, type, ue }, { validated, deleted, uploadComplete }) =>
+  { status: CommentStatus.VALIDATED },
+  async (app, { semester, sender, type, ue }, { status }) =>
     app()
       .get(PrismaService)
       .uEAnnal.create({
         data: {
-          uploadComplete,
-          deletedAt: deleted ? faker.date.recent() : null,
-          validatedAt: validated ? faker.date.past() : null,
+          uploadComplete: !(status & CommentStatus.PROCESSING),
+          deletedAt: status & CommentStatus.DELETED ? faker.date.recent() : null,
+          validatedAt: status & CommentStatus.VALIDATED ? faker.date.past() : null,
           semesterId: semester.code,
           senderId: sender.id,
           typeId: type.id,

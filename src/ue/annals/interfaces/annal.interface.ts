@@ -1,6 +1,7 @@
-import { Prisma } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { omit } from '../../../utils';
 import { CommentStatus } from '../../comments/interfaces/comment.interface';
+import { generateCustomModel } from '../../../prisma/prisma.service';
 
 const UE_ANNAL_SELECT_FILTER = {
   select: {
@@ -26,35 +27,23 @@ const UE_ANNAL_SELECT_FILTER = {
     validatedAt: true,
     ue: { select: { code: true } },
   },
+} satisfies Prisma.UEAnnalFindManyArgs;
+
+export type UnformattedUEAnnal = Prisma.UEAnnalGetPayload<typeof UE_ANNAL_SELECT_FILTER>;
+export type UEAnnalFile = Omit<UnformattedUEAnnal, 'validatedAt' | 'deletedAt' | 'uploadComplete'> & {
+  status: CommentStatus;
 };
 
-export type UEAnnalFile = Omit<
-  Prisma.UEAnnalGetPayload<typeof UE_ANNAL_SELECT_FILTER>,
-  'validatedAt' | 'deletedAt' | 'uploadComplete'
-> & { status: CommentStatus };
-
-/**
- * Generates the argument to use in prisma function to retrieve an object containing the necessary
- * properties to match against the {@link UEAnnalFile} type.
- */
-export function SelectUEAnnalFile<T>(arg: T): T & typeof UE_ANNAL_SELECT_FILTER {
-  return {
-    ...arg,
-    ...UE_ANNAL_SELECT_FILTER,
-  } as const;
+export function generateCustomUEAnnalModel(prisma: PrismaClient) {
+  return generateCustomModel(prisma, 'uEAnnal', UE_ANNAL_SELECT_FILTER, formatAnnal);
 }
 
-export function FormatAnnal<T extends Prisma.UEAnnalGetPayload<typeof UE_ANNAL_SELECT_FILTER>>(
-  annal: T,
-): UEAnnalFile & Omit<T, 'validatedAt' | 'deletedAt' | 'uploadComplete'> {
+export function formatAnnal(annal: UnformattedUEAnnal): UEAnnalFile {
   return {
-    ...omit(annal, 'validatedAt', 'deletedAt', 'uploadComplete'),
-    status: annal.deletedAt
-      ? CommentStatus.DELETED
-      : annal.validatedAt
-      ? CommentStatus.VALIDATED
-      : annal.uploadComplete
-      ? CommentStatus.UNVERIFIED
-      : CommentStatus.PROCESSING,
+    ...omit(annal, 'deletedAt', 'validatedAt', 'uploadComplete'),
+    status:
+      (annal.deletedAt && CommentStatus.DELETED) |
+      (annal.validatedAt && CommentStatus.VALIDATED) |
+      (!annal.uploadComplete && CommentStatus.PROCESSING),
   };
 }

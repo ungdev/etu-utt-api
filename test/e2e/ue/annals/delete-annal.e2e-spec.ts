@@ -63,7 +63,7 @@ const DeleteAnnal = e2eSuite('DELETE /ue/annals/{annalId}', (app) => {
       .expectUEAnnal({
         ...pick(annal_validated, 'id', 'semesterId'),
         type: annalType,
-        status: CommentStatus.DELETED,
+        status: CommentStatus.DELETED | CommentStatus.VALIDATED,
         sender: pick(senderUser, 'id', 'firstName', 'lastName'),
         createdAt: annal_validated.createdAt.toISOString(),
         updatedAt: JsonLike.ANY_DATE,

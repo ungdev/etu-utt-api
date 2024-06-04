@@ -28,9 +28,13 @@ const EditAnnal = e2eSuite('PATCH /ue/annals/{annalId}', (app) => {
   const annal_not_uploaded = createAnnal(
     app,
     { semester, sender: senderUser, type: annalType, ue },
-    { uploadComplete: false },
+    { status: CommentStatus.PROCESSING | CommentStatus.UNVERIFIED },
   );
-  const annal_deleted = createAnnal(app, { semester, sender: senderUser, type: annalType, ue }, { deleted: true });
+  const annal_deleted = createAnnal(
+    app,
+    { semester, sender: senderUser, type: annalType, ue },
+    { status: CommentStatus.VALIDATED | CommentStatus.DELETED },
+  );
 
   const xx_analType_xx = createAnnalType(app, {});
   const xx_semester_xx = createSemester(app, {});

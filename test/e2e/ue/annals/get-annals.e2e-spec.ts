@@ -12,7 +12,6 @@ import {
 import { e2eSuite } from '../../../utils/test_utils';
 import { ERROR_CODE } from '../../../../src/exceptions';
 import { UEAnnalFile } from '../../../../src/ue/annals/interfaces/annal.interface';
-import { RawAnnal } from '../../../../src/prisma/types';
 import { JsonLikeVariant } from 'test/declarations';
 import { pick } from '../../../../src/utils';
 import { CommentStatus } from '../../../../src/ue/comments/interfaces/comment.interface';
@@ -31,15 +30,19 @@ const GetAnnal = e2eSuite('GET /ue/annals', (app) => {
   const annal_not_validated = createAnnal(
     app,
     { semester, sender: senderUser, type: annalType, ue },
-    { validated: false },
+    { status: CommentStatus.UNVERIFIED },
   );
   const annal_validated = createAnnal(app, { semester, sender: senderUser, type: annalType, ue });
   const annal_not_uploaded = createAnnal(
     app,
     { semester, sender: senderUser, type: annalType, ue },
-    { uploadComplete: false },
+    { status: CommentStatus.UNVERIFIED | CommentStatus.PROCESSING },
   );
-  const annal_deleted = createAnnal(app, { semester, sender: senderUser, type: annalType, ue }, { deleted: true });
+  const annal_deleted = createAnnal(
+    app,
+    { semester, sender: senderUser, type: annalType, ue },
+    { status: CommentStatus.DELETED | CommentStatus.VALIDATED },
+  );
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum
@@ -100,28 +103,11 @@ const GetAnnal = e2eSuite('GET /ue/annals', (app) => {
       .expectUEAnnals([annal_not_validated, annal_validated, annal_not_uploaded, annal_deleted].map(formatAnnalFile));
   });
 
-  const formatAnnalFile = (from: Partial<RawAnnal>): JsonLikeVariant<UEAnnalFile> => {
+  const formatAnnalFile = (from: Partial<UEAnnalFile>): JsonLikeVariant<UEAnnalFile> => {
     return {
-      ...pick(from, 'id', 'semesterId'),
-      status: from.deletedAt
-        ? CommentStatus.DELETED
-        : from.validatedAt
-        ? CommentStatus.VALIDATED
-        : from.uploadComplete
-        ? CommentStatus.UNVERIFIED
-        : CommentStatus.PROCESSING,
-      sender: pick(
-        [senderUser, nonUeUser, moderator, nonStudentUser].find((user) => user.id === from.senderId),
-        'id',
-        'firstName',
-        'lastName',
-      ),
-      type: annalType,
+      ...pick(from, 'id', 'semesterId', 'status', 'sender', 'type', 'ue'),
       createdAt: from.createdAt?.toISOString(),
       updatedAt: from.updatedAt?.toISOString(),
-      ue: {
-        code: ue.code,
-      },
     };
   };
 });

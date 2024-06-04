@@ -5,9 +5,10 @@ import { generateCustomUserModel } from '../users/interfaces/user.interface';
 import { omit } from '../utils';
 import { generateCustomCommentModel } from '../ue/comments/interfaces/comment.interface';
 import { generateCustomCriterionModel } from '../ue/interfaces/criterion.interface';
-import { generateCustomUECommentReplyModel } from '../ue/comments/interfaces/comment-reply.interface';
 import { generateCustomRateModel } from '../ue/interfaces/rate.interface';
 import { generateCustomUEModel } from '../ue/interfaces/ue.interface';
+import { generateCustomUEAnnalModel } from '../ue/annals/interfaces/annal.interface';
+import { generateCustomUECommentReplyModel } from '../ue/comments/interfaces/comment-reply.interface';
 
 // This interface is used to tell typescript that, even tho it does not understand it, PrismaService IS actually a ReturnType<typeof createPrismaClientExtension>
 // TS cannot infer it alone as the construction of the class is made using reflection.
@@ -59,6 +60,7 @@ function createPrismaClientExtension(prisma: ReturnType<typeof createPrismaClien
       uECommentReply: generateCustomUECommentReplyModel(prisma),
       uEStarVote: generateCustomRateModel(prisma),
       uE: generateCustomUEModel(prisma),
+      uEAnnal: generateCustomUEAnnalModel(prisma),
     },
   });
 }

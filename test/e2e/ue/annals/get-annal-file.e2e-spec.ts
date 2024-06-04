@@ -11,6 +11,7 @@ import {
 } from '../../../utils/fakedb';
 import { Dummies, e2eSuite } from '../../../utils/test_utils';
 import { ERROR_CODE } from '../../../../src/exceptions';
+import { CommentStatus } from '../../../../src/ue/comments/interfaces/comment.interface';
 
 const GetAnnalFile = e2eSuite('GET /ue/annals/{annalId}', (app) => {
   const senderUser = createUser(app);
@@ -26,15 +27,19 @@ const GetAnnalFile = e2eSuite('GET /ue/annals/{annalId}', (app) => {
   const annal_not_validated = createAnnal(
     app,
     { semester, sender: senderUser, type: annalType, ue },
-    { validated: false },
+    { status: CommentStatus.UNVERIFIED },
   );
   const annal_validated = createAnnal(app, { semester, sender: senderUser, type: annalType, ue });
   const annal_not_uploaded = createAnnal(
     app,
     { semester, sender: senderUser, type: annalType, ue },
-    { uploadComplete: false },
+    { status: CommentStatus.UNVERIFIED | CommentStatus.PROCESSING },
   );
-  const annal_deleted = createAnnal(app, { semester, sender: senderUser, type: annalType, ue }, { deleted: true });
+  const annal_deleted = createAnnal(
+    app,
+    { semester, sender: senderUser, type: annalType, ue },
+    { status: CommentStatus.VALIDATED | CommentStatus.DELETED },
+  );
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum.spec().get(`/ue/annals/${annal_validated.id}`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
