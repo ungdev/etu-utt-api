@@ -20,6 +20,8 @@ export {
   UEComment as RawUEComment,
   UECommentReply as RawUECommentReply,
   UECommentUpvote as RawUECommentUpvote,
+  UEAnnalType as RawAnnalType,
+  UEAnnal as RawAnnal,
   UserMailsPhones as RawUserMailsPhones,
   UserSocialNetwork as RawUserSocialNetwork,
   UserPreference as RawUserPreference,

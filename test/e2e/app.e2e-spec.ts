@@ -12,6 +12,7 @@ import UEE2ESpec from './ue';
 import { AppValidationPipe } from '../../src/app.pipe';
 import * as cas from '../external_services/cas';
 import { ConfigModule } from '../../src/config/config.module';
+import '../../src/array';
 
 describe('EtuUTT API e2e testing', () => {
   let app: INestApplication;
