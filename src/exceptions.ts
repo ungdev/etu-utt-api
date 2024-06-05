@@ -56,6 +56,7 @@ export const enum ERROR_CODE {
   NO_SUCH_TIMETABLE_ENTRY = 4405,
   NO_SUCH_TIMETABLE_GROUP = 4406,
   NO_SUCH_USER = 4407,
+  NO_SUCH_ASSO = 4408,
   CREDENTIALS_ALREADY_TAKEN = 5001,
 }
 
@@ -235,6 +236,10 @@ export const ErrorData = Object.freeze({
   },
   [ERROR_CODE.NO_SUCH_USER]: {
     message: 'The user % does not exist',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
+  [ERROR_CODE.NO_SUCH_ASSO]: {
+    message: 'The asso % does no exist',
     httpCode: HttpStatus.NOT_FOUND,
   },
   [ERROR_CODE.CREDENTIALS_ALREADY_TAKEN]: {

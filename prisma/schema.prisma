@@ -8,32 +8,24 @@ datasource db {
 }
 
 model Asso {
-  id                            String   @id @default(uuid())
-  login                         String   @unique @db.VarChar(50)
-  name                          String   @unique @db.VarChar(100)
-  mail                          String   @unique @db.VarChar(100)
-  phoneNumber                   String?  @db.VarChar(30)
-  website                       String?  @db.VarChar(100)
-  logo                          String?  @db.VarChar(100)
-  createdAt                     DateTime @default(now())
-  updatedAt                     DateTime @updatedAt
-  deletedAt                     DateTime
-  descriptionShortTranslationId String   @unique
-  descriptionTranslationId      String   @unique
+  id                            String    @id @default(uuid())
+  login                         String    @unique @db.VarChar(50)
+  name                          String    @unique @db.VarChar(100)
+  mail                          String    @unique @db.VarChar(100)
+  phoneNumber                   String?   @db.VarChar(30)
+  website                       String?   @db.VarChar(100)
+  logo                          String?   @db.VarChar(100)
+  createdAt                     DateTime  @default(now())
+  updatedAt                     DateTime  @updatedAt
+  deletedAt                     DateTime?
+  descriptionShortTranslationId String    @unique
+  descriptionTranslationId      String    @unique
 
   descriptionShortTranslation Translation      @relation(name: "descriptionShortTranslation", fields: [descriptionShortTranslationId], references: [id], onDelete: Cascade)
   descriptionTranslation      Translation      @relation(name: "descriptionTranslation", fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
-  keywords                    AssoKeyword[]
+  assoMemberships             AssoMembership[]
   assoMessages                AssoMessage[]
   events                      Event[]
-  assoMemberships             AssoMembership[]
-  eventPrivacy                EventPrivacy[]
-}
-
-model AssoKeyword {
-  name String @id @db.VarChar(30)
-
-  assos Asso[]
 }
 
 model AssoMembership {
@@ -58,11 +50,12 @@ model AssoMembershipPermission {
 }
 
 model AssoMembershipRole {
-  id   String @id @default(uuid())
-  role String
+  id          String  @id @default(uuid())
+  name        String
+  position    Int
+  isPresident Boolean
 
   assoMembership AssoMembership[]
-  eventPrivacys  EventPrivacy[]
 }
 
 model AssoMessage {
@@ -94,7 +87,6 @@ model Event {
   assos                  Asso[]
   categories             EventCategory[]
   eventAnswers           EventAnswer[]
-  eventPrivacy           EventPrivacy[]
 }
 
 model EventAnswer {
@@ -116,15 +108,6 @@ model EventCategory {
   name String @unique @db.VarChar(100)
 
   events Event[]
-}
-
-model EventPrivacy {
-  id      String @id @default(uuid())
-  eventId String @unique
-
-  event        Event                @relation(fields: [eventId], references: [id])
-  allowedAssos Asso[]
-  allowedRoles AssoMembershipRole[]
 }
 
 model GitHubIssue {

@@ -12,6 +12,7 @@ import { TimetableModule } from './timetable/timetable.module';
 import { ConfigModule } from './config/config.module';
 import { HttpModule } from './http/http.module';
 import { BranchModule } from './branch/branch.module';
+import { AssosModule } from './assos/assos.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { BranchModule } from './branch/branch.module';
     UEModule,
     TimetableModule,
     BranchModule,
+    AssosModule,
   ],
   // The providers below are used for all the routes of the api.
   // For example, the JwtGuard is used for all the routes and checks whether the user is authenticated.
