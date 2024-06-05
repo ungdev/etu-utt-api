@@ -6,7 +6,7 @@ import { UEComment } from '../src/ue/interfaces/comment.interface';
 import { UECommentReply } from '../src/ue/interfaces/comment-reply.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { UERating } from 'src/ue/interfaces/rate.interface';
-import { FakeUE, FakeUser, FakeHomepageWidget } from './utils/fakedb';
+import { FakeUE, FakeUser, FakeHomepageWidget, FakeAsso } from './utils/fakedb';
 import { ConfigModule } from '../src/config/config.module';
 import { AppProvider } from './utils/test_utils';
 import { omit, pick, sortArray } from '../src/utils';
@@ -112,6 +112,13 @@ SpecProto.expectHomepageWidgets = function (widgets: Omit<FakeHomepageWidget, 'i
       widget: widget.widget,
     })),
   );
+};
+SpecProto.expectAssos = function (app: AppProvider, assos: FakeAsso[], count: number) {
+  return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonLike({
+    items: assos.map((asso) => ({})),
+    itemCount: count,
+    itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
+  });
 };
 
 export { Spec, JsonLikeVariant };

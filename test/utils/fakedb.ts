@@ -281,9 +281,7 @@ export const createAssoMembership = entityFaker(
     createdAt: new Date(0),
     userId: faker.datatype.uuid,
     assoId: faker.datatype.uuid,
-    role: {
-      role: faker.random.words,
-    },
+    roleId: faker.datatype.uuid,
   },
   async (app, dependencies, params) =>
     app()
@@ -302,8 +300,8 @@ export const createAssoMembership = entityFaker(
             },
           },
           role: {
-            create: {
-              role: params.role.role,
+            connect: {
+              id: params.role.id,
             },
           },
         },
