@@ -59,7 +59,7 @@ const GetUserAssociationE2ESpec = e2eSuite('GET /users/:userId/associations', (a
       .get(`/users/${user.id}/associations`)
       .withBearerToken(user.token)
       .expectStatus(HttpStatus.OK)
-      .expectJson(assoMembershipFromDb.filter((value) => value !== undefined));
+      .expectJsonMatchStrict(assoMembershipFromDb.filter((value) => value !== undefined));
   });
 });
 

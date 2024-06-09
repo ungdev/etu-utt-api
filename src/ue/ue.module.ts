@@ -9,5 +9,6 @@ import { UEService } from './ue.service';
 @Module({
   controllers: [UEController],
   providers: [UEService],
+  exports: [UEService],
 })
 export class UEModule {}

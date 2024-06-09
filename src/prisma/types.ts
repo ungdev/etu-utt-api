@@ -1,3 +1,5 @@
+import { Language, Translation as RawTranslation } from '@prisma/client';
+
 export {
   User as RawUser,
   UserInfos as RawUserInfos,
@@ -18,6 +20,8 @@ export {
   UEComment as RawUEComment,
   UECommentReply as RawUECommentReply,
   UECommentUpvote as RawUECommentUpvote,
+  UEAnnalType as RawAnnalType,
+  UEAnnal as RawAnnal,
   UserMailsPhones as RawUserMailsPhones,
   UserSocialNetwork as RawUserSocialNetwork,
   UserPreference as RawUserPreference,
@@ -29,3 +33,6 @@ export {
   UserHomepageWidget as RawHomepageWidget,
   Translation as RawTranslation,
 } from '@prisma/client';
+
+export { RawTranslation };
+export type Translation = Pick<Partial<RawTranslation>, Language>;

@@ -1,4 +1,5 @@
 import '../declarations';
+import '../../src/array';
 import * as testUtils from '../utils/test_utils';
 import { INestApplication, VersioningType } from '@nestjs/common';
 import { Test } from '@nestjs/testing';

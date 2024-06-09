@@ -1,7 +1,6 @@
 import * as pactum from 'pactum';
 import { e2eSuite } from '../../utils/test_utils';
 import * as fakedb from '../../utils/fakedb';
-import { sortArray } from '../../../src/utils';
 import { ERROR_CODE } from '../../../src/exceptions';
 import { ConfigModule } from '../../../src/config/config.module';
 
@@ -29,7 +28,7 @@ const SearchE2ESpec = e2eSuite('GET /users', (app) => {
     );
 
   beforeAll(() => {
-    sortArray(randomUsers, (user) => [user.lastName, user.firstName]);
+    randomUsers.mappedSort((user) => [user.lastName, user.firstName]);
   });
 
   it('should return a 401 because user is not authenticated', async () => {

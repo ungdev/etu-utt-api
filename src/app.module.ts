@@ -1,18 +1,21 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
-//import { ConfigModule } from '@nestjs/config';
 import { ProfileModule } from './profile/profile.module';
 import { UsersModule } from './users/users.module';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { PermissionGuard } from './auth/guard/permission.guard';
+import { RoleGuard } from './auth/guard/role.guard';
 import { UEModule } from './ue/ue.module';
 import { JwtGuard } from './auth/guard';
 import { TimetableModule } from './timetable/timetable.module';
+import { AnnalsModule } from './ue/annals/annals.module';
+import { CommentsModule } from './ue/comments/comments.module';
 import { ConfigModule } from './config/config.module';
 import { HttpModule } from './http/http.module';
 import { BranchModule } from './branch/branch.module';
 import { AssosModule } from './assos/assos.module';
+import { TranslationInterceptor } from './app.interceptor';
 
 @Module({
   imports: [
@@ -22,6 +25,8 @@ import { AssosModule } from './assos/assos.module';
     AuthModule,
     ProfileModule,
     UsersModule,
+    AnnalsModule, // Order is important: this module SHALL be imported before UEModule
+    CommentsModule, // Must be imported before UEModule
     UEModule,
     TimetableModule,
     BranchModule,
@@ -37,6 +42,14 @@ import { AssosModule } from './assos/assos.module';
     {
       provide: APP_GUARD,
       useClass: PermissionGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RoleGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: TranslationInterceptor,
     },
   ],
 })
