@@ -20,7 +20,7 @@ const ASSOS_OVERVIEW_SELECT_FILTER = {
   }
 } as const;
 
-export type AssosOverView = DeepWritable<Prisma.AssoGetPayload<typeof ASSOS_OVERVIEW_SELECT_FILTER>>;
+export type AssosOverView = Prisma.AssoGetPayload<typeof ASSOS_OVERVIEW_SELECT_FILTER>;
 
 export function SelectAssosOverview<T>(arg: T): T & typeof ASSOS_OVERVIEW_SELECT_FILTER {
   return {

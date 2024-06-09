@@ -21,7 +21,7 @@ const ASSOS_DETAIL_SELECT_FILTER = {
   },
 } as const satisfies Prisma.AssoFindManyArgs;
 
-export type AssosDetail = DeepWritable<Prisma.AssoGetPayload<typeof ASSOS_DETAIL_SELECT_FILTER>>;
+export type AssosDetail = Prisma.AssoGetPayload<typeof ASSOS_DETAIL_SELECT_FILTER>;
 
 export function SelectAssoDetail<T>(arg: T): T & typeof ASSOS_DETAIL_SELECT_FILTER {
   return {

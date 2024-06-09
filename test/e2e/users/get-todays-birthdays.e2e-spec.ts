@@ -16,6 +16,7 @@ const GetTodaysBirthdaysE2ESpec = e2eSuite('GET /users/birthday/today', (app) =>
     pactum.spec().get('/users/birthdays/today').expectAppError(ERROR_CODE.NOT_LOGGED_IN));
 
   it('should return the birthday of the user', () => {
+    console.log(user.infos.birthday);
     return pactum
       .spec()
       .withBearerToken(user.token)

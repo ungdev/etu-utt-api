@@ -3,7 +3,6 @@ import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
 import { e2eSuite } from '../../utils/test_utils';
 import { ConfigModule } from '../../../src/config/config.module';
-import {sortArray} from "../../../src/utils";
 
 const SearchE2ESpec = e2eSuite('GET /assos', (app) => {
   const assos: FakeAsso[] = [];
@@ -19,7 +18,7 @@ const SearchE2ESpec = e2eSuite('GET /assos', (app) => {
   );
 
   beforeAll(() => {
-    sortArray(assos, (asso) => [asso.id]);
+    assos.mappedSort((asso) => [asso.id]);
   })
 
   it('should return a 400 as page is negative', () => {

@@ -27,10 +27,8 @@ import {
   RawUserMailsPhones,
   RawUserPreference,
   RawUserSocialNetwork,
-  RawUserPreference,
-  RawUserBranchSubscription,
-  RawHomepageWidget,
   RawUserUESubscription,
+  Translation,
 } from '../../src/prisma/types';
 import { faker } from '@faker-js/faker';
 import { AuthService } from '../../src/auth/auth.service';
@@ -70,7 +68,7 @@ export type FakeAssoMembershipRole = Partial<RawAssoMembershipRole>;
 export type FakeAssoMembership = Partial<RawAssoMembership> & {
   role?: Partial<RawAssoMembershipRole>;
 };
-export type FakeAsso = Partial<RawAsso & { descriptionShortTranslation: Partial<RawTranslation>, descriptionTranslation: Partial<RawTranslation>, president: Partial<RawUser> }>;
+export type FakeAsso = Partial<RawAsso & { descriptionShortTranslation: Partial<Translation>, descriptionTranslation: Partial<Translation>, president: Partial<RawUser> }>;
 export type FakeSemester = Partial<RawSemester>;
 export type FakeUE = Partial<Omit<RawUE, 'nameTranslationId' | 'ueInfoId'>> & {
   name?: Partial<Translation>;
@@ -463,8 +461,8 @@ export const createAsso = entityFaker(
         descriptionShortTranslation: { create: params.descriptionShortTranslation },
       },
       include: {
-        descriptionTranslation: true,
-        descriptionShortTranslation: true,
+        descriptionTranslation: translationSelect,
+        descriptionShortTranslation: translationSelect,
       },
     });
     return { ...asso, president: null };

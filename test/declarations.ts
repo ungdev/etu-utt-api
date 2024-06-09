@@ -166,21 +166,21 @@ Spec.prototype.expectHomepageWidgets = function (widgets: Omit<FakeHomepageWidge
     })),
   );
 };
-SpecProto.expectAssos = function (app: AppProvider, assos: FakeAsso[], count: number) {
+Spec.prototype.expectAssos = function (app: AppProvider, assos: FakeAsso[], count: number) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJson({
     items: assos.map((asso) => ({
       ...pick(asso, 'id', 'name', 'logo', 'president'),
-      descriptionShortTranslation: omit(asso.descriptionShortTranslation, 'id'),
+      descriptionShortTranslation: getTranslation(asso.descriptionShortTranslation, (<Spec>this).language),
     })),
     itemCount: count,
     itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
   });
 };
-SpecProto.expectAsso = function (asso: FakeAsso) {
-  return (<Spec>this).expectStatus(HttpStatus.OK).expectJson({
+Spec.prototype.expectAsso = function (asso: FakeAsso) {
+  return (<Spec>this).expectStatus(HttpStatus.OK).expectJson(({
     ...pick(asso, 'id', 'login', 'name', 'mail', 'phoneNumber', 'website', 'logo', 'president'),
-    descriptionTranslation: omit(asso.descriptionTranslation, 'id'),
-  })
+    descriptionTranslation: getTranslation(asso.descriptionTranslation, (<Spec>this).language),
+  }));
 }
 
 export { Spec, JsonLikeVariant };
