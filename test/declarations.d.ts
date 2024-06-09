@@ -58,5 +58,7 @@ declare module './declarations' {
     expectHomepageWidgets(widgets: JsonLikeVariant<FakeHomepageWidget[]>): this;
     /** expects to return the given {@link AssosOverView} */
     expectAssos(app: AppProvider, assos: FakeAsso[], count: number): this;
+    /** expects to return the given {@link asso} */
+    expectAsso(asso: FakeAsso): this;
   }
 }

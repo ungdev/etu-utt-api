@@ -27,6 +27,7 @@ import {
   RawUserPreference,
   RawUserSocialNetwork,
   RawUserUESubscription,
+  RawTranslation,
 } from '../../src/prisma/types';
 import {faker} from '@faker-js/faker';
 import {AuthService} from '../../src/auth/auth.service';
@@ -64,7 +65,7 @@ export type FakeAssoMembershipRole = Partial<RawAssoMembershipRole>;
 export type FakeAssoMembership = Partial<RawAssoMembership> & {
   role?: Partial<RawAssoMembershipRole>;
 };
-export type FakeAsso = Partial<RawAsso>;
+export type FakeAsso = Partial<RawAsso & { descriptionShortTranslation: Partial<RawTranslation>, descriptionTranslation: Partial<RawTranslation>, president: Partial<RawUser> }>;
 export type FakeSemester = Partial<RawSemester>;
 export type FakeUE = Partial<RawUE> & {
   credits?: (Partial<RawUECredit> & { category: RawCreditCategory })[];
@@ -95,7 +96,7 @@ export interface FakeEntityMap {
   }
   association: {
     entity: FakeAsso;
-    params: CreateAsso;
+    params: CreateAssoParameters;
   };
   timetableEntryOverride: {
     entity: Partial<FakeTimetableEntryOverride>;
@@ -343,7 +344,7 @@ export const createAssoMembership = entityFaker(
   }
 );
 
-export type CreateAsso = FakeAsso;
+export type CreateAssoParameters = FakeAsso;
 /**
  * Creates an association in the database.
  * @param app The function that returns the app.
@@ -357,9 +358,23 @@ export const createAsso = entityFaker(
     name: faker.name.firstName,
     mail: faker.datatype.string,
     deletedAt: new Date(0),
+    descriptionShortTranslation: {
+      fr: faker.company.catchPhrase(),
+      en: faker.company.catchPhrase(),
+      es: faker.company.catchPhrase(),
+      de: faker.company.catchPhrase(),
+      zh: faker.company.catchPhrase(),
+    },
+    descriptionTranslation: {
+      fr: faker.company.catchPhrase(),
+      en: faker.company.catchPhrase(),
+      es: faker.company.catchPhrase(),
+      de: faker.company.catchPhrase(),
+      zh: faker.company.catchPhrase(),
+    },
   },
   async (app, params) => {
-    return app()
+    const asso = await app()
       .get(PrismaService)
       .asso.create({
       data: {
@@ -367,10 +382,15 @@ export const createAsso = entityFaker(
         login: params.login,
         name: params.name,
         mail: params.mail,
-        descriptionTranslation: { create: {} },
-        descriptionShortTranslation: { create: {} },
+        descriptionTranslation: { create: params.descriptionTranslation },
+        descriptionShortTranslation: { create: params.descriptionShortTranslation },
+      },
+      include: {
+        descriptionTranslation: true,
+        descriptionShortTranslation: true,
       },
     });
+    return { ...asso, president: null };
   },
 );
 

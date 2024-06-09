@@ -15,6 +15,9 @@ const ASSOS_OVERVIEW_SELECT_FILTER = {
       },
     },
   },
+  orderBy: {
+    id: 'asc',
+  }
 } as const;
 
 export type AssosOverView = DeepWritable<Prisma.AssoGetPayload<typeof ASSOS_OVERVIEW_SELECT_FILTER>>;

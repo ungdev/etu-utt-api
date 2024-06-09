@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import {Controller, Get, Param, ParseUUIDPipe, Query} from '@nestjs/common';
 import { IsPublic } from '../auth/decorator';
 import { AssosService } from './assos.service';
 import { AssosSearchDto } from './dto/assos-search.dto';
@@ -18,7 +18,7 @@ export class AssosController {
 
   @Get('/:assoId')
   @IsPublic()
-  async getAsso(@Param('assoId') assoId: string): Promise<AssosDetail> {
+  async getAsso(@Param('assoId', new ParseUUIDPipe({ exceptionFactory: () => new AppException(ERROR_CODE.PARAM_NOT_UUID, 'assoId') })) assoId: string): Promise<AssosDetail> {
     if (!(await this.assosService.doesAssoExist(assoId))) throw new AppException(ERROR_CODE.NO_SUCH_ASSO, assoId);
     return this.assosService.getAsso(assoId.toUpperCase());
   }

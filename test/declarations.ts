@@ -114,11 +114,20 @@ SpecProto.expectHomepageWidgets = function (widgets: Omit<FakeHomepageWidget, 'i
   );
 };
 SpecProto.expectAssos = function (app: AppProvider, assos: FakeAsso[], count: number) {
-  return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonLike({
-    items: assos.map((asso) => ({})),
+  return (<Spec>this).expectStatus(HttpStatus.OK).expectJson({
+    items: assos.map((asso) => ({
+      ...pick(asso, 'id', 'name', 'logo', 'president'),
+      descriptionShortTranslation: omit(asso.descriptionShortTranslation, 'id'),
+    })),
     itemCount: count,
     itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
   });
 };
+SpecProto.expectAsso = function (asso: FakeAsso) {
+  return (<Spec>this).expectStatus(HttpStatus.OK).expectJson({
+    ...pick(asso, 'id', 'login', 'name', 'mail', 'phoneNumber', 'website', 'logo', 'president'),
+    descriptionTranslation: omit(asso.descriptionTranslation, 'id'),
+  })
+}
 
 export { Spec, JsonLikeVariant };
