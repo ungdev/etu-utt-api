@@ -26,6 +26,7 @@ model Asso {
   assoMemberships             AssoMembership[]
   assoMessages                AssoMessage[]
   events                      Event[]
+  assoMembershipRoles AssoMembershipRole[]
 }
 
 model AssoMembership {
@@ -54,8 +55,10 @@ model AssoMembershipRole {
   name        String
   position    Int
   isPresident Boolean
+  assoId String
 
   assoMembership AssoMembership[]
+  asso Asso @relation(fields: [assoId], references: [id])
 }
 
 model AssoMessage {

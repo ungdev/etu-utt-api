@@ -115,6 +115,9 @@ declare module '@faker-js/faker' {
       ueStarVote: {
         value: () => number;
       };
+      assoMembershipRole: {
+        position: () => number;
+      }
     };
   }
 }
@@ -158,6 +161,13 @@ Faker.prototype.db = {
   ueStarVote: {
     value: () => faker.datatype.number({ min: 1, max: 5 }),
   },
+  assoMembershipRole: {
+    position: () => fakeSafeUniqueData(
+      'assoMembershipRole',
+      'position',
+      () => Math.max(...registeredUniqueValues.assoMembershipRole?.position ?? [0]) + 1
+    )
+  }
 };
 
 export { Faker };

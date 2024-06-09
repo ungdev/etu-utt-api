@@ -12,6 +12,7 @@ import UEE2ESpec from './ue';
 import { AppValidationPipe } from '../../src/app.pipe';
 import * as cas from '../external_services/cas';
 import { ConfigModule } from '../../src/config/config.module';
+import AssoE2ESpec from "./assos";
 
 describe('EtuUTT API e2e testing', () => {
   let app: INestApplication;
@@ -32,7 +33,7 @@ describe('EtuUTT API e2e testing', () => {
     await app.listen(3001);
 
     testUtils.init(() => app);
-    pactum.request.setBaseUrl(`http://localhost:3001${process.env.API_PREFIX}/v1`);
+    pactum.request.setBaseUrl(`http://localhost:3001${process.env.API_PREFIX.startsWith('/') ? '' : '/'}${process.env.API_PREFIX}${process.env.API_PREFIX.endsWith('/') ? '' : '/'}v1`);
     cas.enable(app.get(ConfigModule).CAS_URL);
   });
 
@@ -45,4 +46,5 @@ describe('EtuUTT API e2e testing', () => {
   UsersE2ESpec(() => app);
   TimetableE2ESpec(() => app);
   UEE2ESpec(() => app);
+  AssoE2ESpec(() => app);
 });

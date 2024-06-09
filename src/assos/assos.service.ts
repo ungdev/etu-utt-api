@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigModule } from 'src/config/config.module';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { ConfigModule } from '../config/config.module';
+import { PrismaService } from '../prisma/prisma.service';
 import { AssosSearchDto } from './dto/assos-search.dto';
 import { AssosOverView, SelectAssosOverview } from './interfaces/assos-overview.interface';
 import { AssosDetail, SelectAssoDetail } from './interfaces/assos-detail.interface';

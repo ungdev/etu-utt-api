@@ -1,8 +1,8 @@
-import { FakeAsso, createAsso, createUser } from 'test/utils/fakedb';
+import { FakeAsso, createAsso, createUser } from '../../utils/fakedb';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from 'src/exceptions';
-import { e2eSuite } from 'test/utils/test_utils';
-import { ConfigModule } from 'src/config/config.module';
+import { ERROR_CODE } from '../../../src/exceptions';
+import { e2eSuite } from '../../utils/test_utils';
+import { ConfigModule } from '../../../src/config/config.module';
 
 const SearchE2ESpec = e2eSuite('GET /assos', (app) => {
   const user = createUser(app);

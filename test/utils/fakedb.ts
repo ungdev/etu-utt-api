@@ -1,4 +1,11 @@
 import {
+  RawAsso,
+  RawAssoMembership,
+  RawAssoMembershipRole,
+  RawBranch,
+  RawBranchOption,
+  RawCreditCategory,
+  RawHomepageWidget,
   RawSemester,
   RawTimetableEntry,
   RawTimetableEntryOverride,
@@ -8,32 +15,25 @@ import {
   RawUECommentReply,
   RawUECommentUpvote,
   RawUECredit,
-  RawCreditCategory,
   RawUEInfo,
   RawUEStarCriterion,
   RawUEStarVote,
   RawUEWorkTime,
-  RawBranch,
-  RawBranchOption,
   RawUser,
-  RawUserInfos,
-  RawUserUESubscription,
-  RawAssoMembership,
-  RawAsso,
-  RawAssoMembershipRole,
-  RawUserMailsPhones,
   RawUserAddress,
-  RawUserSocialNetwork,
-  RawUserPreference,
   RawUserBranchSubscription,
-  RawHomepageWidget,
+  RawUserInfos,
+  RawUserMailsPhones,
+  RawUserPreference,
+  RawUserSocialNetwork,
+  RawUserUESubscription,
 } from '../../src/prisma/types';
-import { faker } from '@faker-js/faker';
-import { AuthService } from '../../src/auth/auth.service';
-import { PrismaService } from '../../src/prisma/prisma.service';
-import { AppProvider } from './test_utils';
-import { Sex, TimetableEntryType, UserType } from '@prisma/client';
-import { omit, pick } from '../../src/utils';
+import {faker} from '@faker-js/faker';
+import {AuthService} from '../../src/auth/auth.service';
+import {PrismaService} from '../../src/prisma/prisma.service';
+import {AppProvider} from './test_utils';
+import {Sex, TimetableEntryType, UserType} from '@prisma/client';
+import {omit, pick} from '../../src/utils';
 
 /**
  * The fake entities can be used like normal entities in the <code>it(string, () => void)</code> functions.
@@ -60,6 +60,7 @@ export type FakeTimetableEntry = Partial<RawTimetableEntry>;
 export type FakeTimetableEntryOverride = Partial<RawTimetableEntryOverride>;
 export type FakeBranch = Partial<RawBranch>;
 export type FakeBranchOption = Partial<RawBranchOption>;
+export type FakeAssoMembershipRole = Partial<RawAssoMembershipRole>;
 export type FakeAssoMembership = Partial<RawAssoMembership> & {
   role?: Partial<RawAssoMembershipRole>;
 };
@@ -84,9 +85,14 @@ export type FakeHomepageWidget = Partial<RawHomepageWidget>;
 export interface FakeEntityMap {
   assoMembership: {
     entity: FakeAssoMembership;
-    params: CreateAssoMembership;
-    deps: { asso: FakeAsso; user: FakeUser };
+    params: CreateAssoMembershipParameters;
+    deps: { asso: FakeAsso; user: FakeUser, role: FakeAssoMembershipRole };
   };
+  assoMembershipRole: {
+    entity: FakeAssoMembershipRole;
+    params: CreateAssoMembershipRoleParameters;
+    deps: { asso: FakeAsso };
+  }
   association: {
     entity: FakeAsso;
     params: CreateAsso;
@@ -266,7 +272,35 @@ export const createUser = entityFaker(
   },
 );
 
-export type CreateAssoMembership = FakeAssoMembership;
+export type CreateAssoMembershipRoleParameters = FakeAssoMembershipRole;
+/**
+ * Creates an association membership role in the database.
+ * @param app The function that returns the app.
+ * @param rawParams The parameters to use to create the user.
+ * @returns {@link FakeAssoMembershipRole}
+ */
+export const createAssoMembershipRole = entityFaker(
+  'assoMembershipRole',
+  {
+    name: faker.company.name,
+    position: faker.db.assoMembershipRole.position,
+    isPresident: false,
+  },
+  async (app, dependencies, params) => app().get(PrismaService).assoMembershipRole.create({
+      data: {
+        name: params.name,
+        position: params.position,
+        isPresident: params.isPresident,
+        asso: {
+          connect: {
+            id: dependencies.asso.id,
+          },
+        },
+      },
+    }),
+)
+
+export type CreateAssoMembershipParameters = FakeAssoMembership;
 /**
  * Creates an association membership in the database.
  * @param app The function that returns the app.
@@ -279,36 +313,34 @@ export const createAssoMembership = entityFaker(
     startAt: new Date(0),
     endAt: new Date(0),
     createdAt: new Date(0),
-    userId: faker.datatype.uuid,
-    assoId: faker.datatype.uuid,
-    roleId: faker.datatype.uuid,
   },
-  async (app, dependencies, params) =>
-    app()
+  async (app, dependencies, params) => {
+    return app()
       .get(PrismaService)
       .assoMembership.create({
-        data: {
-          ...omit(params, 'userId', 'assoId', 'roleId'),
-          asso: {
-            connect: {
-              id: dependencies.asso.id,
-            },
-          },
-          user: {
-            connect: {
-              id: dependencies.user.id,
-            },
-          },
-          role: {
-            connect: {
-              id: params.role.id,
-            },
+      data: {
+        ...omit(params, 'userId', 'assoId', 'roleId'),
+        asso: {
+          connect: {
+            id: dependencies.asso.id,
           },
         },
-        include: {
-          role: true,
+        user: {
+          connect: {
+            id: dependencies.user.id,
+          },
         },
-      }),
+        role: {
+          connect: {
+            id: dependencies.role.id,
+          },
+        },
+      },
+      include: {
+        role: true,
+      },
+    });
+  }
 );
 
 export type CreateAsso = FakeAsso;
@@ -326,27 +358,20 @@ export const createAsso = entityFaker(
     mail: faker.datatype.string,
     deletedAt: new Date(0),
   },
-  async (app, params) =>
-    app()
+  async (app, params) => {
+    return app()
       .get(PrismaService)
       .asso.create({
-        data: {
-          ...omit(params, 'login', 'name', 'descriptionShortTranslationId', 'descriptionTranslationId'),
-          login: params.login,
-          name: params.name,
-          mail: params.mail,
-          descriptionTranslation: {
-            create: {
-              id: params.descriptionTranslationId,
-            },
-          },
-          descriptionShortTranslation: {
-            create: {
-              id: params.descriptionShortTranslationId,
-            },
-          },
-        },
-      }),
+      data: {
+        ...omit(params, 'login', 'name', 'descriptionShortTranslationId', 'descriptionTranslationId'),
+        login: params.login,
+        name: params.name,
+        mail: params.mail,
+        descriptionTranslation: { create: {} },
+        descriptionShortTranslation: { create: {} },
+      },
+    });
+  },
 );
 
 export type CreateTimetableGroupParams = { users?: Array<{ user: FakeUser; priority: number }> };

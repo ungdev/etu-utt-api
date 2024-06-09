@@ -1,10 +1,10 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import { IsPublic } from 'src/auth/decorator';
+import { IsPublic } from '../auth/decorator';
 import { AssosService } from './assos.service';
 import { AssosSearchDto } from './dto/assos-search.dto';
 import { AssosOverView } from './interfaces/assos-overview.interface';
 import { AssosDetail } from './interfaces/assos-detail.interface';
-import { AppException, ERROR_CODE } from 'src/exceptions';
+import { AppException, ERROR_CODE } from '../exceptions';
 
 @Controller('assos')
 export class AssosController {
