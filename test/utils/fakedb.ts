@@ -460,10 +460,6 @@ export const createAsso = entityFaker(
         descriptionTranslation: { create: params.descriptionTranslation },
         descriptionShortTranslation: { create: params.descriptionShortTranslation },
       },
-      include: {
-        descriptionTranslation: translationSelect,
-        descriptionShortTranslation: translationSelect,
-      },
     });
     return { ...asso, president: null };
   },

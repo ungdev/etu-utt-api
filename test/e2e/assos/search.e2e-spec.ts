@@ -18,7 +18,7 @@ const SearchE2ESpec = e2eSuite('GET /assos', (app) => {
   );
 
   beforeAll(() => {
-    assos.mappedSort((asso) => [asso.id]);
+    assos.mappedSort((asso) => [asso.name]);
   })
 
   it('should return a 400 as page is negative', () => {

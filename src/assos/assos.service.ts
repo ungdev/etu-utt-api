@@ -2,8 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigModule } from '../config/config.module';
 import { PrismaService } from '../prisma/prisma.service';
 import { AssosSearchDto } from './dto/assos-search.dto';
-import { AssosOverView, SelectAssosOverview } from './interfaces/assos-overview.interface';
-import { AssosDetail, SelectAssoDetail } from './interfaces/assos-detail.interface';
+import { Asso } from './interfaces/asso.interface';
 
 @Injectable()
 export class AssosService {
@@ -15,7 +14,7 @@ export class AssosService {
    * @param query the query parameters of this route
    * @returns a page of {@link assosFormatted} matching the user query
    */
-  async searchAssos(query: AssosSearchDto): Promise<Pagination<AssosOverView>> {
+  async searchAssos(query: AssosSearchDto): Promise<Pagination<Asso>> {
     const where = {
       ...(query.q
         ? {
@@ -45,20 +44,12 @@ export class AssosService {
           }
         : {}),
     };
-
-    const [assos, assosCount] = await this.prisma.$transaction([
-      this.prisma.asso.findMany(
-        SelectAssosOverview({
-          where,
-          take: this.config.PAGINATION_PAGE_SIZE,
-          skip: ((query.page ?? 1) - 1) * this.config.PAGINATION_PAGE_SIZE,
-          orderBy: {
-            name: 'asc',
-          },
-        }),
-      ),
-      this.prisma.asso.count({ where }),
-    ]);
+    const assos = await this.prisma.asso.findMany({
+      where,
+      take: this.config.PAGINATION_PAGE_SIZE,
+      skip: ((query.page ?? 1) - 1) * this.config.PAGINATION_PAGE_SIZE,
+    });
+    const assosCount = await this.prisma.asso.count({ where });
 
     const assosFormatted = await Promise.all(
       assos.map(async (asso) => {
@@ -105,14 +96,12 @@ export class AssosService {
    * @param assoId the id of the asso to retrieve
    * @returns the {@link assoFormatted} of the asso matching the given id
    */
-  async getAsso(assoId: string): Promise<AssosDetail> {
-    const asso = await this.prisma.asso.findUnique(
-      SelectAssoDetail({
-        where: {
-          id: assoId,
-        },
-      }),
-    );
+  async getAsso(assoId: string): Promise<Asso> {
+    const asso = await this.prisma.asso.findUnique({
+      where: {
+        id: assoId,
+      },
+    });
 
     const president = await this.prisma.assoMembership.findFirst({
       where: {

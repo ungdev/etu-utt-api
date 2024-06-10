@@ -38,7 +38,7 @@ export function generateCustomUEAnnalModel(prisma: PrismaClient) {
   return generateCustomModel(prisma, 'uEAnnal', UE_ANNAL_SELECT_FILTER, formatAnnal);
 }
 
-export function formatAnnal(annal: UnformattedUEAnnal): UEAnnalFile {
+export function formatAnnal(_: PrismaClient, annal: UnformattedUEAnnal): UEAnnalFile {
   return {
     ...omit(annal, 'deletedAt', 'validatedAt', 'uploadComplete'),
     status:
