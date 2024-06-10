@@ -177,10 +177,10 @@ Spec.prototype.expectAssos = function (app: AppProvider, assos: FakeAsso[], coun
   });
 };
 Spec.prototype.expectAsso = function (asso: FakeAsso) {
-  return (<Spec>this).expectStatus(HttpStatus.OK).expectJson(({
+  return (<Spec>this).expectStatus(HttpStatus.OK).expectJson({
     ...pick(asso, 'id', 'login', 'name', 'mail', 'phoneNumber', 'website', 'logo', 'president'),
     descriptionTranslation: getTranslation(asso.descriptionTranslation, (<Spec>this).language),
-  }));
-}
+  });
+};
 
 export { Spec, JsonLikeVariant };

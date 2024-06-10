@@ -1,11 +1,11 @@
-import {Controller, Get, Param, ParseUUIDPipe, Query} from '@nestjs/common';
+import { Controller, Get, Param, ParseUUIDPipe, Query } from '@nestjs/common';
 import { IsPublic } from '../auth/decorator';
 import { AssosService } from './assos.service';
 import { AssosSearchDto } from './dto/assos-search.dto';
 import { AppException, ERROR_CODE } from '../exceptions';
-import {Asso} from "./interfaces/asso.interface";
-import {pick} from "../utils";
-import {Translation} from "../prisma/types";
+import { Asso } from './interfaces/asso.interface';
+import { pick } from '../utils';
+import { Translation } from '../prisma/types';
 
 type AssoOverview = {
   id: string;
@@ -19,9 +19,9 @@ type AssoOverview = {
     user: {
       firstName: string;
       lastName: string;
-    }
-  }
-}
+    };
+  };
+};
 
 type AssoDetail = {
   id: string;
@@ -34,14 +34,14 @@ type AssoDetail = {
   descriptionTranslation: Translation;
   president: {
     role: {
-      name: string
+      name: string;
     };
     user: {
       firstName: string;
       lastName: string;
-    }
-  }
-}
+    };
+  };
+};
 
 @Controller('assos')
 export class AssosController {
@@ -58,7 +58,13 @@ export class AssosController {
 
   @Get('/:assoId')
   @IsPublic()
-  async getAsso(@Param('assoId', new ParseUUIDPipe({ exceptionFactory: () => new AppException(ERROR_CODE.PARAM_NOT_UUID, 'assoId') })) assoId: string): Promise<AssoDetail> {
+  async getAsso(
+    @Param(
+      'assoId',
+      new ParseUUIDPipe({ exceptionFactory: () => new AppException(ERROR_CODE.PARAM_NOT_UUID, 'assoId') }),
+    )
+    assoId: string,
+  ): Promise<AssoDetail> {
     if (!(await this.assosService.doesAssoExist(assoId))) throw new AppException(ERROR_CODE.NO_SUCH_ASSO, assoId);
     return this.formatAssoDetail(await this.assosService.getAsso(assoId.toUpperCase()));
   }
@@ -68,6 +74,17 @@ export class AssosController {
   }
 
   formatAssoDetail(asso: Asso) {
-    return pick(asso, 'id', 'login', 'name', 'mail', 'phoneNumber', 'website', 'logo', 'president', 'descriptionTranslation');
+    return pick(
+      asso,
+      'id',
+      'login',
+      'name',
+      'mail',
+      'phoneNumber',
+      'website',
+      'logo',
+      'president',
+      'descriptionTranslation',
+    );
   }
 }

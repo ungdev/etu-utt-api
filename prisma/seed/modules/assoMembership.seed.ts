@@ -1,9 +1,14 @@
 import { faker } from '@faker-js/faker';
 import { PrismaClient } from '@prisma/client';
-import { AssosOverView } from 'src/assos/interfaces/assos-overview.interface';
-import { RawUser } from 'src/prisma/types';
+import { RawAssoMembershipRole, RawUser } from 'src/prisma/types';
+import { Asso } from '../../../src/assos/interfaces/asso.interface';
 
-export default function assoMembershipSeed(prisma: PrismaClient, users: RawUser[], assos: AssosOverView[], roles) {
+export default function assoMembershipSeed(
+  prisma: PrismaClient,
+  users: RawUser[],
+  assos: Asso[],
+  roles: RawAssoMembershipRole[],
+) {
   console.log('Seeding assoMemberships...');
   const assoMemberships = [];
   const fakerRounds = 10;

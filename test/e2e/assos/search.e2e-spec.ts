@@ -3,7 +3,6 @@ import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
 import { e2eSuite } from '../../utils/test_utils';
 import { ConfigModule } from '../../../src/config/config.module';
-import {getTranslation, pick} from "../../../src/utils";
 
 const SearchE2ESpec = e2eSuite('GET /assos', (app) => {
   const assos: FakeAsso[] = [];
@@ -11,21 +10,18 @@ const SearchE2ESpec = e2eSuite('GET /assos', (app) => {
     assos.push(createAsso(app));
   }
   const bde = createAsso(app, {
-      login: 'bdeutt',
-      name: 'BDE',
-      mail: 'bde@utt.fr',
-    });
+    login: 'bdeutt',
+    name: 'BDE',
+    mail: 'bde@utt.fr',
+  });
   assos.push(bde);
 
   beforeAll(() => {
     assos.mappedSort((asso) => [asso.name]);
-  })
+  });
 
   it('should return a 400 as page is negative', () => {
-    return pactum
-      .spec()
-      .get('/assos?q=BDE&page=-1')
-      .expectAppError(ERROR_CODE.PARAM_NOT_POSITIVE, 'page');
+    return pactum.spec().get('/assos?q=BDE&page=-1').expectAppError(ERROR_CODE.PARAM_NOT_POSITIVE, 'page');
   });
 
   it('should return a list of all assos (within the first page)', () => {
@@ -50,10 +46,7 @@ const SearchE2ESpec = e2eSuite('GET /assos', (app) => {
       );
   });
 
-  it('should return only the BDE asso', () => pactum
-      .spec()
-      .get(`/assos?q=${bde.name}`)
-      .expectAssos(app, [bde], 1));
+  it('should return only the BDE asso', () => pactum.spec().get(`/assos?q=${bde.name}`).expectAssos(app, [bde], 1));
 });
 
 export default SearchE2ESpec;

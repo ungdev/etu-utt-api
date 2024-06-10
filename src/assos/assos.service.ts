@@ -51,40 +51,8 @@ export class AssosService {
     });
     const assosCount = await this.prisma.asso.count({ where });
 
-    const assosFormatted = await Promise.all(
-      assos.map(async (asso) => {
-        const president = await this.prisma.assoMembership.findFirst({
-          where: {
-            asso: {
-              id: asso.id,
-            },
-            role: {
-              isPresident: true,
-            },
-          },
-          select: {
-            role: {
-              select: {
-                name: true,
-              },
-            },
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-              },
-            },
-          },
-        });
-        return {
-          ...asso,
-          president,
-        };
-      }),
-    );
-
     return {
-      items: assosFormatted,
+      items: assos,
       itemCount: assosCount,
       itemsPerPage: this.config.PAGINATION_PAGE_SIZE,
     };
@@ -97,42 +65,11 @@ export class AssosService {
    * @returns the {@link assoFormatted} of the asso matching the given id
    */
   async getAsso(assoId: string): Promise<Asso> {
-    const asso = await this.prisma.asso.findUnique({
+    return this.prisma.asso.findUnique({
       where: {
         id: assoId,
       },
     });
-
-    const president = await this.prisma.assoMembership.findFirst({
-      where: {
-        asso: {
-          id: assoId,
-        },
-        role: {
-          isPresident: true,
-        },
-      },
-      select: {
-        role: {
-          select: {
-            name: true,
-          },
-        },
-        user: {
-          select: {
-            firstName: true,
-            lastName: true,
-          },
-        },
-      },
-    });
-
-    const assoFormatted = {
-      ...asso,
-      president,
-    };
-
-    return assoFormatted;
   }
 
   /**

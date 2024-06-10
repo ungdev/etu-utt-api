@@ -9,7 +9,7 @@ import { generateCustomRateModel } from '../ue/interfaces/rate.interface';
 import { generateCustomUEModel } from '../ue/interfaces/ue.interface';
 import { generateCustomUEAnnalModel } from '../ue/annals/interfaces/annal.interface';
 import { generateCustomUECommentReplyModel } from '../ue/comments/interfaces/comment-reply.interface';
-import {generateCustomAssoModel} from "../assos/interfaces/asso.interface";
+import { generateCustomAssoModel } from '../assos/interfaces/asso.interface';
 
 // This interface is used to tell typescript that, even tho it does not understand it, PrismaService IS actually a ReturnType<typeof createPrismaClientExtension>
 // TS cannot infer it alone as the construction of the class is made using reflection.
@@ -83,7 +83,11 @@ export type UserFriendlyRequestType<
   CustomArgs extends object,
 > = Omit<RequestType<ModelName, FunctionName>, 'select' | 'include' | 'orderBy'> &
   (Record<string, never> extends CustomArgs ? { args?: never } : { args: CustomArgs });
-export type Formatter<RawEntity, FormattedEntity, FormatterArgs extends any[]> = (prisma: ReturnType<typeof createPrismaClient>, raw: RawEntity, ...args: FormatterArgs) => MayBePromise<FormattedEntity>;
+export type Formatter<RawEntity, FormattedEntity, FormatterArgs extends any[]> = (
+  prisma: ReturnType<typeof createPrismaClient>,
+  raw: RawEntity,
+  ...args: FormatterArgs
+) => MayBePromise<FormattedEntity>;
 
 function generateCustomModelFunction<
   ModelName extends ModelNameType,
@@ -165,7 +169,8 @@ export function generateCustomModel<
       modelName,
       functionName as FunctionNameType<ModelName>,
       selectFilter,
-      (prisma, values: Raw[], ...args: FormatterArgs) => Promise.all(values.map((value) => format(prisma, value, ...args))),
+      (prisma, values: Raw[], ...args: FormatterArgs) =>
+        Promise.all(values.map((value) => format(prisma, value, ...args))),
       queryUpdater,
     );
   }

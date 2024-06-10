@@ -119,7 +119,7 @@ declare module '@faker-js/faker' {
       translation: (rng?: () => string) => Omit<Translation, 'id'>;
       assoMembershipRole: {
         position: () => number;
-      }
+      };
     };
   }
 }
@@ -171,12 +171,13 @@ Faker.prototype.db = {
     es: rng(),
   }),
   assoMembershipRole: {
-    position: () => fakeSafeUniqueData(
-      'assoMembershipRole',
-      'position',
-      () => Math.max(...registeredUniqueValues.assoMembershipRole?.position ?? [0]) + 1
-    )
-  }
+    position: () =>
+      fakeSafeUniqueData(
+        'assoMembershipRole',
+        'position',
+        () => Math.max(...(registeredUniqueValues.assoMembershipRole?.position ?? [0])) + 1,
+      ),
+  },
 };
 
 export function generateTranslation(rng: () => string = faker.random.words) {

@@ -33,7 +33,7 @@ async function main() {
   const ueStarCriterions = await ueStarCriterionSeed(prisma);
   await ueStarVotesSeed(prisma, ueStarCriterions, ueSubscriptions);
   const assos = await assoSeed(prisma);
-  const roles = await assoMembershipRoleSeed(prisma);
+  const roles = await assoMembershipRoleSeed(prisma, assos);
   await assoMembershipSeed(prisma, users, assos, roles);
 
   console.log('Seeding done.');

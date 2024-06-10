@@ -68,7 +68,13 @@ export type FakeAssoMembershipRole = Partial<RawAssoMembershipRole>;
 export type FakeAssoMembership = Partial<RawAssoMembership> & {
   role?: Partial<RawAssoMembershipRole>;
 };
-export type FakeAsso = Partial<RawAsso & { descriptionShortTranslation: Partial<Translation>, descriptionTranslation: Partial<Translation>, president: Partial<RawUser> }>;
+export type FakeAsso = Partial<
+  RawAsso & {
+    descriptionShortTranslation: Partial<Translation>;
+    descriptionTranslation: Partial<Translation>;
+    president: Partial<RawUser>;
+  }
+>;
 export type FakeSemester = Partial<RawSemester>;
 export type FakeUE = Partial<Omit<RawUE, 'nameTranslationId' | 'ueInfoId'>> & {
   name?: Partial<Translation>;
@@ -102,13 +108,13 @@ export interface FakeEntityMap {
   assoMembership: {
     entity: FakeAssoMembership;
     params: CreateAssoMembershipParameters;
-    deps: { asso: FakeAsso; user: FakeUser, role: FakeAssoMembershipRole };
+    deps: { asso: FakeAsso; user: FakeUser; role: FakeAssoMembershipRole };
   };
   assoMembershipRole: {
     entity: FakeAssoMembershipRole;
     params: CreateAssoMembershipRoleParameters;
     deps: { asso: FakeAsso };
-  }
+  };
   association: {
     entity: FakeAsso;
     params: CreateAssoParameters;
@@ -362,19 +368,22 @@ export const createAssoMembershipRole = entityFaker(
     position: faker.db.assoMembershipRole.position,
     isPresident: false,
   },
-  async (app, dependencies, params) => app().get(PrismaService).assoMembershipRole.create({
-      data: {
-        name: params.name,
-        position: params.position,
-        isPresident: params.isPresident,
-        asso: {
-          connect: {
-            id: dependencies.asso.id,
+  async (app, dependencies, params) =>
+    app()
+      .get(PrismaService)
+      .assoMembershipRole.create({
+        data: {
+          name: params.name,
+          position: params.position,
+          isPresident: params.isPresident,
+          asso: {
+            connect: {
+              id: dependencies.asso.id,
+            },
           },
         },
-      },
-    }),
-)
+      }),
+);
 
 export type CreateAssoMembershipParameters = FakeAssoMembership;
 /**
@@ -390,33 +399,32 @@ export const createAssoMembership = entityFaker(
     endAt: new Date(0),
     createdAt: new Date(0),
   },
-  async (app, dependencies, params) => {
-    return app()
+  async (app, dependencies, params) =>
+    app()
       .get(PrismaService)
       .assoMembership.create({
-      data: {
-        ...omit(params, 'userId', 'assoId', 'roleId'),
-        asso: {
-          connect: {
-            id: dependencies.asso.id,
+        data: {
+          ...omit(params, 'userId', 'assoId', 'roleId'),
+          asso: {
+            connect: {
+              id: dependencies.asso.id,
+            },
+          },
+          user: {
+            connect: {
+              id: dependencies.user.id,
+            },
+          },
+          role: {
+            connect: {
+              id: dependencies.role.id,
+            },
           },
         },
-        user: {
-          connect: {
-            id: dependencies.user.id,
-          },
+        include: {
+          role: true,
         },
-        role: {
-          connect: {
-            id: dependencies.role.id,
-          },
-        },
-      },
-      include: {
-        role: true,
-      },
-    });
-  }
+      }),
 );
 
 export type CreateAssoParameters = FakeAsso;
@@ -452,15 +460,15 @@ export const createAsso = entityFaker(
     const asso = await app()
       .get(PrismaService)
       .asso.create({
-      data: {
-        ...omit(params, 'login', 'name', 'descriptionShortTranslationId', 'descriptionTranslationId'),
-        login: params.login,
-        name: params.name,
-        mail: params.mail,
-        descriptionTranslation: { create: params.descriptionTranslation },
-        descriptionShortTranslation: { create: params.descriptionShortTranslation },
-      },
-    });
+        data: {
+          ...omit(params, 'login', 'name', 'descriptionShortTranslationId', 'descriptionTranslationId'),
+          login: params.login,
+          name: params.name,
+          mail: params.mail,
+          descriptionTranslation: { create: params.descriptionTranslation },
+          descriptionShortTranslation: { create: params.descriptionShortTranslation },
+        },
+      });
     return { ...asso, president: null };
   },
 );

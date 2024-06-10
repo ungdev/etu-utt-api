@@ -8,7 +8,7 @@ import { getTranslation } from './utils';
 export class TranslationInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const headerLanguage = context.switchToHttp().getRequest<Request>().header('language');
-    const language = headerLanguage in Language ? headerLanguage as Language : 'fr';
+    const language = headerLanguage in Language ? (headerLanguage as Language) : 'fr';
     context.switchToHttp().getRequest<Request>().headers['language'] = language;
     return next.handle().pipe(map((item) => this.transform(item, language)));
   }
@@ -18,10 +18,7 @@ export class TranslationInterceptor implements NestInterceptor {
       return data;
     }
     const languages = Object.keys(Language);
-    if (
-      Object.keys(data).length === languages.length &&
-      languages.every((key) => Object.keys(data).includes(key))
-    ) {
+    if (Object.keys(data).length === languages.length && languages.every((key) => Object.keys(data).includes(key))) {
       return getTranslation(data, language);
     }
     if (Array.isArray(data)) {
