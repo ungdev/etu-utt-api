@@ -91,7 +91,7 @@ export function generateCustomUEModel(prisma: PrismaClient) {
   return generateCustomModel(prisma, 'uE', UE_SELECT_FILTER, formatUE);
 }
 
-function formatUE(ue: UnformattedUE): UE {
+function formatUE(_: PrismaClient, ue: UnformattedUE): UE {
   // We store rates in a object where the key is the criterion id and the value is a list ratings
   const starVoteCriteria: {
     [key: string]: {

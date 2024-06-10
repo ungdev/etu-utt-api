@@ -6,7 +6,7 @@ import { FakeUEAnnalType } from './utils/fakedb';
 import { UEAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { UERating } from 'src/ue/interfaces/rate.interface';
-import { FakeUE, FakeUser, FakeHomepageWidget } from './utils/fakedb';
+import { FakeUE, FakeUser, FakeHomepageWidget, FakeAsso } from './utils/fakedb';
 import { AppProvider } from './utils/test_utils';
 import { Language } from '@prisma/client';
 
@@ -72,6 +72,10 @@ declare module './declarations' {
     expectUEAnnals(annals: JsonLikeVariant<UEAnnalFile>[]): this;
     /** expects to return the given {@link FakeHomepageWidget}s */
     expectHomepageWidgets(widgets: JsonLikeVariant<FakeHomepageWidget[]>): this;
+    /** expects to return the given {@link AssosOverView} */
+    expectAssos(app: AppProvider, assos: FakeAsso[], count: number): this;
+    /** expects to return the given {@link asso} */
+    expectAsso(asso: FakeAsso): this;
     withLanguage(language: Language): this;
     language: Language;
   }

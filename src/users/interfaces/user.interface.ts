@@ -102,7 +102,7 @@ export type User = Omit<UnformattedUser, 'permissions'> & {
 export const generateCustomUserModel = (prisma: PrismaClient) =>
   generateCustomModel(prisma, 'user', USER_SELECT_FILTER, formatUser);
 
-export function formatUser(user: UnformattedUser): User {
+export function formatUser(_: PrismaClient, user: UnformattedUser): User {
   return {
     ...user,
     permissions: user.permissions.map((permission) => permission.userPermissionId),

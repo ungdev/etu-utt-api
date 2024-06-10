@@ -14,6 +14,7 @@ import { CommentsModule } from './ue/comments/comments.module';
 import { ConfigModule } from './config/config.module';
 import { HttpModule } from './http/http.module';
 import { BranchModule } from './branch/branch.module';
+import { AssosModule } from './assos/assos.module';
 import { TranslationInterceptor } from './app.interceptor';
 
 @Module({
@@ -29,6 +30,7 @@ import { TranslationInterceptor } from './app.interceptor';
     UEModule,
     TimetableModule,
     BranchModule,
+    AssosModule,
   ],
   // The providers below are used for all the routes of the api.
   // For example, the JwtGuard is used for all the routes and checks whether the user is authenticated.

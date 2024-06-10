@@ -111,10 +111,10 @@ export function generateCustomCommentModel(prisma: PrismaClient) {
   );
 }
 
-export function formatComment(comment: UnformattedUEComment, userId?: string): UEComment {
+export function formatComment(prisma: PrismaClient, comment: UnformattedUEComment, userId?: string): UEComment {
   return {
     ...omit(comment, 'deletedAt', 'validatedAt'),
-    answers: comment.answers.map(formatReply),
+    answers: comment.answers.map((answer) => formatReply(prisma, answer)),
     status: (comment.deletedAt && CommentStatus.DELETED) | (comment.validatedAt && CommentStatus.VALIDATED),
     upvotes: comment.upvotes.length,
     upvoted: comment.upvotes.some((upvote) => upvote.userId == userId),

@@ -1,4 +1,11 @@
 import {
+  RawAsso,
+  RawAssoMembership,
+  RawAssoMembershipRole,
+  RawBranch,
+  RawBranchOption,
+  RawCreditCategory,
+  RawHomepageWidget,
   RawSemester,
   RawTimetableEntry,
   RawTimetableEntryOverride,
@@ -9,25 +16,18 @@ import {
   RawUECommentReply,
   RawUECommentUpvote,
   RawUECredit,
-  RawCreditCategory,
   RawUEInfo,
   RawUEStarCriterion,
   RawUEStarVote,
   RawUEWorkTime,
-  RawBranch,
-  RawBranchOption,
   RawUser,
-  RawUserInfos,
-  RawUserUESubscription,
-  RawAssoMembership,
-  RawAsso,
-  RawAssoMembershipRole,
-  RawUserMailsPhones,
   RawUserAddress,
-  RawUserSocialNetwork,
-  RawUserPreference,
   RawUserBranchSubscription,
-  RawHomepageWidget,
+  RawUserInfos,
+  RawUserMailsPhones,
+  RawUserPreference,
+  RawUserSocialNetwork,
+  RawUserUESubscription,
   Translation,
 } from '../../src/prisma/types';
 import { faker } from '@faker-js/faker';
@@ -64,10 +64,17 @@ export type FakeTimetableEntry = Partial<RawTimetableEntry>;
 export type FakeTimetableEntryOverride = Partial<RawTimetableEntryOverride>;
 export type FakeBranch = Partial<RawBranch>;
 export type FakeBranchOption = Partial<RawBranchOption>;
+export type FakeAssoMembershipRole = Partial<RawAssoMembershipRole>;
 export type FakeAssoMembership = Partial<RawAssoMembership> & {
   role?: Partial<RawAssoMembershipRole>;
 };
-export type FakeAsso = Partial<RawAsso>;
+export type FakeAsso = Partial<
+  RawAsso & {
+    descriptionShortTranslation: Partial<Translation>;
+    descriptionTranslation: Partial<Translation>;
+    president: Partial<RawUser>;
+  }
+>;
 export type FakeSemester = Partial<RawSemester>;
 export type FakeUE = Partial<Omit<RawUE, 'nameTranslationId' | 'ueInfoId'>> & {
   name?: Partial<Translation>;
@@ -100,12 +107,17 @@ export type FakeHomepageWidget = Partial<RawHomepageWidget>;
 export interface FakeEntityMap {
   assoMembership: {
     entity: FakeAssoMembership;
-    params: CreateAssoMembership;
-    deps: { asso: FakeAsso; user: FakeUser };
+    params: CreateAssoMembershipParameters;
+    deps: { asso: FakeAsso; user: FakeUser; role: FakeAssoMembershipRole };
+  };
+  assoMembershipRole: {
+    entity: FakeAssoMembershipRole;
+    params: CreateAssoMembershipRoleParameters;
+    deps: { asso: FakeAsso };
   };
   association: {
     entity: FakeAsso;
-    params: CreateAsso;
+    params: CreateAssoParameters;
   };
   timetableEntryOverride: {
     entity: Partial<FakeTimetableEntryOverride>;
@@ -342,7 +354,38 @@ export const createUser = entityFaker(
   },
 );
 
-export type CreateAssoMembership = FakeAssoMembership;
+export type CreateAssoMembershipRoleParameters = FakeAssoMembershipRole;
+/**
+ * Creates an association membership role in the database.
+ * @param app The function that returns the app.
+ * @param rawParams The parameters to use to create the user.
+ * @returns {@link FakeAssoMembershipRole}
+ */
+export const createAssoMembershipRole = entityFaker(
+  'assoMembershipRole',
+  {
+    name: faker.company.name,
+    position: faker.db.assoMembershipRole.position,
+    isPresident: false,
+  },
+  async (app, dependencies, params) =>
+    app()
+      .get(PrismaService)
+      .assoMembershipRole.create({
+        data: {
+          name: params.name,
+          position: params.position,
+          isPresident: params.isPresident,
+          asso: {
+            connect: {
+              id: dependencies.asso.id,
+            },
+          },
+        },
+      }),
+);
+
+export type CreateAssoMembershipParameters = FakeAssoMembership;
 /**
  * Creates an association membership in the database.
  * @param app The function that returns the app.
@@ -355,11 +398,6 @@ export const createAssoMembership = entityFaker(
     startAt: new Date(0),
     endAt: new Date(0),
     createdAt: new Date(0),
-    userId: faker.datatype.uuid,
-    assoId: faker.datatype.uuid,
-    role: {
-      role: faker.random.words,
-    },
   },
   async (app, dependencies, params) =>
     app()
@@ -378,8 +416,8 @@ export const createAssoMembership = entityFaker(
             },
           },
           role: {
-            create: {
-              role: params.role.role,
+            connect: {
+              id: dependencies.role.id,
             },
           },
         },
@@ -389,7 +427,7 @@ export const createAssoMembership = entityFaker(
       }),
 );
 
-export type CreateAsso = FakeAsso;
+export type CreateAssoParameters = FakeAsso;
 /**
  * Creates an association in the database.
  * @param app The function that returns the app.
@@ -403,9 +441,23 @@ export const createAsso = entityFaker(
     name: faker.name.firstName,
     mail: faker.datatype.string,
     deletedAt: new Date(0),
+    descriptionShortTranslation: {
+      fr: faker.company.catchPhrase(),
+      en: faker.company.catchPhrase(),
+      es: faker.company.catchPhrase(),
+      de: faker.company.catchPhrase(),
+      zh: faker.company.catchPhrase(),
+    },
+    descriptionTranslation: {
+      fr: faker.company.catchPhrase(),
+      en: faker.company.catchPhrase(),
+      es: faker.company.catchPhrase(),
+      de: faker.company.catchPhrase(),
+      zh: faker.company.catchPhrase(),
+    },
   },
-  async (app, params) =>
-    app()
+  async (app, params) => {
+    const asso = await app()
       .get(PrismaService)
       .asso.create({
         data: {
@@ -413,18 +465,12 @@ export const createAsso = entityFaker(
           login: params.login,
           name: params.name,
           mail: params.mail,
-          descriptionTranslation: {
-            create: {
-              id: params.descriptionTranslationId,
-            },
-          },
-          descriptionShortTranslation: {
-            create: {
-              id: params.descriptionShortTranslationId,
-            },
-          },
+          descriptionTranslation: { create: params.descriptionTranslation },
+          descriptionShortTranslation: { create: params.descriptionShortTranslation },
         },
-      }),
+      });
+    return { ...asso, president: null };
+  },
 );
 
 export type CreateTimetableGroupParams = { users?: Array<{ user: FakeUser; priority: number }> };
