@@ -33,7 +33,7 @@ export function generateCustomUECommentReplyModel(prisma: PrismaClient) {
   return generateCustomModel(prisma, 'uECommentReply', REPLY_SELECT_FILTER, formatReply);
 }
 
-export function formatReply(reply: UnformattedUECommentReply): UECommentReply {
+export function formatReply(_: PrismaClient, reply: UnformattedUECommentReply): UECommentReply {
   return {
     ...omit(reply, 'deletedAt'),
     status: (reply.deletedAt && CommentStatus.DELETED) | CommentStatus.VALIDATED,

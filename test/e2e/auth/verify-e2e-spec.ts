@@ -34,7 +34,6 @@ const VerifyE2ESpec = e2eSuite('GET /token/signin', (app) => {
 
   it('should return that the token is valid', async () => {
     const token = await app().get(AuthService).signToken('abcdef', "it's me, mario");
-
     return pactum.spec().get('/auth/signin').withBearerToken(token).expectStatus(200).expectBody({ valid: true });
   });
 });

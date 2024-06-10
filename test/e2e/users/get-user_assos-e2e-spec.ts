@@ -1,5 +1,5 @@
 import { e2eSuite } from '../../utils/test_utils';
-import { createAsso, createAssoMembership, createUser } from '../../utils/fakedb';
+import { createAsso, createAssoMembership, createAssoMembershipRole, createUser } from '../../utils/fakedb';
 import * as pactum from 'pactum';
 import { HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../../../src/prisma/prisma.service';
@@ -8,7 +8,8 @@ import { omit } from '../../../src/utils';
 const GetUserAssociationE2ESpec = e2eSuite('GET /users/:userId/associations', (app) => {
   const user = createUser(app);
   const asso = createAsso(app);
-  createAssoMembership(app, { asso: asso, user: user });
+  const role = createAssoMembershipRole(app, { asso });
+  createAssoMembership(app, { asso: asso, user: user, role });
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum.spec().get(`/users/${user.id}/associations`).expectStatus(HttpStatus.UNAUTHORIZED);
@@ -33,7 +34,7 @@ const GetUserAssociationE2ESpec = e2eSuite('GET /users/:userId/associations', (a
             endAt: true,
             role: {
               select: {
-                role: true,
+                name: true,
               },
             },
             asso: {
@@ -48,7 +49,7 @@ const GetUserAssociationE2ESpec = e2eSuite('GET /users/:userId/associations', (a
         })
     ).map((membership) => ({
       ...omit(membership, 'role', 'endAt', 'startAt'),
-      role: membership.role.role,
+      role: membership.role.name,
       endAt: membership.endAt.toISOString(),
       startAt: membership.startAt.toISOString(),
     }));
