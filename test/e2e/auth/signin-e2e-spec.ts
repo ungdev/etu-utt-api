@@ -42,8 +42,7 @@ const SignInE2ESpec = e2eSuite('POST /auth/signin', (app) => {
       .post('/auth/signin')
       .withBody(dto)
       .expectStatus(200)
-      .expectBodyContains('access_token')
-      .stores('userAccessToken', 'access_token'));
+      .expectBodyContains('access_token'));
 });
 
 export default SignInE2ESpec;

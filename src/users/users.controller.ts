@@ -49,7 +49,6 @@ export default class UsersController {
 
   @Get('/birthdays/today')
   async getTodaysBirthdays() {
-    console.log(await this.usersService.getBirthdayOfDay(new Date()));
     return (await this.usersService.getBirthdayOfDay(new Date())).map((user) => ({
       id: user.id,
       firstName: user.firstName,

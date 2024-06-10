@@ -3,19 +3,19 @@ import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
 import { e2eSuite } from '../../utils/test_utils';
 import { ConfigModule } from '../../../src/config/config.module';
+import {getTranslation, pick} from "../../../src/utils";
 
 const SearchE2ESpec = e2eSuite('GET /assos', (app) => {
   const assos: FakeAsso[] = [];
   for (let i = 0; i < 29; i++) {
     assos.push(createAsso(app));
   }
-  assos.push(
-    createAsso(app, {
+  const bde = createAsso(app, {
       login: 'bdeutt',
       name: 'BDE',
       mail: 'bde@utt.fr',
-    }),
-  );
+    });
+  assos.push(bde);
 
   beforeAll(() => {
     assos.mappedSort((asso) => [asso.name]);
@@ -49,6 +49,11 @@ const SearchE2ESpec = e2eSuite('GET /assos', (app) => {
         assos.length,
       );
   });
+
+  it('should return only the BDE asso', () => pactum
+      .spec()
+      .get(`/assos?q=${bde.name}`)
+      .expectAssos(app, [bde], 1));
 });
 
 export default SearchE2ESpec;
