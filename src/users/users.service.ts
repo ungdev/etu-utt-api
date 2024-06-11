@@ -98,6 +98,7 @@ export default class UsersService {
       firstName: user.firstName,
       lastName: user.lastName,
       nickname: user.infos.nickname,
+      type: user.userType,
       avatar: user.infos.avatar,
       sex: user.preference.displaySex || includeAll ? user.infos.sex : undefined,
       nationality: user.infos.nationality,
