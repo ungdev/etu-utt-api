@@ -6,7 +6,6 @@ import { AppException, ERROR_CODE } from '../exceptions';
 import AuthCasSignInDto from './dto/auth-cas-sign-in.dto';
 import { AuthCasSignUpDto } from './dto/auth-cas-sign-up.dto';
 import UsersService from '../users/users.service';
-import { UserType } from '@prisma/client';
 
 @Controller('auth')
 export class AuthController {
