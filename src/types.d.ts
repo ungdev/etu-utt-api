@@ -19,7 +19,3 @@ declare type SetPartial<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
 declare type RecursivelySetPartial<T, K> = K extends `${infer K1}.${infer K2}`
   ? Omit<T, K1> & RecursivelySetPartial<T, K2>
   : SetPartial<T, K>;
-
-declare type DeeplyPartial<T> = {
-  [P in keyof T]?: T[P] extends object ? DeeplyPartial<T[P]> : T[P];
-};
