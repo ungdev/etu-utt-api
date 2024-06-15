@@ -7,7 +7,7 @@ export async function migrateUeComments(query: QueryFunction, prisma: PrismaClie
     'SELECT c.body, c.createdAt, c.updatedAt, u.code ' +
     'FROM etu_uvs_comments c ' +
     'INNER JOIN etu_uvs u ON c.uv_id = u.id ' +
-    'WHERE c.deletedAt IS NULL');
+    'WHERE c.deletedAt IS NULL AND u.isOld = 0');
   let createdCommentsCount = 0;
   for (const comment of comments) {
     const semester = semesters.find(semester => semester.start <= comment.createdAt && semester.end >= comment.createdAt);
@@ -19,6 +19,8 @@ export async function migrateUeComments(query: QueryFunction, prisma: PrismaClie
       data: {
         body: comment.body,
         isAnonymous: true,
+        createdAt: comment.createdAt,
+        updatedAt: comment.updatedAt,
         ue: {
           connect: {
             code: comment.code,

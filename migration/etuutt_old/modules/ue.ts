@@ -4,7 +4,7 @@ import { RawUE, RawCreditCategory } from '../../../src/prisma/types';
 import {stringToTranslation} from "../utils";
 
 export async function migrateUEs(query: QueryFunction, prisma: PrismaClient) {
-  const ues = await query('SELECT * FROM etu_uvs');
+  const ues = await query('SELECT * FROM etu_uvs WHERE isOld = 0');
   const newUEs: RawUE[] = [];
   ues.sort((a, b) =>
     new RegExp(`(^|\W)${a.code}($|\W)`).test(b.antecedents)
