@@ -4,7 +4,7 @@ import {RawSemester, RawUE, RawCreditCategory} from '../../../src/prisma/types';
 
 export async function migrateUeComments(query: QueryFunction, prisma: PrismaClient, semesters: RawSemester[]) {
   const comments = await query('' +
-    'SELECT c.body, c.createdAt, c.updatedAt, u.code ' +
+    'SELECT c.body, c.createdAt, c.updatedAt, c.isValide, u.code ' +
     'FROM etu_uvs_comments c ' +
     'INNER JOIN etu_uvs u ON c.uv_id = u.id ' +
     'WHERE c.deletedAt IS NULL AND u.isOld = 0');
@@ -21,6 +21,7 @@ export async function migrateUeComments(query: QueryFunction, prisma: PrismaClie
         isAnonymous: true,
         createdAt: comment.createdAt,
         updatedAt: comment.updatedAt,
+        validatedAt: comment.isValide ? comment.updatedAt : null,
         ue: {
           connect: {
             code: comment.code,
