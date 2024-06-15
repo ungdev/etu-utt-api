@@ -38,6 +38,7 @@ const UpdateProfile = e2eSuite('PATCH /users/current', (app) => {
         facebook: 'fbProfile',
         firstName: user.firstName,
         id: user.id,
+        type: user.userType,
         infoDisplayed: {
           displayAddress: true,
           displayBirthday: user.preference.displayBirthday,

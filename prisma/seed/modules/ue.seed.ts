@@ -57,6 +57,16 @@ export default function ueSeed(
               .arrayElements(branchOptions, faker.datatype.number({ min: 1, max: 3 }))
               .map((branchOption) => ({ code: branchOption.code })),
           },
+          workTime: {
+            create: {
+              cm: faker.datatype.number({ min: 6, max: 32 }),
+              td: faker.datatype.number({ min: 6, max: 32 }),
+              tp: faker.datatype.number({ min: 6, max: 16 }),
+              the: faker.datatype.number({ min: 32, max: 64 }),
+              project: faker.datatype.number({ min: 16, max: 48 }),
+              internship: 0,
+            },
+          },
         },
       }),
     );
