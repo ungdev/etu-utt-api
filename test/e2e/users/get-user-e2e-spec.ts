@@ -30,6 +30,7 @@ const GetUserE2ESpec = e2eSuite('GET /users/:userId', (app) => {
       firstName: userFromDb.firstName,
       lastName: userFromDb.lastName,
       nickname: userFromDb.infos.nickname,
+      type: userFromDb.userType,
       avatar: userFromDb.infos.avatar,
       sex: userFromDb.preference.displaySex ? userFromDb.infos.sex : undefined,
       nationality: userFromDb.infos.nationality,

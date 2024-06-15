@@ -1,16 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-  Put,
-  Query,
-  Response,
-  StreamableFile,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Response } from '@nestjs/common';
 import { AnnalsService } from './annals.service';
 import { UEService } from '../ue.service';
 import { Response as ExpressResponse } from 'express';
@@ -101,7 +89,7 @@ export class AnnalsController {
       'Content-Disposition',
       `attachment; filename=${annalFile.metadata.type.name} ${annalFile.metadata.ue.code} - ${annalFile.metadata.semesterId}`,
     );
-    return new StreamableFile(annalFile.stream);
+    annalFile.stream.pipe(response);
   }
 
   @Patch(':annalId')

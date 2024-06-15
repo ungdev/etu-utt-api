@@ -27,6 +27,7 @@ const GetCurrentUserE2ESpec = e2eSuite('GET /users/current', (app) => {
       firstName: userFromDb.firstName,
       lastName: userFromDb.lastName,
       nickname: userFromDb.infos.nickname,
+      type: userFromDb.userType,
       avatar: userFromDb.infos.avatar,
       sex: userFromDb.infos.sex,
       nationality: userFromDb.infos.nationality,
