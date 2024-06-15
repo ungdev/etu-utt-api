@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { RawUE, RawUECreditCategory } from '../../../src/prisma/types';
 
 export async function migrateUEs(query: QueryFunction, prisma: PrismaClient) {
-  const ues = await query('SELECT * FROM etu_ues');
+  const ues = await query('SELECT * FROM etu_uvs');
   const newUEs: RawUE[] = [];
   ues.sort((a, b) =>
     new RegExp(`(^|\W)${a.code}($|\W)`).test(b.antecedents)
@@ -12,14 +12,20 @@ export async function migrateUEs(query: QueryFunction, prisma: PrismaClient) {
       ? -1
       : 0,
   );
+  const inscriptionCodes: string[] = [];
   for (const ue of ues) {
+    let inscriptionCode = ue.code.slice(0, 4);
+    while (inscriptionCodes.includes(inscriptionCode)) {
+      inscriptionCode = inscriptionCode.slice(0, 3) + Math.floor(Math.random() * 36).toString(36).toUpperCase();
+    }
+    inscriptionCodes.push(inscriptionCode);
     const requirements = newUEs.filter((u) => new RegExp(`(^|\W)${u.code}($|\W)`).test(ue.antecedents));
     newUEs.push(
       await prisma.uE.create({
         data: {
           code: ue.code,
           name: ue.name,
-          inscriptionCode: ue.code.slice(0, 4),
+          inscriptionCode,
           workTime: {
             create: {
               cm: ue.cm,
@@ -56,5 +62,6 @@ export async function migrateUEs(query: QueryFunction, prisma: PrismaClient) {
       }),
     );
   }
+  console.log(`Migrated ${newUEs.length} UEs`);
   return newUEs;
 }

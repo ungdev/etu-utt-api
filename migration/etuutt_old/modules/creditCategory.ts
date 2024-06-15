@@ -27,6 +27,18 @@ export async function createCreditCategories(prisma: PrismaClient) {
         code: 'ST',
         name: 'Stage',
       },
+      {
+        code: 'HP',
+        name: 'Hors profil',
+      },
+      {
+        code: 'MASTER',
+        name: 'Master',
+      },
+      {
+        code: 'OTHER',
+        name: 'Autre',
+      }
     ],
   });
   return prisma.uECreditCategory.findMany();

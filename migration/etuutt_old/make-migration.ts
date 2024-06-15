@@ -5,6 +5,7 @@ import { cleanDb } from '../../test/utils/test_utils';
 import { migrateUEs } from './modules/ue';
 import { createCreditCategories } from './modules/creditCategory';
 import { createSemesters } from './modules/semester';
+import {migrateUeComments} from "./modules/ueComment";
 
 const prisma = new PrismaClient();
 
@@ -14,13 +15,14 @@ const connection = createConnection({
   password: 'dev',
   database: 'etuutt_old',
 });
-
+console.log("Connected to new database")
 connection.connect((err) => {
   if (err) {
-    console.error('Error connecting to database');
+    console.error('Error connecting to old database');
+    console.error(err);
     return;
   }
-  console.log('Connected to database');
+  console.log('Connected to old database');
   main().then(() => {
     prisma.$disconnect();
     connection.end();
@@ -46,5 +48,6 @@ async function main() {
   await createCreditCategories(prisma);
   const semesters = await createSemesters(prisma);
   const ues = await migrateUEs(query, prisma);
-  await migrateUsers(query, prisma, ues, semesters);
+  //await migrateUsers(query, prisma, ues, semesters);
+  const comments = await migrateUeComments(query, prisma, semesters);
 }
