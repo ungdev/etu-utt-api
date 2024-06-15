@@ -102,7 +102,7 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
         for: [userGroup.id, userOtherGroup.id],
       })
       .expectStatus(HttpStatus.OK)
-      .expectJson({
+      .expectJsonMatchStrict({
         id: entry.id,
         location: newLocation,
         duration: 100,
@@ -200,7 +200,7 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
         for: [userGroup.id, userOtherGroup.id],
       })
       .expectStatus(HttpStatus.OK)
-      .expectJson({
+      .expectJsonMatchStrict({
         id: entry.id,
         location: entry.location,
         duration: entry.occurrenceDuration,

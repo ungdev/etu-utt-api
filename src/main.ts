@@ -2,7 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { getValidationPipe } from './validation';
+import { AppValidationPipe } from './app.pipe';
+import './array';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -10,7 +11,9 @@ async function bootstrap() {
     type: VersioningType.URI,
     defaultVersion: '1',
   });
-  app.useGlobalPipes(getValidationPipe());
+  app.setGlobalPrefix(process.env.API_PREFIX);
+  // This env variable is not set in ConfigModule because we use it before modules are loaded
+  app.useGlobalPipes(new AppValidationPipe());
   app.enableCors({ origin: '*' });
 
   const config = new DocumentBuilder()
@@ -23,7 +26,7 @@ async function bootstrap() {
     .addSecurityRequirements('bearer')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('', app, document);
+  SwaggerModule.setup(process.env.API_PREFIX, app, document);
 
   await app.listen(3000);
 }

@@ -1,6 +1,6 @@
 import { QueryFunction } from '../make-migration';
 import { PrismaClient } from '@prisma/client';
-import {RawSemester, RawUE, RawUECreditCategory} from '../../../src/prisma/types';
+import {RawSemester, RawUE, RawCreditCategory} from '../../../src/prisma/types';
 
 export async function migrateUeComments(query: QueryFunction, prisma: PrismaClient, semesters: RawSemester[]) {
   const comments = await query('' +

@@ -1,3 +1,5 @@
+import { Language, Translation as RawTranslation } from '@prisma/client';
+
 export {
   User as RawUser,
   UserInfos as RawUserInfos,
@@ -5,12 +7,12 @@ export {
   TimetableGroup as RawTimetableGroup,
   TimetableEntryOverride as RawTimetableEntryOverride,
   UserUESubscription as RawUserUESubscription,
-  UTTBranch as RawUTTBranch,
-  UTTBranchOption as RawUTTBranchOption,
+  UTTBranch as RawBranch,
+  UTTBranchOption as RawBranchOption,
   Semester as RawSemester,
   UE as RawUE,
   UECredit as RawUECredit,
-  UECreditCategory as RawUECreditCategory,
+  UECreditCategory as RawCreditCategory,
   UEInfo as RawUEInfo,
   UEWorkTime as RawUEWorkTime,
   UEStarVote as RawUEStarVote,
@@ -18,4 +20,19 @@ export {
   UEComment as RawUEComment,
   UECommentReply as RawUECommentReply,
   UECommentUpvote as RawUECommentUpvote,
+  UEAnnalType as RawAnnalType,
+  UEAnnal as RawAnnal,
+  UserMailsPhones as RawUserMailsPhones,
+  UserSocialNetwork as RawUserSocialNetwork,
+  UserPreference as RawUserPreference,
+  UserAddress as RawUserAddress,
+  UserBranchSubscription as RawUserBranchSubscription,
+  Asso as RawAsso,
+  AssoMembershipRole as RawAssoMembershipRole,
+  AssoMembership as RawAssoMembership,
+  UserHomepageWidget as RawHomepageWidget,
+  UserPrivacy as RawUserPrivacy,
 } from '@prisma/client';
+
+export { RawTranslation };
+export type Translation = Pick<Partial<RawTranslation>, Language>;

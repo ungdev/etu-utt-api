@@ -1,14 +1,22 @@
 import { ERROR_CODE, ErrorData, ExtrasTypeBuilder } from '../src/exceptions';
 import { UEComment } from 'src/ue/interfaces/comment.interface';
-import { UECommentReply } from 'src/ue/interfaces/comment-reply.interface';
-import { UEOverView } from 'src/ue/interfaces/ue-overview.interface';
-import { UEDetail } from 'src/ue/interfaces/ue-detail.interface';
+import { UECommentReply } from 'src/ue/comments/interfaces/comment-reply.interface';
+import { UERating } from 'src/ue/interfaces/rate.interface';
+import { FakeUEAnnalType } from './utils/fakedb';
+import { UEAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { UERating } from 'src/ue/interfaces/rate.interface';
+import { FakeUE, FakeUser, FakeHomepageWidget, FakeAsso } from './utils/fakedb';
+import { AppProvider } from './utils/test_utils';
+import { Language } from '@prisma/client';
 
-type JsonLikeVariant<T> = {
-  [K in keyof T]: T[K] extends string | Date | DeepWritable<Date> ? string | RegExp : JsonLikeVariant<T[K]>;
-};
+type JsonLikeVariant<T> = Partial<{
+  [K in keyof T]: T[K] extends string | Date
+    ? string | RegExp
+    : T[K] extends (infer R)[]
+    ? JsonLikeVariant<R>[]
+    : JsonLikeVariant<T[K]>;
+}>;
 
 /**
  * Overwrites the declarations in pactum/src/models/Spec
@@ -26,15 +34,21 @@ declare module './declarations' {
       errorCode: ErrorCode,
       ...customMessage: ExtrasTypeBuilder<(typeof ErrorData)[ErrorCode]['message']>
     ): this;
+
+    /** expects to return the given {@link page | page of UserOverView} */
+    expectUsers(app: AppProvider, users: FakeUser[], count: number): this;
     /** expects to return the given {@link UEDetail} */
-    expectUE(ue: JsonLikeVariant<UEDetail>): this;
+    expectUE(ue: FakeUE, rates?: Array<{ criterionId: string; value: number }>): this;
     /** expects to return the given {@link page | page of UEOverView} */
-    expectUEs(page: JsonLikeVariant<Pagination<UEOverView>>): this;
+    expectUEs(app: AppProvider, ues: FakeUE[], count: number): this;
     /**
      * expects to return the given {@link comment}. The HTTP Status code may be 200 or 204,
      * depending on the {@link created} property.
      */
-    expectUEComment(comment: JsonLikeVariant<UEComment>, created = false): this;
+    expectUEComment(
+      comment: JsonLikeVariant<RecursivelySetPartial<UEComment, 'author', 'answers.author'>>,
+      created = false,
+    ): this;
     /** expects to return the given {@link commentPage | page of comments} */
     expectUEComments(commentPage: JsonLikeVariant<Pagination<UEComment>>): this;
     /**
@@ -48,5 +62,21 @@ declare module './declarations' {
     expectUERate(rate: JsonLikeVariant<UERating>): this;
     /** expects to return the given {@link rate} list */
     expectUERates(rate: JsonLikeVariant<UERating[]>): this;
+    expectUEAnnalMetadata(
+      metadata: JsonLikeVariant<{
+        types: FakeUEAnnalType[];
+        semesters: string[];
+      }>,
+    ): this;
+    expectUEAnnal(annals: JsonLikeVariant<UEAnnalFile>, created = false): this;
+    expectUEAnnals(annals: JsonLikeVariant<UEAnnalFile>[]): this;
+    /** expects to return the given {@link FakeHomepageWidget}s */
+    expectHomepageWidgets(widgets: JsonLikeVariant<FakeHomepageWidget[]>): this;
+    /** expects to return the given {@link AssosOverView} */
+    expectAssos(app: AppProvider, assos: FakeAsso[], count: number): this;
+    /** expects to return the given {@link asso} */
+    expectAsso(asso: FakeAsso): this;
+    withLanguage(language: Language): this;
+    language: Language;
   }
 }

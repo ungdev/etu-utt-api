@@ -1,7 +1,7 @@
 import { IsAlphanumeric, IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 import { IsPositive } from 'class-validator';
 import { Type } from 'class-transformer';
-import { Sex, UserRole } from '@prisma/client';
+import { Sex, UserType } from '@prisma/client';
 
 export class AuthSignUpDto {
   @IsNotEmpty()
@@ -26,16 +26,22 @@ export class AuthSignUpDto {
   @IsOptional()
   studentId?: number;
 
+  @IsString()
+  @IsOptional()
+  mail?: string;
+
   @IsEnum(Sex)
   @IsNotEmpty()
-  sex: Sex;
+  @IsOptional()
+  sex?: Sex;
 
   @IsDate()
   @IsNotEmpty()
   @Type(() => Date)
-  birthday: Date;
+  @IsOptional()
+  birthday?: Date;
 
-  @IsEnum(UserRole)
+  @IsEnum(UserType)
   @IsNotEmpty()
-  role: UserRole;
+  type: UserType;
 }

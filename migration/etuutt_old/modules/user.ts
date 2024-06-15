@@ -1,4 +1,4 @@
-import { PrismaClient, UE, UserRole } from '@prisma/client';
+import {PrismaClient, UserType} from '@prisma/client';
 import { QueryFunction } from '../make-migration';
 import { RawSemester, RawUE, RawUser } from '../../../src/prisma/types';
 
@@ -14,7 +14,7 @@ export async function migrateUsers(query: QueryFunction, prisma: PrismaClient, u
           studentId: user.studentId,
           firstName: user.firstName,
           lastName: user.lastName,
-          role: user.isStudent ? UserRole.STUDENT : UserRole.EMPLOYEE,
+          userType: user.isStudent ? UserType.STUDENT : UserType.EMPLOYEE,
           mailsPhones: {
             create: {
               mailUTT: user.mail,
@@ -38,7 +38,6 @@ export async function migrateUsers(query: QueryFunction, prisma: PrismaClient, u
               twitter: user.twitter,
               linkedin: user.linkedin,
               discord: user.discordTag,
-              wantDiscordUTT: user.wantsJoinUTTDiscord,
             },
           },
           privacy: {
@@ -71,6 +70,7 @@ export async function migrateUsers(query: QueryFunction, prisma: PrismaClient, u
               wantDaymail: user.daymail,
               language: user.language,
               wantDayNotif: false,
+              wantDiscordUtt: user.wantsJoinUTTDiscord,
             },
           },
           addresses: {

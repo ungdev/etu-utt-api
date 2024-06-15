@@ -1,6 +1,7 @@
 import { QueryFunction } from '../make-migration';
 import { PrismaClient } from '@prisma/client';
-import { RawUE, RawUECreditCategory } from '../../../src/prisma/types';
+import { RawUE, RawCreditCategory } from '../../../src/prisma/types';
+import {stringToTranslation} from "../utils";
 
 export async function migrateUEs(query: QueryFunction, prisma: PrismaClient) {
   const ues = await query('SELECT * FROM etu_uvs');
@@ -24,7 +25,7 @@ export async function migrateUEs(query: QueryFunction, prisma: PrismaClient) {
       await prisma.uE.create({
         data: {
           code: ue.code,
-          name: ue.name,
+          name: stringToTranslation(ue.name),
           inscriptionCode,
           workTime: {
             create: {
@@ -38,14 +39,14 @@ export async function migrateUEs(query: QueryFunction, prisma: PrismaClient) {
           },
           info: {
             create: {
-              program: ue.programme,
-              objectives: ue.objectifs,
+              program: stringToTranslation(ue.programme),
+              objectives: stringToTranslation(ue.objectifs),
               languages: ue.languages,
               minors: ue.mineurs,
               requirements: {
                 connect: requirements.map((value) => ({ id: value.id })),
               },
-              comment: ue.commentaire,
+              comment: stringToTranslation(ue.commentaire),
             },
           },
           credits: {

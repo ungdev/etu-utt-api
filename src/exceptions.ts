@@ -31,12 +31,19 @@ export const enum ERROR_CODE {
   PARAM_NOT_POSITIVE = 2015,
   PARAM_TOO_LOW = 2016,
   PARAM_TOO_HIGH = 2017,
+  PARAM_NOT_INT = 2018,
+  NO_FILE_PROVIDED = 2019,
   PARAM_DOES_NOT_MATCH_REGEX = 2102,
   NO_FIELD_PROVIDED = 2201,
+  WIDGET_OVERLAPPING = 2301,
+  FILE_INVALID_TYPE = 2901,
+  FILE_TOO_HEAVY = 2902,
   FORBIDDEN_NOT_ENOUGH_PERMISSIONS = 3001,
   NO_TOKEN = 3002,
   INVALID_TOKEN_FORMAT = 3003,
   INVALID_CREDENTIALS = 3004,
+  FORBIDDEN_INVALID_ROLE = 3005,
+  INVALID_CAS_TICKET = 3006,
   FORBIDDEN_ALREADY_COMMENTED = 3101,
   FORBIDDEN_ALREADY_UPVOTED = 3102,
   FORBIDDEN_ALREADY_UNUPVOTED = 3103,
@@ -46,6 +53,8 @@ export const enum ERROR_CODE {
   IS_COMMENT_AUTHOR = 4224,
   GROUP_NOT_PART_OF_ENTRY = 4225,
   NOT_ALREADY_RATED_UE = 4226,
+  NOT_DONE_UE_IN_SEMESTER = 4227,
+  NOT_ANNAL_SENDER = 4228,
   NO_SUCH_UE = 4401,
   NO_SUCH_COMMENT = 4402,
   NO_SUCH_REPLY = 4403,
@@ -53,6 +62,10 @@ export const enum ERROR_CODE {
   NO_SUCH_TIMETABLE_ENTRY = 4405,
   NO_SUCH_TIMETABLE_GROUP = 4406,
   NO_SUCH_USER = 4407,
+  NO_SUCH_ANNAL = 4408,
+  NO_SUCH_ANNAL_TYPE = 4409,
+  NO_SUCH_ASSO = 4410,
+  ANNAL_ALREADY_UPLOADED = 4901,
   CREDENTIALS_ALREADY_TAKEN = 5001,
 }
 
@@ -134,12 +147,32 @@ export const ErrorData = Object.freeze({
     message: 'The following parameters must be lower: %',
     httpCode: HttpStatus.BAD_REQUEST,
   },
+  [ERROR_CODE.PARAM_NOT_INT]: {
+    message: 'The following parameters must be integers: %',
+    httpCode: HttpStatus.BAD_REQUEST,
+  },
+  [ERROR_CODE.NO_FILE_PROVIDED]: {
+    message: 'No file provided',
+    httpCode: HttpStatus.BAD_REQUEST,
+  },
   [ERROR_CODE.PARAM_DOES_NOT_MATCH_REGEX]: {
     message: 'The following parameters must match the regex "%": %',
     httpCode: HttpStatus.BAD_REQUEST,
   },
   [ERROR_CODE.NO_FIELD_PROVIDED]: {
     message: 'You must provide at least one field',
+    httpCode: HttpStatus.BAD_REQUEST,
+  },
+  [ERROR_CODE.FILE_INVALID_TYPE]: {
+    message: 'Invalid file type: expected type %',
+    httpCode: HttpStatus.BAD_REQUEST,
+  },
+  [ERROR_CODE.FILE_TOO_HEAVY]: {
+    message: 'Invalid file size: max size %',
+    httpCode: HttpStatus.BAD_REQUEST,
+  },
+  [ERROR_CODE.WIDGET_OVERLAPPING]: {
+    message: 'Widgets at index % and % are overlapping',
     httpCode: HttpStatus.BAD_REQUEST,
   },
   [ERROR_CODE.FORBIDDEN_NOT_ENOUGH_PERMISSIONS]: {
@@ -156,6 +189,14 @@ export const ErrorData = Object.freeze({
   },
   [ERROR_CODE.INVALID_CREDENTIALS]: {
     message: 'Credentials incorrect',
+    httpCode: HttpStatus.UNAUTHORIZED,
+  },
+  [ERROR_CODE.FORBIDDEN_INVALID_ROLE]: {
+    message: 'Role % is required to access this resource',
+    httpCode: HttpStatus.UNAUTHORIZED,
+  },
+  [ERROR_CODE.INVALID_CAS_TICKET]: {
+    message: 'The ticket or the service is invalid',
     httpCode: HttpStatus.UNAUTHORIZED,
   },
   [ERROR_CODE.FORBIDDEN_ALREADY_COMMENTED]: {
@@ -194,6 +235,14 @@ export const ErrorData = Object.freeze({
     message: 'You must have rated the UE % (on criterion %) before deleting your rating',
     httpCode: HttpStatus.FORBIDDEN,
   },
+  [ERROR_CODE.NOT_DONE_UE_IN_SEMESTER]: {
+    message: 'You must have done the UE % in semester %',
+    httpCode: HttpStatus.FORBIDDEN,
+  },
+  [ERROR_CODE.NOT_ANNAL_SENDER]: {
+    message: 'You are not the sender of this annal',
+    httpCode: HttpStatus.FORBIDDEN,
+  },
   [ERROR_CODE.NO_SUCH_UE]: {
     message: 'The UE % does not exist',
     httpCode: HttpStatus.NOT_FOUND,
@@ -221,6 +270,22 @@ export const ErrorData = Object.freeze({
   [ERROR_CODE.NO_SUCH_USER]: {
     message: 'The user % does not exist',
     httpCode: HttpStatus.NOT_FOUND,
+  },
+  [ERROR_CODE.NO_SUCH_ANNAL]: {
+    message: 'The annal % does not exist',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
+  [ERROR_CODE.NO_SUCH_ANNAL_TYPE]: {
+    message: 'The annal type does not exist',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
+  [ERROR_CODE.NO_SUCH_ASSO]: {
+    message: 'The asso % does no exist',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
+  [ERROR_CODE.ANNAL_ALREADY_UPLOADED]: {
+    message: 'A file has alreay been uploaded for this annal',
+    httpCode: HttpStatus.CONFLICT,
   },
   [ERROR_CODE.CREDENTIALS_ALREADY_TAKEN]: {
     message: 'The given credentials are already taken',
