@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthSignInDto, AuthSignUpDto } from './dto';
 import * as bcrypt from 'bcryptjs';
-import { Prisma, UserRole } from '@prisma/client';
+import { Prisma, UserType } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
 import { AppException, ERROR_CODE } from '../exceptions';
 import { ConfigModule } from '../config/config.module';
@@ -14,7 +14,7 @@ import { LdapAccountGroup, LdapModule } from 'src/ldap/ldap.module';
 import { UEService } from 'src/ue/ue.service';
 
 export type RegisterData = { login: string; mail: string; lastName: string; firstName: string };
-export type ExtendedRegisterData = RegisterData & { studentId: string; role: UserRole };
+export type ExtendedRegisterData = RegisterData & { studentId: string; type: UserType };
 
 @Injectable()
 export class AuthService {
@@ -38,6 +38,7 @@ export class AuthService {
     const branch: string[] = [];
     const branchOption: string[] = [];
     const ues: string[] = [];
+    let type: UserType = UserType.OTHER;
     const currentSemesterCode = `${new Date().getMonth() < 7 && new Date().getMonth() > 0 ? 'P' : 'A'}${
       new Date().getFullYear() % 100
     }`;
@@ -46,16 +47,14 @@ export class AuthService {
       const ldapUser = await this.ldap.fetch(dto.login);
       if (ldapUser.gidNumber === LdapAccountGroup.STUDENTS) {
         dto.studentId = Number(ldapUser.supannEtuId);
-        dto.role = 'STUDENT';
+        type = UserType.STUDENT;
         branch.push(...(Array.isArray(ldapUser.niveau) ? ldapUser.niveau : [ldapUser.niveau]));
         ues.push(...(Array.isArray(ldapUser.uv) ? ldapUser.uv : [ldapUser.uv]));
         branchOption.push(...(Array.isArray(ldapUser.filiere) ? ldapUser.filiere : [ldapUser.filiere]));
         [formation] = ldapUser.formation; // TODO: this is wrong, students can have multiple formations !
       } else if (ldapUser.gidNumber === LdapAccountGroup.EMPLOYEES) {
-        dto.role = doesEntryIncludeSome(ldapUser.eduPersonAffiliation, 'faculty') ? 'TEACHER' : 'EMPLOYEE';
+        type = doesEntryIncludeSome(ldapUser.eduPersonAffiliation, 'faculty') ? UserType.TEACHER : UserType.EMPLOYEE;
         phoneNumber = ldapUser.telephonenumber;
-      } else {
-        dto.role = 'OTHER';
       }
     }
     try {
@@ -125,7 +124,10 @@ export class AuthService {
               phoneNumber,
             },
           },
-          role: dto.role,
+          socialNetwork: { create: {} },
+          preference: { create: {} },
+          rgpd: { create: {} },
+          userType: type,
         },
       });
 
@@ -147,7 +149,7 @@ export class AuthService {
    */
   async signin(dto: AuthSignInDto): Promise<string> {
     // find the user by login, if it does not exist, throw exception
-    const user = await this.prisma.user.findUnique({
+    const user = await this.prisma.withDefaultBehaviour.user.findUnique({
       where: {
         login: dto.login,
       },
@@ -264,7 +266,7 @@ export class AuthService {
    * @param data {@link RegisterData} that should be contained in the token.
    */
   signRegisterToken(data: RegisterData): string {
-    return this.jwt.sign(data, { expiresIn: 60, secret: this.config.get('JWT_SECRET') });
+    return this.jwt.sign(data, { expiresIn: 60, secret: this.config.JWT_SECRET });
   }
 
   /**
@@ -272,7 +274,7 @@ export class AuthService {
    * @param password The password to hash.
    */
   getHash(password: string): Promise<string> {
-    const saltRounds = Number.parseInt(this.config.SALT_ROUNDS);
+    const saltRounds = this.config.SALT_ROUNDS;
     return bcrypt.hash(password, saltRounds);
   }
 }

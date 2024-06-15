@@ -1,5 +1,8 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
-import { UsersSearchDto } from './dto/users-search.dto';
+import { Controller, Get, Body, BadRequestException, Param, Patch, Query } from '@nestjs/common';
+import UsersSearchDto from './dto/users-search.dto';
+import { UserUpdateDto } from './dto/users-update.dto';
+import { GetUser } from '../auth/decorator';
+import { User } from './interfaces/user.interface';
 import UsersService from './users.service';
 import { AppException, ERROR_CODE } from '../exceptions';
 
@@ -8,21 +11,50 @@ export default class UsersController {
   constructor(private usersService: UsersService) {}
 
   @Get()
-  async searchUsers(@Query() query: UsersSearchDto) {
-    return (await this.usersService.searchUsers(query)).map((user) => ({
-      id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      nickname: user.infos.nickname,
-    }));
+  async searchUser(@Query() queryParams: UsersSearchDto) {
+    return this.usersService.searchUsers(queryParams);
+  }
+
+  @Get('/current')
+  async getCurrentUser(@GetUser() user: User) {
+    return this.getSingleUser(user, user.id);
   }
 
   @Get('/:userId')
-  async getSingleUser(@Param('userId') userId: string) {
+  async getSingleUser(@GetUser() user: User, @Param('userId') userId: string) {
+    const userToFind = await this.usersService.fetchUser(userId);
+    if (!userToFind) {
+      throw new AppException(ERROR_CODE.NO_SUCH_USER, userId);
+    }
+    return this.usersService.filterInfo(userToFind, user.id === userId);
+  }
+
+  @Get('/:userId/associations')
+  async getUserAssociations(@Param('userId') userId: string) {
     const user = await this.usersService.fetchUser(userId);
     if (!user) {
       throw new AppException(ERROR_CODE.NO_SUCH_USER, userId);
     }
-    return this.usersService.filterPublicInfo(user);
+    const assos = await this.usersService.fetchUserAssoMemberships(userId);
+    return assos;
+  }
+
+  @Patch('/current')
+  async updateInfos(@GetUser() user: User, @Body() dto: UserUpdateDto) {
+    if (Object.values(dto).every((element) => element === undefined))
+      throw new BadRequestException('You must provide at least one field to update');
+    await this.usersService.updateUserProfil(user.id, dto);
+    return this.usersService.filterInfo(await this.usersService.fetchUser(user.id), true);
+  }
+
+  @Get('/birthdays/today')
+  async getTodaysBirthdays() {
+    return (await this.usersService.getBirthdayOfDay(new Date())).map((user) => ({
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      nickname: user.infos.nickname,
+      age: new Date(Date.now() - user.infos.birthday.getTime()).getUTCFullYear() - 1970,
+    }));
   }
 }

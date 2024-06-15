@@ -6,6 +6,7 @@ import { AppException, ERROR_CODE } from '../exceptions';
 import AuthCasSignInDto from './dto/auth-cas-sign-in.dto';
 import { AuthCasSignUpDto } from './dto/auth-cas-sign-up.dto';
 import UsersService from '../users/users.service';
+import { UserType } from '@prisma/client';
 
 @Controller('auth')
 export class AuthController {
@@ -61,7 +62,7 @@ export class AuthController {
     if (await this.usersService.doesUserExist({ login: data.login })) {
       throw new AppException(ERROR_CODE.CREDENTIALS_ALREADY_TAKEN);
     }
-    const token = await this.authService.signup({ ...data, role: 'STUDENT' }, true);
+    const token = await this.authService.signup(data, true);
     return { access_token: token };
   }
 }

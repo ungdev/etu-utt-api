@@ -96,7 +96,7 @@ const DeleteEntryE2ESpec = e2eSuite('DELETE /timetable/current/:entryId', (app) 
         for: [userGroup.id, userOtherGroup.id],
       })
       .expectStatus(HttpStatus.OK)
-      .expectJson({
+      .expectJsonMatchStrict({
         id: entry.id,
         location: entry.location,
         duration: entry.occurrenceDuration,
@@ -140,7 +140,7 @@ const DeleteEntryE2ESpec = e2eSuite('DELETE /timetable/current/:entryId', (app) 
         for: [userGroup.id, userOtherGroup.id],
       })
       .expectStatus(HttpStatus.OK)
-      .expectJson({
+      .expectJsonMatchStrict({
         id: entry.id,
         location: entry.location,
         duration: entry.occurrenceDuration,

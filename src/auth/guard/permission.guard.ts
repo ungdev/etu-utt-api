@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { User } from '../../users/interfaces/user.interface';
-import { RequirePermission } from '../decorator';
+import { findRequiredPermissions } from '../decorator';
 import { AppException, ERROR_CODE } from '../../exceptions';
 
 @Injectable()
@@ -9,7 +9,7 @@ export class PermissionGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
   canActivate(context: ExecutionContext): boolean {
     // Retrieve the set of permissions needed to access the current route
-    const requiredPermissions = this.reflector.get(RequirePermission, context.getHandler());
+    const requiredPermissions = findRequiredPermissions(this.reflector, context);
     // If there is no required permission, serve the route
     if (!requiredPermissions || !requiredPermissions.length) return true;
     const user = context.switchToHttp().getRequest().user as User;

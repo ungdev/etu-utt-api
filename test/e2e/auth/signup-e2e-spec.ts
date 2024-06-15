@@ -12,7 +12,7 @@ const SignupE2ESpec = e2eSuite('POST /auth/signup', (app) => {
     lastName: 'testLastName',
     studentId: 44250,
     sex: 'OTHER',
-    role: 'STUDENT',
+    type: 'STUDENT',
     birthday: new Date('1999-01-01'),
   } as AuthSignUpDto;
 
@@ -87,16 +87,13 @@ const SignupE2ESpec = e2eSuite('POST /auth/signup', (app) => {
       .spec()
       .post('/auth/signup')
       .withBody(undefined)
-      .expectAppError(ERROR_CODE.PARAM_MISSING, 'firstName, lastName, login, password, role');
+      .expectAppError(ERROR_CODE.PARAM_MISSING, 'firstName, lastName, login, password, type');
   });
   it('should create a new user', async () => {
     await pactum.spec().post('/auth/signup').withBody(dto).expectBodyContains('access_token').expectStatus(201);
     const user = await app()
       .get(PrismaService)
-      .user.findUnique({
-        where: { login: dto.login },
-        include: { infos: true },
-      });
+      .user.findUnique({ where: { login: dto.login } });
     expect(user).not.toBeNull();
     expect(user.login).toEqual(dto.login);
     expect(user.firstName).toEqual(dto.firstName);
