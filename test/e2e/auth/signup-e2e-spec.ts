@@ -3,6 +3,7 @@ import * as pactum from 'pactum';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { e2eSuite } from '../../utils/test_utils';
 import { ERROR_CODE } from '../../../src/exceptions';
+import { UserType } from '@prisma/client';
 
 const SignupE2ESpec = e2eSuite('POST /auth/signup', (app) => {
   const dto = {
@@ -12,7 +13,6 @@ const SignupE2ESpec = e2eSuite('POST /auth/signup', (app) => {
     lastName: 'testLastName',
     studentId: 44250,
     sex: 'OTHER',
-    type: 'STUDENT',
     birthday: new Date('1999-01-01'),
   } as AuthSignUpDto;
 
@@ -87,7 +87,7 @@ const SignupE2ESpec = e2eSuite('POST /auth/signup', (app) => {
       .spec()
       .post('/auth/signup')
       .withBody(undefined)
-      .expectAppError(ERROR_CODE.PARAM_MISSING, 'firstName, lastName, login, password, type');
+      .expectAppError(ERROR_CODE.PARAM_MISSING, 'firstName, lastName, login, password');
   });
   it('should create a new user', async () => {
     await pactum.spec().post('/auth/signup').withBody(dto).expectBodyContains('access_token').expectStatus(201);
@@ -101,6 +101,7 @@ const SignupE2ESpec = e2eSuite('POST /auth/signup', (app) => {
     expect(user.studentId).toEqual(dto.studentId);
     expect(user.infos.sex).toEqual(dto.sex);
     expect(user.infos.birthday).toEqual(dto.birthday);
+    expect(user.userType).toEqual(UserType.OTHER);
     expect(user.id).toMatch(/[a-z0-9-]{36}/);
   });
 

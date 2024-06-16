@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import { faker } from '@faker-js/faker';
 import { RawBranch } from '../../../src/prisma/types';
 
-const FAKER_ROUNDS = 10;
+const FAKER_ROUNDS = 8;
 
 export default function branchSeed(prisma: PrismaClient): Promise<RawBranch[]> {
   console.log('Seeding branches');
@@ -25,10 +25,7 @@ export default function branchSeed(prisma: PrismaClient): Promise<RawBranch[]> {
     branches.push(
       prisma.uTTBranch.create({
         data: {
-          code: `${faker.random.alpha({ casing: 'upper' })}${faker.random.alphaNumeric(
-            faker.datatype.number({ min: 2, max: 4 }),
-            { casing: 'upper' },
-          )}`,
+          code: faker.db.branch.code(),
           name: faker.name.jobTitle(),
           exitSalary: faker.datatype.number({ min: 1000, max: 10000 }),
           employmentRate: faker.datatype.float({ min: 0, max: 100 }),

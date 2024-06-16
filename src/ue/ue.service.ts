@@ -13,6 +13,22 @@ import { Language, Prisma } from '@prisma/client';
 export class UEService {
   constructor(readonly prisma: PrismaService, readonly config: ConfigModule) {}
 
+  async getIdFromCode(ueCode: string): Promise<string>;
+  async getIdFromCode(ueCodes: string[]): Promise<string[]>;
+  async getIdFromCode(ueCodes?: string | string[]) {
+    const values = (
+      await this.prisma.uE.findMany({
+        where: {
+          code: {
+            in: Array.isArray(ueCodes) ? ueCodes : [ueCodes],
+          },
+        },
+      })
+    ).map((ue) => ue.id);
+    if (!Array.isArray(ueCodes)) return values[0];
+    return values;
+  }
+
   /**
    * Retrieves a page of {@link UE} matching the user query. This query searchs for a text in
    * the ue code, name, comment, objectives and program. The user can restrict his research to a branch,
