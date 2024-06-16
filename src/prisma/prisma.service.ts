@@ -10,6 +10,7 @@ import { generateCustomUEModel } from '../ue/interfaces/ue.interface';
 import { generateCustomUEAnnalModel } from '../ue/annals/interfaces/annal.interface';
 import { generateCustomUECommentReplyModel } from '../ue/comments/interfaces/comment-reply.interface';
 import { generateCustomAssoModel } from '../assos/interfaces/asso.interface';
+import {generateCustomCreditCategoryModel} from "../ue/credit/interfaces/credit-category.interface";
 
 // This interface is used to tell typescript that, even tho it does not understand it, PrismaService IS actually a ReturnType<typeof createPrismaClientExtension>
 // TS cannot infer it alone as the construction of the class is made using reflection.
@@ -63,6 +64,7 @@ function createPrismaClientExtension(prisma: ReturnType<typeof createPrismaClien
       uE: generateCustomUEModel(prisma),
       uEAnnal: generateCustomUEAnnalModel(prisma),
       asso: generateCustomAssoModel(prisma),
+      uECreditCategory: generateCustomCreditCategoryModel(prisma),
     },
   });
 }
