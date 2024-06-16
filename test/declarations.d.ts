@@ -76,6 +76,7 @@ declare module './declarations' {
     expectAssos(app: AppProvider, assos: FakeAsso[], count: number): this;
     /** expects to return the given {@link asso} */
     expectAsso(asso: FakeAsso): this;
+    expectCreditCategories(categories: JsonLikeVariant<FakeUECreditCategory[]>): this;
     withLanguage(language: Language): this;
     language: Language;
   }
