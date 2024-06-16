@@ -38,7 +38,7 @@ export async function createCreditCategories(prisma: PrismaClient) {
       {
         code: 'OTHER',
         name: 'Autre',
-      }
+      },
     ],
   });
   return prisma.uECreditCategory.findMany();

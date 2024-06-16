@@ -1,7 +1,7 @@
 import { QueryFunction } from '../make-migration';
 import { PrismaClient } from '@prisma/client';
-import { RawUE, RawCreditCategory } from '../../../src/prisma/types';
-import {stringToTranslation} from "../utils";
+import { RawUE } from '../../../src/prisma/types';
+import { stringToTranslation } from '../utils';
 
 export async function migrateUEs(query: QueryFunction, prisma: PrismaClient) {
   const ues = await query('SELECT * FROM etu_uvs WHERE isOld = 0');
@@ -17,7 +17,11 @@ export async function migrateUEs(query: QueryFunction, prisma: PrismaClient) {
   for (const ue of ues) {
     let inscriptionCode = ue.code.slice(0, 4);
     while (inscriptionCodes.includes(inscriptionCode)) {
-      inscriptionCode = inscriptionCode.slice(0, 3) + Math.floor(Math.random() * 36).toString(36).toUpperCase();
+      inscriptionCode =
+        inscriptionCode.slice(0, 3) +
+        Math.floor(Math.random() * 36)
+          .toString(36)
+          .toUpperCase();
     }
     inscriptionCodes.push(inscriptionCode);
     const requirements = newUEs.filter((u) => new RegExp(`(^|\W)${u.code}($|\W)`).test(ue.antecedents));

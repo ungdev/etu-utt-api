@@ -1,8 +1,13 @@
-import {PrismaClient, UserType} from '@prisma/client';
+import { PrismaClient, UserType } from '@prisma/client';
 import { QueryFunction } from '../make-migration';
 import { RawSemester, RawUE, RawUser } from '../../../src/prisma/types';
 
-export async function migrateUsers(query: QueryFunction, prisma: PrismaClient, ues: RawUE[], currentSemester: RawSemester) {
+export async function migrateUsers(
+  query: QueryFunction,
+  prisma: PrismaClient,
+  ues: RawUE[],
+  currentSemester: RawSemester,
+) {
   const users = await query('SELECT * FROM etu_users LIMIT 10');
   const promises: Array<Promise<RawUser>> = [];
   for (const user of users) {

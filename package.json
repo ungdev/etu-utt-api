@@ -12,7 +12,7 @@
     "start:dev": "npx nest start --watch",
     "start:debug": "npx nest start --debug --watch",
     "start:prod": "node dist/main",
-    "lint": "eslint \"{src,apps,libs,test,prisma}/**/*.ts\" --fix",
+    "lint": "eslint \"{src,apps,libs,test,prisma,migration}/**/*.ts\" --fix",
     "db:reset": "pnpm dev:db:reset && pnpm test:db:reset",
     "db:editor": "env-cmd -f .env.dev -- pnpm prisma studio",
     "db:seed": "env-cmd -f .env.dev -- ts-node prisma/seed/seed.ts",

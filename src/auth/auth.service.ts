@@ -101,8 +101,8 @@ export class AuthService {
                     },
                     semester: {
                       connect: {
-                        code: currentSemester.code
-                      }
+                        code: currentSemester.code,
+                      },
                     },
                   },
                 },
