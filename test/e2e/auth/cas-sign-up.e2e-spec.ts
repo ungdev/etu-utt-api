@@ -103,7 +103,7 @@ const CasSignUpE2ESpec = e2eSuite('/auth/signup/cas', (app) => {
         filiere: branchOption.code,
         datefin: 20240930,
         jpegPhoto: `http://localhost/${userData.login}.jpg`,
-        gidNumber: 10000,
+        gidNumber: type === 'student' ? 10000 : type === 'faculty' ? 5000 : 6000,
         uv: ['PETM6', 'SY16', 'LO17', 'RE02', 'IF03', 'CTC1', 'LG11', 'PEICT', ue.code],
       },
     });
