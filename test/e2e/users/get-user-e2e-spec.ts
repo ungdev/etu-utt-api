@@ -49,14 +49,15 @@ const GetUserE2ESpec = e2eSuite('GET /users/:userId', (app) => {
         userFromDb.privacy.phoneNumber && !(userFromDb.mailsPhones === null)
           ? userFromDb.mailsPhones.phoneNumber
           : undefined,
-      addresses: userFromDb.privacy.address === 'ALL_PUBLIC'
-        ? userFromDb.addresses.map((address) => ({
-            street: address.street,
-            postalCode: address.postalCode,
-            city: address.city,
-            country: address.country,
-          }))
-        : [],
+      addresses:
+        userFromDb.privacy.address === 'ALL_PUBLIC'
+          ? userFromDb.addresses.map((address) => ({
+              street: address.street,
+              postalCode: address.postalCode,
+              city: address.city,
+              country: address.country,
+            }))
+          : [],
       facebook: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.facebook,
       twitter: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.twitter,
       instagram: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.instagram,

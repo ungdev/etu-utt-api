@@ -184,7 +184,7 @@ model TimetableEntryOverride {
 
 model Translation {
   id String  @id @default(uuid())
-  fr String @db.Text
+  fr String? @db.Text
   en String? @db.Text
   es String? @db.Text
   de String? @db.Text
@@ -603,11 +603,11 @@ model UserBranchSubscription {
   userId           String
   semesterNumber   Int      @db.SmallInt
   createdAt        DateTime @default(now())
-  branchOptionCode String
+  branchOptionId   String
   semesterCode     String
 
   user         User            @relation(fields: [userId], references: [id])
-  branchOption UTTBranchOption @relation(fields: [branchOptionCode], references: [code])
+  branchOption UTTBranchOption @relation(fields: [branchOptionId], references: [id])
   semester     Semester        @relation(fields: [semesterCode], references: [code])
 }
 
@@ -701,11 +701,11 @@ model UserHomepageWidget {
 }
 
 model UserPreference {
-  id           String   @id @default(uuid())
+  id                     String   @id @default(uuid())
   language               Language @default(fr)
   wantDaymail            Boolean  @default(false)
   wantDayNotif           Boolean  @default(false)
-  wantDiscordUtt Boolean @default(false)
+  wantDiscordUtt         Boolean @default(false)
 
   user User?
 }
@@ -782,17 +782,18 @@ model UTTBranch {
 }
 
 model UTTBranchOption {
-  code                     String @id @db.VarChar(10)
+  id                       String @id @default(uuid())
+  code                     String @db.VarChar(10)
   name                     String @db.VarChar(255)
-  branchId                 String
+  branchCode               String
   descriptionTranslationId String @unique
 
-  branch                 UTTBranch                @relation(fields: [branchId], references: [code])
+  branch                 UTTBranch                @relation(fields: [branchCode], references: [code])
   descriptionTranslation Translation              @relation(fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
   ues                    UE[]
   branchSubscriptions    UserBranchSubscription[]
 
-  @@unique([branchId, code])
+  @@unique([code, branchCode])
 }
 
 model UTTFormation {

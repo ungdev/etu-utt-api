@@ -173,7 +173,7 @@ export default class UsersService {
             wantDaymail: dto.wantDaymail,
             wantDayNotif: dto.wantDayNotif,
             wantDiscordUtt: dto.wantDiscordUtt,
-          }
+          },
         },
         privacy: {
           update: {

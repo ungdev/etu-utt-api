@@ -1,5 +1,5 @@
-import {AddressPrivacy, Language} from '@prisma/client';
-import {IsArray, IsBoolean, IsEnum, IsOptional, IsString} from 'class-validator';
+import { AddressPrivacy, Language } from '@prisma/client';
+import { IsArray, IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
 
 export class UserUpdateDto {
   @IsString()

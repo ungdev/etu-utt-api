@@ -2,16 +2,21 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthSignInDto, AuthSignUpDto } from './dto';
 import * as bcrypt from 'bcryptjs';
-import { Prisma } from '@prisma/client';
+import { Prisma, UserType } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
 import { AppException, ERROR_CODE } from '../exceptions';
 import { ConfigModule } from '../config/config.module';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import { XMLParser } from 'fast-xml-parser';
-import { omit } from '../utils';
+import { doesEntryIncludeSome, omit } from '../utils';
+import { LdapModule } from '../ldap/ldap.module';
+import { LdapAccountGroup } from '../ldap/ldap.interface';
+import { UEService } from '../ue/ue.service';
+import { SemesterService } from '../semester/semester.service';
 
 export type RegisterData = { login: string; mail: string; lastName: string; firstName: string };
+export type ExtendedRegisterData = RegisterData & { studentId: string; type: UserType };
 
 @Injectable()
 export class AuthService {
@@ -20,6 +25,9 @@ export class AuthService {
     private jwt: JwtService,
     private config: ConfigModule,
     private httpService: HttpService,
+    private ldap: LdapModule,
+    private ueService: UEService,
+    private semesterService: SemesterService,
   ) {}
 
   /**
@@ -27,10 +35,32 @@ export class AuthService {
    * It returns an access token that the user can then use to authenticate their requests.
    * @param dto Data about the user to create.
    */
-  async signup(dto: SetPartial<AuthSignUpDto, 'password'>): Promise<string> {
+  async signup(dto: SetPartial<AuthSignUpDto, 'password'>, fetchLdap = false): Promise<string> {
+    let phoneNumber: string = undefined;
+    let formation: string = undefined;
+    const branch: string[] = [];
+    const branchOption: string[] = [];
+    const ues: string[] = [];
+    let type: UserType = UserType.OTHER;
+    const currentSemester = await this.semesterService.getCurrentSemester();
+
+    if (fetchLdap) {
+      const ldapUser = await this.ldap.fetch(dto.login);
+      if (ldapUser.gidNumber === LdapAccountGroup.STUDENTS) {
+        dto.studentId = Number(ldapUser.supannEtuId);
+        type = UserType.STUDENT;
+        branch.push(...(Array.isArray(ldapUser.niveau) ? ldapUser.niveau : [ldapUser.niveau]));
+        ues.push(...(Array.isArray(ldapUser.uv) ? ldapUser.uv : [ldapUser.uv]));
+        branchOption.push(...(Array.isArray(ldapUser.filiere) ? ldapUser.filiere : [ldapUser.filiere]));
+        [formation] = Array.isArray(ldapUser.formation) ? ldapUser.formation : [ldapUser.formation]; // TODO: this is wrong, students can have multiple formations !
+      } else if (ldapUser.gidNumber === LdapAccountGroup.EMPLOYEES) {
+        type = doesEntryIncludeSome(ldapUser.eduPersonAffiliation, 'faculty') ? UserType.TEACHER : UserType.EMPLOYEE;
+        phoneNumber = ldapUser.telephoneNumber;
+      }
+    }
     try {
       const isUTTMail = dto.mail?.endsWith('@utt.fr');
-      const user = await this.prisma.user.create({
+      const user = await this.prisma.withDefaultBehaviour.user.create({
         data: {
           login: dto.login,
           hash: dto.password ? await this.getHash(dto.password) : undefined,
@@ -40,16 +70,101 @@ export class AuthService {
           infos: {
             create: { sex: dto.sex, birthday: dto.birthday },
           },
+          ...(branch.length && branchOption.length
+            ? {
+                branchSubscriptions: {
+                  create: {
+                    semesterNumber: Number(branch[0].slice(-1)),
+                    branchOption: {
+                      connectOrCreate: {
+                        where: {
+                          code_branchCode: {
+                            code: branchOption[0],
+                            branchCode: branch[0].slice(0, -1).split('_')[0],
+                          },
+                        },
+                        create: {
+                          code: branchOption[0],
+                          branch: {
+                            connect: {
+                              code: branch[0].slice(0, -1).split('_')[0],
+                            },
+                          },
+                          name: branchOption[0],
+                          descriptionTranslation: {
+                            create: {
+                              fr: '',
+                            },
+                          },
+                        },
+                      },
+                    },
+                    semester: {
+                      connect: {
+                        code: currentSemester.code
+                      }
+                    },
+                  },
+                },
+              }
+            : {}),
+          UEsSubscriptions: {
+            createMany: {
+              data: (
+                await this.ueService.getIdFromCode(ues)
+              ).map((id) => ({
+                ueId: id,
+                semesterId: currentSemester.code,
+              })),
+            },
+          },
+          ...(branch.length && formation
+            ? {
+                formation: {
+                  create: {
+                    followingMethod: {
+                      connectOrCreate: {
+                        create: {
+                          name:
+                            branch[0].slice(0, -1).split('_')[1] === 'APPR' ? 'Apprentissage' : 'Formation Initiale',
+                          descriptionTranslation: {
+                            create: {},
+                          },
+                        },
+                        where: {
+                          name:
+                            branch[0].slice(0, -1).split('_')[1] === 'APPR' ? 'Apprentissage' : 'Formation Initiale',
+                        },
+                      },
+                    },
+                    formation: {
+                      connectOrCreate: {
+                        where: {
+                          name: formation,
+                        },
+                        create: {
+                          name: formation,
+                          descriptionTranslation: {
+                            create: {},
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              }
+            : {}),
           mailsPhones: {
             create: {
               mailUTT: isUTTMail ? dto.mail : undefined,
               mailPersonal: isUTTMail ? undefined : dto.mail,
+              phoneNumber,
             },
           },
           socialNetwork: { create: {} },
           preference: { create: {} },
           rgpd: { create: {} },
-          userType: dto.type,
+          userType: type,
           privacy: { create: {} },
         },
       });
@@ -143,7 +258,6 @@ export class AuthService {
       mail: resData['cas:serviceResponse']['cas:authenticationSuccess']['cas:attributes']['cas:mail'],
       lastName: resData['cas:serviceResponse']['cas:authenticationSuccess']['cas:attributes']['cas:sn'],
       firstName: resData['cas:serviceResponse']['cas:authenticationSuccess']['cas:attributes']['cas:givenName'],
-      // TODO : fetch other infos from LDAP
     };
     const user = await this.prisma.user.findUnique({ where: { login: data.login } });
     if (!user) {

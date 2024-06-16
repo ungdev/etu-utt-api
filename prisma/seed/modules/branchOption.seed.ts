@@ -12,7 +12,7 @@ export default function branchOptionSeed(prisma: PrismaClient, branches: RawBran
       prisma.uTTBranchOption.create({
         data: {
           branch: { connect: { code: branch.code } },
-          code: `TCBR${branch.code}`,
+          code: 'NC',
           name: 'Tronc commun de branche',
           descriptionTranslation: {
             create: {

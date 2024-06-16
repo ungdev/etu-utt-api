@@ -94,8 +94,8 @@ const USER_SELECT_FILTER = {
         discord: true,
         address: true,
         timetable: true,
-      }
-    }
+      },
+    },
   },
   orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
 } satisfies Partial<RequestType<'user'>>;

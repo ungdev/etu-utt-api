@@ -15,7 +15,7 @@ export default class UsersController {
   async searchUser(@Query() queryParams: UsersSearchDto) {
     const users = await this.usersService.searchUsers(queryParams);
     const formattedReturn = users.items.map((user) => this.formatUserPreview(user, false));
-    return {...users, items: formattedReturn};
+    return { ...users, items: formattedReturn };
   }
 
   @Get('/current')
@@ -78,14 +78,8 @@ export default class UsersController {
       branchSubscriptions: user.branchSubscriptions.map((branch) => branch.branchOption.code),
       mailsPhones: {
         ...pick(user.mailsPhones, 'mailUTT'),
-        mailPersonal:
-          user.privacy.mailPersonal || includeAll
-            ? user.mailsPhones.mailPersonal
-            : undefined,
-        phoneNumber:
-          user.privacy.phoneNumber || includeAll
-            ? user.mailsPhones.phoneNumber
-            : undefined,
+        mailPersonal: user.privacy.mailPersonal || includeAll ? user.mailsPhones.mailPersonal : undefined,
+        phoneNumber: user.privacy.phoneNumber || includeAll ? user.mailsPhones.phoneNumber : undefined,
       },
       socialNetwork: {
         facebook: user.socialNetwork.facebook,
@@ -99,11 +93,11 @@ export default class UsersController {
       addresses:
         user.privacy.address === 'ALL_PUBLIC' || includeAll
           ? user.addresses.map((address) => ({
-            street: address.street,
-            postalCode: address.postalCode,
-            city: address.city,
-            country: address.country,
-          }))
+              street: address.street,
+              postalCode: address.postalCode,
+              city: address.city,
+              country: address.country,
+            }))
           : [],
     };
   }
@@ -139,11 +133,11 @@ export default class UsersController {
       addresses:
         user.privacy.address === 'ALL_PUBLIC' || includeAll
           ? user.addresses.map((address) => ({
-            street: address.street,
-            postalCode: address.postalCode,
-            city: address.city,
-            country: address.country,
-          }))
+              street: address.street,
+              postalCode: address.postalCode,
+              city: address.city,
+              country: address.country,
+            }))
           : [],
       facebook: user.socialNetwork === null ? undefined : user.socialNetwork.facebook,
       twitter: user.socialNetwork === null ? undefined : user.socialNetwork.twitter,
@@ -152,19 +146,17 @@ export default class UsersController {
       twitch: user.socialNetwork === null ? undefined : user.socialNetwork.twitch,
       spotify: user.socialNetwork === null ? undefined : user.socialNetwork.spotify,
       discord:
-        (user.privacy.discord || includeAll) && user.socialNetwork !== null
-          ? user.socialNetwork.discord
-          : undefined,
+        (user.privacy.discord || includeAll) && user.socialNetwork !== null ? user.socialNetwork.discord : undefined,
       infoDisplayed: includeAll
         ? {
-          displayBirthday: user.privacy.birthday,
-          displayMailPersonal: user.privacy.mailPersonal,
-          displayPhone: user.privacy.phoneNumber,
-          displayAddress: user.privacy.address,
-          displaySex: user.privacy.sex,
-          displayDiscord: user.privacy.discord,
-          displayTimetable: user.privacy.timetable,
-        }
+            displayBirthday: user.privacy.birthday,
+            displayMailPersonal: user.privacy.mailPersonal,
+            displayPhone: user.privacy.phoneNumber,
+            displayAddress: user.privacy.address,
+            displaySex: user.privacy.sex,
+            displayDiscord: user.privacy.discord,
+            displayTimetable: user.privacy.timetable,
+          }
         : undefined,
     };
   }

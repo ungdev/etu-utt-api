@@ -28,7 +28,8 @@ import {
   RawUserPreference,
   RawUserSocialNetwork,
   RawUserUESubscription,
-  Translation, RawUserPrivacy,
+  Translation,
+  RawUserPrivacy,
 } from '../../src/prisma/types';
 import { faker } from '@faker-js/faker';
 import { AuthService } from '../../src/auth/auth.service';
@@ -316,7 +317,7 @@ export const createUser = entityFaker(
                 semesterNumber: branch.semesterNumber,
                 semesterCode: branch.semester.code,
                 branchCode: branch.branch.code,
-                branchOptionCode: branch.branchOption.code,
+                branchOptionId: branch.branchOption.id,
               })),
             },
           },
@@ -469,7 +470,8 @@ export const createAsso = entityFaker(
           login: params.login,
           name: params.name,
           mail: params.mail,
-          descriptionTranslation: { create: {
+          descriptionTranslation: {
+            create: {
               fr: 'TODO : implement this value',
               ...params.descriptionTranslation,
             },
@@ -730,8 +732,8 @@ export const createUE = entityFaker(
                 create: {
                   fr: 'TODO : implement this value',
                   ...params.info.objectives,
-                }
                 },
+              },
               program: {
                 create: {
                   fr: 'TODO : implement this value',
@@ -745,7 +747,7 @@ export const createUE = entityFaker(
           },
           branchOption: {
             connect: params.branchOption.map((branchOption) => ({
-              code: branchOption.code,
+              id: branchOption.id,
             })),
           },
           openSemester: {
