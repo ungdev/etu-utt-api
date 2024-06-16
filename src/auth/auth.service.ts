@@ -10,9 +10,9 @@ import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import { XMLParser } from 'fast-xml-parser';
 import { doesEntryIncludeSome, omit } from '../utils';
-import { LdapModule } from 'src/ldap/ldap.module';
-import { LdapAccountGroup } from 'src/ldap/ldap.interface';
-import { UEService } from 'src/ue/ue.service';
+import { LdapModule } from '../../src/ldap/ldap.module';
+import { LdapAccountGroup } from '../../src/ldap/ldap.interface';
+import { UEService } from '../../src/ue/ue.service';
 
 export type RegisterData = { login: string; mail: string; lastName: string; firstName: string };
 export type ExtendedRegisterData = RegisterData & { studentId: string; type: UserType };
