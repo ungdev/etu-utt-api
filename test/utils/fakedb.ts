@@ -314,7 +314,7 @@ export const createUser = entityFaker(
                 semesterNumber: branch.semesterNumber,
                 semesterCode: branch.semester.code,
                 branchCode: branch.branch.code,
-                branchOptionCode: branch.branchOption.code,
+                branchOptionId: branch.branchOption.id,
               })),
             },
           },
@@ -710,7 +710,7 @@ export const createUE = entityFaker(
           },
           branchOption: {
             connect: params.branchOption.map((branchOption) => ({
-              code: branchOption.code,
+              id: branchOption.id,
             })),
           },
           openSemester: {

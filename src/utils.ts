@@ -37,6 +37,11 @@ export function omit<T extends object, K extends keyof T>(objOrKey: T | K, ...ke
     : (value: T) => omit<T, K>(value, objOrKey as K, ...keys);
 }
 
+export function doesEntryIncludeSome(entry: string | string[], ...values: string[]) {
+  if (!Array.isArray(entry)) return values.includes(entry);
+  return values.some((value) => entry.includes(value));
+}
+
 export function getTranslation(translation: Translation | null, language: Language) {
   return translation?.[language] ?? translation?.fr ?? null;
 }

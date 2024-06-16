@@ -10,8 +10,35 @@ import { FakeUser } from '../../utils/fakedb';
 import { string } from 'pactum-matchers';
 import { ERROR_CODE } from '../../../src/exceptions';
 import { ConfigModule } from '../../../src/config/config.module';
+import { LdapServerMock, LdapUser } from 'ldap-server-mock';
 
 const CasSignUpE2ESpec = e2eSuite('/auth/signup/cas', (app) => {
+  const list: LdapUser[] = [];
+  const ldapServer = new LdapServerMock(
+    list,
+    {
+      searchBase: 'ou=people,dc=utt,dc=fr',
+      port: Number(process.env.LDAP_URL.split(':')[2]),
+    },
+    null,
+    null,
+    {
+      // Disable default logging
+      info: () => undefined,
+    },
+  );
+  const branch = fakedb.createBranch(app);
+  const branchOption = fakedb.createBranchOption(app, { branch });
+  fakedb.createSemester(app, {
+    code: `${new Date().getMonth() < 7 && new Date().getMonth() > 0 ? 'P' : 'A'}${new Date().getFullYear() % 100}`,
+    start: new Date(),
+    end: new Date(),
+  });
+  const ue = fakedb.createUE(app);
+
+  beforeAll(() => ldapServer.start());
+  afterAll(() => ldapServer.stop());
+
   it('should fail as the provided token is not jwt-generated', () =>
     pactum
       .spec()
@@ -49,19 +76,48 @@ const CasSignUpE2ESpec = e2eSuite('/auth/signup/cas', (app) => {
       .user.delete({ where: { id: user.id } });
   });
 
-  it('should successfully create the user and return a token', async () => {
+  const executeValidSignupRequest = (type: string) => {
+    const firstName = faker.name.firstName();
+    const lastName = faker.name.lastName();
     const userData: RegisterData = {
-      login: faker.internet.userName(),
-      mail: faker.internet.email(),
-      firstName: faker.name.firstName(),
-      lastName: faker.name.lastName(),
+      login: `${lastName.toLowerCase().slice(0, 7)}${firstName.toLowerCase()}`.slice(0, 8),
+      mail: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@utt.fr`,
+      firstName,
+      lastName,
     };
-    await pactum
+    list.push({
+      dn: `uid=${userData.login},ou=people,dc=utt,dc=fr`,
+      attributes: {
+        uid: userData.login,
+        sn: userData.lastName,
+        givenName: userData.firstName,
+        displayName: `${userData.firstName} ${userData.lastName}`,
+        mail: userData.mail,
+        supannEmpId: 49777,
+        supannEtuId: 49777,
+        eduPersonAffiliation: [type, 'member'],
+        employeeType: type,
+        formation: 'Ingénieur',
+        telephonenumber: faker.phone.number('+33 # ## ## ## ##'),
+        niveau: `${branch.code}2`,
+        filiere: branchOption.code,
+        datefin: 20240930,
+        jpegPhoto: `http://localhost/${userData.login}.jpg`,
+        gidNumber: type === 'student' ? 10000 : type === 'faculty' ? 5000 : 6000,
+        uv: ['PETM6', 'SY16', 'LO17', 'RE02', 'IF03', 'CTC1', 'LG11', 'PEICT', ue.code],
+      },
+    });
+    return pactum
       .spec()
       .post('/auth/signup/cas')
       .withJson({ registerToken: app().get(AuthService).signRegisterToken(userData) })
       .expectJsonMatch({ access_token: string() });
-  });
+  };
+
+  it('should successfully create the user and return a token', () => executeValidSignupRequest('student'));
+  it('should successfully create the user and return a token (as a teacher)', () =>
+    executeValidSignupRequest('faculty'));
+  it('should successfully create the user and return a token (as other)', () => executeValidSignupRequest('other'));
 });
 
 export default CasSignUpE2ESpec;

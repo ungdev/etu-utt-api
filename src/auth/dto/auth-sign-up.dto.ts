@@ -40,8 +40,4 @@ export class AuthSignUpDto {
   @Type(() => Date)
   @IsOptional()
   birthday?: Date;
-
-  @IsEnum(UserType)
-  @IsNotEmpty()
-  type: UserType;
 }

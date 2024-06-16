@@ -61,7 +61,7 @@ export class AuthController {
     if (await this.usersService.doesUserExist({ login: data.login })) {
       throw new AppException(ERROR_CODE.CREDENTIALS_ALREADY_TAKEN);
     }
-    const token = await this.authService.signup({ ...data, type: 'STUDENT' });
+    const token = await this.authService.signup(data, true);
     return { access_token: token };
   }
 }
