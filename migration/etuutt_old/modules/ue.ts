@@ -1,11 +1,10 @@
-import { QueryFunction } from '../make-migration';
-import { PrismaClient } from '@prisma/client';
+import { getOperationResults, PrismaOperationResult, QueryFunction } from '../make-migration';
+import { PrismaClient } from '../make-migration';
 import { RawUE } from '../../../src/prisma/types';
-import { stringToTranslation } from '../utils';
 
 export async function migrateUEs(query: QueryFunction, prisma: PrismaClient) {
   const ues = await query('SELECT * FROM etu_uvs WHERE isOld = 0');
-  const newUEs: RawUE[] = [];
+  const operations: PrismaOperationResult<RawUE>[] = [];
   ues.sort((a, b) =>
     new RegExp(`(^|\W)${a.code}($|\W)`).test(b.antecedents)
       ? 1
@@ -13,7 +12,7 @@ export async function migrateUEs(query: QueryFunction, prisma: PrismaClient) {
       ? -1
       : 0,
   );
-  const inscriptionCodes: string[] = [];
+  const inscriptionCodes: string[] = (await prisma.uE.findMany({ select: { inscriptionCode: true } })).map(({inscriptionCode }) => inscriptionCode);
   for (const ue of ues) {
     let inscriptionCode = ue.code.slice(0, 4);
     while (inscriptionCodes.includes(inscriptionCode)) {
@@ -24,49 +23,39 @@ export async function migrateUEs(query: QueryFunction, prisma: PrismaClient) {
           .toUpperCase();
     }
     inscriptionCodes.push(inscriptionCode);
-    const requirements = newUEs.filter((u) => new RegExp(`(^|\W)${u.code}($|\W)`).test(ue.antecedents));
-    newUEs.push(
+    const requirements = operations
+      .filter((u) => new RegExp(`(^|\W)${u.data.code}($|\W)`).test(ue.antecedents))
+      .map((u) => u.data.id);
+    //console.log(ue.code, inscriptionCode);
+    operations.push(
       await prisma.uE.create({
-        data: {
-          code: ue.code,
-          name: stringToTranslation(ue.name),
-          inscriptionCode,
-          workTime: {
-            create: {
-              cm: ue.cm,
-              td: ue.td,
-              tp: ue.tp,
-              the: ue.the,
-              project: ue.projet,
-              internship: ue.stage,
-            },
-          },
-          info: {
-            create: {
-              program: stringToTranslation(ue.programme),
-              objectives: stringToTranslation(ue.objectifs),
-              languages: ue.languages,
-              minors: ue.mineurs,
-              requirements: {
-                connect: requirements.map((value) => ({ id: value.id })),
-              },
-              comment: stringToTranslation(ue.commentaire),
-            },
-          },
-          credits: {
-            create: {
-              credits: ue.credits,
-              category: {
-                connect: {
-                  code: ue.category === 'ct' ? 'HT' : ue.category.toUpperCase(),
-                },
-              },
-            },
-          },
+        code: ue.code,
+        name: ue.name,
+        inscriptionCode,
+        workTime: {
+          cm: ue.cm,
+          td: ue.td,
+          tp: ue.tp,
+          the: ue.the,
+          project: ue.projet,
+          internship: ue.stage,
+        },
+        info: {
+          program: ue.programme,
+          objectives: ue.objectifs,
+          languages: ue.languages,
+          minors: ue.mineurs,
+          requirements,
+          comment: ue.commentaire,
+        },
+        credits: {
+          credits: ue.credits,
+          category: ue.category === 'ct' ? 'HT' : ue.category.toUpperCase(),
         },
       }),
     );
   }
-  console.log(`Migrated ${newUEs.length} UEs`);
-  return newUEs;
+  const results = await getOperationResults(operations);
+  console.log(`UEs : created ${results.created}, updated ${results.updated}, not changed ${results.notChanged}`);
+  return results.data;
 }
