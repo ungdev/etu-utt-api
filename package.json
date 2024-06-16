@@ -46,6 +46,7 @@
     "pactum-matchers": "^1.1.6",
     "passport-jwt": "^4.0.1",
     "pdfkit": "^0.14.0",
+    "prisma": "^5.8.1",
     "reflect-metadata": "^0.1.14",
     "rxjs": "^7.8.1",
     "sharp": "^0.33.2"
@@ -73,7 +74,6 @@
     "nock": "^13.5.4",
     "pactum": "^3.6.0",
     "prettier": "^2.8.8",
-    "prisma": "^5.8.1",
     "source-map-support": "^0.5.21",
     "ts-jest": "29.1.0",
     "ts-loader": "^9.5.1",
