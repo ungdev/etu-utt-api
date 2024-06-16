@@ -184,7 +184,7 @@ model TimetableEntryOverride {
 
 model Translation {
   id String  @id @default(uuid())
-  fr String? @db.Text
+  fr String @db.Text
   en String? @db.Text
   es String? @db.Text
   de String? @db.Text
@@ -791,6 +791,8 @@ model UTTBranchOption {
   descriptionTranslation Translation              @relation(fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
   ues                    UE[]
   branchSubscriptions    UserBranchSubscription[]
+
+  @@unique([branchId, code])
 }
 
 model UTTFormation {

@@ -6,6 +6,7 @@ import { migrateUEs } from './modules/ue';
 import { createCreditCategories } from './modules/creditCategory';
 import { createSemesters } from './modules/semester';
 import {migrateUeComments} from "./modules/ueComment";
+import {createBranches} from "./modules/branch";
 
 const prisma = new PrismaClient();
 
@@ -50,4 +51,5 @@ async function main() {
   const ues = await migrateUEs(query, prisma);
   //await migrateUsers(query, prisma, ues, semesters);
   const comments = await migrateUeComments(query, prisma, semesters);
+  await createBranches(prisma);
 }
