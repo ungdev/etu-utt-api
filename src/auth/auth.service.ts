@@ -52,7 +52,7 @@ export class AuthService {
         branch.push(...(Array.isArray(ldapUser.niveau) ? ldapUser.niveau : [ldapUser.niveau]));
         ues.push(...(Array.isArray(ldapUser.uv) ? ldapUser.uv : [ldapUser.uv]));
         branchOption.push(...(Array.isArray(ldapUser.filiere) ? ldapUser.filiere : [ldapUser.filiere]));
-        [formation] = ldapUser.formation; // TODO: this is wrong, students can have multiple formations !
+        [formation] = Array.isArray(ldapUser.formation) ? ldapUser.formation : [ldapUser.formation]; // TODO: this is wrong, students can have multiple formations !
       } else if (ldapUser.gidNumber === LdapAccountGroup.EMPLOYEES) {
         type = doesEntryIncludeSome(ldapUser.eduPersonAffiliation, 'faculty') ? UserType.TEACHER : UserType.EMPLOYEE;
         phoneNumber = ldapUser.telephonenumber;
@@ -72,17 +72,29 @@ export class AuthService {
           },
           ...(branch.length && branchOption.length
             ? {
-                branch: {
+                branchSubscriptions: {
                   create: {
                     semesterNumber: Number(branch[0].slice(-1)),
-                    branch: {
-                      connect: {
-                        code: branch[0].slice(0, -1).split('_')[0],
-                      },
-                    },
                     branchOption: {
-                      connect: {
-                        code: branchOption[0],
+                      connectOrCreate: {
+                        where: {
+                          code_branchId: {
+                            code: branchOption[0],
+                            branchId: branch[0].slice(0, -1).split('_')[0],
+                          },
+                        },
+                        create: {
+                          code: branchOption[0],
+                          branch: {
+                            connect: {
+                              code: branch[0].slice(0, -1).split('_')[0],
+                            },
+                          },
+                          name: branchOption[0],
+                          descriptionTranslation: {
+                            create: {},
+                          },
+                        },
                       },
                     },
                     semester: {
@@ -104,20 +116,42 @@ export class AuthService {
               })),
             },
           },
-          formation: {
-            create: {
-              followingMethod: {
-                connect: {
-                  name: branch[0].slice(0, -1).split('_')[1] === 'APPR' ? 'Apprentissage' : 'Formation Initiale',
+          ...(branch.length && formation
+            ? {
+                formation: {
+                  create: {
+                    followingMethod: {
+                      connectOrCreate: {
+                        create: {
+                          name:
+                            branch[0].slice(0, -1).split('_')[1] === 'APPR' ? 'Apprentissage' : 'Formation Initiale',
+                          descriptionTranslation: {
+                            create: {},
+                          },
+                        },
+                        where: {
+                          name:
+                            branch[0].slice(0, -1).split('_')[1] === 'APPR' ? 'Apprentissage' : 'Formation Initiale',
+                        },
+                      },
+                    },
+                    formation: {
+                      connectOrCreate: {
+                        where: {
+                          name: formation,
+                        },
+                        create: {
+                          name: formation,
+                          descriptionTranslation: {
+                            create: {},
+                          },
+                        },
+                      },
+                    },
+                  },
                 },
-              },
-              formation: {
-                connect: {
-                  name: formation,
-                },
-              },
-            },
-          },
+              }
+            : {}),
           mailsPhones: {
             create: {
               mailUTT: isUTTMail ? dto.mail : undefined,

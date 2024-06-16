@@ -601,11 +601,11 @@ model UserBranchSubscription {
   userId           String
   semesterNumber   Int      @db.SmallInt
   createdAt        DateTime @default(now())
-  branchOptionCode String
+  branchOptionId   String
   semesterCode     String
 
   user         User            @relation(fields: [userId], references: [id])
-  branchOption UTTBranchOption @relation(fields: [branchOptionCode], references: [code])
+  branchOption UTTBranchOption @relation(fields: [branchOptionId], references: [id])
   semester     Semester        @relation(fields: [semesterCode], references: [code])
 }
 
@@ -771,7 +771,8 @@ model UTTBranch {
 }
 
 model UTTBranchOption {
-  code                     String @id @db.VarChar(10)
+  id                       String @id @default(uuid())
+  code                     String @db.VarChar(10)
   name                     String @db.VarChar(255)
   branchId                 String
   descriptionTranslationId String @unique
@@ -780,6 +781,8 @@ model UTTBranchOption {
   descriptionTranslation Translation              @relation(fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
   ues                    UE[]
   branchSubscriptions    UserBranchSubscription[]
+  
+  @@unique([code, branchId])
 }
 
 model UTTFormation {

@@ -4,9 +4,9 @@ export type LdapUser =
   | (LdapUserGeneric & LdapUserAsso);
 
 export const enum LdapAccountGroup {
-  EMPLOYEES = 5000,
-  ASSOCIATIONS = 6000,
-  STUDENTS = 10000,
+  EMPLOYEES = '5000',
+  ASSOCIATIONS = '6000',
+  STUDENTS = '10000',
 }
 
 interface LdapUserGeneric {
