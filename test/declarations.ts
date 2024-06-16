@@ -6,7 +6,7 @@ import { UEComment } from '../src/ue/comments/interfaces/comment.interface';
 import { UECommentReply } from '../src/ue/comments/interfaces/comment-reply.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { UERating } from 'src/ue/interfaces/rate.interface';
-import { FakeUEAnnalType, FakeUser, FakeUE, FakeHomepageWidget, FakeAsso } from './utils/fakedb';
+import { FakeUEAnnalType, FakeUser, FakeUE, FakeHomepageWidget, FakeAsso, FakeUECreditCategory } from './utils/fakedb';
 import { UEAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
 import { ConfigModule } from '../src/config/config.module';
 import { AppProvider } from './utils/test_utils';
@@ -180,6 +180,9 @@ Spec.prototype.expectAsso = function (asso: FakeAsso) {
     ...pick(asso, 'id', 'login', 'name', 'mail', 'phoneNumber', 'website', 'logo', 'president'),
     descriptionTranslation: getTranslation(asso.descriptionTranslation, (<Spec>this).language),
   });
+};
+Spec.prototype.expectCreditCategories = function (creditCategories: FakeUECreditCategory[]) {
+  return (<Spec>this).expectStatus(HttpStatus.OK).expectJson(creditCategories);
 };
 
 export { Spec, JsonLikeVariant };

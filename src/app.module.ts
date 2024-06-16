@@ -9,8 +9,6 @@ import { RoleGuard } from './auth/guard/role.guard';
 import { UEModule } from './ue/ue.module';
 import { JwtGuard } from './auth/guard';
 import { TimetableModule } from './timetable/timetable.module';
-import { AnnalsModule } from './ue/annals/annals.module';
-import { CommentsModule } from './ue/comments/comments.module';
 import { ConfigModule } from './config/config.module';
 import { HttpModule } from './http/http.module';
 import { BranchModule } from './branch/branch.module';
@@ -25,8 +23,6 @@ import { TranslationInterceptor } from './app.interceptor';
     AuthModule,
     ProfileModule,
     UsersModule,
-    AnnalsModule, // Order is important: this module SHALL be imported before UEModule
-    CommentsModule, // Must be imported before UEModule
     UEModule,
     TimetableModule,
     BranchModule,

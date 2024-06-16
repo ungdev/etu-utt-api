@@ -7,6 +7,7 @@ import PutRate from './put-rate.e2e-spec';
 import DeleteRate from './delete-rate.e2e-spec';
 import AnnalsE2ESpec from './annals';
 import CommentsE2ESpec from './comments';
+import CreditE2ESpec from './credit';
 
 export default function UEE2ESpec(app: () => INestApplication) {
   describe('UE', () => {
@@ -18,5 +19,6 @@ export default function UEE2ESpec(app: () => INestApplication) {
     DeleteRate(app);
     CommentsE2ESpec(app);
     AnnalsE2ESpec(app);
+    CreditE2ESpec(app);
   });
 }
