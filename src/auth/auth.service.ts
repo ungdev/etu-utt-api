@@ -55,7 +55,7 @@ export class AuthService {
         [formation] = Array.isArray(ldapUser.formation) ? ldapUser.formation : [ldapUser.formation]; // TODO: this is wrong, students can have multiple formations !
       } else if (ldapUser.gidNumber === LdapAccountGroup.EMPLOYEES) {
         type = doesEntryIncludeSome(ldapUser.eduPersonAffiliation, 'faculty') ? UserType.TEACHER : UserType.EMPLOYEE;
-        phoneNumber = ldapUser.telephonenumber;
+        phoneNumber = ldapUser.telephoneNumber;
       }
     }
     try {

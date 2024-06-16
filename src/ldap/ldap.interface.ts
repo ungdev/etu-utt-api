@@ -52,7 +52,7 @@ interface LdapUserStudent {
 interface LdapUserEmployees {
   gidNumber: LdapAccountGroup.EMPLOYEES;
   /** Telephone number of the office */
-  telephonenumber: string;
+  telephoneNumber: string;
   /** Office location */
   roomNumber: string;
   /** Title of the User eg. `ENSEIGNANT(E)` or `APPRENTI(E)` */
