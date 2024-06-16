@@ -6,12 +6,13 @@ import { JwtStrategy } from './strategy';
 import { UsersModule } from '../users/users.module';
 import { LdapModule } from '../ldap/ldap.module';
 import { UEService } from '../../src/ue/ue.service';
+import { SemesterService } from '../../src/semester/semester.service';
 
 @Global()
 @Module({
   imports: [JwtModule.register({}), UsersModule],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, LdapModule, UEService],
+  providers: [AuthService, JwtStrategy, LdapModule, UEService, SemesterService],
   exports: [JwtStrategy],
 })
 export class AuthModule {}

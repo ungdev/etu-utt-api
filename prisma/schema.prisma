@@ -774,15 +774,15 @@ model UTTBranchOption {
   id                       String @id @default(uuid())
   code                     String @db.VarChar(10)
   name                     String @db.VarChar(255)
-  branchId                 String
+  branchCode               String
   descriptionTranslationId String @unique
 
-  branch                 UTTBranch                @relation(fields: [branchId], references: [code])
+  branch                 UTTBranch                @relation(fields: [branchCode], references: [code])
   descriptionTranslation Translation              @relation(fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
   ues                    UE[]
   branchSubscriptions    UserBranchSubscription[]
   
-  @@unique([code, branchId])
+  @@unique([code, branchCode])
 }
 
 model UTTFormation {

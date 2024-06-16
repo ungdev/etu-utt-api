@@ -10,9 +10,10 @@ import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import { XMLParser } from 'fast-xml-parser';
 import { doesEntryIncludeSome, omit } from '../utils';
-import { LdapModule } from '../../src/ldap/ldap.module';
-import { LdapAccountGroup } from '../../src/ldap/ldap.interface';
-import { UEService } from '../../src/ue/ue.service';
+import { LdapModule } from '../ldap/ldap.module';
+import { LdapAccountGroup } from '../ldap/ldap.interface';
+import { UEService } from '../ue/ue.service';
+import { SemesterService } from '../semester/semester.service';
 
 export type RegisterData = { login: string; mail: string; lastName: string; firstName: string };
 export type ExtendedRegisterData = RegisterData & { studentId: string; type: UserType };
@@ -26,6 +27,7 @@ export class AuthService {
     private httpService: HttpService,
     private ldap: LdapModule,
     private ueService: UEService,
+    private semesterService: SemesterService,
   ) {}
 
   /**
@@ -40,9 +42,7 @@ export class AuthService {
     const branchOption: string[] = [];
     const ues: string[] = [];
     let type: UserType = UserType.OTHER;
-    const currentSemesterCode = `${new Date().getMonth() < 7 && new Date().getMonth() > 0 ? 'P' : 'A'}${
-      new Date().getFullYear() % 100
-    }`;
+    const currentSemester = await this.semesterService.getCurrentSemester();
 
     if (fetchLdap) {
       const ldapUser = await this.ldap.fetch(dto.login);
@@ -99,7 +99,7 @@ export class AuthService {
                     },
                     semester: {
                       connect: {
-                        code: currentSemesterCode,
+                        code: currentSemester.code,
                       },
                     },
                   },
@@ -109,10 +109,10 @@ export class AuthService {
           UEsSubscriptions: {
             createMany: {
               data: (
-                await this.ueService.getIdFromCode(...ues)
+                await this.ueService.getIdFromCode(ues)
               ).map((id) => ({
                 ueId: id,
-                semesterId: currentSemesterCode,
+                semesterId: currentSemester.code,
               })),
             },
           },

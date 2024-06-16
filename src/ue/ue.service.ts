@@ -13,16 +13,20 @@ import { Language, Prisma } from '@prisma/client';
 export class UEService {
   constructor(readonly prisma: PrismaService, readonly config: ConfigModule) {}
 
-  async getIdFromCode(...ueCodes: string[]) {
-    return (
+  async getIdFromCode(ueCode: string): Promise<string>;
+  async getIdFromCode(ueCodes: string[]): Promise<string[]>;
+  async getIdFromCode(ueCodes?: string | string[]) {
+    const values = (
       await this.prisma.uE.findMany({
         where: {
           code: {
-            in: ueCodes,
+            in: Array.isArray(ueCodes) ? ueCodes : [ueCodes],
           },
         },
       })
     ).map((ue) => ue.id);
+    if (!Array.isArray(ueCodes)) return values[0];
+    return values;
   }
 
   /**
