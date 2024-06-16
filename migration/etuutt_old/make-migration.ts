@@ -8,14 +8,12 @@ import { migrateUeComments } from './modules/ueComment';
 import { createBranches } from './modules/branch';
 
 const prisma = new PrismaClient();
-
-const connection = createConnection({
-  host: 'localhost',
-  user: 'dev',
-  password: 'dev',
-  database: 'etuutt_old',
-});
 console.log('Connected to new database');
+
+const res = /^mysql:\/\/(.*):(.*)@(.*):(.*)\/(.*)$/.exec(process.env.OLD_DATABASE_URL);
+const [, user, password, host, port, database] = res;
+const connection = createConnection({ host, user, password, port: Number.parseInt(port), database });
+
 connection.connect((err) => {
   if (err) {
     console.error('Error connecting to old database');
