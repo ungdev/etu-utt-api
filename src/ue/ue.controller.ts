@@ -71,6 +71,12 @@ export class UEController {
     return this.ueService.unRateUE(user.id, ueCode, criterionId);
   }
 
+  @Get('/of/me')
+  @RequireUserType('STUDENT')
+  async getMyUes(@GetUser() user: User): Promise<UEOverview[]> {
+    return (await this.ueService.getUesOfUser(user.id)).map((ue) => this.formatUEOverview(ue));
+  }
+
   private formatUEOverview(ue: UE): UEOverview {
     return {
       code: ue.code,

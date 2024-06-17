@@ -39,8 +39,10 @@ declare module './declarations' {
     expectUsers(app: AppProvider, users: FakeUser[], count: number): this;
     /** expects to return the given {@link UEDetail} */
     expectUE(ue: FakeUE, rates?: Array<{ criterionId: string; value: number }>): this;
+    /** expects to return the given {@link UEOverView} */
+    expectUes(ues: FakeUE[]): this;
     /** expects to return the given {@link page | page of UEOverView} */
-    expectUEs(app: AppProvider, ues: FakeUE[], count: number): this;
+    expectUEsWithPagination(app: AppProvider, ues: FakeUE[], count: number): this;
     /**
      * expects to return the given {@link comment}. The HTTP Status code may be 200 or 204,
      * depending on the {@link created} property.

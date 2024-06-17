@@ -66,7 +66,7 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
       .spec()
       .withBearerToken(user.token)
       .get('/ue')
-      .expectUEs(app, ues.slice(0, app().get(ConfigModule).PAGINATION_PAGE_SIZE), ues.length);
+      .expectUEsWithPagination(app, ues.slice(0, app().get(ConfigModule).PAGINATION_PAGE_SIZE), ues.length);
   });
 
   it('should return a list of all ues (within the second page)', () => {
@@ -75,7 +75,7 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
       .withBearerToken(user.token)
       .get('/ue')
       .withQueryParams('page', 2)
-      .expectUEs(
+      .expectUEsWithPagination(
         app,
         ues.slice(
           app().get(ConfigModule).PAGINATION_PAGE_SIZE,
@@ -92,7 +92,7 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
       .withBearerToken(user.token)
       .get('/ue')
       .withQueryParams('availableAtSemester', 'A24')
-      .expectUEs(app, expectedUEs, expectedUEs.length);
+      .expectUEsWithPagination(app, expectedUEs, expectedUEs.length);
   });
 
   it('should return a list of ues filtered by credit type', () => {
@@ -102,7 +102,7 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
       .withBearerToken(user.token)
       .get('/ue')
       .withQueryParams('creditType', 'CS')
-      .expectUEs(app, expectedUEs, expectedUEs.length);
+      .expectUEsWithPagination(app, expectedUEs, expectedUEs.length);
   });
 
   it('should return a list of ues filtered by branch option', () => {
@@ -112,7 +112,7 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
       .withBearerToken(user.token)
       .get('/ue')
       .withQueryParams('branchOption', 'T1')
-      .expectUEs(app, expectedUEs, expectedUEs.length);
+      .expectUEsWithPagination(app, expectedUEs, expectedUEs.length);
   });
 
   it('should return a list of ues filtered by branch', () => {
@@ -122,7 +122,7 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
       .withBearerToken(user.token)
       .get('/ue')
       .withQueryParams('branch', 'B1')
-      .expectUEs(app, expectedUEs, expectedUEs.length);
+      .expectUEsWithPagination(app, expectedUEs, expectedUEs.length);
   });
 
   it('should return a list of ues filtered by name', () => {
@@ -132,7 +132,7 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
       .withBearerToken(user.token)
       .get('/ue')
       .withQueryParams('q', 'XX0')
-      .expectUEs(app, expectedUEs, expectedUEs.length);
+      .expectUEsWithPagination(app, expectedUEs, expectedUEs.length);
   });
 });
 

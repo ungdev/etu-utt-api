@@ -46,16 +46,20 @@ export class AuthService {
 
     if (fetchLdap) {
       const ldapUser = await this.ldap.fetch(dto.login);
-      if (ldapUser.gidNumber === LdapAccountGroup.STUDENTS) {
-        dto.studentId = Number(ldapUser.supannEtuId);
+      if (ldapUser) {
+        if (ldapUser.gidNumber === LdapAccountGroup.STUDENTS) {
+          dto.studentId = Number(ldapUser.supannEtuId);
+          type = UserType.STUDENT;
+          branch.push(...(Array.isArray(ldapUser.niveau) ? ldapUser.niveau : [ldapUser.niveau]));
+          ues.push(...(Array.isArray(ldapUser.uv) ? ldapUser.uv : [ldapUser.uv]));
+          branchOption.push(...(Array.isArray(ldapUser.filiere) ? ldapUser.filiere : [ldapUser.filiere]));
+          [formation] = Array.isArray(ldapUser.formation) ? ldapUser.formation : [ldapUser.formation]; // TODO: this is wrong, students can have multiple formations !
+        } else if (ldapUser.gidNumber === LdapAccountGroup.EMPLOYEES) {
+          type = doesEntryIncludeSome(ldapUser.eduPersonAffiliation, 'faculty') ? UserType.TEACHER : UserType.EMPLOYEE;
+          phoneNumber = ldapUser.telephoneNumber;
+        }
+      } else {
         type = UserType.STUDENT;
-        branch.push(...(Array.isArray(ldapUser.niveau) ? ldapUser.niveau : [ldapUser.niveau]));
-        ues.push(...(Array.isArray(ldapUser.uv) ? ldapUser.uv : [ldapUser.uv]));
-        branchOption.push(...(Array.isArray(ldapUser.filiere) ? ldapUser.filiere : [ldapUser.filiere]));
-        [formation] = Array.isArray(ldapUser.formation) ? ldapUser.formation : [ldapUser.formation]; // TODO: this is wrong, students can have multiple formations !
-      } else if (ldapUser.gidNumber === LdapAccountGroup.EMPLOYEES) {
-        type = doesEntryIncludeSome(ldapUser.eduPersonAffiliation, 'faculty') ? UserType.TEACHER : UserType.EMPLOYEE;
-        phoneNumber = ldapUser.telephoneNumber;
       }
     }
     try {
@@ -70,7 +74,7 @@ export class AuthService {
           infos: {
             create: { sex: dto.sex, birthday: dto.birthday },
           },
-          ...(branch.length && branchOption.length
+          ...(branch.length && branchOption.length && currentSemester
             ? {
                 branchSubscriptions: {
                   create: {
@@ -106,7 +110,7 @@ export class AuthService {
                 },
               }
             : {}),
-          UEsSubscriptions: {
+          UEsSubscriptions: currentSemester ? {
             createMany: {
               data: (
                 await this.ueService.getIdFromCode(ues)
@@ -115,7 +119,7 @@ export class AuthService {
                 semesterId: currentSemester.code,
               })),
             },
-          },
+          } : {},
           ...(branch.length && formation
             ? {
                 formation: {

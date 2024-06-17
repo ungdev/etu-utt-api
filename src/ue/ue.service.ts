@@ -8,10 +8,11 @@ import { UERating } from './interfaces/rate.interface';
 import { RawUserUESubscription } from '../prisma/types';
 import { ConfigModule } from '../config/config.module';
 import { Language, Prisma } from '@prisma/client';
+import {SemesterService} from "../semester/semester.service";
 
 @Injectable()
 export class UEService {
-  constructor(readonly prisma: PrismaService, readonly config: ConfigModule) {}
+  constructor(readonly prisma: PrismaService, readonly config: ConfigModule, readonly semesterService: SemesterService) {}
 
   async getIdFromCode(ueCode: string): Promise<string>;
   async getIdFromCode(ueCodes: string[]): Promise<string[]>;
@@ -305,6 +306,23 @@ export class UEService {
           ueId,
           userId,
           criterionId,
+        },
+      },
+    });
+  }
+
+  async getUesOfUser(userId: string): Promise<UE[]> {
+    const currentSemester = await this.semesterService.getCurrentSemester();
+    if (currentSemester === null) return [];
+    return this.prisma.uE.findMany({
+      where: {
+        usersSubscriptions: {
+          some: {
+            userId,
+            semester: {
+              code: currentSemester.code,
+            },
+          },
         },
       },
     });

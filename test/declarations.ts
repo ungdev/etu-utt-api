@@ -32,6 +32,29 @@ export function deepDateToString<T>(obj: T): JsonLikeVariant<T> {
   ) as JsonLikeVariant<T>;
 }
 
+function ueOverviewExpectation(ue: FakeUE, spec: Spec) {
+  return {
+    ...omit(ue, 'id', 'validationRate', 'createdAt', 'updatedAt', 'openSemesters', 'workTime'),
+    name: getTranslation(ue.name, spec.language),
+    info: {
+      ...omit(ue.info, 'id', 'comment', 'program', 'objectives'),
+      comment: getTranslation(ue.info.comment, spec.language),
+      program: getTranslation(ue.info.program, spec.language),
+      objectives: getTranslation(ue.info.objectives, spec.language),
+    },
+    credits: ue.credits.map((credit) => omit(credit, 'id', 'ueId', 'categoryId')),
+    branchOption: ue.branchOption.map((branchOption) => ({
+      ...pick(branchOption, 'code', 'name'),
+      branch: pick(branchOption.branch, 'code', 'name'),
+    })),
+    openSemester: ue.openSemesters.map((semester) => ({
+      ...semester,
+      start: semester.start.toISOString(),
+      end: semester.end.toISOString(),
+    })),
+  };
+}
+
 Spec.prototype.language = 'fr';
 Spec.prototype.withLanguage = function (language: Language) {
   this.language = language;
@@ -91,28 +114,12 @@ Spec.prototype.expectUsers = function (app: AppProvider, users: FakeUser[], coun
     }),
   );
 };
-Spec.prototype.expectUEs = function (app: AppProvider, ues: FakeUE[], count: number) {
+Spec.prototype.expectUes = function (ues: FakeUE[]) {
+  return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonLike(ues.map((ue) => ueOverviewExpectation(ue, this)));
+}
+Spec.prototype.expectUEsWithPagination = function (app: AppProvider, ues: FakeUE[], count: number) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonLike({
-    items: ues.map((ue) => ({
-      ...omit(ue, 'id', 'validationRate', 'createdAt', 'updatedAt', 'openSemesters', 'workTime'),
-      name: getTranslation(ue.name, this.language),
-      info: {
-        ...omit(ue.info, 'id', 'comment', 'program', 'objectives'),
-        comment: getTranslation(ue.info.comment, this.language),
-        program: getTranslation(ue.info.program, this.language),
-        objectives: getTranslation(ue.info.objectives, this.language),
-      },
-      credits: ue.credits.map((credit) => omit(credit, 'id', 'ueId', 'categoryId')),
-      branchOption: ue.branchOption.map((branchOption) => ({
-        ...pick(branchOption, 'code', 'name'),
-        branch: pick(branchOption.branch, 'code', 'name'),
-      })),
-      openSemester: ue.openSemesters.map((semester) => ({
-        ...semester,
-        start: semester.start.toISOString(),
-        end: semester.end.toISOString(),
-      })),
-    })),
+    items: ues.map((ue) => ueOverviewExpectation(ue, this)),
     itemCount: count,
     itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
   });
