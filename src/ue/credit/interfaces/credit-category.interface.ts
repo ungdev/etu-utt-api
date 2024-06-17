@@ -4,15 +4,20 @@ import { RequestType, generateCustomModel } from '../../../prisma/prisma.service
 const CREDIT_CATEGORY_SELECT_FILTER = {
   select: {
     code: true,
-    name: true
+    name: true,
   },
   orderBy: {
     code: 'asc',
   },
-} satisfies Partial<RequestType<'uECreditCategory'>>;
+} satisfies Partial<RequestType<'ueCreditCategory'>>;
 
-export type CreditCategory = Prisma.UECreditCategoryGetPayload<typeof CREDIT_CATEGORY_SELECT_FILTER>;
+export type CreditCategory = Prisma.UeCreditCategoryGetPayload<typeof CREDIT_CATEGORY_SELECT_FILTER>;
 
 export function generateCustomCreditCategoryModel(prisma: PrismaClient) {
-  return generateCustomModel(prisma, 'uECreditCategory', CREDIT_CATEGORY_SELECT_FILTER, (_, creditCategory) => creditCategory);
+  return generateCustomModel(
+    prisma,
+    'ueCreditCategory',
+    CREDIT_CATEGORY_SELECT_FILTER,
+    (_, creditCategory) => creditCategory,
+  );
 }

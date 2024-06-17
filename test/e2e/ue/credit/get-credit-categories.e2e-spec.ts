@@ -1,10 +1,10 @@
 import { e2eSuite } from '../../../utils/test_utils';
 import * as pactum from 'pactum';
-import { createUECreditCategory } from '../../../utils/fakedb';
+import { createUeCreditCategory } from '../../../utils/fakedb';
 
 const GetAllCreditCategories = e2eSuite('GET /ue/credit', (app) => {
-  const creditCategory1 = createUECreditCategory(app);
-  const creditCategory2 = createUECreditCategory(app);
+  const creditCategory1 = createUeCreditCategory(app);
+  const creditCategory2 = createUeCreditCategory(app);
 
   it('should return all credit categories', () => {
     return pactum

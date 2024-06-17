@@ -1,6 +1,6 @@
 import {
   createUser,
-  createUE,
+  createUe,
   createComment,
   createBranch,
   createBranchOption,
@@ -19,7 +19,7 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUE(app, { openSemesters: [semester], branchOption: [branchOption] });
+  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
   const comment = createComment(app, { ue, user, semester });
   createCommentUpvote(app, { user: user2, comment });
 
@@ -99,7 +99,7 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
         body: 'Cette  UE est troooop bien',
         isAnonymous: true,
       })
-      .expectUEComment({
+      .expectUeComment({
         id: JsonLike.ANY_UUID,
         author: {
           id: user.id,
@@ -119,7 +119,7 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
         upvoted: false,
         status: CommentStatus.UNVERIFIED,
       });
-    await app().get(PrismaService).uEComment.deleteMany();
+    await app().get(PrismaService).ueComment.deleteMany();
     await createComment(app, { ue, user, semester }, comment, true);
     return createCommentUpvote(app, { user: user2, comment }, {}, true);
   });
@@ -132,7 +132,7 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
       .withBody({
         isAnonymous: false,
       })
-      .expectUEComment({
+      .expectUeComment({
         id: JsonLike.ANY_UUID,
         author: {
           id: user.id,
@@ -152,7 +152,7 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
         upvoted: false,
         status: CommentStatus.VALIDATED,
       });
-    await app().get(PrismaService).uEComment.deleteMany();
+    await app().get(PrismaService).ueComment.deleteMany();
     await createComment(app, { ue, user, semester }, comment, true);
     return createCommentUpvote(app, { user: user2, comment }, {}, true);
   });

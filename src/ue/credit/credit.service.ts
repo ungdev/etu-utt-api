@@ -6,6 +6,6 @@ export class CreditService {
   constructor(private prisma: PrismaService) {}
 
   getCreditCategories() {
-    return this.prisma.uECreditCategory.findMany({});
+    return this.prisma.ueCreditCategory.findMany({});
   }
 }

@@ -1,6 +1,6 @@
 import {
   createUser,
-  createUE,
+  createUe,
   createComment,
   createBranch,
   createBranchOption,
@@ -19,7 +19,7 @@ const UpdateCommentReply = e2eSuite('PATCH /ue/comments/reply/{replyId}', (app) 
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUE(app, { openSemesters: [semester], branchOption: [branchOption] });
+  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
   const comment = createComment(app, { ue, user, semester });
   const reply = createCommentReply(app, { user, comment });
 
@@ -96,7 +96,7 @@ const UpdateCommentReply = e2eSuite('PATCH /ue/comments/reply/{replyId}', (app) 
       .withBody({
         body: "Je m'appelle Alban Ichou et j'approuve ce commentaire",
       })
-      .expectUECommentReply({
+      .expectUeCommentReply({
         id: JsonLike.ANY_UUID,
         author: {
           id: user.id,
@@ -109,7 +109,7 @@ const UpdateCommentReply = e2eSuite('PATCH /ue/comments/reply/{replyId}', (app) 
         body: "Je m'appelle Alban Ichou et j'approuve ce commentaire",
         status: CommentStatus.VALIDATED,
       });
-    return app().get(PrismaService).uECommentReply.deleteMany();
+    return app().get(PrismaService).ueCommentReply.deleteMany();
   });
 });
 

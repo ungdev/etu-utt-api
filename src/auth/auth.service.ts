@@ -12,7 +12,7 @@ import { XMLParser } from 'fast-xml-parser';
 import { doesEntryIncludeSome, omit } from '../utils';
 import { LdapModule } from '../ldap/ldap.module';
 import { LdapAccountGroup } from '../ldap/ldap.interface';
-import { UEService } from '../ue/ue.service';
+import { UeService } from '../ue/ue.service';
 import { SemesterService } from '../semester/semester.service';
 
 export type RegisterData = { login: string; mail: string; lastName: string; firstName: string };
@@ -26,7 +26,7 @@ export class AuthService {
     private config: ConfigModule,
     private httpService: HttpService,
     private ldap: LdapModule,
-    private ueService: UEService,
+    private ueService: UeService,
     private semesterService: SemesterService,
   ) {}
 
@@ -58,8 +58,6 @@ export class AuthService {
           type = doesEntryIncludeSome(ldapUser.eduPersonAffiliation, 'faculty') ? UserType.TEACHER : UserType.EMPLOYEE;
           phoneNumber = ldapUser.telephoneNumber;
         }
-      } else {
-        type = UserType.STUDENT;
       }
     }
     try {
@@ -82,9 +80,9 @@ export class AuthService {
                     branchOption: {
                       connectOrCreate: {
                         where: {
-                          code_branchId: {
+                          code_branchCode: {
                             code: branchOption[0],
-                            branchId: branch[0].slice(0, -1).split('_')[0],
+                            branchCode: branch[0].slice(0, -1).split('_')[0],
                           },
                         },
                         create: {
@@ -110,16 +108,18 @@ export class AuthService {
                 },
               }
             : {}),
-          UEsSubscriptions: currentSemester ? {
-            createMany: {
-              data: (
-                await this.ueService.getIdFromCode(ues)
-              ).map((id) => ({
-                ueId: id,
-                semesterId: currentSemester.code,
-              })),
-            },
-          } : {},
+          UesSubscriptions: currentSemester
+            ? {
+                createMany: {
+                  data: (
+                    await this.ueService.getIdFromCode(ues)
+                  ).map((id) => ({
+                    ueId: id,
+                    semesterId: currentSemester.code,
+                  })),
+                },
+              }
+            : {},
           ...(branch.length && formation
             ? {
                 formation: {

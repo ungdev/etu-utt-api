@@ -1,4 +1,4 @@
-import { FakeUE, createBranch, createBranchOption, createSemester, createUE, createUser } from '../../utils/fakedb';
+import { FakeUe, createBranch, createBranchOption, createSemester, createUe, createUser } from '../../utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from 'src/exceptions';
 import { e2eSuite } from '../../utils/test_utils';
@@ -26,10 +26,10 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
       branch: branches[1],
     }),
   ];
-  const ues: FakeUE[] = [];
+  const ues: FakeUe[] = [];
   for (let i = 0; i < 30; i++)
     ues.push(
-      createUE(app, {
+      createUe(app, {
         code: `XX${`${i}`.padStart(2, '0')}`,
         credits: [
           {
@@ -66,7 +66,7 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
       .spec()
       .withBearerToken(user.token)
       .get('/ue')
-      .expectUEsWithPagination(app, ues.slice(0, app().get(ConfigModule).PAGINATION_PAGE_SIZE), ues.length);
+      .expectUesWithPagination(app, ues.slice(0, app().get(ConfigModule).PAGINATION_PAGE_SIZE), ues.length);
   });
 
   it('should return a list of all ues (within the second page)', () => {
@@ -75,7 +75,7 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
       .withBearerToken(user.token)
       .get('/ue')
       .withQueryParams('page', 2)
-      .expectUEsWithPagination(
+      .expectUesWithPagination(
         app,
         ues.slice(
           app().get(ConfigModule).PAGINATION_PAGE_SIZE,
@@ -86,53 +86,53 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
   });
 
   it('should return a list of ues filtered by semester', () => {
-    const expectedUEs = ues.filter((ue) => ue.openSemesters.some((semester) => semester.code === 'A24'));
+    const expectedUes = ues.filter((ue) => ue.openSemesters.some((semester) => semester.code === 'A24'));
     return pactum
       .spec()
       .withBearerToken(user.token)
       .get('/ue')
       .withQueryParams('availableAtSemester', 'A24')
-      .expectUEsWithPagination(app, expectedUEs, expectedUEs.length);
+      .expectUesWithPagination(app, expectedUes, expectedUes.length);
   });
 
   it('should return a list of ues filtered by credit type', () => {
-    const expectedUEs = ues.filter((ue) => ue.credits.some((credit) => credit.category.code === 'CS'));
+    const expectedUes = ues.filter((ue) => ue.credits.some((credit) => credit.category.code === 'CS'));
     return pactum
       .spec()
       .withBearerToken(user.token)
       .get('/ue')
       .withQueryParams('creditType', 'CS')
-      .expectUEsWithPagination(app, expectedUEs, expectedUEs.length);
+      .expectUesWithPagination(app, expectedUes, expectedUes.length);
   });
 
   it('should return a list of ues filtered by branch option', () => {
-    const expectedUEs = ues.filter((ue) => ue.branchOption.some((branchOption) => branchOption.code === 'T1'));
+    const expectedUes = ues.filter((ue) => ue.branchOption.some((branchOption) => branchOption.code === 'T1'));
     return pactum
       .spec()
       .withBearerToken(user.token)
       .get('/ue')
       .withQueryParams('branchOption', 'T1')
-      .expectUEsWithPagination(app, expectedUEs, expectedUEs.length);
+      .expectUesWithPagination(app, expectedUes, expectedUes.length);
   });
 
   it('should return a list of ues filtered by branch', () => {
-    const expectedUEs = ues.filter((ue) => ue.branchOption.some((branchOption) => branchOption.branch.code === 'B1'));
+    const expectedUes = ues.filter((ue) => ue.branchOption.some((branchOption) => branchOption.branch.code === 'B1'));
     return pactum
       .spec()
       .withBearerToken(user.token)
       .get('/ue')
       .withQueryParams('branch', 'B1')
-      .expectUEsWithPagination(app, expectedUEs, expectedUEs.length);
+      .expectUesWithPagination(app, expectedUes, expectedUes.length);
   });
 
   it('should return a list of ues filtered by name', () => {
-    const expectedUEs = ues.filter((ue) => ue.code.includes('XX0'));
+    const expectedUes = ues.filter((ue) => ue.code.includes('XX0'));
     return pactum
       .spec()
       .withBearerToken(user.token)
       .get('/ue')
       .withQueryParams('q', 'XX0')
-      .expectUEsWithPagination(app, expectedUEs, expectedUEs.length);
+      .expectUesWithPagination(app, expectedUes, expectedUes.length);
   });
 });
 

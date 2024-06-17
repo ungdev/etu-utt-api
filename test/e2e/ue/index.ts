@@ -8,9 +8,9 @@ import DeleteRate from './delete-rate.e2e-spec';
 import AnnalsE2ESpec from './annals';
 import CommentsE2ESpec from './comments';
 import CreditE2ESpec from './credit';
-import GetMyUesE2ESpec from "./get-my-ues.e2e-spec";
+import GetMyUesE2ESpec from './get-my-ues.e2e-spec';
 
-export default function UEE2ESpec(app: () => INestApplication) {
+export default function UeE2ESpec(app: () => INestApplication) {
   describe('UE', () => {
     SearchE2ESpec(app);
     GetE2ESpec(app);

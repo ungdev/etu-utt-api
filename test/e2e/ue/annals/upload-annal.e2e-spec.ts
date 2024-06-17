@@ -4,8 +4,8 @@ import {
   createBranch,
   createBranchOption,
   createSemester,
-  createUE,
-  createUESubscription,
+  createUe,
+  createUeSubscription,
   createAnnalType,
 } from '../../../utils/fakedb';
 import { JsonLike, e2eSuite } from '../../../utils/test_utils';
@@ -23,8 +23,8 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUE(app, { openSemesters: [semester], branchOption: [branchOption] });
-  createUESubscription(app, { user: senderUser, ue, semester });
+  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
+  createUeSubscription(app, { user: senderUser, ue, semester });
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum.spec().post(`/ue/annals`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
@@ -90,7 +90,7 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
               typeId: annalType.id,
               ueCode: ue.code,
             })
-            .expectUEAnnal(
+            .expectUeAnnal(
               {
                 id: JsonLike.ANY_UUID,
                 createdAt: JsonLike.ANY_DATE,
@@ -108,7 +108,7 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
           .withBearerToken(senderUser.token)
           .put(`/ue/annals/${ueAnnalFile.id}?rotate=${rotation}`)
           .withFile('file', `test/e2e/ue/annals/artifacts/annal.${fileExt}`)
-          .expectUEAnnal({
+          .expectUeAnnal({
             ...pick(ueAnnalFile, 'id', 'semesterId', 'type', 'status', 'sender', 'createdAt', 'createdAt'),
           });
       };
@@ -128,7 +128,7 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
             typeId: annalType.id,
             ueCode: ue.code,
           })
-          .expectUEAnnal(
+          .expectUeAnnal(
             {
               id: JsonLike.ANY_UUID,
               createdAt: JsonLike.ANY_DATE,
@@ -162,7 +162,7 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
             typeId: annalType.id,
             ueCode: ue.code,
           })
-          .expectUEAnnal(
+          .expectUeAnnal(
             {
               id: JsonLike.ANY_UUID,
               createdAt: JsonLike.ANY_DATE,
@@ -196,7 +196,7 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
             typeId: annalType.id,
             ueCode: ue.code,
           })
-          .expectUEAnnal(
+          .expectUeAnnal(
             {
               id: JsonLike.ANY_UUID,
               createdAt: JsonLike.ANY_DATE,
@@ -226,7 +226,7 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
             typeId: annalType.id,
             ueCode: ue.code,
           })
-          .expectUEAnnal(
+          .expectUeAnnal(
             {
               id: JsonLike.ANY_UUID,
               createdAt: JsonLike.ANY_DATE,

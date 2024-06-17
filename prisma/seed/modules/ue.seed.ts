@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { faker } from '@faker-js/faker';
-import { RawBranchOption, RawCreditCategory, RawSemester, RawUE } from '../../../src/prisma/types';
+import { RawBranchOption, RawCreditCategory, RawSemester, RawUe } from '../../../src/prisma/types';
 import { generateTranslation } from '../utils';
 
 const FAKER_ROUNDS = 20;
@@ -10,16 +10,16 @@ export default function ueSeed(
   semesters: RawSemester[],
   branchOptions: RawBranchOption[],
   creditCategory: RawCreditCategory[],
-): Promise<RawUE[]> {
+): Promise<RawUe[]> {
   console.log('Seeding ues...');
-  const ues: Promise<RawUE>[] = [];
+  const ues: Promise<RawUe>[] = [];
   for (let i = 0; i < FAKER_ROUNDS; i++) {
     const date: Date = faker.date.past();
     const code =
       faker.random.alpha({ casing: 'upper' }) +
       faker.random.alphaNumeric(faker.datatype.number({ min: 2, max: 5 }), { casing: 'upper' });
     ues.push(
-      prisma.uE.create({
+      prisma.ue.create({
         data: {
           code,
           inscriptionCode: code.length === 3 ? `${code}X` : code.length === 4 ? code : code.substring(0, 4),

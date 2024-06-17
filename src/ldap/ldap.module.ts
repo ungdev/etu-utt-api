@@ -1,7 +1,7 @@
 import { Injectable, Module } from '@nestjs/common';
 import { Client as LdapClient } from 'ldapts';
 import { ConfigModule } from '../config/config.module';
-import {LdapAccountGroup, LdapUser} from './ldap.interface';
+import { LdapAccountGroup, LdapUser } from './ldap.interface';
 
 @Module({
   exports: [LdapModule],
@@ -11,7 +11,7 @@ export class LdapModule {
   constructor(private config: ConfigModule) {}
 
   async fetch(user: string): Promise<LdapUser | null> {
-    if (this.config.LDAP_URL === "") {
+    if (!this.config.LDAP_URL) {
       return null;
     }
     // Connect to LDAP Server

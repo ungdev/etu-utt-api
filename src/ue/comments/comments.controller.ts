@@ -2,30 +2,30 @@ import { Controller, Get, Query, Post, Body, Patch, Delete, HttpCode, HttpStatus
 import { UUIDParam } from '../../app.pipe';
 import { RequireUserType, GetUser } from '../../auth/decorator';
 import { AppException, ERROR_CODE } from '../../exceptions';
-import { UECommentPostDto } from './dto/ue-comment-post.dto';
+import { UeCommentPostDto } from './dto/ue-comment-post.dto';
 import { CommentReplyDto } from './dto/ue-comment-reply.dto';
 import { UeCommentUpdateDto } from './dto/ue-comment-update.dto';
-import { GetUECommentsDto } from './dto/ue-get-comments.dto';
-import { UEService } from '../ue.service';
+import { GetUeCommentsDto } from './dto/ue-get-comments.dto';
+import { UeService } from '../ue.service';
 import { User } from '../../users/interfaces/user.interface';
 import { CommentsService } from './comments.service';
 
 @Controller('ue/comments')
 export class CommentsController {
-  constructor(readonly commentsService: CommentsService, readonly ueService: UEService) {}
+  constructor(readonly commentsService: CommentsService, readonly ueService: UeService) {}
 
   @Get()
   @RequireUserType('STUDENT', 'FORMER_STUDENT')
-  async getUEComments(@GetUser() user: User, @Query() dto: GetUECommentsDto) {
-    if (!(await this.ueService.doesUEExist(dto.ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, dto.ueCode);
+  async getUEComments(@GetUser() user: User, @Query() dto: GetUeCommentsDto) {
+    if (!(await this.ueService.doesUeExist(dto.ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, dto.ueCode);
     return this.commentsService.getComments(user.id, dto, user.permissions.includes('commentModerator'));
   }
 
   @Post()
   @RequireUserType('STUDENT')
-  async PostUEComment(@GetUser() user: User, @Body() body: UECommentPostDto) {
-    if (!(await this.ueService.doesUEExist(body.ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, body.ueCode);
-    if (!(await this.ueService.hasAlreadyDoneThisUE(user.id, body.ueCode)))
+  async PostUEComment(@GetUser() user: User, @Body() body: UeCommentPostDto) {
+    if (!(await this.ueService.doesUeExist(body.ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, body.ueCode);
+    if (!(await this.ueService.hasAlreadyDoneThisUe(user.id, body.ueCode)))
       throw new AppException(ERROR_CODE.NOT_ALREADY_DONE_UE);
     if (await this.commentsService.hasAlreadyPostedAComment(user.id, body.ueCode))
       throw new AppException(ERROR_CODE.FORBIDDEN_ALREADY_COMMENTED);
