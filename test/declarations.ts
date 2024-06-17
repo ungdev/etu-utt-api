@@ -102,12 +102,11 @@ Spec.prototype.expectUsers = function (app: AppProvider, users: FakeUser[], coun
     deepDateToString({
       items: users.map((user) => ({
         ...pick(user, 'id', 'firstName', 'lastName', 'login', 'studentId', 'permissions', 'userType'),
-        infos: omit(user.infos, 'id'),
+        infos: pick(user.infos, 'nickname', 'avatar', 'nationality', 'passions', 'website'),
         branchSubscriptions: user.branchSubscriptions.map((branch) => pick(branch, 'id')),
-        mailsPhones: omit(user.mailsPhones, 'id'),
-        socialNetwork: omit(user.socialNetwork, 'id'),
-        addresses: user.addresses.map((address) => omit(address, 'id')),
-        preference: omit(user.preference, 'id'),
+        mailsPhones: pick(user.mailsPhones, 'mailUTT'),
+        socialNetwork: omit(user.socialNetwork, 'id', 'discord'),
+        addresses: [],
       })),
       itemCount: count,
       itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,

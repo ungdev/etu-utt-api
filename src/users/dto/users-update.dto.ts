@@ -1,4 +1,5 @@
-import { IsArray, IsBoolean, IsOptional, IsString } from 'class-validator';
+import { AddressPrivacy, Language } from '@prisma/client';
+import { IsArray, IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
 
 export class UserUpdateDto {
   @IsString()
@@ -55,11 +56,23 @@ export class UserUpdateDto {
 
   @IsString()
   @IsOptional()
-  pseudoDiscord?: string;
+  discord?: string;
+
+  @IsEnum(Language)
+  @IsOptional()
+  language?: Language;
 
   @IsBoolean()
   @IsOptional()
-  wantDiscordUTT?: boolean;
+  wantDiscordUtt?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  wantDaymail?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  wantDayNotif?: boolean;
 
   @IsBoolean()
   @IsOptional()
@@ -73,9 +86,9 @@ export class UserUpdateDto {
   @IsOptional()
   displayPhone?: boolean;
 
-  @IsBoolean()
+  @IsEnum(AddressPrivacy)
   @IsOptional()
-  displayAddress?: boolean;
+  displayAddress?: AddressPrivacy;
 
   @IsBoolean()
   @IsOptional()

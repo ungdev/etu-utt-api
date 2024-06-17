@@ -31,6 +31,7 @@ export {
   AssoMembershipRole as RawAssoMembershipRole,
   AssoMembership as RawAssoMembership,
   UserHomepageWidget as RawHomepageWidget,
+  UserPrivacy as RawUserPrivacy,
 } from '@prisma/client';
 
 export { RawTranslation };

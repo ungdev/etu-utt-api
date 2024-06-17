@@ -47,15 +47,15 @@ const GetCurrentUserE2ESpec = e2eSuite('GET /users/current', (app) => {
       linkedin: userFromDb.socialNetwork.linkedin,
       twitch: userFromDb.socialNetwork.twitch,
       spotify: userFromDb.socialNetwork.spotify,
-      discord: userFromDb.socialNetwork.pseudoDiscord,
+      discord: userFromDb.socialNetwork.discord,
       infoDisplayed: {
-        displayBirthday: userFromDb.preference.displayBirthday,
-        displayMailPersonal: userFromDb.preference.displayMailPersonal,
-        displayPhone: userFromDb.preference.displayPhone,
-        displayAddress: userFromDb.preference.displayAddress,
-        displaySex: userFromDb.preference.displaySex,
-        displayDiscord: userFromDb.preference.displayDiscord,
-        displayTimetable: userFromDb.preference.displayTimetable,
+        displayBirthday: userFromDb.privacy.birthday,
+        displayMailPersonal: userFromDb.privacy.mailPersonal,
+        displayPhone: userFromDb.privacy.phoneNumber,
+        displayAddress: userFromDb.privacy.address,
+        displaySex: userFromDb.privacy.sex,
+        displayDiscord: userFromDb.privacy.discord,
+        displayTimetable: userFromDb.privacy.timetable,
       },
     });
 

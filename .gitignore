@@ -110,3 +110,6 @@ yarn.lock
 # Build files
 docs/_build/
 docs/build/
+
+# OLD DATABASE, DO NOT PUSH, IT CONTAINS SENSITIVE DATA
+migration/etuutt_old/etuutt_old.sql

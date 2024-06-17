@@ -32,9 +32,9 @@ const GetUserE2ESpec = e2eSuite('GET /users/:userId', (app) => {
       nickname: userFromDb.infos.nickname,
       type: userFromDb.userType,
       avatar: userFromDb.infos.avatar,
-      sex: userFromDb.preference.displaySex ? userFromDb.infos.sex : undefined,
+      sex: userFromDb.privacy.sex ? userFromDb.infos.sex : undefined,
       nationality: userFromDb.infos.nationality,
-      birthday: userFromDb.preference.displayBirthday ? userFromDb.infos.birthday : undefined,
+      birthday: userFromDb.privacy.birthday ? userFromDb.infos.birthday : undefined,
       passions: userFromDb.infos.passions,
       website: userFromDb.infos.website,
       branch: branch?.branchOption.branch.code ?? undefined,
@@ -42,21 +42,22 @@ const GetUserE2ESpec = e2eSuite('GET /users/:userId', (app) => {
       branchOption: branch?.branchOption.code ?? undefined,
       mailUTT: userFromDb.mailsPhones === null ? undefined : userFromDb.mailsPhones.mailUTT,
       mailPersonal:
-        userFromDb.preference.displayMailPersonal && !(userFromDb.mailsPhones === null)
+        userFromDb.privacy.mailPersonal && !(userFromDb.mailsPhones === null)
           ? userFromDb.mailsPhones.mailPersonal
           : undefined,
       phone:
-        userFromDb.preference.displayPhone && !(userFromDb.mailsPhones === null)
+        userFromDb.privacy.phoneNumber && !(userFromDb.mailsPhones === null)
           ? userFromDb.mailsPhones.phoneNumber
           : undefined,
-      addresses: userFromDb.preference.displayAddress
-        ? userFromDb.addresses.map((address) => ({
-            street: address.street,
-            postalCode: address.postalCode,
-            city: address.city,
-            country: userFromDb.preference.displayAddress ? address.country : undefined,
-          }))
-        : [],
+      addresses:
+        userFromDb.privacy.address === 'ALL_PUBLIC'
+          ? userFromDb.addresses.map((address) => ({
+              street: address.street,
+              postalCode: address.postalCode,
+              city: address.city,
+              country: address.country,
+            }))
+          : [],
       facebook: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.facebook,
       twitter: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.twitter,
       instagram: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.instagram,
@@ -64,8 +65,8 @@ const GetUserE2ESpec = e2eSuite('GET /users/:userId', (app) => {
       twitch: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.twitch,
       spotify: userFromDb.socialNetwork === null ? undefined : userFromDb.socialNetwork.spotify,
       discord:
-        userFromDb.preference.displayDiscord && !(userFromDb.socialNetwork === null)
-          ? userFromDb.socialNetwork.pseudoDiscord
+        userFromDb.privacy.discord && !(userFromDb.socialNetwork === null)
+          ? userFromDb.socialNetwork.discord
           : undefined,
     };
 
