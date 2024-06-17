@@ -4,8 +4,8 @@ import {
   createBranch,
   createBranchOption,
   createSemester,
-  createUE,
-  createUESubscription,
+  createUe,
+  createUeSubscription,
   createAnnalType,
   createAnnal,
 } from '../../../utils/fakedb';
@@ -23,8 +23,8 @@ const DeleteAnnal = e2eSuite('DELETE /ue/annals/{annalId}', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUE(app, { openSemesters: [semester], branchOption: [branchOption] });
-  createUESubscription(app, { user: senderUser, ue, semester });
+  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
+  createUeSubscription(app, { user: senderUser, ue, semester });
   const annal_validated = createAnnal(app, { semester, sender: senderUser, type: annalType, ue });
 
   it('should return a 401 as user is not authenticated', () => {
@@ -60,7 +60,7 @@ const DeleteAnnal = e2eSuite('DELETE /ue/annals/{annalId}', (app) => {
       .spec()
       .withBearerToken(senderUser.token)
       .delete(`/ue/annals/${annal_validated.id}`)
-      .expectUEAnnal({
+      .expectUeAnnal({
         ...pick(annal_validated, 'id', 'semesterId'),
         type: annalType,
         status: CommentStatus.DELETED | CommentStatus.VALIDATED,
@@ -73,7 +73,7 @@ const DeleteAnnal = e2eSuite('DELETE /ue/annals/{annalId}', (app) => {
       });
     return app()
       .get(PrismaService)
-      .uEAnnal.update({
+      .ueAnnal.update({
         where: {
           id: annal_validated.id,
         },

@@ -1,20 +1,20 @@
-import { RawUEStarVote, RawUEStarCriterion, RawUserUESubscription } from '../../../src/prisma/types';
+import { RawUeStarVote, RawUeStarCriterion, RawUserUeSubscription } from '../../../src/prisma/types';
 import { PrismaClient } from '@prisma/client';
 import { faker } from '@faker-js/faker';
 
 export default function ueStarVotesSeed(
   prisma: PrismaClient,
-  criteria: RawUEStarCriterion[],
-  ueSubscriptions: RawUserUESubscription[],
-): Promise<RawUEStarVote[]> {
+  criteria: RawUeStarCriterion[],
+  ueSubscriptions: RawUserUeSubscription[],
+): Promise<RawUeStarVote[]> {
   console.log('Seeding UE comments...');
-  const votes: Promise<RawUEStarVote>[] = [];
+  const votes: Promise<RawUeStarVote>[] = [];
   for (const subscription of ueSubscriptions) {
     if (faker.datatype.boolean()) continue;
     const criteriaVoted = faker.helpers.arrayElements(criteria);
     for (const criterion of criteriaVoted) {
       votes.push(
-        prisma.uEStarVote.create({
+        prisma.ueStarVote.create({
           data: {
             user: { connect: { id: subscription.userId } },
             ue: { connect: { id: subscription.ueId } },

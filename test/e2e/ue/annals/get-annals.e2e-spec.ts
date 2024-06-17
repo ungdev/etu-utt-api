@@ -4,14 +4,14 @@ import {
   createBranch,
   createBranchOption,
   createSemester,
-  createUE,
-  createUESubscription,
+  createUe,
+  createUeSubscription,
   createAnnalType,
   createAnnal,
 } from '../../../utils/fakedb';
 import { e2eSuite } from '../../../utils/test_utils';
 import { ERROR_CODE } from '../../../../src/exceptions';
-import { UEAnnalFile } from '../../../../src/ue/annals/interfaces/annal.interface';
+import { UeAnnalFile } from '../../../../src/ue/annals/interfaces/annal.interface';
 import { JsonLikeVariant } from 'test/declarations';
 import { pick } from '../../../../src/utils';
 import { CommentStatus } from '../../../../src/ue/comments/interfaces/comment.interface';
@@ -25,8 +25,8 @@ const GetAnnal = e2eSuite('GET /ue/annals', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUE(app, { openSemesters: [semester], branchOption: [branchOption] });
-  createUESubscription(app, { user: senderUser, ue, semester });
+  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
+  createUeSubscription(app, { user: senderUser, ue, semester });
   const annal_not_validated = createAnnal(
     app,
     { semester, sender: senderUser, type: annalType, ue },
@@ -84,7 +84,7 @@ const GetAnnal = e2eSuite('GET /ue/annals', (app) => {
       .withQueryParams({
         ueCode: ue.code,
       })
-      .expectUEAnnals([annal_not_validated, annal_validated, annal_not_uploaded].map(formatAnnalFile));
+      .expectUeAnnals([annal_not_validated, annal_validated, annal_not_uploaded].map(formatAnnalFile));
     await pactum
       .spec()
       .withBearerToken(nonUeUser.token)
@@ -92,7 +92,7 @@ const GetAnnal = e2eSuite('GET /ue/annals', (app) => {
       .withQueryParams({
         ueCode: ue.code,
       })
-      .expectUEAnnals([annal_validated].map(formatAnnalFile));
+      .expectUeAnnals([annal_validated].map(formatAnnalFile));
     return pactum
       .spec()
       .withBearerToken(moderator.token)
@@ -100,10 +100,10 @@ const GetAnnal = e2eSuite('GET /ue/annals', (app) => {
       .withQueryParams({
         ueCode: ue.code,
       })
-      .expectUEAnnals([annal_not_validated, annal_validated, annal_not_uploaded, annal_deleted].map(formatAnnalFile));
+      .expectUeAnnals([annal_not_validated, annal_validated, annal_not_uploaded, annal_deleted].map(formatAnnalFile));
   });
 
-  const formatAnnalFile = (from: Partial<UEAnnalFile>): JsonLikeVariant<UEAnnalFile> => {
+  const formatAnnalFile = (from: Partial<UeAnnalFile>): JsonLikeVariant<UeAnnalFile> => {
     return {
       ...pick(from, 'id', 'semesterId', 'status', 'sender', 'type', 'ue'),
       createdAt: from.createdAt?.toISOString(),

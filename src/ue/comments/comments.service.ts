@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { RawUserUESubscription } from 'src/prisma/types';
-import { UECommentPostDto } from './dto/ue-comment-post.dto';
+import { RawUserUeSubscription } from 'src/prisma/types';
+import { UeCommentPostDto } from './dto/ue-comment-post.dto';
 import { CommentReplyDto } from './dto/ue-comment-reply.dto';
 import { UeCommentUpdateDto } from './dto/ue-comment-update.dto';
-import { GetUECommentsDto } from './dto/ue-get-comments.dto';
-import { UECommentReply } from './interfaces/comment-reply.interface';
-import { CommentStatus, UEComment } from './interfaces/comment.interface';
+import { GetUeCommentsDto } from './dto/ue-get-comments.dto';
+import { UeCommentReply } from './interfaces/comment-reply.interface';
+import { CommentStatus, UeComment } from './interfaces/comment.interface';
 import { ConfigModule } from '../../config/config.module';
 
 @Injectable()
@@ -14,20 +14,20 @@ export class CommentsService {
   constructor(readonly prisma: PrismaService, readonly config: ConfigModule) {}
 
   /**
-   * Retrieves a page of {@link UEComment} matching the user query
+   * Retrieves a page of {@link UeComment} matching the user query
    * @param userId the user fetching the comments. Used to determine if an anonymous comment should include its author
    * @param dto the query parameters of this route
    * @param bypassAnonymousData if true, the author of an anonymous comment will be included in the response (this is the case if the user is a moderator)
-   * @returns a page of {@link UEComment} matching the user query
+   * @returns a page of {@link UeComment} matching the user query
    */
   async getComments(
     userId: string,
-    dto: GetUECommentsDto,
+    dto: GetUeCommentsDto,
     bypassAnonymousData: boolean,
-  ): Promise<Pagination<UEComment>> {
+  ): Promise<Pagination<UeComment>> {
     // Use a prisma transaction to execute two requests at once:
     // We fetch a page of comments matching our filters and retrieve the total count of comments matching our filters
-    const comments = await this.prisma.uEComment.findMany(
+    const comments = await this.prisma.ueComment.findMany(
       {
         args: {
           userId: userId,
@@ -44,7 +44,7 @@ export class CommentsService {
       },
       userId,
     );
-    const commentCount = await this.prisma.uEComment.count({
+    const commentCount = await this.prisma.ueComment.count({
       where: { ue: { code: dto.ueCode } },
     });
     // If the user is neither a moderator or the comment author, and the comment is anonymous,
@@ -60,13 +60,13 @@ export class CommentsService {
   }
 
   /**
-   * Retrieves a single {@link UEComment} from a comment UUID
+   * Retrieves a single {@link UeComment} from a comment UUID
    * @param commentId the UUID of the comment
    * @param userId the user fetching the comments. Used to determine if an anonymous comment should include its author
-   * @returns a page of {@link UEComment} matching the user query
+   * @returns a page of {@link UeComment} matching the user query
    */
-  async getCommentFromId(commentId: string, userId: string, isModerator: boolean): Promise<UEComment> {
-    const comment = await this.prisma.uEComment.findUnique(
+  async getCommentFromId(commentId: string, userId: string, isModerator: boolean): Promise<UeComment> {
+    const comment = await this.prisma.ueComment.findUnique(
       {
         args: {
           includeDeletedReplied: isModerator,
@@ -90,7 +90,7 @@ export class CommentsService {
    * @returns whether the user is the author of the {@link commentId | comment}
    */
   async isUserCommentAuthor(userId: string, commentId: string, isModerator: boolean): Promise<boolean> {
-    const comment = await this.prisma.uEComment.findUnique({
+    const comment = await this.prisma.ueComment.findUnique({
       args: {
         includeDeletedReplied: isModerator,
         includeLastValidatedBody: isModerator,
@@ -110,7 +110,7 @@ export class CommentsService {
    */
   async doesReplyExist(replyId: string): Promise<boolean> {
     return (
-      (await this.prisma.uECommentReply.count({
+      (await this.prisma.ueCommentReply.count({
         where: {
           id: replyId,
         },
@@ -127,7 +127,7 @@ export class CommentsService {
    */
   async isUserCommentReplyAuthor(userId: string, replyId: string): Promise<boolean> {
     return (
-      (await this.prisma.uECommentReply.count({
+      (await this.prisma.ueCommentReply.count({
         where: {
           id: replyId,
           authorId: userId,
@@ -143,8 +143,8 @@ export class CommentsService {
    * @param ueCode the code of the UE
    * @returns the last semester done by the {@link user} for the {@link ueCode | ue}
    */
-  async getLastSemesterDoneByUser(userId: string, ueCode: string): Promise<RawUserUESubscription> {
-    return this.prisma.userUESubscription.findFirst({
+  async getLastSemesterDoneByUser(userId: string, ueCode: string): Promise<RawUserUeSubscription> {
+    return this.prisma.userUeSubscription.findFirst({
       where: {
         ue: {
           code: ueCode,
@@ -168,13 +168,13 @@ export class CommentsService {
    */
   async hasAlreadyPostedAComment(userId: string, ueCode: string) {
     // Find the UE
-    const ue = await this.prisma.withDefaultBehaviour.uE.findUnique({
+    const ue = await this.prisma.withDefaultBehaviour.ue.findUnique({
       where: {
         code: ueCode,
       },
     });
     // Find a comment (in the UE) whose author is the user
-    const comment = await this.prisma.uEComment.findMany({
+    const comment = await this.prisma.ueComment.findMany({
       args: {
         includeDeletedReplied: false,
         includeLastValidatedBody: false,
@@ -193,10 +193,10 @@ export class CommentsService {
    * @remarks The user must not be null and UE must exist
    * @param body the body of the request
    * @param userId the user posting the comment
-   * @returns the created {@link UEComment}
+   * @returns the created {@link UeComment}
    */
-  async createComment(body: UECommentPostDto, userId: string): Promise<UEComment> {
-    return this.prisma.uEComment.create(
+  async createComment(body: UeCommentPostDto, userId: string): Promise<UeComment> {
+    return this.prisma.ueComment.create(
       {
         args: {
           includeDeletedReplied: true,
@@ -242,8 +242,8 @@ export class CommentsService {
     commentId: string,
     userId: string,
     isModerator: boolean,
-  ): Promise<UEComment> {
-    const previousComment = await this.prisma.uEComment.findUnique({
+  ): Promise<UeComment> {
+    const previousComment = await this.prisma.ueComment.findUnique({
       args: {
         userId,
         includeDeletedReplied: true,
@@ -259,7 +259,7 @@ export class CommentsService {
       previousComment.status & CommentStatus.VALIDATED &&
       !isModerator;
 
-    return this.prisma.uEComment.update(
+    return this.prisma.ueComment.update(
       {
         args: {
           userId,
@@ -289,7 +289,7 @@ export class CommentsService {
    * @returns whether the user has already upvoted the {@link commentId | comment}
    */
   async hasAlreadyUpvoted(userId: string, commentId: string) {
-    const commentUpvote = await this.prisma.uECommentUpvote.findFirst({
+    const commentUpvote = await this.prisma.ueCommentUpvote.findFirst({
       where: {
         commentId,
         userId,
@@ -304,10 +304,10 @@ export class CommentsService {
    * @param userId the user posting the reply
    * @param commentId the id of the comment to reply to
    * @param reply the reply to post
-   * @returns the created {@link UECommentReply}
+   * @returns the created {@link UeCommentReply}
    */
-  async replyComment(userId: string, commentId: string, reply: CommentReplyDto): Promise<UECommentReply> {
-    return this.prisma.uECommentReply.create({
+  async replyComment(userId: string, commentId: string, reply: CommentReplyDto): Promise<UeCommentReply> {
+    return this.prisma.ueCommentReply.create({
       data: {
         body: reply.body,
         commentId,
@@ -321,10 +321,10 @@ export class CommentsService {
    * @remarks The {@link replyId | reply} must exist
    * @param replyId the id of the reply to edit
    * @param reply the modifications to apply to the reply
-   * @returns the updated {@link UECommentReply}
+   * @returns the updated {@link UeCommentReply}
    */
-  async editReply(replyId: string, reply: CommentReplyDto): Promise<UECommentReply> {
-    return this.prisma.uECommentReply.update({
+  async editReply(replyId: string, reply: CommentReplyDto): Promise<UeCommentReply> {
+    return this.prisma.ueCommentReply.update({
       data: {
         body: reply.body,
       },
@@ -338,10 +338,10 @@ export class CommentsService {
    * Deletes a reply
    * @remarks The {@link replyId | reply} must exist
    * @param replyId the id of the reply to delete
-   * @returns the deleted {@link UECommentReply}
+   * @returns the deleted {@link UeCommentReply}
    */
-  async deleteReply(replyId: string): Promise<UECommentReply> {
-    return this.prisma.uECommentReply.update({
+  async deleteReply(replyId: string): Promise<UeCommentReply> {
+    return this.prisma.ueCommentReply.update({
       where: {
         id: replyId,
       },
@@ -358,7 +358,7 @@ export class CommentsService {
    * @param commentId the id of the comment to upvote
    */
   async upvoteComment(userId: string, commentId: string) {
-    await this.prisma.uECommentUpvote.create({
+    await this.prisma.ueCommentUpvote.create({
       data: {
         commentId,
         userId,
@@ -373,7 +373,7 @@ export class CommentsService {
    * @param commentId the id of the comment to un-upvote
    */
   async deUpvoteComment(userId: string, commentId: string) {
-    await this.prisma.uECommentUpvote.deleteMany({
+    await this.prisma.ueCommentUpvote.deleteMany({
       where: {
         commentId,
         userId,
@@ -386,10 +386,10 @@ export class CommentsService {
    * @remarks The {@link commentId | comment} must exist
    * @param commentId the if of the comment to delete
    * @param userId the user deleting the comment
-   * @returns the deleted {@link UEComment}
+   * @returns the deleted {@link UeComment}
    */
-  deleteComment(commentId: string, userId: string): Promise<UEComment> {
-    return this.prisma.uEComment.update(
+  deleteComment(commentId: string, userId: string): Promise<UeComment> {
+    return this.prisma.ueComment.update(
       {
         args: {
           userId,
@@ -414,7 +414,7 @@ export class CommentsService {
    */
   async doesCommentExist(commentId: string, userId: string, includeUnverified: boolean, includeDeleted = false) {
     return (
-      (await this.prisma.uEComment.count({
+      (await this.prisma.ueComment.count({
         where: {
           id: commentId,
           deletedAt: includeDeleted ? undefined : null,

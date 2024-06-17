@@ -190,7 +190,7 @@ e2eSuite("Foo", (app) => { // Vous pouvez aussi utiliser unitSuite, ou n'importe
   const branche: FakeBranch = fakedb.createBranch(app); // Branch n'a pas de dépendance
   const semestre: FakeSemester = fakedb.createSemester(app, { code: registerUniqueValue('semester', 'code', 'A24') }); // Semester n'a pas de dépendance
   const branchOption: FakeBranchOption = createBranchOption(app, { branch }); // BranchOption a 1 dépendance: Branch
-  const ue: FakeUE = createUE(
+  const ue: FakeUe = createUe(
       app,
       { semesters: [semestre], branchOption }, // UE a 2 dépendances : une liste de Semester, et une BranchOption
       {

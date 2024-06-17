@@ -1,10 +1,10 @@
 import {
   createUser,
-  createUE,
+  createUe,
   createBranch,
   createBranchOption,
   createSemester,
-  createUESubscription,
+  createUeSubscription,
   createComment,
 } from '../../../utils/fakedb';
 import * as pactum from 'pactum';
@@ -19,8 +19,8 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUE(app, { openSemesters: [semester], branchOption: [branchOption] });
-  createUESubscription(app, { user: user2, ue, semester });
+  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
+  createUeSubscription(app, { user: user2, ue, semester });
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum
@@ -93,7 +93,7 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
         body: 'Cette  UE est troooop bien',
         isAnonymous: true,
       })
-      .expectUEComment(
+      .expectUeComment(
         {
           id: JsonLike.ANY_UUID,
           author: {
@@ -116,7 +116,7 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
         },
         true,
       );
-    return app().get(PrismaService).uEComment.deleteMany();
+    return app().get(PrismaService).ueComment.deleteMany();
   });
 
   it('should return a 403 while trying to post another comment', async () => {
@@ -130,7 +130,7 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
         body: 'Cette  UE est troooop bien',
       })
       .expectAppError(ERROR_CODE.FORBIDDEN_ALREADY_COMMENTED);
-    return app().get(PrismaService).uEComment.deleteMany();
+    return app().get(PrismaService).ueComment.deleteMany();
   });
 
   it('should return a comment as a logged in user', async () => {
@@ -142,7 +142,7 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
         ueCode: ue.code,
         body: 'Cette  UE est troooop bien',
       })
-      .expectUEComment(
+      .expectUeComment(
         {
           id: JsonLike.ANY_UUID,
           author: {
@@ -165,7 +165,7 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
         },
         true,
       );
-    return app().get(PrismaService).uEComment.deleteMany();
+    return app().get(PrismaService).ueComment.deleteMany();
   });
 });
 

@@ -1,6 +1,6 @@
 import {
   createUser,
-  createUE,
+  createUe,
   createComment,
   createCommentUpvote,
   createBranchOption,
@@ -19,7 +19,7 @@ const PostUpvote = e2eSuite('POST /ue/comments/{commentId}/upvote', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUE(app, { openSemesters: [semester], branchOption: [branchOption] });
+  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
   const comment = createComment(app, { ue, user, semester });
 
   it('should return a 401 as user is not authenticated', () => {
@@ -57,7 +57,7 @@ const PostUpvote = e2eSuite('POST /ue/comments/{commentId}/upvote', (app) => {
       .post(`/ue/comments/${comment.id}/upvote`)
       .expectStatus(HttpStatus.OK)
       .expectJsonMatchStrict({ upvoted: true });
-    return app().get(PrismaService).uECommentUpvote.deleteMany();
+    return app().get(PrismaService).ueCommentUpvote.deleteMany();
   });
 
   it('should not be able to re-upvote upvote', async () => {
@@ -67,7 +67,7 @@ const PostUpvote = e2eSuite('POST /ue/comments/{commentId}/upvote', (app) => {
       .withBearerToken(user2.token)
       .post(`/ue/comments/${comment.id}/upvote`)
       .expectAppError(ERROR_CODE.FORBIDDEN_ALREADY_UPVOTED);
-    return app().get(PrismaService).uECommentUpvote.deleteMany();
+    return app().get(PrismaService).ueCommentUpvote.deleteMany();
   });
 });
 

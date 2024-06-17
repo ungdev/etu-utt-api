@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Response } from '@nestjs/common';
 import { AnnalsService } from './annals.service';
-import { UEService } from '../ue.service';
+import { UeService } from '../ue.service';
 import { Response as ExpressResponse } from 'express';
 import { UUIDParam } from '../../app.pipe';
 import { RequireUserType, GetUser } from '../../auth/decorator';
@@ -15,22 +15,22 @@ import { UploadAnnalDto } from './dto/upload-annal.dto';
 
 @Controller('ue/annals')
 export class AnnalsController {
-  constructor(readonly annalsService: AnnalsService, readonly ueService: UEService) {}
+  constructor(readonly annalsService: AnnalsService, readonly ueService: UeService) {}
 
   @Get()
   @RequireUserType('STUDENT', 'FORMER_STUDENT')
   async getUeAnnalList(@Query() { ueCode }: GetFromUeCodeDto, @GetUser() user: User) {
-    if (!(await this.ueService.doesUEExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
+    if (!(await this.ueService.doesUeExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     return this.annalsService.getUEAnnalsList(user, ueCode, user.permissions.includes('annalModerator'));
   }
 
   @Post()
   @RequireUserType('STUDENT')
   async createUeAnnal(@Body() { ueCode, semester, typeId }: CreateAnnal, @GetUser() user: User) {
-    if (!(await this.ueService.doesUEExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
+    if (!(await this.ueService.doesUeExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     if (!(await this.annalsService.doesAnnalTypeExist(typeId))) throw new AppException(ERROR_CODE.NO_SUCH_ANNAL_TYPE);
     if (
-      !(await this.ueService.hasDoneThisUEInSemester(user.id, ueCode, semester)) &&
+      !(await this.ueService.hasDoneThisUeInSemester(user.id, ueCode, semester)) &&
       !user.permissions.includes('annalUploader')
     )
       throw new AppException(ERROR_CODE.NOT_DONE_UE_IN_SEMESTER, ueCode, semester);
@@ -40,8 +40,8 @@ export class AnnalsController {
   @Get('metadata')
   @RequireUserType('STUDENT', 'FORMER_STUDENT')
   async getUeAnnalMetadata(@Query() { ueCode }: GetFromUeCodeDto, @GetUser() user: User) {
-    if (!(await this.ueService.doesUEExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
-    if (!(await this.ueService.hasAlreadyDoneThisUE(user.id, ueCode)) && !user.permissions.includes('annalUploader'))
+    if (!(await this.ueService.doesUeExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
+    if (!(await this.ueService.hasAlreadyDoneThisUe(user.id, ueCode)) && !user.permissions.includes('annalUploader'))
       throw new AppException(ERROR_CODE.NOT_ALREADY_DONE_UE);
     return this.annalsService.getUEAnnalMetadata(user, ueCode, user.permissions.includes('annalUploader'));
   }

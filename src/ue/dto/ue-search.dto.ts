@@ -10,7 +10,7 @@ import { IsNumber, IsPositive, IsString, MaxLength, MinLength, IsOptional } from
  * @property {string} availableAtSemester - The semester where the UE is available. Optional. Must be a semester code (ie. containing 3 characters).
  * @property {number} page - The page of the results. Optional. Must be a positive number.
  */
-export class UESearchDto {
+export class UeSearchDto {
   @IsString()
   @IsOptional()
   q?: string;

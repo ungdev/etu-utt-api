@@ -1,6 +1,6 @@
 import {
   createUser,
-  createUE,
+  createUe,
   createComment,
   createBranch,
   createBranchOption,
@@ -19,7 +19,7 @@ const DeleteCommentReply = e2eSuite('DELETE /ue/comments/reply/{replyId}', (app)
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUE(app, { openSemesters: [semester], branchOption: [branchOption] });
+  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
   const comment1 = createComment(app, { user, ue, semester });
   const reply = createCommentReply(app, { user, comment: comment1 });
 
@@ -56,7 +56,7 @@ const DeleteCommentReply = e2eSuite('DELETE /ue/comments/reply/{replyId}', (app)
       .spec()
       .withBearerToken(user.token)
       .delete(`/ue/comments/reply/${reply.id}`)
-      .expectUECommentReply({
+      .expectUeCommentReply({
         id: reply.id,
         author: {
           id: reply.authorId,
@@ -71,7 +71,7 @@ const DeleteCommentReply = e2eSuite('DELETE /ue/comments/reply/{replyId}', (app)
       });
     await app()
       .get(PrismaService)
-      .uECommentReply.delete({
+      .ueCommentReply.delete({
         where: { id: reply.id },
       });
     return createCommentReply(app, { user, comment: comment1 }, reply, true);

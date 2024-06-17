@@ -80,18 +80,18 @@ const UE_SELECT_FILTER = {
   orderBy: {
     code: 'asc',
   },
-} as const satisfies Prisma.UEFindManyArgs;
+} as const satisfies Prisma.UeFindManyArgs;
 
-export type UnformattedUE = Prisma.UEGetPayload<typeof UE_SELECT_FILTER>;
-export type UE = Omit<UnformattedUE, 'starVotes'> & {
+export type UnformattedUe = Prisma.UeGetPayload<typeof UE_SELECT_FILTER>;
+export type Ue = Omit<UnformattedUe, 'starVotes'> & {
   starVotes: { [key: string]: number };
 };
 
-export function generateCustomUEModel(prisma: PrismaClient) {
-  return generateCustomModel(prisma, 'uE', UE_SELECT_FILTER, formatUE);
+export function generateCustomUeModel(prisma: PrismaClient) {
+  return generateCustomModel(prisma, 'ue', UE_SELECT_FILTER, formatUe);
 }
 
-function formatUE(_: PrismaClient, ue: UnformattedUE): UE {
+function formatUe(_: PrismaClient, ue: UnformattedUe): Ue {
   // We store rates in a object where the key is the criterion id and the value is a list ratings
   const starVoteCriteria: {
     [key: string]: {

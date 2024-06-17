@@ -7,7 +7,7 @@ import {
   createCommentReply,
   createCommentUpvote,
   createSemester,
-  createUE,
+  createUe,
   createUser,
 } from '../../../utils/fakedb';
 import { e2eSuite } from '../../../utils/test_utils';
@@ -22,7 +22,7 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUE(app, { openSemesters: [semester], branchOption: [branchOption] });
+  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
   const comments: FakeComment[] = [];
   comments.push(
     createComment(
@@ -81,14 +81,14 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
   it('should return the first page of comments', async () => {
     await app()
       .get(PrismaService)
-      .uEComment.updateMany({
+      .ueComment.updateMany({
         data: {
           lastValidatedBody: 'I like to spread fake news in my comments !',
         },
       });
     const extendedComments = await app()
       .get(PrismaService)
-      .uEComment.findMany(
+      .ueComment.findMany(
         {
           args: {
             userId: user.id,
@@ -120,13 +120,13 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
       .withQueryParams({
         ueCode: ue.code,
       })
-      .expectUEComments(commentsFiltered);
+      .expectUeComments(commentsFiltered);
   });
 
   it('should return the second page of comments', async () => {
     const extendedComments = await app()
       .get(PrismaService)
-      .uEComment.findMany(
+      .ueComment.findMany(
         {
           args: {
             userId: user.id,
@@ -144,7 +144,7 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
         page: 2,
         ueCode: ue.code,
       })
-      .expectUEComments({
+      .expectUeComments({
         items: extendedComments
           .sort((a, b) =>
             b.upvotes - a.upvotes == 0
@@ -164,14 +164,14 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
   it('should return comments with lastValidatedBodies', async () => {
     await app()
       .get(PrismaService)
-      .uEComment.updateMany({
+      .ueComment.updateMany({
         data: {
           lastValidatedBody: 'I like to spread fake news in my comments !',
         },
       });
     const extendedComments = await app()
       .get(PrismaService)
-      .uEComment.findMany(
+      .ueComment.findMany(
         {
           args: {
             userId: user.id,
@@ -199,7 +199,7 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
       .withQueryParams({
         ueCode: ue.code,
       })
-      .expectUEComments(commentsFiltered);
+      .expectUeComments(commentsFiltered);
   });
 });
 

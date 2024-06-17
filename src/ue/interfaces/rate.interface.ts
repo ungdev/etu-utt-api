@@ -13,8 +13,8 @@ const RATE_SELECT_FILTER = {
   },
 } as const;
 
-export type UERating = Prisma.UEStarVoteGetPayload<typeof RATE_SELECT_FILTER>;
+export type UeRating = Prisma.UeStarVoteGetPayload<typeof RATE_SELECT_FILTER>;
 
 export function generateCustomRateModel(prisma: PrismaClient) {
-  return generateCustomModel(prisma, 'uEStarVote', RATE_SELECT_FILTER, (_, rating: UERating) => rating);
+  return generateCustomModel(prisma, 'ueStarVote', RATE_SELECT_FILTER, (_, rating: UeRating) => rating);
 }

@@ -4,8 +4,8 @@ import {
   createBranch,
   createBranchOption,
   createSemester,
-  createUE,
-  createUESubscription,
+  createUe,
+  createUeSubscription,
   createAnnalType,
   createAnnal,
 } from '../../../utils/fakedb';
@@ -22,8 +22,8 @@ const GetAnnalFile = e2eSuite('GET /ue/annals/{annalId}', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUE(app, { openSemesters: [semester], branchOption: [branchOption] });
-  createUESubscription(app, { user: senderUser, ue, semester });
+  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
+  createUeSubscription(app, { user: senderUser, ue, semester });
   const annal_not_validated = createAnnal(
     app,
     { semester, sender: senderUser, type: annalType, ue },

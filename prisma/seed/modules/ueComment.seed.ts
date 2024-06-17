@@ -1,4 +1,4 @@
-import { RawSemester, RawUE, RawUEComment, RawUser, RawUserUESubscription } from '../../../src/prisma/types';
+import { RawSemester, RawUe, RawUeComment, RawUser, RawUserUeSubscription } from '../../../src/prisma/types';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { faker } from '@faker-js/faker';
 
@@ -7,18 +7,18 @@ const FAKER_ROUNDS = 100;
 export default function ueCommentSeed(
   prisma: PrismaClient,
   users: RawUser[],
-  ues: RawUE[],
+  ues: RawUe[],
   semester: RawSemester[],
-  ueSubscriptions: RawUserUESubscription[],
-): Promise<RawUEComment[]> {
+  ueSubscriptions: RawUserUeSubscription[],
+): Promise<RawUeComment[]> {
   console.log('Seeding UE comments...');
-  const comments: Promise<RawUEComment>[] = [];
+  const comments: Promise<RawUeComment>[] = [];
 
   const ueSubscriptionsThatEndedInAComment = faker.helpers.arrayElements(ueSubscriptions, FAKER_ROUNDS);
   for (const subscription of ueSubscriptionsThatEndedInAComment) {
     const date: Date = faker.date.past();
     const anonymous = faker.datatype.boolean();
-    const answers: Prisma.UECommentReplyCreateWithoutCommentInput[] = new Array(faker.datatype.number(4))
+    const answers: Prisma.UeCommentReplyCreateWithoutCommentInput[] = new Array(faker.datatype.number(4))
       .fill(undefined)
       .map(() => {
         const answerDate = faker.date.soon(10, date);
@@ -30,7 +30,7 @@ export default function ueCommentSeed(
         };
       });
     comments.push(
-      prisma.uEComment.create({
+      prisma.ueComment.create({
         data: {
           isAnonymous: anonymous,
           author: {

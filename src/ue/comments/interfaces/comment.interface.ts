@@ -1,6 +1,6 @@
 import { Prisma, PrismaClient } from '@prisma/client';
 import { RequestType, generateCustomModel } from '../../../prisma/prisma.service';
-import { UECommentReply, formatReply } from './comment-reply.interface';
+import { UeCommentReply, formatReply } from './comment-reply.interface';
 import { omit } from '../../../utils';
 
 const COMMENT_SELECT_FILTER = {
@@ -61,7 +61,7 @@ const COMMENT_SELECT_FILTER = {
       createdAt: 'desc',
     },
   ],
-} satisfies Partial<RequestType<'uEComment'>>;
+} satisfies Partial<RequestType<'ueComment'>>;
 
 export type UEExtraArgs = {
   includeDeletedReplied: boolean;
@@ -69,22 +69,22 @@ export type UEExtraArgs = {
   userId: string;
 };
 
-export type UnformattedUEComment = Prisma.UECommentGetPayload<typeof COMMENT_SELECT_FILTER>;
-export type UEComment = Omit<UnformattedUEComment, 'upvotes' | 'deletedAt' | 'validatedAt' | 'answers'> & {
+export type UnformattedUEComment = Prisma.UeCommentGetPayload<typeof COMMENT_SELECT_FILTER>;
+export type UeComment = Omit<UnformattedUEComment, 'upvotes' | 'deletedAt' | 'validatedAt' | 'answers'> & {
   upvotes: number;
   upvoted: boolean;
   status: CommentStatus;
-  answers: UECommentReply[];
+  answers: UeCommentReply[];
   lastValidatedBody?: string | undefined;
 };
-export type UECommentWithValidSemesters = UEComment & {
+export type UECommentWithValidSemesters = UeComment & {
   semesters: string[];
 };
 
 export function generateCustomCommentModel(prisma: PrismaClient) {
   return generateCustomModel(
     prisma,
-    'uEComment',
+    'ueComment',
     COMMENT_SELECT_FILTER,
     formatComment,
     async (query, args: UEExtraArgs) => {
@@ -111,7 +111,7 @@ export function generateCustomCommentModel(prisma: PrismaClient) {
   );
 }
 
-export function formatComment(prisma: PrismaClient, comment: UnformattedUEComment, userId?: string): UEComment {
+export function formatComment(prisma: PrismaClient, comment: UnformattedUEComment, userId?: string): UeComment {
   return {
     ...omit(comment, 'deletedAt', 'validatedAt'),
     answers: comment.answers.map((answer) => formatReply(prisma, answer)),

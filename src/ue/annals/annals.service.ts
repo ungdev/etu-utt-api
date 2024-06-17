@@ -15,14 +15,14 @@ export class AnnalsService {
   constructor(readonly prisma: PrismaService, readonly config: ConfigModule) {}
 
   async getUEAnnalMetadata(user: User, ueCode: string, isModerator: boolean) {
-    const ue = await this.prisma.uE.findUnique({
+    const ue = await this.prisma.ue.findUnique({
       where: {
         code: ueCode,
       },
     });
     const semesters = !isModerator
       ? (
-          await this.prisma.userUESubscription.findMany({
+          await this.prisma.userUeSubscription.findMany({
             where: {
               userId: user.id,
               ueId: ue.id,
@@ -30,7 +30,7 @@ export class AnnalsService {
           })
         ).map((subscription) => subscription.semesterId)
       : ue.openSemester.map((semester) => semester.code);
-    const annalType = await this.prisma.uEAnnalType.findMany();
+    const annalType = await this.prisma.ueAnnalType.findMany();
     return {
       types: annalType,
       semesters,
@@ -39,7 +39,7 @@ export class AnnalsService {
 
   async doesAnnalTypeExist(typeId: string) {
     return (
-      (await this.prisma.uEAnnalType.count({
+      (await this.prisma.ueAnnalType.count({
         where: {
           id: typeId,
         },
@@ -49,7 +49,7 @@ export class AnnalsService {
 
   async createAnnalFile(user: User, params: CreateAnnal) {
     // Create upload/file entry
-    return this.prisma.uEAnnal.create({
+    return this.prisma.ueAnnal.create({
       data: {
         type: {
           connect: {
@@ -88,13 +88,13 @@ export class AnnalsService {
         },
       },
     };
-    const fileEntry = await this.prisma.uEAnnal.findUnique(dbFilter);
+    const fileEntry = await this.prisma.ueAnnal.findUnique(dbFilter);
     // We won't wait for the file to be processed to send the response.
     // Files do not need to be processed instantly and will only be displayed to all users when processed
     const promise = (async () => {
       // Create callback when file is uploaded
       const registerUploadComplete = () =>
-        this.prisma.uEAnnal.update({
+        this.prisma.ueAnnal.update({
           where: {
             id: fileEntry.id,
           },
@@ -149,7 +149,7 @@ export class AnnalsService {
     })().catch(async () => {
       // Delete file if an error occured
       // TODO: send notification to the uploader
-      this.prisma.uEAnnal.delete({
+      this.prisma.ueAnnal.delete({
         where: {
           id: fileEntry.id,
         },
@@ -162,7 +162,7 @@ export class AnnalsService {
 
   async getUEAnnalsList(user: User, ueCode: string, includeAll: boolean) {
     return (
-      await this.prisma.uEAnnal.findMany({
+      await this.prisma.ueAnnal.findMany({
         where: {
           ue: {
             code: ueCode,
@@ -202,7 +202,7 @@ export class AnnalsService {
 
   async isAnnalAccessible(userId: string, annalId: string, includeAll: boolean) {
     return (
-      (await this.prisma.uEAnnal.count({
+      (await this.prisma.ueAnnal.count({
         where: {
           id: annalId,
           deletedAt: includeAll ? undefined : null,
@@ -234,7 +234,7 @@ export class AnnalsService {
   }
 
   async getUEAnnal(annalId: string, userId: string, includeAll: boolean) {
-    return this.prisma.uEAnnal.findUnique({
+    return this.prisma.ueAnnal.findUnique({
       where: {
         id: annalId,
         deletedAt: includeAll ? undefined : null,
@@ -265,7 +265,7 @@ export class AnnalsService {
   }
 
   async getUEAnnalFile(annalId: string, userId: string, includeAll: boolean) {
-    const metadata = await this.prisma.uEAnnal.findUnique({
+    const metadata = await this.prisma.ueAnnal.findUnique({
       where: {
         id: annalId,
         deletedAt: includeAll ? undefined : null,
@@ -302,7 +302,7 @@ export class AnnalsService {
 
   async isUEAnnalSender(userId: string, annalId: string) {
     return (
-      (await this.prisma.uEAnnal.count({
+      (await this.prisma.ueAnnal.count({
         where: {
           id: annalId,
           senderId: userId,
@@ -312,7 +312,7 @@ export class AnnalsService {
   }
 
   async updateAnnalMetadata(annalId: string, metadata: UpdateAnnalDto) {
-    return this.prisma.uEAnnal.update({
+    return this.prisma.ueAnnal.update({
       where: {
         id: annalId,
       },
@@ -332,7 +332,7 @@ export class AnnalsService {
   }
 
   async deleteAnnal(annalId: string) {
-    return this.prisma.uEAnnal.update({
+    return this.prisma.ueAnnal.update({
       where: {
         id: annalId,
       },
