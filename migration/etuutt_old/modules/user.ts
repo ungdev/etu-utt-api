@@ -1,11 +1,11 @@
 import { PrismaClient, UserType } from '@prisma/client';
 import { QueryFunction } from '../make-migration';
-import { RawSemester, RawUE, RawUser } from '../../../src/prisma/types';
+import { RawSemester, RawUe, RawUser } from '../../../src/prisma/types';
 
 export async function migrateUsers(
   query: QueryFunction,
   prisma: PrismaClient,
-  ues: RawUE[],
+  ues: RawUe[],
   currentSemester: RawSemester,
 ) {
   const users = await query('SELECT * FROM etu_users LIMIT 10');
@@ -86,7 +86,7 @@ export async function migrateUsers(
               street: user.address,
             },
           },
-          UEsSubscriptions: {
+          UesSubscriptions: {
             createMany: {
               data: user.uvs.split('|').map((code) => ({
                 ueId: ues.find((ue) => ue.code === code).id,
