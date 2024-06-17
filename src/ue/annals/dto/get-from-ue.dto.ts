@@ -5,6 +5,6 @@ export class GetFromUeCodeDto {
   @IsNotEmpty()
   @IsAlphanumeric()
   @MinLength(3)
-  @MaxLength(5)
+  @MaxLength(10)
   ueCode: string;
 }
