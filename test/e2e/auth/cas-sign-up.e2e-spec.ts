@@ -34,7 +34,7 @@ const CasSignUpE2ESpec = e2eSuite('/auth/signup/cas', (app) => {
     start: new Date(),
     end: new Date(),
   });
-  const ue = fakedb.createUE(app);
+  const ue = fakedb.createUe(app);
 
   beforeAll(() => ldapServer.start());
   afterAll(() => ldapServer.stop());
@@ -112,6 +112,7 @@ const CasSignUpE2ESpec = e2eSuite('/auth/signup/cas', (app) => {
       .post('/auth/signup/cas')
       .withJson({ registerToken: app().get(AuthService).signRegisterToken(userData) })
       .expectJsonMatch({ access_token: string() });
+    // TODO : test that the user has been created, along with all its data
   };
 
   it('should successfully create the user and return a token', () => executeValidSignupRequest('student'));

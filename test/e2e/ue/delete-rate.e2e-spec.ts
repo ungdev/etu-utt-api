@@ -1,12 +1,12 @@
 import {
   createUser,
-  createUE,
+  createUe,
   createCriterion,
   createBranchOption,
   createBranch,
   createSemester,
-  createUESubscription,
-  createUERating,
+  createUeSubscription,
+  createUeRating,
 } from '../../utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from 'src/exceptions';
@@ -19,10 +19,10 @@ const DeleteRate = e2eSuite('DELETE /ue/{ueCode}/rate/{critetionId}', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUE(app, { openSemesters: [semester], branchOption: [branchOption] });
+  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
   const criterion = createCriterion(app);
-  createUESubscription(app, { user, ue, semester });
-  const rating = createUERating(app, { user, ue, criterion });
+  createUeSubscription(app, { user, ue, semester });
+  const rating = createUeRating(app, { user, ue, criterion });
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum.spec().delete(`/ue/${ue.code}/rate/${criterion.id}`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
@@ -54,11 +54,11 @@ const DeleteRate = e2eSuite('DELETE /ue/{ueCode}/rate/{critetionId}', (app) => {
   });
 
   it('should return the deleted rate for specific criterion', async () => {
-    await pactum.spec().withBearerToken(user.token).delete(`/ue/${ue.code}/rate/${criterion.id}`).expectUERate({
+    await pactum.spec().withBearerToken(user.token).delete(`/ue/${ue.code}/rate/${criterion.id}`).expectUeRate({
       criterionId: criterion.id,
       value: rating.value,
     });
-    return createUERating(app, { user, ue, criterion }, rating, true);
+    return createUeRating(app, { user, ue, criterion }, rating, true);
   });
 });
 

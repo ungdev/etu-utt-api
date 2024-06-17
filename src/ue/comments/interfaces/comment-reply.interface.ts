@@ -21,19 +21,19 @@ const REPLY_SELECT_FILTER = {
   },
 } as const;
 
-export type UnformattedUECommentReply = Prisma.UECommentGetPayload<typeof REPLY_SELECT_FILTER>;
-export type UECommentReply = Omit<
-  Prisma.UECommentReplyGetPayload<typeof REPLY_SELECT_FILTER> & {
+type UnformattedUeCommentReply = Prisma.UeCommentGetPayload<typeof REPLY_SELECT_FILTER>;
+export type UeCommentReply = Omit<
+  Prisma.UeCommentReplyGetPayload<typeof REPLY_SELECT_FILTER> & {
     status: CommentStatus;
   },
   'deletedAt'
 >;
 
-export function generateCustomUECommentReplyModel(prisma: PrismaClient) {
-  return generateCustomModel(prisma, 'uECommentReply', REPLY_SELECT_FILTER, formatReply);
+export function generateCustomUeCommentReplyModel(prisma: PrismaClient) {
+  return generateCustomModel(prisma, 'ueCommentReply', REPLY_SELECT_FILTER, formatReply);
 }
 
-export function formatReply(_: PrismaClient, reply: UnformattedUECommentReply): UECommentReply {
+export function formatReply(_: PrismaClient, reply: UnformattedUeCommentReply): UeCommentReply {
   return {
     ...omit(reply, 'deletedAt'),
     status: (reply.deletedAt && CommentStatus.DELETED) | CommentStatus.VALIDATED,

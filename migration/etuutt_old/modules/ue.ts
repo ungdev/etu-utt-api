@@ -1,10 +1,10 @@
 import { getOperationResults, PrismaOperationResult, QueryFunction } from '../make-migration';
 import { PrismaClient } from '../make-migration';
-import { RawUE } from '../../../src/prisma/types';
+import { RawUe } from '../../../src/prisma/types';
 
 export async function migrateUEs(query: QueryFunction, prisma: PrismaClient) {
   const ues = await query('SELECT * FROM etu_uvs WHERE isOld = 0');
-  const operations: PrismaOperationResult<RawUE>[] = [];
+  const operations: PrismaOperationResult<RawUe>[] = [];
   ues.sort((a, b) =>
     new RegExp(`(^|\W)${a.code}($|\W)`).test(b.antecedents)
       ? 1
@@ -12,7 +12,9 @@ export async function migrateUEs(query: QueryFunction, prisma: PrismaClient) {
       ? -1
       : 0,
   );
-  const inscriptionCodes: string[] = (await prisma.uE.findMany({ select: { inscriptionCode: true } })).map(({inscriptionCode }) => inscriptionCode);
+  const inscriptionCodes: string[] = (await prisma.ue.findMany({ select: { inscriptionCode: true } })).map(
+    ({ inscriptionCode }) => inscriptionCode,
+  );
   for (const ue of ues) {
     let inscriptionCode = ue.code.slice(0, 4);
     while (inscriptionCodes.includes(inscriptionCode)) {
@@ -28,7 +30,7 @@ export async function migrateUEs(query: QueryFunction, prisma: PrismaClient) {
       .map((u) => u.data.id);
     //console.log(ue.code, inscriptionCode);
     operations.push(
-      await prisma.uE.create({
+      await prisma.ue.create({
         code: ue.code,
         name: ue.name,
         inscriptionCode,

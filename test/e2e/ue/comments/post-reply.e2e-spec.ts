@@ -1,11 +1,11 @@
 import {
   createUser,
-  createUE,
+  createUe,
   createComment,
   createBranch,
   createBranchOption,
   createSemester,
-  createUESubscription,
+  createUeSubscription,
 } from '../../../utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../../src/exceptions';
@@ -18,9 +18,9 @@ const PostCommmentReply = e2eSuite('POST /ue/comments/{commentId}/reply', (app) 
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUE(app, { openSemesters: [semester], branchOption: [branchOption] });
+  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
   const comment = createComment(app, { ue, user, semester });
-  createUESubscription(app, { user, ue, semester });
+  createUeSubscription(app, { user, ue, semester });
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum
@@ -92,7 +92,7 @@ const PostCommmentReply = e2eSuite('POST /ue/comments/{commentId}/reply', (app) 
       .withBody({
         body: 'heyhey',
       })
-      .expectUECommentReply(
+      .expectUeCommentReply(
         {
           id: JsonLike.ANY_UUID,
           author: {
@@ -108,7 +108,7 @@ const PostCommmentReply = e2eSuite('POST /ue/comments/{commentId}/reply', (app) 
         },
         true,
       );
-    return app().get(PrismaService).uECommentReply.deleteMany();
+    return app().get(PrismaService).ueCommentReply.deleteMany();
   });
 });
 

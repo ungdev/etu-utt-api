@@ -42,7 +42,7 @@ export async function createCreditCategories(prisma: PrismaClient) {
   ];
   const operations: Promise<PrismaOperationResult<RawCreditCategory>>[] = [];
   for (const creditCategoryData of creditCategoriesData) {
-    operations.push(prisma.uECreditCategory.create(creditCategoryData));
+    operations.push(prisma.ueCreditCategory.create(creditCategoryData));
   }
   const results = await getOperationResults(operations);
   console.log(

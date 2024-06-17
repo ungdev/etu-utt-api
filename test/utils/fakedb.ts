@@ -10,16 +10,16 @@ import {
   RawTimetableEntry,
   RawTimetableEntryOverride,
   RawTimetableGroup,
-  RawUE,
+  RawUe,
   RawAnnalType,
-  RawUEComment,
-  RawUECommentReply,
-  RawUECommentUpvote,
-  RawUECredit,
-  RawUEInfo,
-  RawUEStarCriterion,
-  RawUEStarVote,
-  RawUEWorkTime,
+  RawUeComment,
+  RawUeCommentReply,
+  RawUeCommentUpvote,
+  RawUeCredit,
+  RawUeInfo,
+  RawUeStarCriterion,
+  RawUeStarVote,
+  RawUeWorkTime,
   RawUser,
   RawUserAddress,
   RawUserBranchSubscription,
@@ -27,7 +27,7 @@ import {
   RawUserMailsPhones,
   RawUserPreference,
   RawUserSocialNetwork,
-  RawUserUESubscription,
+  RawUserUeSubscription,
   Translation,
   RawUserPrivacy,
 } from '../../src/prisma/types';
@@ -37,7 +37,7 @@ import { PrismaService } from '../../src/prisma/prisma.service';
 import { AppProvider } from './test_utils';
 import { Sex, TimetableEntryType, UserType } from '@prisma/client';
 import { CommentStatus } from '../../src/ue/comments/interfaces/comment.interface';
-import { UEAnnalFile } from '../../src/ue/annals/interfaces/annal.interface';
+import { UeAnnalFile } from '../../src/ue/annals/interfaces/annal.interface';
 import { omit, pick, translationSelect } from '../../src/utils';
 
 /**
@@ -78,32 +78,32 @@ export type FakeAsso = Partial<
   }
 >;
 export type FakeSemester = Partial<RawSemester>;
-export type FakeUE = Partial<Omit<RawUE, 'nameTranslationId' | 'ueInfoId'>> & {
+export type FakeUe = Partial<Omit<RawUe, 'nameTranslationId' | 'ueInfoId'>> & {
   name?: Partial<Translation>;
-  credits?: (Partial<RawUECredit> & { category: RawCreditCategory })[];
+  credits?: (Partial<RawUeCredit> & { category: RawCreditCategory })[];
   info?: Partial<
-    Omit<RawUEInfo, 'commentTranslationId' | 'objectivesTranslationId' | 'programTranslationId'> & {
+    Omit<RawUeInfo, 'commentTranslationId' | 'objectivesTranslationId' | 'programTranslationId'> & {
       comment: Partial<Translation>;
       objectives: Partial<Translation>;
       program: Partial<Translation>;
       requirements: { code: string }[];
     }
   >;
-  workTime?: Partial<RawUEWorkTime>;
+  workTime?: Partial<RawUeWorkTime>;
   openSemesters?: Partial<RawSemester>[];
   branchOption?: Partial<RawBranchOption & { branch: RawBranch }>[];
 };
-export type FakeUserUESubscription = Partial<RawUserUESubscription>;
-export type FakeUEStarCriterion = Partial<RawUEStarCriterion>;
-export type FakeUEStarVote = Partial<RawUEStarVote>;
-export type FakeComment = Partial<RawUEComment> & { status: Exclude<CommentStatus, CommentStatus.PROCESSING> };
-export type FakeCommentUpvote = Partial<RawUECommentUpvote>;
-export type FakeCommentReply = Partial<RawUECommentReply> & {
+export type FakeUserUeSubscription = Partial<RawUserUeSubscription>;
+export type FakeUeStarCriterion = Partial<RawUeStarCriterion>;
+export type FakeUeStarVote = Partial<RawUeStarVote>;
+export type FakeComment = Partial<RawUeComment> & { status: Exclude<CommentStatus, CommentStatus.PROCESSING> };
+export type FakeCommentUpvote = Partial<RawUeCommentUpvote>;
+export type FakeCommentReply = Partial<RawUeCommentReply> & {
   status: Exclude<CommentStatus, CommentStatus.PROCESSING | CommentStatus.UNVERIFIED>;
 };
-export type FakeUECreditCategory = Partial<RawCreditCategory>;
-export type FakeUEAnnalType = Partial<RawAnnalType>;
-export type FakeUEAnnal = Partial<UEAnnalFile>;
+export type FakeUeCreditCategory = Partial<RawCreditCategory>;
+export type FakeUeAnnalType = Partial<RawAnnalType>;
+export type FakeUeAnnal = Partial<UeAnnalFile>;
 export type FakeHomepageWidget = Partial<RawHomepageWidget>;
 
 export interface FakeEntityMap {
@@ -152,29 +152,29 @@ export interface FakeEntityMap {
     params: CreateSemesterParameters;
   };
   ue: {
-    entity: FakeUE;
-    params: CreateUEParameters;
+    entity: FakeUe;
+    params: CreateUeParameters;
   };
-  userUESubscription: {
-    entity: FakeUserUESubscription;
+  userUeSubscription: {
+    entity: FakeUserUeSubscription;
     params: CreateUserSubscriptionParameters;
-    deps: { user: FakeUser; ue: FakeUE; semester: FakeSemester };
+    deps: { user: FakeUser; ue: FakeUe; semester: FakeSemester };
   };
   ueCriterion: {
-    entity: FakeUEStarCriterion;
+    entity: FakeUeStarCriterion;
     params: CreateCriterionParameters;
   };
   ueStarVote: {
-    entity: FakeUEStarVote;
-    params: CreateUERatingParameters;
-    deps: { user: FakeUser; criterion: FakeUEStarCriterion; ue: FakeUE };
+    entity: FakeUeStarVote;
+    params: CreateUeRatingParameters;
+    deps: { user: FakeUser; criterion: FakeUeStarCriterion; ue: FakeUe };
   };
   comment: {
     entity: FakeComment;
     params: CreateCommentParameters & {
       status: Exclude<CommentStatus, CommentStatus.PROCESSING>;
     };
-    deps: { user: FakeUser; ue: FakeUE; semester: FakeSemester };
+    deps: { user: FakeUser; ue: FakeUe; semester: FakeSemester };
   };
   commentUpvote: {
     entity: FakeCommentUpvote;
@@ -189,22 +189,22 @@ export interface FakeEntityMap {
     deps: { user: FakeUser; comment: FakeComment };
   };
   ueCreditCategory: {
-    entity: FakeUECreditCategory;
-    params: CreateUECreditCategoryParameters;
+    entity: FakeUeCreditCategory;
+    params: CreateUeCreditCategoryParameters;
   };
   annalType: {
-    entity: FakeUEAnnalType;
-    params: FakeUEAnnalType;
+    entity: FakeUeAnnalType;
+    params: FakeUeAnnalType;
   };
   annal: {
-    entity: FakeUEAnnal;
+    entity: FakeUeAnnal;
     params: {
       status: CommentStatus;
     };
     deps: {
-      type: FakeUEAnnalType;
+      type: FakeUeAnnalType;
       semester: FakeSemester;
-      ue: FakeUE;
+      ue: FakeUe;
       sender: FakeUser;
     };
   };
@@ -642,7 +642,7 @@ export const createAnnalType = entityFaker(
     name: faker.random.word,
   },
   async (app, params) => {
-    return app().get(PrismaService).uEAnnalType.create({ data: params });
+    return app().get(PrismaService).ueAnnalType.create({ data: params });
   },
 );
 
@@ -652,7 +652,7 @@ export const createAnnal = entityFaker(
   async (app, { semester, sender, type, ue }, { status }) =>
     app()
       .get(PrismaService)
-      .uEAnnal.create({
+      .ueAnnal.create({
         data: {
           uploadComplete: !(status & CommentStatus.PROCESSING),
           deletedAt: status & CommentStatus.DELETED ? faker.date.recent() : null,
@@ -665,8 +665,8 @@ export const createAnnal = entityFaker(
       }),
 );
 
-export type CreateUEParameters = FakeUE;
-export const createUE = entityFaker(
+export type CreateUeParameters = FakeUe;
+export const createUe = entityFaker(
   'ue',
   {
     code: faker.db.ue.code,
@@ -698,7 +698,7 @@ export const createUE = entityFaker(
   async (app, params) =>
     app()
       .get(PrismaService)
-      .withDefaultBehaviour.uE.create({
+      .withDefaultBehaviour.ue.create({
         data: {
           ...omit(params, 'name', 'credits', 'info', 'workTime', 'inscriptionCode', 'openSemesters'),
           name: {
@@ -791,11 +791,11 @@ export const createUE = entityFaker(
       })),
 );
 
-export type CreateUserSubscriptionParameters = FakeUserUESubscription;
-export const createUESubscription = entityFaker('userUESubscription', {}, async (app, dependencies, params) =>
+export type CreateUserSubscriptionParameters = FakeUserUeSubscription;
+export const createUeSubscription = entityFaker('userUeSubscription', {}, async (app, dependencies, params) =>
   app()
     .get(PrismaService)
-    .userUESubscription.create({
+    .userUeSubscription.create({
       data: {
         ...omit(params, 'semesterId', 'ueId', 'userId'),
         semester: {
@@ -817,7 +817,7 @@ export const createUESubscription = entityFaker('userUESubscription', {}, async 
     }),
 );
 
-export type CreateCriterionParameters = FakeUEStarCriterion;
+export type CreateCriterionParameters = FakeUeStarCriterion;
 export const createCriterion = entityFaker(
   'ueCriterion',
   {
@@ -826,7 +826,7 @@ export const createCriterion = entityFaker(
   async (app, params) =>
     app()
       .get(PrismaService)
-      .uEStarCriterion.create({
+      .ueStarCriterion.create({
         data: {
           ...omit(params, 'descriptionTranslationId'),
           descriptionTranslation: {
@@ -839,8 +839,8 @@ export const createCriterion = entityFaker(
       }),
 );
 
-export type CreateUERatingParameters = FakeUEStarVote;
-export const createUERating = entityFaker(
+export type CreateUeRatingParameters = FakeUeStarVote;
+export const createUeRating = entityFaker(
   'ueStarVote',
   {
     value: faker.db.ueStarVote.value,
@@ -848,7 +848,7 @@ export const createUERating = entityFaker(
   async (app, dependencies, params) => {
     return app()
       .get(PrismaService)
-      .withDefaultBehaviour.uEStarVote.create({
+      .withDefaultBehaviour.ueStarVote.create({
         data: {
           ...omit(params, 'criterionId', 'ueId', 'userId'),
           criterion: {
@@ -882,7 +882,7 @@ export const createComment = entityFaker(
   async (app, dependencies, params) => {
     const rawFakeData = await app()
       .get(PrismaService)
-      .withDefaultBehaviour.uEComment.create({
+      .withDefaultBehaviour.ueComment.create({
         data: {
           ...omit(params, 'ueId', 'authorId', 'semesterId', 'status'),
           validatedAt: params.status & CommentStatus.VALIDATED ? new Date() : undefined,
@@ -912,7 +912,7 @@ export type CreateCommentUpvoteParameters = FakeCommentUpvote;
 export const createCommentUpvote = entityFaker('commentUpvote', {}, async (app, dependencies, params) =>
   app()
     .get(PrismaService)
-    .uECommentUpvote.create({
+    .ueCommentUpvote.create({
       data: {
         ...omit(params, 'commentId', 'userId'),
         comment: {
@@ -939,7 +939,7 @@ export const createCommentReply = entityFaker(
   async (app, dependencies, params) => {
     const rawFakeReply = await app()
       .get(PrismaService)
-      .withDefaultBehaviour.uECommentReply.create({
+      .withDefaultBehaviour.ueCommentReply.create({
         data: {
           ...omit(params, 'commentId', 'authorId', 'status'),
           deletedAt: params.status & CommentStatus.DELETED ? new Date() : undefined,
@@ -959,14 +959,14 @@ export const createCommentReply = entityFaker(
   },
 );
 
-export type CreateUECreditCategoryParameters = FakeUECreditCategory;
-export const createUECreditCategory = entityFaker(
+export type CreateUeCreditCategoryParameters = FakeUeCreditCategory;
+export const createUeCreditCategory = entityFaker(
   'ueCreditCategory',
   {
     name: faker.name.jobTitle,
     code: faker.db.ueCreditCategory.code,
   },
-  async (app, params) => app().get(PrismaService).uECreditCategory.create({ data: params }),
+  async (app, params) => app().get(PrismaService).ueCreditCategory.create({ data: params }),
 );
 
 export type CreateHomepageWidgetParameters = FakeHomepageWidget;

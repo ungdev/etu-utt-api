@@ -1,6 +1,6 @@
 import { getOperationResults, PrismaOperationResult, QueryFunction } from '../make-migration';
 import { PrismaClient } from '../make-migration';
-import { RawSemester, RawUEComment } from '../../../src/prisma/types';
+import { RawSemester, RawUeComment } from '../../../src/prisma/types';
 
 export async function migrateUeComments(query: QueryFunction, prisma: PrismaClient, semesters: RawSemester[]) {
   const comments = await query(
@@ -10,7 +10,7 @@ export async function migrateUeComments(query: QueryFunction, prisma: PrismaClie
       'INNER JOIN etu_uvs u ON c.uv_id = u.id ' +
       `WHERE c.deletedAt IS NULL AND u.isOld = 0`,
   );
-  const operations: Promise<PrismaOperationResult<RawUEComment>>[] = [];
+  const operations: Promise<PrismaOperationResult<RawUeComment>>[] = [];
   for (const comment of comments) {
     const semester = semesters.find(
       (semester) => semester.start <= comment.createdAt && semester.end >= comment.createdAt,
@@ -20,7 +20,7 @@ export async function migrateUeComments(query: QueryFunction, prisma: PrismaClie
       continue;
     }
     operations.push(
-      prisma.uEComment.create({
+      prisma.ueComment.create({
         body: comment.body,
         isAnonymous: true,
         createdAt: comment.createdAt,

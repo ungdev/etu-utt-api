@@ -1,20 +1,20 @@
-import { RawSemester, RawUE, RawUser, RawUserUESubscription } from '../../../src/prisma/types';
+import { RawSemester, RawUe, RawUser, RawUserUeSubscription } from '../../../src/prisma/types';
 import { PrismaClient } from '@prisma/client';
 import { faker } from '@faker-js/faker';
 
 export default function ueSubscriptionSeed(
   prisma: PrismaClient,
   users: RawUser[],
-  ues: RawUE[],
+  ues: RawUe[],
   semesters: RawSemester[],
-): Promise<RawUserUESubscription[]> {
+): Promise<RawUserUeSubscription[]> {
   console.log('Seeding UE subscriptions...');
-  const subscriptions: Promise<RawUserUESubscription>[] = [];
+  const subscriptions: Promise<RawUserUeSubscription>[] = [];
   for (const user of users) {
-    const subscribedToUEs = faker.helpers.arrayElements(ues, faker.datatype.number({ min: 1, max: 10 }));
-    for (const ue of subscribedToUEs) {
+    const subscribedToUes = faker.helpers.arrayElements(ues, faker.datatype.number({ min: 1, max: 10 }));
+    for (const ue of subscribedToUes) {
       subscriptions.push(
-        prisma.userUESubscription.create({
+        prisma.userUeSubscription.create({
           data: {
             ue: { connect: { id: ue.id } },
             user: { connect: { id: user.id } },

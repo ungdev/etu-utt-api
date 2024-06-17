@@ -9,14 +9,14 @@ const CREDIT_CATEGORY_SELECT_FILTER = {
   orderBy: {
     code: 'asc',
   },
-} satisfies Partial<RequestType<'uECreditCategory'>>;
+} satisfies Partial<RequestType<'ueCreditCategory'>>;
 
-export type CreditCategory = Prisma.UECreditCategoryGetPayload<typeof CREDIT_CATEGORY_SELECT_FILTER>;
+export type CreditCategory = Prisma.UeCreditCategoryGetPayload<typeof CREDIT_CATEGORY_SELECT_FILTER>;
 
 export function generateCustomCreditCategoryModel(prisma: PrismaClient) {
   return generateCustomModel(
     prisma,
-    'uECreditCategory',
+    'ueCreditCategory',
     CREDIT_CATEGORY_SELECT_FILTER,
     (_, creditCategory) => creditCategory,
   );

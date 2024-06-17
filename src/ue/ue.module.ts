@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { UEController } from './ue.controller';
-import { UEService } from './ue.service';
+import { UeController } from './ue.controller';
+import { UeService } from './ue.service';
 import { CommentsController } from './comments/comments.controller';
 import { AnnalsController } from './annals/annals.controller';
 import { CreditController } from './credit/credit.controller';
@@ -13,8 +13,8 @@ import { CommentsService } from './comments/comments.service';
  * Includes `UE` listing, details, comments, comment replies, ratings
  */
 @Module({
-  controllers: [CommentsController, AnnalsController, CreditController, UEController],
-  providers: [CommentsService, AnnalsService, CreditService, UEService],
-  exports: [UEService],
+  controllers: [CommentsController, AnnalsController, CreditController, UeController],
+  providers: [CommentsService, AnnalsService, CreditService, UeService],
+  exports: [UeService],
 })
-export class UEModule {}
+export class UeModule {}

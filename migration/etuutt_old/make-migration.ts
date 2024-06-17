@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient as _PrismaClient } from '@prisma/client';
+import { PrismaClient as _PrismaClient } from '@prisma/client';
 import { createConnection } from 'mysql';
 import { cleanDb } from '../../test/utils/test_utils';
 import { migrateUEs } from './modules/ue';
@@ -11,8 +11,8 @@ import {
   RawBranchOption,
   RawCreditCategory,
   RawSemester,
-  RawUE,
-  RawUEComment,
+  RawUe,
+  RawUeComment,
 } from '../../src/prisma/types';
 import { stringToTranslation } from './utils';
 import { omit, pick } from '../../src/utils';
@@ -59,7 +59,7 @@ const prisma = _prisma.$extends({
         return { data: semester, operation: 'notChanged' };
       },
     },
-    uE: {
+    ue: {
       async create(params: {
         code: string;
         name: string;
@@ -84,11 +84,11 @@ const prisma = _prisma.$extends({
           credits: number;
           category: string;
         };
-      }): Promise<PrismaOperationResult<RawUE>> {
-        const ue = await _prisma.uE.findUnique({ where: { code: params.code } });
+      }): Promise<PrismaOperationResult<RawUe>> {
+        const ue = await _prisma.ue.findUnique({ where: { code: params.code } });
         if (!ue) {
           return {
-            data: await _prisma.uE.create({
+            data: await _prisma.ue.create({
               data: {
                 ...pick(params, 'code', 'inscriptionCode'),
                 name: stringToTranslation(params.name),
@@ -124,7 +124,7 @@ const prisma = _prisma.$extends({
         }
         // Ok that would be crazy to check every field, let's not do that
         return {
-          data: await _prisma.uE.update({
+          data: await _prisma.ue.update({
             where: { code: params.code },
             data: {
               ...pick(params, 'code', 'inscriptionCode'),
@@ -161,18 +161,18 @@ const prisma = _prisma.$extends({
         };
       },
     },
-    uECreditCategory: {
+    ueCreditCategory: {
       async create({ code, name }: { code: string; name: string }): Promise<PrismaOperationResult<RawCreditCategory>> {
-        const creditCategory = await _prisma.uECreditCategory.findUnique({ where: { code } });
+        const creditCategory = await _prisma.ueCreditCategory.findUnique({ where: { code } });
         if (!creditCategory) {
           return {
-            data: await _prisma.uECreditCategory.create({ data: { code, name } }),
+            data: await _prisma.ueCreditCategory.create({ data: { code, name } }),
             operation: 'created',
           };
         }
         if (creditCategory.name !== name) {
           return {
-            data: await _prisma.uECreditCategory.update({
+            data: await _prisma.ueCreditCategory.update({
               where: { code },
               data: { name: name },
             }),
@@ -265,7 +265,7 @@ const prisma = _prisma.$extends({
         return { data: omit(option, 'descriptionTranslation'), operation: 'notChanged' };
       },
     },
-    uEComment: {
+    ueComment: {
       async create({
         body,
         createdAt,
@@ -281,11 +281,11 @@ const prisma = _prisma.$extends({
         isValid: 0 | 1;
         ue: string;
         semesterCode: string;
-      }): Promise<PrismaOperationResult<RawUEComment>> {
-        const comment = await _prisma.uEComment.findFirst({ where: { ue: { code: ue }, createdAt } });
+      }): Promise<PrismaOperationResult<RawUeComment>> {
+        const comment = await _prisma.ueComment.findFirst({ where: { ue: { code: ue }, createdAt } });
         if (!comment) {
           return {
-            data: await _prisma.uEComment.create({
+            data: await _prisma.ueComment.create({
               data: {
                 body,
                 isAnonymous: true,
@@ -305,7 +305,7 @@ const prisma = _prisma.$extends({
           (comment.validatedAt === null ? 0 : 1) !== isValid
         ) {
           return {
-            data: await _prisma.uEComment.update({
+            data: await _prisma.ueComment.update({
               where: { id: comment.id },
               data: { body, updatedAt, validatedAt: isValid ? updatedAt : null },
             }),
