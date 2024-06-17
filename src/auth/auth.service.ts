@@ -62,7 +62,7 @@ export class AuthService {
     }
     try {
       const isUTTMail = dto.mail?.endsWith('@utt.fr');
-      const user = await this.prisma.user.create({
+      const user = await this.prisma.withDefaultBehaviour.user.create({
         data: {
           login: dto.login,
           hash: dto.password ? await this.getHash(dto.password) : undefined,
@@ -94,7 +94,9 @@ export class AuthService {
                           },
                           name: branchOption[0],
                           descriptionTranslation: {
-                            create: {},
+                            create: {
+                              fr: '',
+                            },
                           },
                         },
                       },
@@ -167,6 +169,7 @@ export class AuthService {
           preference: { create: {} },
           rgpd: { create: {} },
           userType: type,
+          privacy: { create: {} },
         },
       });
 

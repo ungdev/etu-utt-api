@@ -525,6 +525,7 @@ model User {
   infosId         String  @unique
   mailsPhonesId   String  @unique
   socialNetworkId String  @unique
+  privacyId       String @unique
 
   userType              UserType
   timestamps            UserTimestamps?
@@ -561,6 +562,7 @@ model User {
   commentUpvotes        UeCommentUpvote[]
   timetableGroups       UserTimetableGroup[]
   homepageWidgets       UserHomepageWidget[]
+  privacy               UserPrivacy                 @relation(fields: [privacyId], references: [id])
 }
 
 model UserAddress {
@@ -569,9 +571,9 @@ model UserAddress {
   postalCode String? @db.VarChar(20)
   city       String? @db.VarChar(255)
   country    String? @db.VarChar(50)
-  userId     String?
+  userId     String
 
-  user User? @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model UserBan {
@@ -652,6 +654,23 @@ model UserMailsPhones {
   user User?
 }
 
+model UserPrivacy {
+  // For each field, if it is true, it's public. If it is false, it's private.
+  id                     String         @id @default(uuid())
+  mailUTT                Boolean        @default(false)
+  mailPersonal           Boolean        @default(false)
+  phoneNumber            Boolean        @default(false)
+  birthday               Boolean        @default(false)
+  birthdayDisplayOnlyAge Boolean        @default(false)
+  sex                    Boolean        @default(false)
+  nationality            Boolean        @default(false)
+  discord                Boolean        @default(false)
+  address                AddressPrivacy @default(ALL_PRIVATE)
+  timetable              Boolean        @default(false)
+
+  user User?
+}
+
 model UserOtherAttribut {
   name String        @id @db.VarChar(100)
   type AttributeType
@@ -683,17 +702,10 @@ model UserHomepageWidget {
 
 model UserPreference {
   id                     String   @id @default(uuid())
-  birthdayDisplayOnlyAge Boolean  @default(false)
   language               Language @default(fr)
   wantDaymail            Boolean  @default(false)
   wantDayNotif           Boolean  @default(false)
-  displaySex             Boolean  @default(false)
-  displayBirthday        Boolean  @default(false)
-  displayMailPersonal    Boolean  @default(false)
-  displayPhone           Boolean  @default(false)
-  displayAddress         Boolean  @default(false)
-  displayDiscord         Boolean  @default(false)
-  displayTimetable       Boolean  @default(false)
+  wantDiscordUtt         Boolean @default(false)
 
   user User?
 }
@@ -714,8 +726,7 @@ model UserSocialNetwork {
   linkedin       String? @db.VarChar(255)
   twitch         String? @db.VarChar(255)
   spotify        String? @db.VarChar(255)
-  pseudoDiscord  String? @db.VarChar(255)
-  wantDiscordUTT Boolean @default(false)
+  discord        String? @db.VarChar(255)
 
   user User?
 }
@@ -781,7 +792,7 @@ model UTTBranchOption {
   descriptionTranslation Translation              @relation(fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
   ues                    Ue[]
   branchSubscriptions    UserBranchSubscription[]
-  
+
   @@unique([code, branchCode])
 }
 
@@ -849,4 +860,11 @@ enum TimetableEntryType {
   ASSO
   DELETE
   CUSTOM
+}
+
+enum AddressPrivacy {
+  ALL_PRIVATE
+  CITY_PRIVATE
+  ADDRESS_PRIVATE
+  ALL_PUBLIC
 }

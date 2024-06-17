@@ -29,6 +29,7 @@ import {
   RawUserSocialNetwork,
   RawUserUeSubscription,
   Translation,
+  RawUserPrivacy,
 } from '../../src/prisma/types';
 import { faker } from '@faker-js/faker';
 import { AuthService } from '../../src/auth/auth.service';
@@ -58,6 +59,7 @@ export type FakeUser = Partial<RawUser> & {
       semester?: Partial<RawSemester>;
     }
   >;
+  privacy: Partial<RawUserPrivacy>;
 };
 export type FakeTimetableGroup = Partial<RawTimetableGroup>;
 export type FakeTimetableEntry = Partial<RawTimetableEntry>;
@@ -244,6 +246,7 @@ export const createUser = entityFaker(
     ],
     branchSubscriptions: [],
     permissions: [],
+    privacy: {},
   },
   async (app, params) => {
     const permissions = await app()
@@ -266,7 +269,9 @@ export const createUser = entityFaker(
                 data: {
                   id: perm,
                   name: {
-                    create: {},
+                    create: {
+                      fr: 'TODO : implement this value',
+                    },
                   },
                 },
               }),
@@ -293,9 +298,7 @@ export const createUser = entityFaker(
             },
           },
           rgpd: { create: {} },
-          preference: {
-            create: {},
-          },
+          preference: { create: {} },
           mailsPhones: { create: {} },
           addresses: {
             createMany: {
@@ -318,6 +321,7 @@ export const createUser = entityFaker(
               })),
             },
           },
+          privacy: { create: {} },
         },
         include: {
           infos: true,
@@ -344,6 +348,7 @@ export const createUser = entityFaker(
               semester: { select: { code: true } },
             },
           },
+          privacy: true,
         },
       });
     return {
@@ -465,8 +470,18 @@ export const createAsso = entityFaker(
           login: params.login,
           name: params.name,
           mail: params.mail,
-          descriptionTranslation: { create: params.descriptionTranslation },
-          descriptionShortTranslation: { create: params.descriptionShortTranslation },
+          descriptionTranslation: {
+            create: {
+              fr: 'TODO : implement this value',
+              ...params.descriptionTranslation,
+            },
+          },
+          descriptionShortTranslation: {
+            create: {
+              fr: 'TODO : implement this value',
+              ...params.descriptionShortTranslation,
+            },
+          },
         },
       });
     return { ...asso, president: null };
@@ -570,6 +585,7 @@ export const createBranch = entityFaker(
           descriptionTranslation: {
             create: {
               id: params.descriptionTranslationId,
+              fr: 'TODO : implement this value',
             },
           },
         },
@@ -598,6 +614,7 @@ export const createBranchOption = entityFaker(
           descriptionTranslation: {
             create: {
               id: params.descriptionTranslationId,
+              fr: 'TODO : implement this value',
             },
           },
         },
@@ -684,7 +701,12 @@ export const createUe = entityFaker(
       .withDefaultBehaviour.ue.create({
         data: {
           ...omit(params, 'name', 'credits', 'info', 'workTime', 'inscriptionCode', 'openSemesters'),
-          name: { create: params.name },
+          name: {
+            create: {
+              fr: 'TODO : implement this value',
+              ...params.name,
+            },
+          },
           inscriptionCode: params.inscriptionCode ?? params.code,
           credits: {
             create: params.credits.map((credit) => ({
@@ -700,9 +722,24 @@ export const createUe = entityFaker(
           info: {
             create: {
               ...omit(params.info, 'requirements', 'comment', 'objectives', 'program'),
-              comment: { create: params.info.comment },
-              objectives: { create: params.info.objectives },
-              program: { create: params.info.program },
+              comment: {
+                create: {
+                  fr: 'TODO : implement this value',
+                  ...params.info.comment,
+                },
+              },
+              objectives: {
+                create: {
+                  fr: 'TODO : implement this value',
+                  ...params.info.objectives,
+                },
+              },
+              program: {
+                create: {
+                  fr: 'TODO : implement this value',
+                  ...params.info.program,
+                },
+              },
             },
           },
           workTime: {
@@ -795,6 +832,7 @@ export const createCriterion = entityFaker(
           descriptionTranslation: {
             create: {
               id: params.descriptionTranslationId,
+              fr: 'TODO : implement this value',
             },
           },
         },

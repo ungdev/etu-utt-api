@@ -17,7 +17,7 @@ export class BranchController {
     return {
       code: branch.code,
       name: branch.name,
-      options: branch.branchOptions.map((option) => ({
+      branchOptions: branch.branchOptions.map((option) => ({
         code: option.code,
         name: option.name,
       })),

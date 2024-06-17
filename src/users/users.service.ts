@@ -43,9 +43,9 @@ export default class UsersService {
               },
             }
           : undefined,
-      preference: {
-        displayPhone: dto.phone ? { equals: true } : undefined,
-        displayMailPersonal: dto.mail ? { equals: true } : undefined,
+      privacy: {
+        phoneNumber: dto.phone ? { equals: true } : undefined,
+        mailPersonal: dto.mail ? { equals: true } : undefined,
       },
       ...(dto.q
         ? {
@@ -87,67 +87,6 @@ export default class UsersService {
 
   async doesUserExist(search: { id?: string; login?: string }): Promise<boolean> {
     return (await this.prisma.user.count({ where: search })) > 0;
-  }
-
-  filterInfo(user: User, includeAll: boolean) {
-    const branch = user.branchSubscriptions.find(
-      (subscription) => subscription.semester.start >= new Date() && subscription.semester.end <= new Date(),
-    );
-    return {
-      id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      nickname: user.infos.nickname,
-      type: user.userType,
-      avatar: user.infos.avatar,
-      sex: user.preference.displaySex || includeAll ? user.infos.sex : undefined,
-      nationality: user.infos.nationality,
-      birthday: user.preference.displayBirthday || includeAll ? user.infos.birthday : undefined,
-      passions: user.infos.passions,
-      website: user.infos.website,
-      branch: branch?.branchOption.branch.code ?? undefined,
-      semester: branch?.semesterNumber ?? undefined,
-      branchOption: branch?.branchOption.code ?? undefined,
-      mailUTT: user.mailsPhones === null ? undefined : user.mailsPhones.mailUTT,
-      mailPersonal:
-        (user.preference.displayMailPersonal || includeAll) && user.mailsPhones !== null
-          ? user.mailsPhones.mailPersonal
-          : undefined,
-      phone:
-        (user.preference.displayPhone || includeAll) && user.mailsPhones !== null
-          ? user.mailsPhones.phoneNumber
-          : undefined,
-      addresses:
-        user.preference.displayAddress || includeAll
-          ? user.addresses.map((address) => ({
-              street: address.street,
-              postalCode: address.postalCode,
-              city: address.city,
-              country: address.country,
-            }))
-          : [],
-      facebook: user.socialNetwork === null ? undefined : user.socialNetwork.facebook,
-      twitter: user.socialNetwork === null ? undefined : user.socialNetwork.twitter,
-      instagram: user.socialNetwork === null ? undefined : user.socialNetwork.instagram,
-      linkedin: user.socialNetwork === null ? undefined : user.socialNetwork.linkedin,
-      twitch: user.socialNetwork === null ? undefined : user.socialNetwork.twitch,
-      spotify: user.socialNetwork === null ? undefined : user.socialNetwork.spotify,
-      discord:
-        (user.preference.displayDiscord || includeAll) && user.socialNetwork !== null
-          ? user.socialNetwork.pseudoDiscord
-          : undefined,
-      infoDisplayed: includeAll
-        ? {
-            displayBirthday: user.preference.displayBirthday,
-            displayMailPersonal: user.preference.displayMailPersonal,
-            displayPhone: user.preference.displayPhone,
-            displayAddress: user.preference.displayAddress,
-            displaySex: user.preference.displaySex,
-            displayDiscord: user.preference.displayDiscord,
-            displayTimetable: user.preference.displayTimetable,
-          }
-        : undefined,
-    };
   }
 
   async getBirthdayOfDay(date: Date): Promise<User[]> {
@@ -225,19 +164,26 @@ export default class UsersService {
             linkedin: dto.linkedin,
             twitch: dto.twitch,
             spotify: dto.spotify,
-            pseudoDiscord: dto.pseudoDiscord,
-            wantDiscordUTT: dto.wantDiscordUTT,
+            discord: dto.discord,
           },
         },
         preference: {
           update: {
-            displayBirthday: dto.displayBirthday,
-            displayMailPersonal: dto.displayMailPersonal,
-            displayPhone: dto.displayPhone,
-            displayAddress: dto.displayAddress,
-            displaySex: dto.displaySex,
-            displayDiscord: dto.displayDiscord,
-            displayTimetable: dto.displayTimetable,
+            language: dto.language,
+            wantDaymail: dto.wantDaymail,
+            wantDayNotif: dto.wantDayNotif,
+            wantDiscordUtt: dto.wantDiscordUtt,
+          },
+        },
+        privacy: {
+          update: {
+            birthday: dto.displayBirthday,
+            mailPersonal: dto.displayMailPersonal,
+            phoneNumber: dto.displayPhone,
+            address: dto.displayAddress,
+            sex: dto.displaySex,
+            discord: dto.displayDiscord,
+            timetable: dto.displayTimetable,
           },
         },
       },
