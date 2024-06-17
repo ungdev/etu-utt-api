@@ -4,8 +4,8 @@ import {
   createBranch,
   createBranchOption,
   createSemester,
-  createUE,
-  createUESubscription,
+  createUe,
+  createUeSubscription,
   createAnnalType,
   createAnnal,
 } from '../../../utils/fakedb';
@@ -22,8 +22,8 @@ const EditAnnal = e2eSuite('PATCH /ue/annals/{annalId}', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUE(app, { openSemesters: [semester], branchOption: [branchOption] });
-  createUESubscription(app, { user: senderUser, ue, semester });
+  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
+  createUeSubscription(app, { user: senderUser, ue, semester });
   const annal_validated = createAnnal(app, { semester, sender: senderUser, type: annalType, ue });
   const annal_not_uploaded = createAnnal(
     app,
@@ -98,7 +98,7 @@ const EditAnnal = e2eSuite('PATCH /ue/annals/{annalId}', (app) => {
       .withBearerToken(senderUser.token)
       .patch(`/ue/annals/${annal_validated.id}`)
       .withBody(generateBody())
-      .expectUEAnnal({
+      .expectUeAnnal({
         semesterId: xx_semester_xx.code,
         type: xx_analType_xx,
         status: CommentStatus.VALIDATED,

@@ -1,12 +1,13 @@
 import { PrismaService } from '../prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
+import { RawSemester } from '../prisma/types';
 
 @Injectable()
 export class SemesterService {
   constructor(private prisma: PrismaService) {}
 
-  async getCurrentSemester() {
-    const concurrentCurrentSemesters = await this.prisma.semester.findMany({
+  async getCurrentSemester(): Promise<RawSemester | null> {
+    /*const concurrentCurrentSemesters = await this.prisma.semester.findMany({
       where: {
         end: {
           gte: new Date(),
@@ -44,6 +45,16 @@ export class SemesterService {
         code: `${middleOfSemester.getMonth() <= 6 ? 'P' : 'A'}${middleOfSemester.getFullYear() % 100}`,
         start: startDate,
         end: endDate,
+      },
+    });*/
+    return this.prisma.semester.findFirst({
+      where: {
+        end: {
+          gte: new Date(),
+        },
+        start: {
+          lte: new Date(),
+        },
       },
     });
   }

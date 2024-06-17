@@ -1,6 +1,6 @@
 import {
   createUser,
-  createUE,
+  createUe,
   createComment,
   createBranch,
   createBranchOption,
@@ -19,7 +19,7 @@ const DeleteUpvote = e2eSuite('DELETE /ue/comments/{commentId}/upvote', (app) =>
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUE(app, { openSemesters: [semester], branchOption: [branchOption] });
+  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
   const comment1 = createComment(app, { user, ue, semester });
   const upvote = createCommentUpvote(app, { user: user2, comment: comment1 });
 
@@ -64,7 +64,7 @@ const DeleteUpvote = e2eSuite('DELETE /ue/comments/{commentId}/upvote', (app) =>
   it('should not be able to re-de-upvote a comment', async () => {
     await app()
       .get(PrismaService)
-      .uECommentUpvote.delete({ where: { id: upvote.id } });
+      .ueCommentUpvote.delete({ where: { id: upvote.id } });
     await pactum
       .spec()
       .withBearerToken(user2.token)

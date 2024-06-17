@@ -12,7 +12,7 @@ import { XMLParser } from 'fast-xml-parser';
 import { doesEntryIncludeSome, omit } from '../utils';
 import { LdapModule } from '../ldap/ldap.module';
 import { LdapAccountGroup } from '../ldap/ldap.interface';
-import { UEService } from '../ue/ue.service';
+import { UeService } from '../ue/ue.service';
 import { SemesterService } from '../semester/semester.service';
 
 export type RegisterData = { login: string; mail: string; lastName: string; firstName: string };
@@ -26,7 +26,7 @@ export class AuthService {
     private config: ConfigModule,
     private httpService: HttpService,
     private ldap: LdapModule,
-    private ueService: UEService,
+    private ueService: UeService,
     private semesterService: SemesterService,
   ) {}
 
@@ -46,16 +46,18 @@ export class AuthService {
 
     if (fetchLdap) {
       const ldapUser = await this.ldap.fetch(dto.login);
-      if (ldapUser.gidNumber === LdapAccountGroup.STUDENTS) {
-        dto.studentId = Number(ldapUser.supannEtuId);
-        type = UserType.STUDENT;
-        branch.push(...(Array.isArray(ldapUser.niveau) ? ldapUser.niveau : [ldapUser.niveau]));
-        ues.push(...(Array.isArray(ldapUser.uv) ? ldapUser.uv : [ldapUser.uv]));
-        branchOption.push(...(Array.isArray(ldapUser.filiere) ? ldapUser.filiere : [ldapUser.filiere]));
-        [formation] = Array.isArray(ldapUser.formation) ? ldapUser.formation : [ldapUser.formation]; // TODO: this is wrong, students can have multiple formations !
-      } else if (ldapUser.gidNumber === LdapAccountGroup.EMPLOYEES) {
-        type = doesEntryIncludeSome(ldapUser.eduPersonAffiliation, 'faculty') ? UserType.TEACHER : UserType.EMPLOYEE;
-        phoneNumber = ldapUser.telephoneNumber;
+      if (ldapUser) {
+        if (ldapUser.gidNumber === LdapAccountGroup.STUDENTS) {
+          dto.studentId = Number(ldapUser.supannEtuId);
+          type = UserType.STUDENT;
+          branch.push(...(Array.isArray(ldapUser.niveau) ? ldapUser.niveau : [ldapUser.niveau]));
+          ues.push(...(Array.isArray(ldapUser.uv) ? ldapUser.uv : [ldapUser.uv]));
+          branchOption.push(...(Array.isArray(ldapUser.filiere) ? ldapUser.filiere : [ldapUser.filiere]));
+          [formation] = Array.isArray(ldapUser.formation) ? ldapUser.formation : [ldapUser.formation]; // TODO: this is wrong, students can have multiple formations !
+        } else if (ldapUser.gidNumber === LdapAccountGroup.EMPLOYEES) {
+          type = doesEntryIncludeSome(ldapUser.eduPersonAffiliation, 'faculty') ? UserType.TEACHER : UserType.EMPLOYEE;
+          phoneNumber = ldapUser.telephoneNumber;
+        }
       }
     }
     try {
@@ -70,7 +72,7 @@ export class AuthService {
           infos: {
             create: { sex: dto.sex, birthday: dto.birthday },
           },
-          ...(branch.length && branchOption.length
+          ...(branch.length && branchOption.length && currentSemester
             ? {
                 branchSubscriptions: {
                   create: {
@@ -78,9 +80,9 @@ export class AuthService {
                     branchOption: {
                       connectOrCreate: {
                         where: {
-                          code_branchId: {
+                          code_branchCode: {
                             code: branchOption[0],
-                            branchId: branch[0].slice(0, -1).split('_')[0],
+                            branchCode: branch[0].slice(0, -1).split('_')[0],
                           },
                         },
                         create: {
@@ -106,16 +108,18 @@ export class AuthService {
                 },
               }
             : {}),
-          UEsSubscriptions: {
-            createMany: {
-              data: (
-                await this.ueService.getIdFromCode(ues)
-              ).map((id) => ({
-                ueId: id,
-                semesterId: currentSemester.code,
-              })),
-            },
-          },
+          UesSubscriptions: currentSemester
+            ? {
+                createMany: {
+                  data: (
+                    await this.ueService.getIdFromCode(ues)
+                  ).map((id) => ({
+                    ueId: id,
+                    semesterId: currentSemester.code,
+                  })),
+                },
+              }
+            : {},
           ...(branch.length && formation
             ? {
                 formation: {

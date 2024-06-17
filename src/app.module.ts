@@ -6,7 +6,7 @@ import { UsersModule } from './users/users.module';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { PermissionGuard } from './auth/guard/permission.guard';
 import { RoleGuard } from './auth/guard/role.guard';
-import { UEModule } from './ue/ue.module';
+import { UeModule } from './ue/ue.module';
 import { JwtGuard } from './auth/guard';
 import { TimetableModule } from './timetable/timetable.module';
 import { ConfigModule } from './config/config.module';
@@ -14,16 +14,18 @@ import { HttpModule } from './http/http.module';
 import { BranchModule } from './branch/branch.module';
 import { AssosModule } from './assos/assos.module';
 import { TranslationInterceptor } from './app.interceptor';
+import { SemesterModule } from './semester/semester.module';
 
 @Module({
   imports: [
     ConfigModule,
     HttpModule,
     PrismaModule,
+    SemesterModule,
     AuthModule,
     ProfileModule,
     UsersModule,
-    UEModule,
+    UeModule,
     TimetableModule,
     BranchModule,
     AssosModule,

@@ -9,7 +9,7 @@ export default function creditCategorySeed(prisma: PrismaClient): Promise<RawCre
   const creditCategories: Promise<RawCreditCategory>[] = [];
   for (let i = 0; i < FAKER_ROUNDS; i++) {
     creditCategories.push(
-      prisma.uECreditCategory.create({
+      prisma.ueCreditCategory.create({
         data: {
           code: faker.random.alpha({ casing: 'upper', count: 2 }),
           name: faker.random.word(),
