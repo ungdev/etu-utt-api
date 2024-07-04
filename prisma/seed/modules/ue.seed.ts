@@ -67,6 +67,7 @@ export default function ueSeed(
               internship: 0,
             },
           },
+          workTime: { create: {} },
         },
       }),
     );

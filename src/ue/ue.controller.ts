@@ -29,9 +29,9 @@ export class UeController {
 
   @Get('/:ueCode')
   @IsPublic()
-  async getUe(@Param('ueCode') ueCode: string): Promise<UeDetail> {
+  async getUe(@Param('ueCode') ueCode: string, @GetUser() user): Promise<UeDetail> {
     if (!(await this.ueService.doesUeExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
-    return this.formatDetailedUe(await this.ueService.getUe(ueCode.toUpperCase())); // TODO: remove starVotes in not student
+    return this.formatDetailedUe(await this.ueService.getUe(ueCode.toUpperCase()), !!user);
   }
 
   @Get('/rate/criteria')
@@ -114,7 +114,7 @@ export class UeController {
     };
   }
 
-  private formatDetailedUe(ue: Ue): UeDetail {
+  private formatDetailedUe(ue: Ue, loggedIn: boolean): UeDetail {
     return {
       code: ue.code,
       inscriptionCode: ue.inscriptionCode,
@@ -156,7 +156,7 @@ export class UeController {
         project: ue.workTime.project,
         internship: ue.workTime.internship,
       },
-      starVotes: ue.starVotes,
+      starVotes: loggedIn ? ue.starVotes : {},
     };
   }
 }
