@@ -6,9 +6,9 @@ export async function migrateUEs(query: QueryFunction, prisma: PrismaClient) {
   const ues = await query('SELECT * FROM etu_uvs WHERE isOld = 0');
   const operations: PrismaOperationResult<RawUe>[] = [];
   ues.sort((a, b) =>
-    new RegExp(`(^|\W)${a.code}($|\W)`).test(b.antecedents)
+    new RegExp(`(^|\\W)${a.code}($|\\W)`).test(b.antecedents)
       ? 1
-      : new RegExp(`(^|\W)${b.code}($|\W)`).test(a.antecedents)
+      : new RegExp(`(^|\\W)${b.code}($|\\W)`).test(a.antecedents)
       ? -1
       : 0,
   );
@@ -26,7 +26,7 @@ export async function migrateUEs(query: QueryFunction, prisma: PrismaClient) {
     }
     inscriptionCodes.push(inscriptionCode);
     const requirements = operations
-      .filter((u) => new RegExp(`(^|\W)${u.data.code}($|\W)`).test(ue.antecedents))
+      .filter((u) => new RegExp(`(^|\\W)${u.data.code}($|\\W)`).test(ue.antecedents))
       .map((u) => u.data.id);
     //console.log(ue.code, inscriptionCode);
     operations.push(
