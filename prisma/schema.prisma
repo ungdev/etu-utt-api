@@ -483,7 +483,7 @@ model UeWorkTime {
   td         Int?
   tp         Int?
   the        Int?
-  project    Int?
+  project    Boolean?
   internship Int?
   ueId       String @unique
 
