@@ -213,8 +213,9 @@ model Translation {
 
 model Ue {
   id                String   @id @default(uuid())
-  code              String   @unique @db.VarChar(10)
-  inscriptionCode   String   @unique @db.Char(4)
+  siepId            Int      @unique
+  code              String   @unique @db.VarChar(15)
+  legacyCode        String   @unique @db.VarChar(6)
   nameTranslationId String   @unique
   validationRate    Float?
   ueInfoId          String   @unique

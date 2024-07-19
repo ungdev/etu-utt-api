@@ -58,7 +58,7 @@ async function parseDocument(document: string) {
         console.error(error);
         reject();
       })
-      .on('data', ues.push)
+      .on('data', (ue) => ues.push(ue))
       .on('end', () => resolve(ues));
   });
 }
@@ -66,11 +66,12 @@ async function parseDocument(document: string) {
 async function main() {
   const ues = await parseDocument('scripts/seed/ues.csv');
   await prisma.ue.deleteMany({});
-  const promises = ues.map(async (ue) => {
-    await prisma.ue.create({
+  const promises = ues.map((ue) =>
+    prisma.ue.create({
       data: {
         code: ue.shortname,
-        inscriptionCode: ue.idnumber,
+        legacyCode: ue.idnumber,
+        siepId: Number(ue.entry_nb),
         name: {
           create: {
             fr: ue.fullname,
@@ -118,8 +119,8 @@ async function main() {
           },
         },
       },
-    });
-  });
+    }),
+  );
   await Promise.all(promises);
 }
 
