@@ -26,15 +26,17 @@ export class AnnalsController {
 
   @Post()
   @RequireUserType('STUDENT')
-  async createUeAnnal(@Body() { ueCode, semester, typeId }: CreateAnnal, @GetUser() user: User) {
+  async createUeAnnal(@Body() { ueCode, semester, typeId, ueof }: CreateAnnal, @GetUser() user: User) {
+    if (ueof && !user.permissions.includes('annalUploader'))
+      throw new AppException(ERROR_CODE.PARAM_DOES_NOT_EXIST, 'ueof');
     if (!(await this.ueService.doesUeExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     if (!(await this.annalsService.doesAnnalTypeExist(typeId))) throw new AppException(ERROR_CODE.NO_SUCH_ANNAL_TYPE);
-    if (
-      !(await this.ueService.hasDoneThisUeInSemester(user.id, ueCode, semester)) &&
-      !user.permissions.includes('annalUploader')
-    )
+    try {
+      return this.annalsService.createAnnalFile(user, { ueCode, semester, typeId }, ueof);
+    } catch (error) {
+      if (user.permissions.includes('annalUploader')) throw new AppException(ERROR_CODE.NO_SUCH_UEOF, ueof);
       throw new AppException(ERROR_CODE.NOT_DONE_UE_IN_SEMESTER, ueCode, semester);
-    return this.annalsService.createAnnalFile(user, { ueCode, semester, typeId });
+    }
   }
 
   @Get('metadata')

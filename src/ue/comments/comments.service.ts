@@ -146,8 +146,8 @@ export class CommentsService {
   async getLastSemesterDoneByUser(userId: string, ueCode: string): Promise<RawUserUeSubscription> {
     return this.prisma.userUeSubscription.findFirst({
       where: {
-        ue: {
-          code: ueCode,
+        ueof: {
+          ueId: ueCode,
         },
         userId,
       },
@@ -182,7 +182,7 @@ export class CommentsService {
       },
       where: {
         authorId: userId,
-        ueId: ue.id,
+        ueId: ue.code,
       },
     });
     return comment.length > 0;
@@ -196,6 +196,8 @@ export class CommentsService {
    * @returns the created {@link UeComment}
    */
   async createComment(body: UeCommentPostDto, userId: string): Promise<UeComment> {
+    // Use last semester done when creating the comment
+    const lastSemester = await this.getLastSemesterDoneByUser(userId, body.ueCode);
     return this.prisma.ueComment.create(
       {
         args: {
@@ -217,10 +219,14 @@ export class CommentsService {
               code: body.ueCode,
             },
           },
+          ueof: {
+            connect: {
+              code: lastSemester.ueofId,
+            },
+          },
           semester: {
             connect: {
-              // Use last semester done when creating the comment
-              code: (await this.getLastSemesterDoneByUser(userId, body.ueCode)).semesterId,
+              code: lastSemester.semesterId,
             },
           },
         },

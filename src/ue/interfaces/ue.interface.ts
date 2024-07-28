@@ -4,64 +4,71 @@ import { translationSelect } from '../../utils';
 
 const UE_SELECT_FILTER = {
   select: {
-    id: true,
     code: true,
-    inscriptionCode: true,
-    name: translationSelect,
-    info: {
+    updateYear: true,
+    creationYear: true,
+    subsequentUes: true,
+    ueofs: {
+      where: {
+        available: true,
+      },
       select: {
+        name: translationSelect,
+        siepId: true,
         requirements: {
           select: {
             code: true,
           },
         },
-        comment: translationSelect,
-        degree: true,
-        languages: true,
-        minors: true,
-        objectives: translationSelect,
-        program: translationSelect,
-      },
-    },
-    openSemester: {
-      select: {
-        code: true,
-        start: true,
-        end: true,
-      },
-      orderBy: {
-        start: 'asc',
-      },
-    },
-    workTime: {
-      select: {
-        cm: true,
-        td: true,
-        tp: true,
-        the: true,
-        project: true,
-        internship: true,
-      },
-    },
-    credits: {
-      select: {
-        credits: true,
-        category: {
+        info: {
           select: {
-            code: true,
-            name: true,
+            language: true,
+            minors: true,
+            objectives: translationSelect,
+            program: translationSelect,
           },
         },
-      },
-    },
-    branchOption: {
-      select: {
-        code: true,
-        name: true,
-        branch: {
+        openSemester: {
+          select: {
+            code: true,
+            start: true,
+            end: true,
+          },
+          orderBy: {
+            start: 'asc',
+          },
+        },
+        workTime: {
+          select: {
+            cm: true,
+            td: true,
+            tp: true,
+            the: true,
+            project: true,
+            internship: true,
+          },
+        },
+        credits: {
+          select: {
+            credits: true,
+            category: {
+              select: {
+                code: true,
+                name: true,
+              },
+            },
+          },
+        },
+        branchOption: {
           select: {
             code: true,
             name: true,
+            branch: {
+              select: {
+                code: true,
+                name: true,
+              },
+            },
           },
         },
       },
