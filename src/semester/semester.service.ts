@@ -55,6 +55,11 @@ export class SemesterService {
         start: {
           lte: new Date(),
         },
+        code: {
+          not: {
+            contains: 'U',
+          },
+        },
       },
     });
   }

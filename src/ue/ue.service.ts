@@ -18,25 +18,9 @@ export class UeService {
     readonly semesterService: SemesterService,
   ) {}
 
-  async getIdFromCode(ueCode: string): Promise<string>;
-  async getIdFromCode(ueCodes: string[]): Promise<string[]>;
-  async getIdFromCode(ueCodes?: string | string[]) {
-    const values = (
-      await this.prisma.ue.findMany({
-        where: {
-          code: {
-            in: Array.isArray(ueCodes) ? ueCodes : [ueCodes],
-          },
-        },
-      })
-    ).map((ue) => ue.id);
-    if (!Array.isArray(ueCodes)) return values[0];
-    return values;
-  }
-
   /**
    * Retrieves a page of {@link Ue} matching the user query. This query searchs for a text in
-   * the ue code, name, comment, objectives and program. The user can restrict his research to a branch,
+   * the ue code, name, objectives and program. The user can restrict his research to a branch,
    * a branch option, a credit type or a semester.
    * @param query the query parameters of this route
    * @param language the language in which to search for text
@@ -58,24 +42,33 @@ export class UeService {
                 },
               },
               {
-                inscriptionCode: {
-                  contains: query.q,
-                },
-              },
-              {
-                name: {
-                  [language]: {
-                    contains: query.q,
+                ueofs: {
+                  some: {
+                    code: { contains: query.q },
                   },
                 },
               },
               {
-                info: {
-                  OR: [
-                    { comment: { [language]: { contains: query.q } } },
-                    { objectives: { [language]: { contains: query.q } } },
-                    { program: { [language]: { contains: query.q } } },
-                  ],
+                ueofs: {
+                  some: {
+                    name: {
+                      [language]: {
+                        contains: query.q,
+                      },
+                    },
+                  },
+                },
+              },
+              {
+                ueofs: {
+                  some: {
+                    info: {
+                      OR: [
+                        { objectives: { [language]: { contains: query.q } } },
+                        { program: { [language]: { contains: query.q } } },
+                      ],
+                    },
+                  },
                 },
               },
             ],
@@ -84,16 +77,20 @@ export class UeService {
       // Filter per branch option and branch if such a filter is present
       ...(query.branchOption || query.branch
         ? {
-            branchOption: {
+            ueofs: {
               some: {
-                OR: [
-                  { code: query.branchOption },
-                  {
-                    branch: {
-                      code: query.branch,
-                    },
+                branchOption: {
+                  some: {
+                    OR: [
+                      { code: query.branchOption },
+                      {
+                        branch: {
+                          code: query.branch,
+                        },
+                      },
+                    ],
                   },
-                ],
+                },
               },
             },
           }
@@ -101,10 +98,14 @@ export class UeService {
       // Filter per credit type
       ...(query.creditType
         ? {
-            credits: {
+            ueofs: {
               some: {
-                category: {
-                  code: query.creditType,
+                credits: {
+                  some: {
+                    category: {
+                      code: query.creditType,
+                    },
+                  },
                 },
               },
             },
@@ -113,9 +114,13 @@ export class UeService {
       // Filter per semester
       ...(query.availableAtSemester
         ? {
-            openSemester: {
+            ueofs: {
               some: {
-                code: query.availableAtSemester?.toUpperCase(),
+                openSemester: {
+                  some: {
+                    code: query.availableAtSemester?.toUpperCase(),
+                  },
+                },
               },
             },
           }
@@ -161,8 +166,8 @@ export class UeService {
   async getLastSemesterDoneByUser(userId: string, ueCode: string): Promise<RawUserUeSubscription> {
     return this.prisma.userUeSubscription.findFirst({
       where: {
-        ue: {
-          code: ueCode,
+        ueof: {
+          ueId: ueCode,
         },
         userId,
       },
@@ -180,13 +185,11 @@ export class UeService {
    * @returns whether the ue exists
    */
   async doesUeExist(ueCode: string) {
-    return (
-      (await this.prisma.ue.count({
-        where: {
-          code: ueCode,
-        },
-      })) != 0
-    );
+    return !!(await this.prisma.ue.findUnique({
+      where: {
+        code: ueCode,
+      },
+    }));
   }
 
   /**
@@ -198,20 +201,6 @@ export class UeService {
    */
   async hasAlreadyDoneThisUe(userId: string, ueCode: string) {
     return (await this.getLastSemesterDoneByUser(userId, ueCode)) != null;
-  }
-
-  async hasDoneThisUeInSemester(userId: string, ueCode: string, semesterCode: string) {
-    return (
-      (await this.prisma.userUeSubscription.count({
-        where: {
-          semesterId: semesterCode,
-          ue: {
-            code: ueCode,
-          },
-          userId,
-        },
-      })) != 0
-    );
   }
 
   /**
@@ -267,7 +256,7 @@ export class UeService {
     return this.prisma.ueStarVote.findMany({
       where: {
         userId: userId,
-        ueId: ue.id,
+        ueId: ue.code,
       },
     });
   }
@@ -281,11 +270,10 @@ export class UeService {
    * @returns the new rate of the {@link ueCode | ue} for the {@link user}
    */
   async doRateUe(userId: string, ueCode: string, dto: UeRateDto): Promise<UeRating> {
-    const ueId = await this.getUeIdFromCode(ueCode);
     return this.prisma.ueStarVote.upsert({
       where: {
         ueId_userId_criterionId: {
-          ueId,
+          ueId: ueCode,
           userId,
           criterionId: dto.criterion,
         },
@@ -293,7 +281,7 @@ export class UeService {
       create: {
         value: dto.value,
         criterionId: dto.criterion,
-        ueId,
+        ueId: ueCode,
         userId,
       },
       update: {
@@ -303,11 +291,10 @@ export class UeService {
   }
 
   async unRateUe(userId: string, ueCode: string, criterionId: string): Promise<UeRating> {
-    const ueId = await this.getUeIdFromCode(ueCode);
     return this.prisma.ueStarVote.delete({
       where: {
         ueId_userId_criterionId: {
-          ueId,
+          ueId: ueCode,
           userId,
           criterionId,
         },
@@ -320,19 +307,19 @@ export class UeService {
     if (currentSemester === null) return [];
     return this.prisma.ue.findMany({
       where: {
-        usersSubscriptions: {
+        ueofs: {
           some: {
-            userId,
-            semester: {
-              code: currentSemester.code,
+            usersSubscriptions: {
+              some: {
+                userId,
+                semester: {
+                  code: currentSemester.code,
+                },
+              },
             },
           },
         },
       },
     });
-  }
-
-  private async getUeIdFromCode(ueCode: string): Promise<string> {
-    return (await this.prisma.withDefaultBehaviour.ue.findUnique({ where: { code: ueCode }, select: { id: true } })).id;
   }
 }

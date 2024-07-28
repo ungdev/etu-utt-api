@@ -65,6 +65,7 @@ export const enum ERROR_CODE {
   NO_SUCH_ANNAL = 4408,
   NO_SUCH_ANNAL_TYPE = 4409,
   NO_SUCH_ASSO = 4410,
+  NO_SUCH_UEOF = 4411,
   ANNAL_ALREADY_UPLOADED = 4901,
   CREDENTIALS_ALREADY_TAKEN = 5001,
 }
@@ -281,6 +282,10 @@ export const ErrorData = Object.freeze({
   },
   [ERROR_CODE.NO_SUCH_ASSO]: {
     message: 'The asso % does no exist',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
+  [ERROR_CODE.NO_SUCH_UEOF]: {
+    message: 'UEOF % does no exist',
     httpCode: HttpStatus.NOT_FOUND,
   },
   [ERROR_CODE.ANNAL_ALREADY_UPLOADED]: {

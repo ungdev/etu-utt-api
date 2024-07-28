@@ -9,15 +9,20 @@ import { CreateAnnal } from './dto/create-annal.dto';
 import { UpdateAnnalDto } from './dto/update-annal.dto';
 import { ConfigModule } from '../../config/config.module';
 import { User } from '../../users/interfaces/user.interface';
+import { Semester } from '@prisma/client';
 
 @Injectable()
 export class AnnalsService {
   constructor(readonly prisma: PrismaService, readonly config: ConfigModule) {}
 
   async getUEAnnalMetadata(user: User, ueCode: string, isModerator: boolean) {
-    const ue = await this.prisma.ue.findUnique({
+    const ueof = await this.prisma.ueof.findMany({
       where: {
-        code: ueCode,
+        ueId: ueCode,
+        available: true,
+      },
+      include: {
+        openSemester: true,
       },
     });
     const semesters = !isModerator
@@ -25,11 +30,15 @@ export class AnnalsService {
           await this.prisma.userUeSubscription.findMany({
             where: {
               userId: user.id,
-              ueId: ue.id,
+              ueof: {
+                ueId: ueCode,
+              },
             },
           })
         ).map((subscription) => subscription.semesterId)
-      : ue.openSemester.map((semester) => semester.code);
+      : [...ueof.reduce((prev, nxt) => new Set([...prev, ...nxt.openSemester]), new Set<Semester>())].map(
+          (semester) => semester.code,
+        );
     const annalType = await this.prisma.ueAnnalType.findMany();
     return {
       types: annalType,
@@ -47,7 +56,16 @@ export class AnnalsService {
     );
   }
 
-  async createAnnalFile(user: User, params: CreateAnnal) {
+  async createAnnalFile(user: User, params: CreateAnnal, ueof?: string) {
+    const subscription = await this.prisma.userUeSubscription.findFirst({
+      where: {
+        semesterId: params.semester,
+        userId: user.id,
+        ueof: {
+          ueId: params.ueCode,
+        },
+      },
+    });
     // Create upload/file entry
     return this.prisma.ueAnnal.create({
       data: {
@@ -69,6 +87,11 @@ export class AnnalsService {
         ue: {
           connect: {
             code: params.ueCode,
+          },
+        },
+        ueof: {
+          connect: {
+            code: subscription.ueofId ?? ueof,
           },
         },
       },
