@@ -5,6 +5,8 @@ import { generateTranslation } from '../utils';
 
 const FAKER_ROUNDS = 20;
 
+export const OF_SUFFIX = '_FR_TRO_U23';
+
 export default function ueSeed(
   prisma: PrismaClient,
   semesters: RawSemester[],
@@ -22,49 +24,54 @@ export default function ueSeed(
       prisma.ue.create({
         data: {
           code,
-          inscriptionCode: code.length === 3 ? `${code}X` : code.length === 4 ? code : code.substring(0, 4),
-          name: generateTranslation(faker.name.jobTitle),
-          validationRate: faker.datatype.number({ min: 0, max: 100 }),
-          createdAt: date,
-          updatedAt: date,
-          info: {
+          creationYear: faker.datatype.number({ min: 2000, max: 2024 }),
+          updateYear: faker.datatype.number({ min: 2001, max: 2024 }),
+          ueofs: {
             create: {
-              comment: generateTranslation(),
-              program: generateTranslation(),
-              objectives: generateTranslation(),
-              languages: faker.random.word(),
-            },
-          },
-          credits: {
-            create: [
-              {
-                category: {
-                  connect: {
-                    code: faker.helpers.arrayElement(creditCategory).code,
-                  },
+              code: `${code}${OF_SUFFIX}`,
+              siepId: faker.datatype.number({ min: 100000, max: 999999 }),
+              name: generateTranslation(faker.name.jobTitle),
+              createdAt: date,
+              updatedAt: date,
+              info: {
+                create: {
+                  program: generateTranslation(),
+                  objectives: generateTranslation(),
+                  language: faker.random.word(),
                 },
-                credits: faker.datatype.number({ min: 1, max: 6 }),
               },
-            ],
-          },
-          openSemester: {
-            connect: faker.helpers
-              .arrayElements(semesters, faker.datatype.number({ min: 1, max: 50 }))
-              .map((semester) => ({ code: semester.code })),
-          },
-          branchOption: {
-            connect: faker.helpers
-              .arrayElements(branchOptions, faker.datatype.number({ min: 1, max: 3 }))
-              .map((branchOption) => ({ id: branchOption.id })),
-          },
-          workTime: {
-            create: {
-              cm: faker.datatype.number({ min: 6, max: 32 }),
-              td: faker.datatype.number({ min: 6, max: 32 }),
-              tp: faker.datatype.number({ min: 6, max: 16 }),
-              the: faker.datatype.number({ min: 32, max: 64 }),
-              project: faker.datatype.number({ min: 16, max: 48 }),
-              internship: 0,
+              credits: {
+                create: [
+                  {
+                    category: {
+                      connect: {
+                        code: faker.helpers.arrayElement(creditCategory).code,
+                      },
+                    },
+                    credits: faker.datatype.number({ min: 1, max: 6 }),
+                  },
+                ],
+              },
+              openSemester: {
+                connect: faker.helpers
+                  .arrayElements(semesters, faker.datatype.number({ min: 1, max: 50 }))
+                  .map((semester) => ({ code: semester.code })),
+              },
+              branchOption: {
+                connect: faker.helpers
+                  .arrayElements(branchOptions, faker.datatype.number({ min: 1, max: 3 }))
+                  .map((branchOption) => ({ code: branchOption.code })),
+              },
+              workTime: {
+                create: {
+                  cm: faker.datatype.number({ min: 6, max: 32 }),
+                  td: faker.datatype.number({ min: 6, max: 32 }),
+                  tp: faker.datatype.number({ min: 6, max: 16 }),
+                  the: faker.datatype.number({ min: 32, max: 64 }),
+                  project: faker.datatype.boolean(),
+                  internship: 0,
+                },
+              },
             },
           },
         },

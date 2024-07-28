@@ -79,11 +79,12 @@ export type FakeAsso = Partial<
 >;
 export type FakeSemester = Partial<RawSemester>;
 export type FakeUe = Partial<Omit<RawUe, 'nameTranslationId' | 'ueInfoId'>> & {
+  ueofCode?: string;
   name?: Partial<Translation>;
+  siepId?: number;
   credits?: (Partial<RawUeCredit> & { category: RawCreditCategory })[];
   info?: Partial<
-    Omit<RawUeInfo, 'commentTranslationId' | 'objectivesTranslationId' | 'programTranslationId'> & {
-      comment: Partial<Translation>;
+    Omit<RawUeInfo, 'objectivesTranslationId' | 'programTranslationId'> & {
       objectives: Partial<Translation>;
       program: Partial<Translation>;
       requirements: { code: string }[];
@@ -317,7 +318,7 @@ export const createUser = entityFaker(
                 semesterNumber: branch.semesterNumber,
                 semesterCode: branch.semester.code,
                 branchCode: branch.branch.code,
-                branchOptionId: branch.branchOption.id,
+                branchOptionId: branch.branchOption.code,
               })),
             },
           },
@@ -660,7 +661,8 @@ export const createAnnal = entityFaker(
           semesterId: semester.code,
           senderId: sender.id,
           typeId: type.id,
-          ueId: ue.id,
+          ueId: ue.code,
+          ueofId: ue.ueofCode,
         },
       }),
 );
@@ -670,6 +672,9 @@ export const createUe = entityFaker(
   'ue',
   {
     code: faker.db.ue.code,
+    siepId: () => faker.datatype.number({ min: 100000, max: 999999 }),
+    creationYear: () => faker.datatype.number({ min: 2000, max: 2024 }),
+    updateYear: () => faker.datatype.number({ min: 2001, max: 2024 }),
     name: () => faker.db.translation(faker.name.jobTitle),
     credits: [
       {
@@ -689,7 +694,7 @@ export const createUe = entityFaker(
       td: () => faker.datatype.number({ min: 0, max: 100 }),
       tp: () => faker.datatype.number({ min: 0, max: 100 }),
       the: () => faker.datatype.number({ min: 0, max: 100 }),
-      project: () => faker.datatype.number({ min: 0, max: 100 }),
+      project: () => faker.datatype.boolean(),
       internship: () => faker.datatype.number({ min: 0, max: 100 }),
     },
     branchOption: [],
@@ -700,94 +705,99 @@ export const createUe = entityFaker(
       .get(PrismaService)
       .withDefaultBehaviour.ue.create({
         data: {
-          ...omit(params, 'name', 'credits', 'info', 'workTime', 'inscriptionCode', 'openSemesters'),
-          name: {
+          ...omit(params, 'siepId', 'branchOption', 'name', 'credits', 'info', 'workTime', 'openSemesters'),
+          ueofs: {
             create: {
-              fr: 'TODO : implement this value',
-              ...params.name,
+              code: params.ueofCode || `${params.code}_FR_TRO_U23`,
+              siepId: params.siepId,
+              available: true,
+              name: {
+                create: {
+                  fr: 'TODO : implement this value',
+                  ...params.name,
+                },
+              },
+              credits: {
+                create: params.credits.map((credit) => ({
+                  category: {
+                    connectOrCreate: {
+                      create: credit.category,
+                      where: { code: credit.category.code },
+                    },
+                  },
+                  credits: credit.credits,
+                })),
+              },
+              info: {
+                create: {
+                  ...omit(params.info, 'objectives', 'program'),
+                  objectives: {
+                    create: {
+                      fr: 'TODO : implement this value',
+                      ...params.info.objectives,
+                    },
+                  },
+                  program: {
+                    create: {
+                      fr: 'TODO : implement this value',
+                      ...params.info.program,
+                    },
+                  },
+                },
+              },
+              workTime: {
+                create: params.workTime,
+              },
+              branchOption: {
+                connect: params.branchOption.map((branchOption) => ({
+                  code: branchOption.code,
+                })),
+              },
+              openSemester: {
+                connect: params.openSemesters.map((semester) => ({
+                  code: semester.code,
+                })),
+              },
             },
-          },
-          inscriptionCode: params.inscriptionCode ?? params.code,
-          credits: {
-            create: params.credits.map((credit) => ({
-              category: {
-                connectOrCreate: {
-                  create: credit.category,
-                  where: { code: credit.category.code },
-                },
-              },
-              credits: credit.credits,
-            })),
-          },
-          info: {
-            create: {
-              ...omit(params.info, 'requirements', 'comment', 'objectives', 'program'),
-              comment: {
-                create: {
-                  fr: 'TODO : implement this value',
-                  ...params.info.comment,
-                },
-              },
-              objectives: {
-                create: {
-                  fr: 'TODO : implement this value',
-                  ...params.info.objectives,
-                },
-              },
-              program: {
-                create: {
-                  fr: 'TODO : implement this value',
-                  ...params.info.program,
-                },
-              },
-            },
-          },
-          workTime: {
-            create: params.workTime,
-          },
-          branchOption: {
-            connect: params.branchOption.map((branchOption) => ({
-              id: branchOption.id,
-            })),
-          },
-          openSemester: {
-            connect: params.openSemesters.map((semester) => ({
-              code: semester.code,
-            })),
           },
         },
         include: {
-          name: translationSelect,
-          info: {
+          ueofs: {
             include: {
+              name: translationSelect,
               requirements: {
                 select: {
                   code: true,
                 },
               },
-              comment: translationSelect,
-              objectives: translationSelect,
-              program: translationSelect,
-            },
-          },
-          workTime: true,
-          credits: {
-            include: {
-              category: true,
-            },
-          },
-          openSemester: true,
-          branchOption: {
-            include: {
-              branch: true,
+              info: {
+                include: {
+                  objectives: translationSelect,
+                  program: translationSelect,
+                },
+              },
+              workTime: true,
+              credits: {
+                include: {
+                  category: true,
+                },
+              },
+              openSemester: true,
+              branchOption: {
+                include: {
+                  branch: true,
+                },
+              },
             },
           },
         },
       })
       .then((ue) => ({
-        ...omit(ue, 'openSemester', 'ueInfoId', 'nameTranslationId'),
-        info: omit(ue.info, 'commentTranslationId', 'objectivesTranslationId', 'programTranslationId'),
-        openSemesters: ue.openSemester,
+        ...omit(ue, 'ueofs'),
+        ueofCode: ue.ueofs[0].code,
+        ...omit(ue.ueofs[0], 'code', 'ueId', 'ueInfoId', 'openSemester', 'nameTranslationId'),
+        info: omit(ue.ueofs[0].info, 'objectivesTranslationId', 'programTranslationId'),
+        openSemesters: ue.ueofs[0].openSemester,
       })),
 );
 
@@ -797,15 +807,15 @@ export const createUeSubscription = entityFaker('userUeSubscription', {}, async 
     .get(PrismaService)
     .userUeSubscription.create({
       data: {
-        ...omit(params, 'semesterId', 'ueId', 'userId'),
+        ...omit(params, 'semesterId', 'ueofId', 'userId'),
         semester: {
           connect: {
             code: dependencies.semester.code,
           },
         },
-        ue: {
+        ueof: {
           connect: {
-            code: dependencies.ue.code,
+            code: dependencies.ue.ueofCode,
           },
         },
         user: {
@@ -884,12 +894,17 @@ export const createComment = entityFaker(
       .get(PrismaService)
       .withDefaultBehaviour.ueComment.create({
         data: {
-          ...omit(params, 'ueId', 'authorId', 'semesterId', 'status'),
+          ...omit(params, 'ueId', 'ueofId', 'authorId', 'semesterId', 'status'),
           validatedAt: params.status & CommentStatus.VALIDATED ? new Date() : undefined,
           deletedAt: params.status & CommentStatus.DELETED ? new Date() : undefined,
           ue: {
             connect: {
               code: dependencies.ue.code,
+            },
+          },
+          ueof: {
+            connect: {
+              code: dependencies.ue.ueofCode,
             },
           },
           author: {
