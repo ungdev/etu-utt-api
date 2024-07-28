@@ -12,8 +12,6 @@ export class JwtGuard extends AuthGuard('jwt') {
   }
 
   async canActivate(context: ExecutionContext) {
-    // If the route is public, serve the request directly
-    if (this.reflector.get(IsPublic, context.getHandler())) return true;
     try {
       // Check whether the user is logged in
       const result = await super.canActivate(context);
@@ -21,6 +19,8 @@ export class JwtGuard extends AuthGuard('jwt') {
       // The user is logged in, we can serve the request
       return true;
     } catch {
+      // If the route is public, serve the request even if no user is connected
+      if (this.reflector.get(IsPublic, context.getHandler())) return true;
       // The user is not logged in, throw an logging error
       throw new AppException(ERROR_CODE.NOT_LOGGED_IN);
     }
