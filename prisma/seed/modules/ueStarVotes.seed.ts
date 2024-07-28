@@ -1,4 +1,5 @@
 import { RawUeStarVote, RawUeStarCriterion, RawUserUeSubscription } from '../../../src/prisma/types';
+import { OF_SUFFIX } from './ue.seed';
 import { PrismaClient } from '@prisma/client';
 import { faker } from '@faker-js/faker';
 
@@ -17,7 +18,7 @@ export default function ueStarVotesSeed(
         prisma.ueStarVote.create({
           data: {
             user: { connect: { id: subscription.userId } },
-            ue: { connect: { id: subscription.ueId } },
+            ue: { connect: { code: subscription.ueofId.slice(0, -OF_SUFFIX.length) } },
             criterion: { connect: { id: criterion.id } },
             value: faker.datatype.number({ min: 1, max: 5 }),
           },

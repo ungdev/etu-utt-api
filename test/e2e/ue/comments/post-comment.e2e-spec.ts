@@ -19,7 +19,7 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
+  const ue = createUe(app, { branchOptions: [branchOption] }, { openSemesters: [semester] });
   createUeSubscription(app, { user: user2, ue, semester });
 
   it('should return a 401 as user is not authenticated', () => {

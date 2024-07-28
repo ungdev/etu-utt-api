@@ -1,4 +1,6 @@
-import { Body, Controller, Delete, Get, Headers, Param, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Headers, Param, Put, Query, Res } from '@nestjs/common';
+import { HttpStatusCode } from 'axios';
+import type { Response } from 'express';
 import { UeSearchDto } from './dto/ue-search.dto';
 import { UeService } from './ue.service';
 import { GetUser, IsPublic, RequireUserType } from '../auth/decorator';
@@ -7,8 +9,9 @@ import { UUIDParam } from '../app.pipe';
 import { AppException, ERROR_CODE } from '../exceptions';
 import { UeRateDto } from './dto/ue-rate.dto';
 import { Ue } from './interfaces/ue.interface';
-import { Language } from '@prisma/client';
+import { Language, UserType } from '@prisma/client';
 import { Translation } from '../prisma/types';
+import { omit } from '../utils';
 
 @Controller('ue')
 export class UeController {
@@ -17,21 +20,35 @@ export class UeController {
   @Get()
   @IsPublic()
   async searchUe(
+    @GetUser() user: User,
     @Headers('language') language: Language,
     @Query() queryParams: UeSearchDto,
   ): Promise<Pagination<UeOverview>> {
     const res = await this.ueService.searchUes(queryParams, language);
     return {
       ...res,
-      items: res.items.map((ue) => this.formatUeOverview(ue)),
+      items: res.items.map((ue) =>
+        this.formatUeOverview(
+          ue,
+          queryParams.preferredLang ? [queryParams.preferredLang, language] : [language],
+          user?.branchSubscriptions.map((sub) => [sub.branchOption.code, sub.branchOption.branch.code]).flat() ?? [], // TODO : add more filters
+        ),
+      ),
     };
   }
 
   @Get('/:ueCode')
   @IsPublic()
-  async getUe(@Param('ueCode') ueCode: string): Promise<UeDetail> {
-    if (!(await this.ueService.doesUeExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
-    return this.formatDetailedUe(await this.ueService.getUe(ueCode.toUpperCase())); // TODO: remove starVotes in not student
+  async getUe(@GetUser() user: User, @Param('ueCode') ueCode: string, @Res() res: Response): Promise<void | UeDetail> {
+    if (!(await this.ueService.doesUeExist(ueCode))) {
+      // Check for aliases or throw an error
+      const alias = await this.ueService.findAlias(ueCode);
+      if (alias?.standsFor) return res.redirect(HttpStatusCode.MovedPermanently, `./${alias.standsFor}`);
+      throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
+    }
+    const result = this.formatDetailedUe(await this.ueService.getUe(ueCode.toUpperCase()));
+    if (user.userType === UserType.STUDENT || user.userType === UserType.FORMER_STUDENT) return result;
+    return omit(result, 'starVotes');
   }
 
   @Get('/rate/criteria')
@@ -73,89 +90,99 @@ export class UeController {
 
   @Get('/of/me')
   @RequireUserType('STUDENT')
-  async getMyUes(@GetUser() user: User): Promise<UeOverview[]> {
-    return (await this.ueService.getUesOfUser(user.id)).map((ue) => this.formatUeOverview(ue));
+  async getMyUes(@GetUser() user: User, @Headers('language') language: Language): Promise<UeOverview[]> {
+    return (await this.ueService.getUesOfUser(user.id)).map((ue) =>
+      this.formatUeOverview(
+        ue,
+        [language],
+        user.branchSubscriptions.map((sub) => [sub.branchOption.code, sub.branchOption.branch.code]).flat(),
+      ),
+    );
   }
 
-  private formatUeOverview(ue: Ue): UeOverview {
+  /** This method chooses an UEOF and displays its basic data */
+  private formatUeOverview(ue: Ue, langPref: string[], branchOptionPref: string[]): UeOverview {
+    const lowerCasePref = langPref.map((lang) => lang.toLocaleLowerCase());
+    const availableOf = ue.ueofs.filter((ueof) =>
+      branchOptionPref.some((optionPref) =>
+        ueof.credits.some((credit) => credit.branchOptions.some((option) => option.code === optionPref)),
+      ),
+    );
+    const chosenOf = availableOf.length
+      ? availableOf.find((ueof) => lowerCasePref.includes(ueof.info.language))
+      : ue.ueofs.find((ueof) => lowerCasePref.includes(ueof.info.language)) ?? ue.ueofs[0];
     return {
       code: ue.code,
-      inscriptionCode: ue.inscriptionCode,
-      name: ue.name,
-      credits: ue.credits.map((c) => ({
+      name: chosenOf.name,
+      credits: chosenOf.credits.map((c) => ({
         credits: c.credits,
         category: {
           code: c.category.code,
           name: c.category.name,
         },
-      })),
-      branchOption: ue.branchOption.map((branchOption) => ({
-        code: branchOption.code,
-        name: branchOption.name,
-        branch: {
-          code: branchOption.branch.code,
-          name: branchOption.branch.name,
-        },
+        branchOptions: c.branchOptions,
       })),
       info: {
-        requirements: ue.info.requirements.map((r) => r.code),
-        comment: ue.info.comment,
-        degree: ue.info.degree,
-        languages: ue.info.languages,
-        minors: ue.info.minors,
-        objectives: ue.info.objectives,
-        program: ue.info.program,
+        requirements: chosenOf.requirements.map((r) => r.code),
+        languages: [...new Set(ue.ueofs.map((ueof) => ueof.info.language))],
+        minors: chosenOf.info.minors,
+        objectives: chosenOf.info.objectives,
+        program: chosenOf.info.program,
       },
-      openSemester: ue.openSemester.map((semester) => ({
-        code: semester.code,
-        start: semester.start,
-        end: semester.end,
-      })),
+      openSemester: ue.ueofs
+        .map((ueof) => ueof.openSemester)
+        .reduce((acc, val) => [...acc, ...val.filter((sem) => acc.every((has) => has.code !== sem.code))], [])
+        .map((semester) => ({
+          code: semester.code,
+          start: semester.start,
+          end: semester.end,
+        })),
     };
   }
 
   private formatDetailedUe(ue: Ue): UeDetail {
     return {
       code: ue.code,
-      inscriptionCode: ue.inscriptionCode,
-      name: ue.name,
-      credits: ue.credits.map((c) => ({
-        credits: c.credits,
-        category: {
-          code: c.category.code,
-          name: c.category.name,
+      creationYear: ue.creationYear,
+      updateYear: ue.updateYear,
+      ofs: ue.ueofs.map((ueof) => ({
+        name: ueof.name,
+        credits: ueof.credits.map((c) => ({
+          credits: c.credits,
+          category: {
+            code: c.category.code,
+            name: c.category.name,
+          },
+          branchOptions: c.branchOptions.map((branchOption) => ({
+            code: branchOption.code,
+            name: branchOption.name,
+            branch: {
+              code: branchOption.branch.code,
+              name: branchOption.branch.name,
+            },
+          })),
+        })),
+        info: {
+          requirements: ueof.requirements.map((r) => r.code),
+          language: ueof.info.language,
+          minors: ueof.info.minors,
+          objectives: ueof.info.objectives,
+          program: ueof.info.program,
+        },
+        openSemester: ueof.openSemester.map((semester) => ({
+          code: semester.code,
+          start: semester.start,
+          end: semester.end,
+        })),
+        workTime: {
+          cm: ueof.workTime.cm,
+          td: ueof.workTime.td,
+          tp: ueof.workTime.tp,
+          the: ueof.workTime.the,
+          project: ueof.workTime.project,
+          internship: ueof.workTime.internship,
         },
       })),
-      branchOption: ue.branchOption.map((branchOption) => ({
-        code: branchOption.code,
-        name: branchOption.name,
-        branch: {
-          code: branchOption.branch.code,
-          name: branchOption.branch.name,
-        },
-      })),
-      info: {
-        requirements: ue.info.requirements.map((r) => r.code),
-        comment: ue.info.comment,
-        degree: ue.info.degree,
-        languages: ue.info.languages,
-        minors: ue.info.minors,
-        objectives: ue.info.objectives,
-        program: ue.info.program,
-      },
-      openSemester: ue.openSemester.map((semester) => ({
-        code: semester.code,
-        start: semester.start,
-        end: semester.end,
-      })),
-      workTime: {
-        cm: ue.workTime.cm,
-        td: ue.workTime.td,
-        tp: ue.workTime.tp,
-        the: ue.workTime.the,
-        project: ue.workTime.project,
-        internship: ue.workTime.internship,
-      },
       starVotes: ue.starVotes,
     };
   }
@@ -163,7 +190,6 @@ export class UeController {
 
 export type UeOverview = {
   code: string;
-  inscriptionCode: string;
   name: Translation;
   credits: Array<{
     credits: number;
@@ -171,20 +197,18 @@ export type UeOverview = {
       code: string;
       name: string;
     };
-  }>;
-  branchOption: Array<{
-    branch: {
+    branchOptions: Array<{
+      branch: {
+        code: string;
+        name: string;
+      };
       code: string;
       name: string;
-    };
-    code: string;
-    name: string;
+    }>;
   }>;
   info: {
     requirements: string[];
-    comment: Translation;
-    degree: string;
-    languages: string;
+    languages: string[];
     minors: string;
     objectives: Translation;
     program: Translation;
@@ -198,44 +222,45 @@ export type UeOverview = {
 
 export type UeDetail = {
   code: string;
-  inscriptionCode: string;
-  name: Translation;
-  credits: Array<{
-    credits: number;
-    category: {
-      code: string;
-      name: string;
+  creationYear: number;
+  updateYear: number;
+  ofs: {
+    name: Translation;
+    credits: Array<{
+      credits: number;
+      category: {
+        code: string;
+        name: string;
+      };
+      branchOptions: Array<{
+        branch: {
+          code: string;
+          name: string;
+        };
+        code: string;
+        name: string;
+      }>;
+    }>;
+    info: {
+      requirements: string[];
+      language: string;
+      minors: string;
+      objectives: Translation;
+      program: Translation;
     };
-  }>;
-  branchOption: Array<{
-    branch: {
+    openSemester: Array<{
       code: string;
-      name: string;
+      start: Date;
+      end: Date;
+    }>;
+    workTime: {
+      cm: number;
+      td: number;
+      tp: number;
+      the: number;
+      project: boolean;
+      internship: number;
     };
-    code: string;
-    name: string;
-  }>;
-  info: {
-    requirements: string[];
-    comment: Translation;
-    degree: string;
-    languages: string;
-    minors: string;
-    objectives: Translation;
-    program: Translation;
-  };
-  openSemester: Array<{
-    code: string;
-    start: Date;
-    end: Date;
-  }>;
-  workTime: {
-    cm: number;
-    td: number;
-    tp: number;
-    the: number;
-    project: number;
-    internship: number;
-  };
-  starVotes: { [criterionId: string]: number };
+  }[];
+  starVotes?: { [criterionId: string]: number };
 };

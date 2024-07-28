@@ -19,7 +19,7 @@ const DeleteUpvote = e2eSuite('DELETE /ue/comments/{commentId}/upvote', (app) =>
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
+  const ue = createUe(app, { branchOptions: [branchOption] }, { openSemesters: [semester] });
   const comment1 = createComment(app, { user, ue, semester });
   const upvote = createCommentUpvote(app, { user: user2, comment: comment1 });
 
