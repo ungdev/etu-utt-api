@@ -36,10 +36,12 @@ function ueOverviewExpectation(ue: FakeUe, spec: Spec) {
   return {
     code: ue.code,
     name: getTranslation(ue.name, spec.language),
-    credits: ue.credits.map((credit) => omit(credit, 'id', 'ueofId', 'categoryId')),
-    branchOption: ue.branchOption.map((branchOption) => ({
-      ...pick(branchOption, 'code', 'name'),
-      branch: pick(branchOption.branch, 'code', 'name'),
+    credits: ue.credits.map((credit) => ({
+      ...omit(credit, 'id', 'ueofId', 'categoryId', 'branchOptions'),
+      branchOptions: credit.branchOptions.map((branchOption) => ({
+        ...pick(branchOption, 'code', 'name'),
+        branch: pick(branchOption.branch, 'code', 'name'),
+      })),
     })),
     info: {
       ...omit(ue.info, 'id', 'program', 'objectives'),
@@ -78,10 +80,12 @@ Spec.prototype.expectUe = function (ue: FakeUe, rates: Array<{ criterionId: stri
       ofs: [
         {
           name: getTranslation(ue.name, this.language),
-          credits: ue.credits.map((credit) => omit(credit, 'id', 'ueofId', 'categoryId')),
-          branchOption: ue.branchOption.map((branchOption) => ({
-            ...pick(branchOption, 'code', 'name'),
-            branch: pick(branchOption.branch, 'code', 'name'),
+          credits: ue.credits.map((credit) => ({
+            ...omit(credit, 'id', 'ueofId', 'categoryId', 'branchOptions'),
+            branchOptions: credit.branchOptions.map((branchOption) => ({
+              ...pick(branchOption, 'code', 'name'),
+              branch: pick(branchOption.branch, 'code', 'name'),
+            })),
           })),
           info: {
             ...omit(ue.info, 'id'),

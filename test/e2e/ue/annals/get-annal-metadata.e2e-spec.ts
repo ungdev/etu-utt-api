@@ -19,7 +19,7 @@ const GetAnnalMetadata = e2eSuite('GET /ue/annals/metadata', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
+  const ue = createUe(app, { branchOptions: [branchOption] }, { openSemesters: [semester] });
   createUeSubscription(app, { user: ueUser, ue, semester });
 
   it('should return a 401 as user is not authenticated', () => {

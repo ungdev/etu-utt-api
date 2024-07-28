@@ -29,20 +29,23 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
   const ues: FakeUe[] = [];
   for (let i = 0; i < 30; i++)
     ues.push(
-      createUe(app, {
-        code: `XX${`${i}`.padStart(2, '0')}`,
-        credits: [
-          {
-            category: {
-              code: i % 3 == 0 ? 'CS' : 'TM',
-              name: i % 3 == 0 ? 'CS' : 'TM',
+      createUe(
+        app,
+        { branchOptions: [branchOptions[i % 4]] },
+        {
+          code: `XX${`${i}`.padStart(2, '0')}`,
+          credits: [
+            {
+              category: {
+                code: i % 3 == 0 ? 'CS' : 'TM',
+                name: i % 3 == 0 ? 'CS' : 'TM',
+              },
+              credits: 6,
             },
-            credits: 6,
-          },
-        ],
-        openSemesters: [semesters[i % 2]],
-        branchOption: [branchOptions[i % 4]],
-      }),
+          ],
+          openSemesters: [semesters[i % 2]],
+        },
+      ),
     );
 
   it('should return a 400 as semester is in a wrong format', () => {
@@ -106,7 +109,9 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
   });
 
   it('should return a list of ues filtered by branch option', () => {
-    const expectedUes = ues.filter((ue) => ue.branchOption.some((branchOption) => branchOption.code === 'T1'));
+    const expectedUes = ues.filter((ue) =>
+      ue.credits.some((credit) => credit.branchOptions.some((branchOption) => branchOption.code === 'T1')),
+    );
     return pactum
       .spec()
       .withBearerToken(user.token)
@@ -116,7 +121,9 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
   });
 
   it('should return a list of ues filtered by branch', () => {
-    const expectedUes = ues.filter((ue) => ue.branchOption.some((branchOption) => branchOption.branch.code === 'B1'));
+    const expectedUes = ues.filter((ue) =>
+      ue.credits.some((credit) => credit.branchOptions.some((branchOption) => branchOption.branch.code === 'B1')),
+    );
     return pactum
       .spec()
       .withBearerToken(user.token)

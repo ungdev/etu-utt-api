@@ -79,16 +79,20 @@ export class UeService {
         ? {
             ueofs: {
               some: {
-                branchOption: {
+                credits: {
                   some: {
-                    OR: [
-                      { code: query.branchOption },
-                      {
-                        branch: {
-                          code: query.branch,
-                        },
+                    branchOptions: {
+                      some: {
+                        OR: [
+                          { code: query.branchOption },
+                          {
+                            branch: {
+                              code: query.branch,
+                            },
+                          },
+                        ],
                       },
-                    ],
+                    },
                   },
                 },
               },

@@ -57,16 +57,16 @@ const UE_SELECT_FILTER = {
                 name: true,
               },
             },
-          },
-        },
-        branchOption: {
-          select: {
-            code: true,
-            name: true,
-            branch: {
+            branchOptions: {
               select: {
                 code: true,
                 name: true,
+                branch: {
+                  select: {
+                    code: true,
+                    name: true,
+                  },
+                },
               },
             },
           },
