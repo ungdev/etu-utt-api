@@ -17,7 +17,7 @@ const GetRateE2ESpec = e2eSuite('GET /ue/{ueCode}/rate', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
+  const ue = createUe(app, { branchOptions: [branchOption] }, { openSemesters: [semester] });
   const c1 = createCriterion(app);
   const c2 = createCriterion(app);
   createUeRating(app, { ue, criterion: c1, user }, { value: 1 });

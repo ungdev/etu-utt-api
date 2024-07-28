@@ -34,7 +34,7 @@ const CasSignUpE2ESpec = e2eSuite('/auth/signup/cas', (app) => {
     start: new Date(),
     end: new Date(),
   });
-  const ue = fakedb.createUe(app);
+  const ue = fakedb.createUe(app, { branchOptions: [branchOption] });
 
   beforeAll(() => ldapServer.start());
   afterAll(() => ldapServer.stop());

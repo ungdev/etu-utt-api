@@ -18,7 +18,7 @@ const PostCommmentReply = e2eSuite('POST /ue/comments/{commentId}/reply', (app) 
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
+  const ue = createUe(app, { branchOptions: [branchOption] }, { openSemesters: [semester] });
   const comment = createComment(app, { ue, user, semester });
   createUeSubscription(app, { user, ue, semester });
 

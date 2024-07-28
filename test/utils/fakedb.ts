@@ -82,7 +82,10 @@ export type FakeUe = Partial<Omit<RawUe, 'nameTranslationId' | 'ueInfoId'>> & {
   ueofCode?: string;
   name?: Partial<Translation>;
   siepId?: number;
-  credits?: (Partial<RawUeCredit> & { category: RawCreditCategory })[];
+  credits?: (Partial<RawUeCredit> & {
+    category: RawCreditCategory;
+    branchOptions?: Partial<RawBranchOption & { branch: RawBranch }>[];
+  })[];
   info?: Partial<
     Omit<RawUeInfo, 'objectivesTranslationId' | 'programTranslationId'> & {
       objectives: Partial<Translation>;
@@ -92,7 +95,6 @@ export type FakeUe = Partial<Omit<RawUe, 'nameTranslationId' | 'ueInfoId'>> & {
   >;
   workTime?: Partial<RawUeWorkTime>;
   openSemesters?: Partial<RawSemester>[];
-  branchOption?: Partial<RawBranchOption & { branch: RawBranch }>[];
 };
 export type FakeUserUeSubscription = Partial<RawUserUeSubscription>;
 export type FakeUeStarCriterion = Partial<RawUeStarCriterion>;
@@ -155,6 +157,7 @@ export interface FakeEntityMap {
   ue: {
     entity: FakeUe;
     params: CreateUeParameters;
+    deps: { branchOptions: FakeBranchOption[] };
   };
   userUeSubscription: {
     entity: FakeUserUeSubscription;
@@ -667,7 +670,9 @@ export const createAnnal = entityFaker(
       }),
 );
 
-export type CreateUeParameters = FakeUe;
+export type CreateUeParameters = Omit<FakeUe, 'credits'> & {
+  credits: (FakeUe['credits'] extends Array<infer R> ? Omit<R, 'branchOptions'> : never)[];
+};
 export const createUe = entityFaker(
   'ue',
   {
@@ -697,15 +702,14 @@ export const createUe = entityFaker(
       project: () => faker.datatype.boolean(),
       internship: () => faker.datatype.number({ min: 0, max: 100 }),
     },
-    branchOption: [],
     openSemesters: [],
   },
-  async (app, params) =>
+  async (app, { branchOptions }, params) =>
     app()
       .get(PrismaService)
       .withDefaultBehaviour.ue.create({
         data: {
-          ...omit(params, 'siepId', 'branchOption', 'name', 'credits', 'info', 'workTime', 'openSemesters'),
+          ...omit(params, 'siepId', 'name', 'credits', 'info', 'workTime', 'openSemesters'),
           ueofs: {
             create: {
               code: params.ueofCode || `${params.code}_FR_TRO_U23`,
@@ -726,6 +730,11 @@ export const createUe = entityFaker(
                     },
                   },
                   credits: credit.credits,
+                  branchOptions: {
+                    connect: branchOptions.map((branchOption) => ({
+                      code: branchOption.code,
+                    })),
+                  },
                 })),
               },
               info: {
@@ -747,11 +756,6 @@ export const createUe = entityFaker(
               },
               workTime: {
                 create: params.workTime,
-              },
-              branchOption: {
-                connect: params.branchOption.map((branchOption) => ({
-                  code: branchOption.code,
-                })),
               },
               openSemester: {
                 connect: params.openSemesters.map((semester) => ({
@@ -780,14 +784,14 @@ export const createUe = entityFaker(
               credits: {
                 include: {
                   category: true,
+                  branchOptions: {
+                    include: {
+                      branch: true,
+                    },
+                  },
                 },
               },
               openSemester: true,
-              branchOption: {
-                include: {
-                  branch: true,
-                },
-              },
             },
           },
         },

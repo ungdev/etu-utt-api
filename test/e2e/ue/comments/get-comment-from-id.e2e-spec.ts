@@ -10,7 +10,9 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
   const user = fakedb.createUser(app);
   const user2 = fakedb.createUser(app, { login: 'user2', studentId: 3 });
   const semester = fakedb.createSemester(app);
-  const ue = fakedb.createUe(app, { code: `XX01`, openSemesters: [semester] });
+  const branch = fakedb.createBranch(app);
+  const branchOption = fakedb.createBranchOption(app, { branch });
+  const ue = fakedb.createUe(app, { branchOptions: [branchOption] }, { code: `XX01`, openSemesters: [semester] });
   const comment = fakedb.createComment(app, { user, ue, semester });
   fakedb.createCommentUpvote(app, { user: user2, comment });
   const reply = fakedb.createCommentReply(app, { user, comment }, { body: 'HelloWorld' });

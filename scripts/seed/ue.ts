@@ -141,7 +141,44 @@ async function main() {
   });
 
   console.info('\x1b[42;30mUpdating UEs\x1b[0m');
+  const branches = await prisma.uTTBranch.findMany({
+    select: {
+      isMaster: true,
+      code: true,
+    },
+  });
   for (const ue of ues) {
+    // Generating ue credits (includes branch and branch options)
+    const credits: { category: string; credits: number; branchOptions: string[] }[] = [];
+    if (ue.engineer_credit_type)
+      credits.push({
+        category: ue.engineer_credit_type,
+        credits: ue.credit_count,
+        branchOptions: ue.engineer_branch_option.length
+          ? ue.engineer_branch_option
+          : ue.engineer_branch.length
+          ? ue.engineer_branch
+          : branches.filter((branch) => !branch.isMaster).map((branch) => branch.code),
+      });
+    if (ue.master_credit_type)
+      credits.push({
+        category: ue.master_credit_type,
+        credits: ue.credit_count,
+        branchOptions: ue.master_branch_option.length
+          ? ue.master_branch_option
+          : ue.master_branch.length
+          ? ue.master_branch
+          : branches.filter((branch) => branch.isMaster).map((branch) => branch.code),
+      });
+    if (ue.code === 'PE00')
+      credits.push(
+        ...['CS', 'TM', 'EC', 'ME', 'HT', 'AC'].map((code) => ({
+          category: code,
+          credits: ue.credit_count,
+          branchOptions: branches.filter((branch) => !branch.isMaster).map((branch) => branch.code),
+        })),
+      );
+    // Update database ue data
     await prisma.ueof.upsert({
       where: {
         code: ue.ueof_code,
@@ -192,19 +229,18 @@ async function main() {
           },
         },
         credits: {
-          create: (ue.code === 'PE00'
-            ? ['CS', 'TM', 'EC', 'ME', 'HT', 'AC']
-            : [...new Set([ue.engineer_credit_type, ue.master_credit_type])]
-          )
-            .filter((type) => type)
-            .map((type) => ({ credits: ue.credit_count, categoryId: type })),
-        },
-        branchOption: {
-          connect: [
-            ...(ue.engineer_branch_option.length ? ue.engineer_branch_option : ue.engineer_branch),
-            ...(ue.master_branch_option.length ? ue.master_branch_option : ue.master_branch),
-          ].map((code) => ({
-            code,
+          create: credits.map((credit) => ({
+            credits: credit.credits,
+            category: {
+              connect: {
+                code: credit.category,
+              },
+            },
+            branchOptions: {
+              connect: credit.branchOptions.map((code) => ({
+                code: code,
+              })),
+            },
           })),
         },
         openSemester: {
@@ -249,19 +285,18 @@ async function main() {
         },
         credits: {
           deleteMany: {},
-          create: (ue.code === 'PE00'
-            ? ['CS', 'TM', 'EC', 'ME', 'HT', 'AC']
-            : [...new Set([ue.engineer_credit_type, ue.master_credit_type])]
-          )
-            .filter((type) => type)
-            .map((type) => ({ categoryId: type, credits: ue.credit_count })),
-        },
-        branchOption: {
-          set: [
-            ...(ue.engineer_branch_option.length ? ue.engineer_branch_option : ue.engineer_branch),
-            ...(ue.master_branch_option.length ? ue.master_branch_option : ue.master_branch),
-          ].map((code) => ({
-            code,
+          create: credits.map((credit) => ({
+            credits: credit.credits,
+            category: {
+              connect: {
+                code: credit.category,
+              },
+            },
+            branchOptions: {
+              connect: credit.branchOptions.map((code) => ({
+                code: code,
+              })),
+            },
           })),
         },
         openSemester: {

@@ -22,7 +22,7 @@ const GetAnnalFile = e2eSuite('GET /ue/annals/{annalId}', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
+  const ue = createUe(app, { branchOptions: [branchOption] }, { openSemesters: [semester] });
   createUeSubscription(app, { user: senderUser, ue, semester });
   const annal_not_validated = createAnnal(
     app,

@@ -1,24 +1,33 @@
 import { e2eSuite } from '../../utils/test_utils';
 import * as pactum from 'pactum';
-import { createSemester, createUe, createUeSubscription, createUser } from '../../utils/fakedb';
+import {
+  createBranch,
+  createBranchOption,
+  createSemester,
+  createUe,
+  createUeSubscription,
+  createUser,
+} from '../../utils/fakedb';
 import { ERROR_CODE } from '../../../src/exceptions';
 
 const GetMyUesE2ESpec = e2eSuite('GET ue/of/me', (app) => {
   const user = createUser(app);
-  const ue = createUe(app);
+  const branch = createBranch(app);
+  const branchOption = createBranchOption(app, { branch });
+  const ue = createUe(app, { branchOptions: [branchOption] });
   const semester = createSemester(app, {
     start: new Date(Date.now() - 30 * 24 * 3_600_000),
     end: new Date(Date.now() + 30 * 24 * 3_600_000),
   });
   createUeSubscription(app, { user, ue, semester });
-  const ue2 = createUe(app);
+  const ue2 = createUe(app, { branchOptions: [branchOption] });
   const semester2 = createSemester(app, {
     start: new Date(Date.now() - 90 * 24 * 3_600_000),
     end: new Date(Date.now() - 30 * 24 * 3_600_000),
   });
   createUeSubscription(app, { user, ue: ue2, semester: semester2 });
   const user2 = createUser(app);
-  const ue3 = createUe(app);
+  const ue3 = createUe(app, { branchOptions: [branchOption] });
   createUeSubscription(app, { user: user2, ue: ue3, semester });
   const formerStudent = createUser(app, { userType: 'FORMER_STUDENT' });
 

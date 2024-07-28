@@ -40,26 +40,32 @@ const GetE2ESpec = e2eSuite('GET /ue/{ueCode}', (app) => {
   const ues: FakeUe[] = [];
   for (let i = 0; i < 30; i++)
     ues.push(
-      createUe(app, {
-        code: `XX${`${i}`.padStart(2, '0')}`,
-        credits: [
-          {
-            category: {
-              code: i % 3 == 0 ? 'CS' : 'TM',
-              name: i % 3 == 0 ? 'CS' : 'TM',
+      createUe(
+        app,
+        { branchOptions: [branchOptions[(i * 3) % 4]] },
+        {
+          code: `XX${`${i}`.padStart(2, '0')}`,
+          credits: [
+            {
+              category: {
+                code: i % 3 == 0 ? 'CS' : 'TM',
+                name: i % 3 == 0 ? 'CS' : 'TM',
+              },
+              credits: 6,
             },
-            credits: 6,
-          },
-        ],
-        openSemesters: [semesters[i % 2]],
-        branchOption: [branchOptions[(i * 3) % 4]],
-      }),
+          ],
+          openSemesters: [semesters[i % 2]],
+        },
+      ),
     );
-  const ueWithRating = createUe(app, {
-    code: `XX30`,
-    openSemesters: semesters,
-    branchOption: [branchOptions[0]],
-  });
+  const ueWithRating = createUe(
+    app,
+    { branchOptions: [branchOptions[0]] },
+    {
+      code: `XX30`,
+      openSemesters: semesters,
+    },
+  );
   const criterion = createCriterion(app);
   createUeSubscription(app, { user, ue: ueWithRating, semester: semesters[0] });
   createUeSubscription(app, { user: user2, ue: ueWithRating, semester: semesters[0] });

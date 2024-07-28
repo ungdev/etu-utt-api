@@ -49,6 +49,11 @@ export default function ueSeed(
                       },
                     },
                     credits: faker.datatype.number({ min: 1, max: 6 }),
+                    branchOptions: {
+                      connect: faker.helpers
+                        .arrayElements(branchOptions, faker.datatype.number({ min: 1, max: 3 }))
+                        .map((branchOption) => ({ code: branchOption.code })),
+                    },
                   },
                 ],
               },
@@ -56,11 +61,6 @@ export default function ueSeed(
                 connect: faker.helpers
                   .arrayElements(semesters, faker.datatype.number({ min: 1, max: 50 }))
                   .map((semester) => ({ code: semester.code })),
-              },
-              branchOption: {
-                connect: faker.helpers
-                  .arrayElements(branchOptions, faker.datatype.number({ min: 1, max: 3 }))
-                  .map((branchOption) => ({ code: branchOption.code })),
               },
               workTime: {
                 create: {

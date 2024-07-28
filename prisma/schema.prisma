@@ -224,8 +224,8 @@ model Ue {
 }
 
 model UeAlias {
-  code           String  @id @db.VarChar(8)
-  standsFor      String?  @db.VarChar(8)
+  code      String  @id @db.VarChar(8)
+  standsFor String? @db.VarChar(8)
 
   alias Ue? @relation(fields: [standsFor], references: [code])
 }
@@ -242,7 +242,6 @@ model Ueof {
 
   ue                 Ue                   @relation(fields: [ueId], references: [code])
   credits            UeCredit[]
-  branchOption       UTTBranchOption[]
   name               Translation          @relation(fields: [nameTranslationId], references: [id], onDelete: Cascade)
   info               UeInfo               @relation(fields: [ueInfoId], references: [id], onDelete: Cascade)
   requirements       Ue[]                 @relation(name: "ueRequirements")
@@ -444,10 +443,11 @@ model UeCourseExchangeReply {
 }
 
 model UeCredit {
-  id         String  @id @default(uuid())
-  credits    Int     @db.SmallInt
-  ueofId     String
-  categoryId String?
+  id            String            @id @default(uuid())
+  credits       Int               @db.SmallInt
+  ueofId        String
+  categoryId    String?
+  branchOptions UTTBranchOption[]
 
   ueof     Ueof              @relation(fields: [ueofId], references: [code], onDelete: Cascade)
   category UeCreditCategory? @relation(fields: [categoryId], references: [code])
@@ -809,7 +809,7 @@ model UTTBranchOption {
 
   branch                 UTTBranch                @relation(fields: [branchCode], references: [code])
   descriptionTranslation Translation              @relation(fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
-  ueofs                  Ueof[]
+  uecredits              UeCredit[]
   branchSubscriptions    UserBranchSubscription[]
 
   @@unique([code, branchCode])

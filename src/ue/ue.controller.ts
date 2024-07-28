@@ -104,7 +104,9 @@ export class UeController {
   private formatUeOverview(ue: Ue, langPref: string[], branchOptionPref: string[]): UeOverview {
     const lowerCasePref = langPref.map((lang) => lang.toLocaleLowerCase());
     const availableOf = ue.ueofs.filter((ueof) =>
-      branchOptionPref.some((optionPref) => ueof.branchOption.some((option) => option.code === optionPref)),
+      branchOptionPref.some((optionPref) =>
+        ueof.credits.some((credit) => credit.branchOptions.some((option) => option.code === optionPref)),
+      ),
     );
     const chosenOf = availableOf.length
       ? availableOf.find((ueof) => lowerCasePref.includes(ueof.info.language))
@@ -118,14 +120,7 @@ export class UeController {
           code: c.category.code,
           name: c.category.name,
         },
-      })),
-      branchOption: chosenOf.branchOption.map((branchOption) => ({
-        code: branchOption.code,
-        name: branchOption.name,
-        branch: {
-          code: branchOption.branch.code,
-          name: branchOption.branch.name,
-        },
+        branchOptions: c.branchOptions,
       })),
       info: {
         requirements: chosenOf.requirements.map((r) => r.code),
@@ -158,14 +153,14 @@ export class UeController {
             code: c.category.code,
             name: c.category.name,
           },
-        })),
-        branchOption: ueof.branchOption.map((branchOption) => ({
-          code: branchOption.code,
-          name: branchOption.name,
-          branch: {
-            code: branchOption.branch.code,
-            name: branchOption.branch.name,
-          },
+          branchOptions: c.branchOptions.map((branchOption) => ({
+            code: branchOption.code,
+            name: branchOption.name,
+            branch: {
+              code: branchOption.branch.code,
+              name: branchOption.branch.name,
+            },
+          })),
         })),
         info: {
           requirements: ueof.requirements.map((r) => r.code),
@@ -202,14 +197,14 @@ export type UeOverview = {
       code: string;
       name: string;
     };
-  }>;
-  branchOption: Array<{
-    branch: {
+    branchOptions: Array<{
+      branch: {
+        code: string;
+        name: string;
+      };
       code: string;
       name: string;
-    };
-    code: string;
-    name: string;
+    }>;
   }>;
   info: {
     requirements: string[];
@@ -237,14 +232,14 @@ export type UeDetail = {
         code: string;
         name: string;
       };
-    }>;
-    branchOption: Array<{
-      branch: {
+      branchOptions: Array<{
+        branch: {
+          code: string;
+          name: string;
+        };
         code: string;
         name: string;
-      };
-      code: string;
-      name: string;
+      }>;
     }>;
     info: {
       requirements: string[];
