@@ -1,4 +1,6 @@
-import { Body, Controller, Delete, Get, Headers, Param, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Headers, Param, Put, Query, Res } from '@nestjs/common';
+import { HttpStatusCode } from 'axios';
+import type { Response } from 'express';
 import { UeSearchDto } from './dto/ue-search.dto';
 import { UeService } from './ue.service';
 import { GetUser, IsPublic, RequireUserType } from '../auth/decorator';
@@ -37,8 +39,13 @@ export class UeController {
 
   @Get('/:ueCode')
   @IsPublic()
-  async getUe(@GetUser() user: User, @Param('ueCode') ueCode: string): Promise<UeDetail | Omit<UeDetail, 'starVotes'>> {
-    if (!(await this.ueService.doesUeExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
+  async getUe(@GetUser() user: User, @Param('ueCode') ueCode: string, @Res() res: Response): Promise<void | UeDetail> {
+    if (!(await this.ueService.doesUeExist(ueCode))) {
+      // Check for aliases or throw an error
+      const alias = await this.ueService.findAlias(ueCode);
+      if (alias?.standsFor) return res.redirect(HttpStatusCode.MovedPermanently, `/ue/${alias.standsFor}`);
+      throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
+    }
     const result = this.formatDetailedUe(await this.ueService.getUe(ueCode.toUpperCase()));
     if (user.userType === UserType.STUDENT || user.userType === UserType.FORMER_STUDENT) return result;
     return omit(result, 'starVotes');

@@ -192,6 +192,14 @@ export class UeService {
     }));
   }
 
+  async findAlias(aliasCode: string) {
+    return this.prisma.ueAlias.findUnique({
+      where: {
+        code: aliasCode,
+      },
+    });
+  }
+
   /**
    * Checks whether a user has already done an ue
    * @remarks The user must not be null
