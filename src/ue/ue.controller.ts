@@ -11,7 +11,7 @@ import { UeRateDto } from './dto/ue-rate.dto';
 import { Ue } from './interfaces/ue.interface';
 import { Language, UserType } from '@prisma/client';
 import { Translation } from '../prisma/types';
-import { omit } from 'src/utils';
+import { omit } from '../utils';
 
 @Controller('ue')
 export class UeController {
@@ -43,7 +43,7 @@ export class UeController {
     if (!(await this.ueService.doesUeExist(ueCode))) {
       // Check for aliases or throw an error
       const alias = await this.ueService.findAlias(ueCode);
-      if (alias?.standsFor) return res.redirect(HttpStatusCode.MovedPermanently, `/ue/${alias.standsFor}`);
+      if (alias?.standsFor) return res.redirect(HttpStatusCode.MovedPermanently, `./${alias.standsFor}`);
       throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     }
     const result = this.formatDetailedUe(await this.ueService.getUe(ueCode.toUpperCase()));

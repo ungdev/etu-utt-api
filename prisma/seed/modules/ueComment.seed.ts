@@ -1,6 +1,7 @@
 import { RawSemester, RawUe, RawUeComment, RawUser, RawUserUeSubscription } from '../../../src/prisma/types';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { faker } from '@faker-js/faker';
+import { OF_SUFFIX } from './ue.seed';
 
 const FAKER_ROUNDS = 100;
 
@@ -40,7 +41,12 @@ export default function ueCommentSeed(
           },
           ue: {
             connect: {
-              id: subscription.ueId,
+              code: subscription.ueofId.slice(0, -OF_SUFFIX.length),
+            },
+          },
+          ueof: {
+            connect: {
+              code: subscription.ueofId,
             },
           },
           semester: {

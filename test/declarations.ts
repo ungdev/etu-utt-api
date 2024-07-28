@@ -34,19 +34,18 @@ export function deepDateToString<T>(obj: T): JsonLikeVariant<T> {
 
 function ueOverviewExpectation(ue: FakeUe, spec: Spec) {
   return {
-    ...omit(ue, 'id', 'validationRate', 'createdAt', 'updatedAt', 'openSemesters', 'workTime'),
+    code: ue.code,
     name: getTranslation(ue.name, spec.language),
-    info: {
-      ...omit(ue.info, 'id', 'comment', 'program', 'objectives'),
-      comment: getTranslation(ue.info.comment, spec.language),
-      program: getTranslation(ue.info.program, spec.language),
-      objectives: getTranslation(ue.info.objectives, spec.language),
-    },
-    credits: ue.credits.map((credit) => omit(credit, 'id', 'ueId', 'categoryId')),
+    credits: ue.credits.map((credit) => omit(credit, 'id', 'ueofId', 'categoryId')),
     branchOption: ue.branchOption.map((branchOption) => ({
       ...pick(branchOption, 'code', 'name'),
       branch: pick(branchOption.branch, 'code', 'name'),
     })),
+    info: {
+      ...omit(ue.info, 'id', 'program', 'objectives'),
+      program: getTranslation(ue.info.program, spec.language),
+      objectives: getTranslation(ue.info.objectives, spec.language),
+    },
     openSemester: ue.openSemesters.map((semester) => ({
       ...semester,
       start: semester.start.toISOString(),
@@ -72,28 +71,33 @@ Spec.prototype.expectAppError = function <ErrorCode extends ERROR_CODE>(
 Spec.prototype.expectUe = function (ue: FakeUe, rates: Array<{ criterionId: string; value: number }> = []) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonMatchStrict(
     deepDateToString({
-      ...omit(ue, 'id', 'validationRate', 'createdAt', 'updatedAt', 'openSemesters'),
-      name: getTranslation(ue.name, this.language),
-      info: {
-        ...omit(ue.info, 'id'),
-        objectives: getTranslation(ue.info.objectives, this.language),
-        comment: getTranslation(ue.info.comment, this.language),
-        program: getTranslation(ue.info.program, this.language),
-      },
-      workTime: omit(ue.workTime, 'id', 'ueId'),
-      credits: ue.credits.map((credit) => omit(credit, 'id', 'ueId', 'categoryId')),
-      branchOption: ue.branchOption.map((branchOption) => ({
-        ...pick(branchOption, 'code', 'name'),
-        branch: pick(branchOption.branch, 'code', 'name'),
-      })),
-      openSemester: ue.openSemesters
-        .mappedSort((semester) => semester.start.toISOString())
-        .map((semester) => ({
-          ...semester,
-          start: semester.start.toISOString(),
-          end: semester.end.toISOString(),
-        })),
+      code: ue.code,
+      creationYear: ue.creationYear,
+      updateYear: ue.updateYear,
       starVotes: Object.fromEntries(rates.map((rate) => [rate.criterionId, rate.value])),
+      ofs: [
+        {
+          name: getTranslation(ue.name, this.language),
+          credits: ue.credits.map((credit) => omit(credit, 'id', 'ueofId', 'categoryId')),
+          branchOption: ue.branchOption.map((branchOption) => ({
+            ...pick(branchOption, 'code', 'name'),
+            branch: pick(branchOption.branch, 'code', 'name'),
+          })),
+          info: {
+            ...omit(ue.info, 'id'),
+            objectives: getTranslation(ue.info.objectives, this.language),
+            program: getTranslation(ue.info.program, this.language),
+          },
+          openSemester: ue.openSemesters
+            .mappedSort((semester) => semester.start.toISOString())
+            .map((semester) => ({
+              ...semester,
+              start: semester.start.toISOString(),
+              end: semester.end.toISOString(),
+            })),
+          workTime: omit(ue.workTime, 'id', 'ueofId'),
+        },
+      ],
     }),
   );
 };
