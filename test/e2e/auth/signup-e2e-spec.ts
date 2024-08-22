@@ -1,4 +1,4 @@
-import AuthSignUpRequestDto from '../../../src/auth/dto/request/auth-sign-up-request.dto';
+import AuthSignUpReqDto from '../../../src/auth/dto/req/auth-sign-up-req.dto';
 import * as pactum from 'pactum';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { e2eSuite } from '../../utils/test_utils';
@@ -14,7 +14,7 @@ const SignupE2ESpec = e2eSuite('POST /auth/signup', (app) => {
     studentId: 44250,
     sex: 'OTHER',
     birthday: new Date('1999-01-01'),
-  } as AuthSignUpRequestDto;
+  } as AuthSignUpReqDto;
 
   it('should return a 400 if login is missing', async () => {
     return pactum

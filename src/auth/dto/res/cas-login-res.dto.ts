@@ -1,4 +1,4 @@
-export default class CasLoginResponseDto {
+export default class CasLoginResDto {
   signedIn: boolean;
   access_token: string;
 }

@@ -4,7 +4,7 @@ import { Type } from 'class-transformer';
 import { Sex } from '@prisma/client';
 import {ApiProperty} from "@nestjs/swagger";
 
-export default class AuthSignUpRequestDto {
+export default class AuthSignUpReqDto {
   @IsNotEmpty()
   @IsAlphanumeric()
   login: string;

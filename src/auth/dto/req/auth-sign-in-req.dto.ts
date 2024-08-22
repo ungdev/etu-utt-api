@@ -1,6 +1,6 @@
 import { IsAlphanumeric, IsNotEmpty, IsString } from 'class-validator';
 
-export default class AuthSignInRequestDto {
+export default class AuthSignInReqDto {
   @IsNotEmpty()
   @IsAlphanumeric()
   login: string;
