@@ -29,23 +29,24 @@ const UpdateProfile = e2eSuite('PATCH /users/current', (app) => {
       .patch(`/users/current`)
       .withBody({
         facebook: 'fbProfile',
-        displayAddress: true,
+        displayAddress: 'ALL_PUBLIC',
       })
-      .expectJson({
+      .expectJsonMatchStrict({
         avatar: user.infos.avatar,
         birthday: user.infos.birthday.toISOString(),
-        discord: user.socialNetwork.pseudoDiscord,
+        discord: user.socialNetwork.discord,
         facebook: 'fbProfile',
         firstName: user.firstName,
         id: user.id,
+        type: user.userType,
         infoDisplayed: {
-          displayAddress: true,
-          displayBirthday: user.preference.displayBirthday,
-          displayDiscord: user.preference.displayDiscord,
-          displayMailPersonal: user.preference.displayMailPersonal,
-          displayPhone: user.preference.displayPhone,
-          displaySex: user.preference.displaySex,
-          displayTimetable: user.preference.displayTimetable,
+          displayAddress: 'ALL_PUBLIC',
+          displayBirthday: user.privacy.birthday,
+          displayDiscord: user.privacy.discord,
+          displayMailPersonal: user.privacy.mailPersonal,
+          displayPhone: user.privacy.phoneNumber,
+          displaySex: user.privacy.sex,
+          displayTimetable: user.privacy.timetable,
         },
         instagram: user.socialNetwork.instagram,
         lastName: user.lastName,

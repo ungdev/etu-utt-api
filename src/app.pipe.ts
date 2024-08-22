@@ -1,4 +1,13 @@
-import { ArgumentMetadata, BadRequestException, Injectable, PipeTransform, ValidationPipe } from "@nestjs/common";
+import {
+  Param,
+  ParseUUIDPipe,
+  Type,
+  ArgumentMetadata,
+  BadRequestException,
+  Injectable,
+  PipeTransform,
+  ValidationPipe,
+} from '@nestjs/common';
 import { AppException, ERROR_CODE } from './exceptions';
 import { validationExceptionFactory } from './validation';
 
@@ -28,6 +37,15 @@ export const regex = {
   uuid: /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/,
   timetableOccurrenceId: /^\d+@[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/,
 };
+
+export const UUIDParam = (property: string, ...pipes: (Type<PipeTransform> | PipeTransform)[]) =>
+  Param(
+    property,
+    new ParseUUIDPipe({
+      exceptionFactory: () => new AppException(ERROR_CODE.PARAM_NOT_UUID, property),
+    }),
+    ...pipes,
+  );
 
 export interface ArrayDto<T> extends Array<T> {
   items: T[];

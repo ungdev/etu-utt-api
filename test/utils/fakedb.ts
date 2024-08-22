@@ -1,39 +1,44 @@
 import {
+  RawAsso,
+  RawAssoMembership,
+  RawAssoMembershipRole,
+  RawBranch,
+  RawBranchOption,
+  RawCreditCategory,
+  RawHomepageWidget,
   RawSemester,
   RawTimetableEntry,
   RawTimetableEntryOverride,
   RawTimetableGroup,
-  RawUE,
-  RawUEComment,
-  RawUECommentReply,
-  RawUECommentUpvote,
-  RawUECredit,
-  RawCreditCategory,
-  RawUEInfo,
-  RawUEStarCriterion,
-  RawUEStarVote,
-  RawUEWorkTime,
-  RawBranch,
-  RawBranchOption,
+  RawUe,
+  RawAnnalType,
+  RawUeComment,
+  RawUeCommentReply,
+  RawUeCommentUpvote,
+  RawUeCredit,
+  RawUeInfo,
+  RawUeStarCriterion,
+  RawUeStarVote,
+  RawUeWorkTime,
   RawUser,
-  RawUserInfos,
-  RawUserUESubscription,
-  RawAssoMembership,
-  RawAsso,
-  RawAssoMembershipRole,
-  RawUserMailsPhones,
   RawUserAddress,
-  RawUserSocialNetwork,
-  RawUserPreference,
   RawUserBranchSubscription,
-  RawHomepageWidget,
+  RawUserInfos,
+  RawUserMailsPhones,
+  RawUserPreference,
+  RawUserSocialNetwork,
+  RawUserUeSubscription,
+  Translation,
+  RawUserPrivacy,
 } from '../../src/prisma/types';
 import { faker } from '@faker-js/faker';
 import { AuthService } from '../../src/auth/auth.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { AppProvider } from './test_utils';
 import { Sex, TimetableEntryType, UserType } from '@prisma/client';
-import { omit, pick } from '../../src/utils';
+import { CommentStatus } from '../../src/ue/comments/interfaces/comment.interface';
+import { UeAnnalFile } from '../../src/ue/annals/interfaces/annal.interface';
+import { omit, pick, translationSelect } from '../../src/utils';
 
 /**
  * The fake entities can be used like normal entities in the <code>it(string, () => void)</code> functions.
@@ -54,42 +59,67 @@ export type FakeUser = Partial<RawUser> & {
       semester?: Partial<RawSemester>;
     }
   >;
+  privacy: Partial<RawUserPrivacy>;
 };
 export type FakeTimetableGroup = Partial<RawTimetableGroup>;
 export type FakeTimetableEntry = Partial<RawTimetableEntry>;
 export type FakeTimetableEntryOverride = Partial<RawTimetableEntryOverride>;
 export type FakeBranch = Partial<RawBranch>;
 export type FakeBranchOption = Partial<RawBranchOption>;
+export type FakeAssoMembershipRole = Partial<RawAssoMembershipRole>;
 export type FakeAssoMembership = Partial<RawAssoMembership> & {
   role?: Partial<RawAssoMembershipRole>;
 };
-export type FakeAsso = Partial<RawAsso>;
+export type FakeAsso = Partial<
+  RawAsso & {
+    descriptionShortTranslation: Partial<Translation>;
+    descriptionTranslation: Partial<Translation>;
+    president: Partial<RawUser>;
+  }
+>;
 export type FakeSemester = Partial<RawSemester>;
-export type FakeUE = Partial<RawUE> & {
-  credits?: (Partial<RawUECredit> & { category: RawCreditCategory })[];
-  info?: Partial<RawUEInfo & { requirements: { code: string }[] }>;
-  workTime?: Partial<RawUEWorkTime>;
+export type FakeUe = Partial<Omit<RawUe, 'nameTranslationId' | 'ueInfoId'>> & {
+  name?: Partial<Translation>;
+  credits?: (Partial<RawUeCredit> & { category: RawCreditCategory })[];
+  info?: Partial<
+    Omit<RawUeInfo, 'commentTranslationId' | 'objectivesTranslationId' | 'programTranslationId'> & {
+      comment: Partial<Translation>;
+      objectives: Partial<Translation>;
+      program: Partial<Translation>;
+      requirements: { code: string }[];
+    }
+  >;
+  workTime?: Partial<RawUeWorkTime>;
   openSemesters?: Partial<RawSemester>[];
   branchOption?: Partial<RawBranchOption & { branch: RawBranch }>[];
 };
-export type FakeUserUESubscription = Partial<RawUserUESubscription>;
-export type FakeUEStarCriterion = Partial<RawUEStarCriterion>;
-export type FakeUEStarVote = Partial<RawUEStarVote>;
-export type FakeComment = Partial<RawUEComment>;
-export type FakeCommentUpvote = Partial<RawUECommentUpvote>;
-export type FakeCommentReply = Partial<RawUECommentReply>;
-export type FakeUECreditCategory = Partial<RawCreditCategory>;
+export type FakeUserUeSubscription = Partial<RawUserUeSubscription>;
+export type FakeUeStarCriterion = Partial<RawUeStarCriterion>;
+export type FakeUeStarVote = Partial<RawUeStarVote>;
+export type FakeComment = Partial<RawUeComment> & { status: Exclude<CommentStatus, CommentStatus.PROCESSING> };
+export type FakeCommentUpvote = Partial<RawUeCommentUpvote>;
+export type FakeCommentReply = Partial<RawUeCommentReply> & {
+  status: Exclude<CommentStatus, CommentStatus.PROCESSING | CommentStatus.UNVERIFIED>;
+};
+export type FakeUeCreditCategory = Partial<RawCreditCategory>;
+export type FakeUeAnnalType = Partial<RawAnnalType>;
+export type FakeUeAnnal = Partial<UeAnnalFile>;
 export type FakeHomepageWidget = Partial<RawHomepageWidget>;
 
 export interface FakeEntityMap {
   assoMembership: {
     entity: FakeAssoMembership;
-    params: CreateAssoMembership;
-    deps: { asso: FakeAsso; user: FakeUser };
+    params: CreateAssoMembershipParameters;
+    deps: { asso: FakeAsso; user: FakeUser; role: FakeAssoMembershipRole };
+  };
+  assoMembershipRole: {
+    entity: FakeAssoMembershipRole;
+    params: CreateAssoMembershipRoleParameters;
+    deps: { asso: FakeAsso };
   };
   association: {
     entity: FakeAsso;
-    params: CreateAsso;
+    params: CreateAssoParameters;
   };
   timetableEntryOverride: {
     entity: Partial<FakeTimetableEntryOverride>;
@@ -122,27 +152,29 @@ export interface FakeEntityMap {
     params: CreateSemesterParameters;
   };
   ue: {
-    entity: FakeUE;
-    params: CreateUEParameters;
+    entity: FakeUe;
+    params: CreateUeParameters;
   };
-  userUESubscription: {
-    entity: FakeUserUESubscription;
+  userUeSubscription: {
+    entity: FakeUserUeSubscription;
     params: CreateUserSubscriptionParameters;
-    deps: { user: FakeUser; ue: FakeUE; semester: FakeSemester };
+    deps: { user: FakeUser; ue: FakeUe; semester: FakeSemester };
   };
   ueCriterion: {
-    entity: FakeUEStarCriterion;
+    entity: FakeUeStarCriterion;
     params: CreateCriterionParameters;
   };
   ueStarVote: {
-    entity: FakeUEStarVote;
-    params: CreateUERatingParameters;
-    deps: { user: FakeUser; criterion: FakeUEStarCriterion; ue: FakeUE };
+    entity: FakeUeStarVote;
+    params: CreateUeRatingParameters;
+    deps: { user: FakeUser; criterion: FakeUeStarCriterion; ue: FakeUe };
   };
   comment: {
     entity: FakeComment;
-    params: CreateCommentParameters;
-    deps: { user: FakeUser; ue: FakeUE; semester: FakeSemester };
+    params: CreateCommentParameters & {
+      status: Exclude<CommentStatus, CommentStatus.PROCESSING>;
+    };
+    deps: { user: FakeUser; ue: FakeUe; semester: FakeSemester };
   };
   commentUpvote: {
     entity: FakeCommentUpvote;
@@ -151,12 +183,30 @@ export interface FakeEntityMap {
   };
   commentReply: {
     entity: FakeCommentReply;
-    params: CreateCommentReplyParameters;
+    params: CreateCommentReplyParameters & {
+      status: Exclude<CommentStatus, CommentStatus.PROCESSING | CommentStatus.UNVERIFIED>;
+    };
     deps: { user: FakeUser; comment: FakeComment };
   };
   ueCreditCategory: {
-    entity: FakeUECreditCategory;
-    params: CreateUECreditCategoryParameters;
+    entity: FakeUeCreditCategory;
+    params: CreateUeCreditCategoryParameters;
+  };
+  annalType: {
+    entity: FakeUeAnnalType;
+    params: FakeUeAnnalType;
+  };
+  annal: {
+    entity: FakeUeAnnal;
+    params: {
+      status: CommentStatus;
+    };
+    deps: {
+      type: FakeUeAnnalType;
+      semester: FakeSemester;
+      ue: FakeUe;
+      sender: FakeUser;
+    };
   };
   homepageWidget: {
     entity: FakeHomepageWidget;
@@ -195,19 +245,60 @@ export const createUser = entityFaker(
       },
     ],
     branchSubscriptions: [],
+    permissions: [],
+    privacy: {},
   },
   async (app, params) => {
+    const permissions = await app()
+      .get(PrismaService)
+      .userPermission.findMany({
+        where: {
+          id: {
+            in: params.permissions,
+          },
+        },
+      });
+    permissions.push(
+      ...(await Promise.all(
+        (params.permissions ?? [])
+          .filter((perm) => !permissions.some((p) => p.id === perm))
+          .map((perm) =>
+            app()
+              .get(PrismaService)
+              .userPermission.create({
+                data: {
+                  id: perm,
+                  name: {
+                    create: {
+                      fr: 'TODO : implement this value',
+                    },
+                  },
+                },
+              }),
+          ),
+      )),
+    );
     const user = await app()
       .get(PrismaService)
       .withDefaultBehaviour.user.create({
         data: {
           hash: params.hash ?? (await app().get(AuthService).getHash(params.password)),
           ...pick(params, 'id', 'login', 'studentId', 'firstName', 'lastName', 'userType'),
-          infos: { create: pick(params.infos, 'birthday', 'sex', 'nickname') },
-          rgpd: { create: {} },
-          preference: {
-            create: {},
+          infos: {
+            create: {
+              ...pick(params.infos, 'sex', 'nickname'),
+              birthday: params.infos.birthday
+                ? new Date(params.infos.birthday.getTime() - params.infos.birthday.getTimezoneOffset() * 60000)
+                : null, // Add the 1h timezone offset (in you are in France ^^) to make the time the same as the one expected if you don't look at the timezone offset
+            },
           },
+          permissions: {
+            createMany: {
+              data: permissions.map((perm) => ({ userPermissionId: perm.id })),
+            },
+          },
+          rgpd: { create: {} },
+          preference: { create: {} },
           mailsPhones: { create: {} },
           addresses: {
             createMany: {
@@ -226,10 +317,11 @@ export const createUser = entityFaker(
                 semesterNumber: branch.semesterNumber,
                 semesterCode: branch.semester.code,
                 branchCode: branch.branch.code,
-                branchOptionCode: branch.branchOption.code,
+                branchOptionId: branch.branchOption.id,
               })),
             },
           },
+          privacy: { create: {} },
         },
         include: {
           infos: true,
@@ -256,6 +348,7 @@ export const createUser = entityFaker(
               semester: { select: { code: true } },
             },
           },
+          privacy: true,
         },
       });
     return {
@@ -266,7 +359,38 @@ export const createUser = entityFaker(
   },
 );
 
-export type CreateAssoMembership = FakeAssoMembership;
+export type CreateAssoMembershipRoleParameters = FakeAssoMembershipRole;
+/**
+ * Creates an association membership role in the database.
+ * @param app The function that returns the app.
+ * @param rawParams The parameters to use to create the user.
+ * @returns {@link FakeAssoMembershipRole}
+ */
+export const createAssoMembershipRole = entityFaker(
+  'assoMembershipRole',
+  {
+    name: faker.company.name,
+    position: faker.db.assoMembershipRole.position,
+    isPresident: false,
+  },
+  async (app, dependencies, params) =>
+    app()
+      .get(PrismaService)
+      .assoMembershipRole.create({
+        data: {
+          name: params.name,
+          position: params.position,
+          isPresident: params.isPresident,
+          asso: {
+            connect: {
+              id: dependencies.asso.id,
+            },
+          },
+        },
+      }),
+);
+
+export type CreateAssoMembershipParameters = FakeAssoMembership;
 /**
  * Creates an association membership in the database.
  * @param app The function that returns the app.
@@ -279,11 +403,6 @@ export const createAssoMembership = entityFaker(
     startAt: new Date(0),
     endAt: new Date(0),
     createdAt: new Date(0),
-    userId: faker.datatype.uuid,
-    assoId: faker.datatype.uuid,
-    role: {
-      role: faker.random.words,
-    },
   },
   async (app, dependencies, params) =>
     app()
@@ -302,8 +421,8 @@ export const createAssoMembership = entityFaker(
             },
           },
           role: {
-            create: {
-              role: params.role.role,
+            connect: {
+              id: dependencies.role.id,
             },
           },
         },
@@ -313,7 +432,7 @@ export const createAssoMembership = entityFaker(
       }),
 );
 
-export type CreateAsso = FakeAsso;
+export type CreateAssoParameters = FakeAsso;
 /**
  * Creates an association in the database.
  * @param app The function that returns the app.
@@ -327,9 +446,23 @@ export const createAsso = entityFaker(
     name: faker.name.firstName,
     mail: faker.datatype.string,
     deletedAt: new Date(0),
+    descriptionShortTranslation: {
+      fr: faker.company.catchPhrase(),
+      en: faker.company.catchPhrase(),
+      es: faker.company.catchPhrase(),
+      de: faker.company.catchPhrase(),
+      zh: faker.company.catchPhrase(),
+    },
+    descriptionTranslation: {
+      fr: faker.company.catchPhrase(),
+      en: faker.company.catchPhrase(),
+      es: faker.company.catchPhrase(),
+      de: faker.company.catchPhrase(),
+      zh: faker.company.catchPhrase(),
+    },
   },
-  async (app, params) =>
-    app()
+  async (app, params) => {
+    const asso = await app()
       .get(PrismaService)
       .asso.create({
         data: {
@@ -339,16 +472,20 @@ export const createAsso = entityFaker(
           mail: params.mail,
           descriptionTranslation: {
             create: {
-              id: params.descriptionTranslationId,
+              fr: 'TODO : implement this value',
+              ...params.descriptionTranslation,
             },
           },
           descriptionShortTranslation: {
             create: {
-              id: params.descriptionShortTranslationId,
+              fr: 'TODO : implement this value',
+              ...params.descriptionShortTranslation,
             },
           },
         },
-      }),
+      });
+    return { ...asso, president: null };
+  },
 );
 
 export type CreateTimetableGroupParams = { users?: Array<{ user: FakeUser; priority: number }> };
@@ -448,6 +585,7 @@ export const createBranch = entityFaker(
           descriptionTranslation: {
             create: {
               id: params.descriptionTranslationId,
+              fr: 'TODO : implement this value',
             },
           },
         },
@@ -476,6 +614,7 @@ export const createBranchOption = entityFaker(
           descriptionTranslation: {
             create: {
               id: params.descriptionTranslationId,
+              fr: 'TODO : implement this value',
             },
           },
         },
@@ -497,12 +636,41 @@ export const createSemester = entityFaker(
   },
 );
 
-export type CreateUEParameters = FakeUE;
-export const createUE = entityFaker(
+export const createAnnalType = entityFaker(
+  'annalType',
+  {
+    name: faker.random.word,
+  },
+  async (app, params) => {
+    return app().get(PrismaService).ueAnnalType.create({ data: params });
+  },
+);
+
+export const createAnnal = entityFaker(
+  'annal',
+  { status: CommentStatus.VALIDATED },
+  async (app, { semester, sender, type, ue }, { status }) =>
+    app()
+      .get(PrismaService)
+      .ueAnnal.create({
+        data: {
+          uploadComplete: !(status & CommentStatus.PROCESSING),
+          deletedAt: status & CommentStatus.DELETED ? faker.date.recent() : null,
+          validatedAt: status & CommentStatus.VALIDATED ? faker.date.past() : null,
+          semesterId: semester.code,
+          senderId: sender.id,
+          typeId: type.id,
+          ueId: ue.id,
+        },
+      }),
+);
+
+export type CreateUeParameters = FakeUe;
+export const createUe = entityFaker(
   'ue',
   {
     code: faker.db.ue.code,
-    name: faker.name.jobTitle,
+    name: () => faker.db.translation(faker.name.jobTitle),
     credits: [
       {
         category: {
@@ -513,8 +681,8 @@ export const createUE = entityFaker(
       },
     ],
     info: {
-      program: faker.random.words,
-      objectives: faker.random.words,
+      program: faker.db.translation,
+      objectives: faker.db.translation,
     },
     workTime: {
       cm: () => faker.datatype.number({ min: 0, max: 100 }),
@@ -530,9 +698,15 @@ export const createUE = entityFaker(
   async (app, params) =>
     app()
       .get(PrismaService)
-      .withDefaultBehaviour.uE.create({
+      .withDefaultBehaviour.ue.create({
         data: {
-          ...omit(params, 'credits', 'info', 'workTime', 'inscriptionCode', 'openSemesters'),
+          ...omit(params, 'name', 'credits', 'info', 'workTime', 'inscriptionCode', 'openSemesters'),
+          name: {
+            create: {
+              fr: 'TODO : implement this value',
+              ...params.name,
+            },
+          },
           inscriptionCode: params.inscriptionCode ?? params.code,
           credits: {
             create: params.credits.map((credit) => ({
@@ -546,14 +720,34 @@ export const createUE = entityFaker(
             })),
           },
           info: {
-            create: omit(params.info, 'ueId', 'requirements'),
+            create: {
+              ...omit(params.info, 'requirements', 'comment', 'objectives', 'program'),
+              comment: {
+                create: {
+                  fr: 'TODO : implement this value',
+                  ...params.info.comment,
+                },
+              },
+              objectives: {
+                create: {
+                  fr: 'TODO : implement this value',
+                  ...params.info.objectives,
+                },
+              },
+              program: {
+                create: {
+                  fr: 'TODO : implement this value',
+                  ...params.info.program,
+                },
+              },
+            },
           },
           workTime: {
             create: params.workTime,
           },
           branchOption: {
             connect: params.branchOption.map((branchOption) => ({
-              code: branchOption.code,
+              id: branchOption.id,
             })),
           },
           openSemester: {
@@ -563,6 +757,7 @@ export const createUE = entityFaker(
           },
         },
         include: {
+          name: translationSelect,
           info: {
             include: {
               requirements: {
@@ -570,6 +765,9 @@ export const createUE = entityFaker(
                   code: true,
                 },
               },
+              comment: translationSelect,
+              objectives: translationSelect,
+              program: translationSelect,
             },
           },
           workTime: true,
@@ -587,16 +785,17 @@ export const createUE = entityFaker(
         },
       })
       .then((ue) => ({
-        ...omit(ue, 'openSemester'),
+        ...omit(ue, 'openSemester', 'ueInfoId', 'nameTranslationId'),
+        info: omit(ue.info, 'commentTranslationId', 'objectivesTranslationId', 'programTranslationId'),
         openSemesters: ue.openSemester,
       })),
 );
 
-export type CreateUserSubscriptionParameters = FakeUserUESubscription;
-export const createUESubscription = entityFaker('userUESubscription', {}, async (app, dependencies, params) =>
+export type CreateUserSubscriptionParameters = FakeUserUeSubscription;
+export const createUeSubscription = entityFaker('userUeSubscription', {}, async (app, dependencies, params) =>
   app()
     .get(PrismaService)
-    .userUESubscription.create({
+    .userUeSubscription.create({
       data: {
         ...omit(params, 'semesterId', 'ueId', 'userId'),
         semester: {
@@ -618,7 +817,7 @@ export const createUESubscription = entityFaker('userUESubscription', {}, async 
     }),
 );
 
-export type CreateCriterionParameters = FakeUEStarCriterion;
+export type CreateCriterionParameters = FakeUeStarCriterion;
 export const createCriterion = entityFaker(
   'ueCriterion',
   {
@@ -627,20 +826,21 @@ export const createCriterion = entityFaker(
   async (app, params) =>
     app()
       .get(PrismaService)
-      .uEStarCriterion.create({
+      .ueStarCriterion.create({
         data: {
           ...omit(params, 'descriptionTranslationId'),
           descriptionTranslation: {
             create: {
               id: params.descriptionTranslationId,
+              fr: 'TODO : implement this value',
             },
           },
         },
       }),
 );
 
-export type CreateUERatingParameters = FakeUEStarVote;
-export const createUERating = entityFaker(
+export type CreateUeRatingParameters = FakeUeStarVote;
+export const createUeRating = entityFaker(
   'ueStarVote',
   {
     value: faker.db.ueStarVote.value,
@@ -648,7 +848,7 @@ export const createUERating = entityFaker(
   async (app, dependencies, params) => {
     return app()
       .get(PrismaService)
-      .withDefaultBehaviour.uEStarVote.create({
+      .withDefaultBehaviour.ueStarVote.create({
         data: {
           ...omit(params, 'criterionId', 'ueId', 'userId'),
           criterion: {
@@ -677,13 +877,16 @@ export const createComment = entityFaker(
   {
     body: faker.random.words,
     isAnonymous: faker.datatype.boolean,
+    status: CommentStatus.VALIDATED,
   },
-  async (app, dependencies, params) =>
-    app()
+  async (app, dependencies, params) => {
+    const rawFakeData = await app()
       .get(PrismaService)
-      .withDefaultBehaviour.uEComment.create({
+      .withDefaultBehaviour.ueComment.create({
         data: {
-          ...omit(params, 'ueId', 'authorId', 'semesterId'),
+          ...omit(params, 'ueId', 'authorId', 'semesterId', 'status'),
+          validatedAt: params.status & CommentStatus.VALIDATED ? new Date() : undefined,
+          deletedAt: params.status & CommentStatus.DELETED ? new Date() : undefined,
           ue: {
             connect: {
               code: dependencies.ue.code,
@@ -700,14 +903,16 @@ export const createComment = entityFaker(
             },
           },
         },
-      }),
+      });
+    return { ...rawFakeData, status: params.status };
+  },
 );
 
 export type CreateCommentUpvoteParameters = FakeCommentUpvote;
 export const createCommentUpvote = entityFaker('commentUpvote', {}, async (app, dependencies, params) =>
   app()
     .get(PrismaService)
-    .uECommentUpvote.create({
+    .ueCommentUpvote.create({
       data: {
         ...omit(params, 'commentId', 'userId'),
         comment: {
@@ -729,13 +934,15 @@ export const createCommentReply = entityFaker(
   'commentReply',
   {
     body: faker.random.words,
+    status: CommentStatus.VALIDATED,
   },
-  async (app, dependencies, params) =>
-    app()
+  async (app, dependencies, params) => {
+    const rawFakeReply = await app()
       .get(PrismaService)
-      .withDefaultBehaviour.uECommentReply.create({
+      .withDefaultBehaviour.ueCommentReply.create({
         data: {
-          ...omit(params, 'commentId', 'authorId'),
+          ...omit(params, 'commentId', 'authorId', 'status'),
+          deletedAt: params.status & CommentStatus.DELETED ? new Date() : undefined,
           comment: {
             connect: {
               id: dependencies.comment.id,
@@ -747,17 +954,19 @@ export const createCommentReply = entityFaker(
             },
           },
         },
-      }),
+      });
+    return { ...rawFakeReply, status: params.status };
+  },
 );
 
-export type CreateUECreditCategoryParameters = FakeUECreditCategory;
-export const createUECreditCategory = entityFaker(
+export type CreateUeCreditCategoryParameters = FakeUeCreditCategory;
+export const createUeCreditCategory = entityFaker(
   'ueCreditCategory',
   {
     name: faker.name.jobTitle,
     code: faker.db.ueCreditCategory.code,
   },
-  async (app, params) => app().get(PrismaService).uECreditCategory.create({ data: params }),
+  async (app, params) => app().get(PrismaService).ueCreditCategory.create({ data: params }),
 );
 
 export type CreateHomepageWidgetParameters = FakeHomepageWidget;
@@ -824,11 +1033,17 @@ type DefaultParams<OptionalParams> = {
 };
 
 function deeplyCallFunctions<T>(params: T) {
-  for (const key in params) {
-    if (typeof params[key] === 'function') {
-      params[key] = (params[key] as () => T[Extract<keyof T, string>])();
-    } else if (typeof params[key] === 'object') {
-      deeplyCallFunctions(params[key]);
+  if (Array.isArray(params)) {
+    for (const param of params) {
+      deeplyCallFunctions(param);
+    }
+  } else {
+    for (const key in params) {
+      if (typeof params[key] === 'function') {
+        params[key] = (params[key] as () => T[Extract<keyof T, string>])();
+      } else if (typeof params[key] === 'object') {
+        deeplyCallFunctions(params[key]);
+      }
     }
   }
 }

@@ -3,11 +3,14 @@ import { PrismaClient } from '@prisma/client';
 import { ConfigModule } from '../config/config.module';
 import { generateCustomUserModel } from '../users/interfaces/user.interface';
 import { omit } from '../utils';
-import { generateCustomCommentModel } from '../ue/interfaces/comment.interface';
+import { generateCustomCommentModel } from '../ue/comments/interfaces/comment.interface';
 import { generateCustomCriterionModel } from '../ue/interfaces/criterion.interface';
-import { generateCustomUECommentReplyModel } from '../ue/interfaces/comment-reply.interface';
 import { generateCustomRateModel } from '../ue/interfaces/rate.interface';
-import { generateCustomUEModel } from '../ue/interfaces/ue.interface';
+import { generateCustomUeModel } from '../ue/interfaces/ue.interface';
+import { generateCustomUEAnnalModel } from '../ue/annals/interfaces/annal.interface';
+import { generateCustomUeCommentReplyModel } from '../ue/comments/interfaces/comment-reply.interface';
+import { generateCustomAssoModel } from '../assos/interfaces/asso.interface';
+import { generateCustomCreditCategoryModel } from '../ue/credit/interfaces/credit-category.interface';
 
 // This interface is used to tell typescript that, even tho it does not understand it, PrismaService IS actually a ReturnType<typeof createPrismaClientExtension>
 // TS cannot infer it alone as the construction of the class is made using reflection.
@@ -54,16 +57,20 @@ function createPrismaClientExtension(prisma: ReturnType<typeof createPrismaClien
   return prisma.$extends({
     model: {
       user: generateCustomUserModel(prisma),
-      uEComment: generateCustomCommentModel(prisma),
-      uEStarCriterion: generateCustomCriterionModel(prisma),
-      uECommentReply: generateCustomUECommentReplyModel(prisma),
-      uEStarVote: generateCustomRateModel(prisma),
-      uE: generateCustomUEModel(prisma),
+      ueComment: generateCustomCommentModel(prisma),
+      ueStarCriterion: generateCustomCriterionModel(prisma),
+      ueCommentReply: generateCustomUeCommentReplyModel(prisma),
+      ueStarVote: generateCustomRateModel(prisma),
+      ue: generateCustomUeModel(prisma),
+      ueAnnal: generateCustomUEAnnalModel(prisma),
+      asso: generateCustomAssoModel(prisma),
+      ueCreditCategory: generateCustomCreditCategoryModel(prisma),
     },
   });
 }
 
 // UTILITIES TO GENERATE CUSTOM MODEL FUNCTIONS
+type MayBePromise<T> = T | Promise<T>;
 type ModelNameType = keyof PrismaClient;
 type FunctionNameType<ModelName extends ModelNameType> = {
   [K in keyof PrismaClient[ModelName]]: PrismaClient[ModelName][K] extends (arg: any) => void ? K : never;
@@ -75,47 +82,74 @@ export type RequestType<
 export type UserFriendlyRequestType<
   ModelName extends ModelNameType,
   FunctionName extends FunctionNameType<ModelName>,
-> = Omit<RequestType<ModelName, FunctionName>, 'select' | 'include' | 'orderBy'>;
+  CustomArgs extends object,
+> = Omit<RequestType<ModelName, FunctionName>, 'select' | 'include' | 'orderBy'> &
+  (Record<string, never> extends CustomArgs ? { args?: never } : { args: CustomArgs });
+export type Formatter<RawEntity, FormattedEntity, FormatterArgs extends any[]> = (
+  prisma: ReturnType<typeof createPrismaClient>,
+  raw: RawEntity,
+  ...args: FormatterArgs
+) => MayBePromise<FormattedEntity>;
 
 function generateCustomModelFunction<
   ModelName extends ModelNameType,
   FunctionName extends FunctionNameType<ModelName>,
   Raw,
-  Formatted,
+  Formatted extends Awaited<any>,
   FormatterArgs extends any[],
+  QueryArgs extends object,
 >(
   prisma: PrismaClient,
   modelName: ModelName,
   functionName: FunctionName,
   selectFilter: Partial<RequestType<ModelName, FunctionName>>,
-  format: (raw: Raw, ...args: FormatterArgs) => Formatted,
-): (params: UserFriendlyRequestType<ModelName, FunctionName>, ...args: FormatterArgs) => Promise<Formatted> {
+  format: Formatter<Raw, Formatted, FormatterArgs>,
+  queryUpdater: (
+    query: RequestType<ModelName, FunctionName>,
+    args: QueryArgs,
+  ) => MayBePromise<RequestType<ModelName, FunctionName>>,
+): (params: UserFriendlyRequestType<ModelName, FunctionName, QueryArgs>, ...args: FormatterArgs) => Promise<Formatted> {
   return async (args, ...formatterArgs) => {
-    const res = await (prisma[modelName][functionName] as (arg: RequestType<ModelName, FunctionName>) => Raw)({
-      ...args,
-      ...selectFilter,
-    } as RequestType<ModelName, FunctionName>);
-    return res ? format(res, ...formatterArgs) : (res as null);
+    const res = await (prisma[modelName][functionName] as (arg: RequestType<ModelName, FunctionName>) => Raw)(
+      await queryUpdater(
+        {
+          ...omit(args, 'args'),
+          ...selectFilter,
+        } as RequestType<ModelName, FunctionName>,
+        args.args,
+      ),
+    );
+    return res ? format(prisma, res, ...formatterArgs) : (res as null);
   };
 }
 
 const singleValueMethods = ['findUnique', 'update', 'findFirst', 'create', 'delete', 'upsert'] as const;
 const multiValueMethods = ['findMany'] as const;
 
-export function generateCustomModel<ModelName extends ModelNameType, Raw, Formatted, FormatterArgs extends any[]>(
+export function generateCustomModel<
+  ModelName extends ModelNameType,
+  Raw,
+  Formatted,
+  FormatterArgs extends any[],
+  QueryArgs extends object,
+>(
   prisma: PrismaClient,
   modelName: ModelName,
   selectFilter: Partial<RequestType<ModelName, FunctionNameType<ModelName>>>,
-  format: (param: Raw, ...args: FormatterArgs) => Formatted,
+  format: Formatter<Raw, Formatted, FormatterArgs>,
+  queryUpdater: (
+    query: RequestType<ModelName, FunctionNameType<ModelName>>,
+    args: QueryArgs,
+  ) => MayBePromise<RequestType<ModelName, FunctionNameType<ModelName>>> = (query) => query,
 ) {
   const customModel: {
     [K in (typeof singleValueMethods)[number]]?: (
-      arg: UserFriendlyRequestType<ModelName, FunctionNameType<ModelName> & K>,
+      arg: UserFriendlyRequestType<ModelName, FunctionNameType<ModelName> & K, QueryArgs>,
       ...formatterArgs: FormatterArgs
     ) => Promise<Formatted>;
   } & {
     [K in (typeof multiValueMethods)[number]]?: (
-      arg: UserFriendlyRequestType<ModelName, FunctionNameType<ModelName> & K>,
+      arg: UserFriendlyRequestType<ModelName, FunctionNameType<ModelName> & K, QueryArgs>,
       ...formatterArgs: FormatterArgs
     ) => Promise<Formatted[]>;
   } = {};
@@ -128,6 +162,7 @@ export function generateCustomModel<ModelName extends ModelNameType, Raw, Format
         RequestType<ModelName, FunctionNameType<ModelName>>
       >,
       format,
+      queryUpdater,
     );
   }
   for (const functionName of multiValueMethods) {
@@ -136,7 +171,9 @@ export function generateCustomModel<ModelName extends ModelNameType, Raw, Format
       modelName,
       functionName as FunctionNameType<ModelName>,
       selectFilter,
-      (values: Raw[], ...args: FormatterArgs) => values.map((value) => format(value, ...args)),
+      (prisma, values: Raw[], ...args: FormatterArgs) =>
+        Promise.all(values.map((value) => format(prisma, value, ...args))),
+      queryUpdater,
     );
   }
   return customModel as Required<typeof customModel>;

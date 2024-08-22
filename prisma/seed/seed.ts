@@ -11,6 +11,9 @@ import ueCommentSeed from './modules/ueComment.seed';
 import ueStarCriterionSeed from './modules/ueStarCriterion.seed';
 import ueStarVotesSeed from './modules/ueStarVotes.seed';
 import ueSubscriptionSeed from './modules/ueSubscription.seed';
+import assoSeed from './modules/asso.seed';
+import assoMembershipRoleSeed from './modules/assoMembershipRole.seed';
+import assoMembershipSeed from './modules/assoMembership.seed';
 
 const prisma = new PrismaClient();
 async function main() {
@@ -29,6 +32,9 @@ async function main() {
   await ueCommentSeed(prisma, users, ues, semesters, ueSubscriptions);
   const ueStarCriterions = await ueStarCriterionSeed(prisma);
   await ueStarVotesSeed(prisma, ueStarCriterions, ueSubscriptions);
+  const assos = await assoSeed(prisma);
+  const roles = await assoMembershipRoleSeed(prisma, assos);
+  await assoMembershipSeed(prisma, users, assos, roles);
 
   console.log('Seeding done.');
 }

@@ -8,6 +8,7 @@ const USER_SELECT_FILTER = {
     lastName: true,
     login: true,
     studentId: true,
+    userType: true,
     infos: {
       select: {
         nickname: true,
@@ -56,29 +57,21 @@ const USER_SELECT_FILTER = {
     },
     socialNetwork: {
       select: {
-        pseudoDiscord: true,
+        discord: true,
         facebook: true,
         instagram: true,
         linkedin: true,
         spotify: true,
         twitch: true,
         twitter: true,
-        wantDiscordUTT: true,
       },
     },
     preference: {
       select: {
         wantDayNotif: true,
         language: true,
-        birthdayDisplayOnlyAge: true,
         wantDaymail: true,
-        displayAddress: true,
-        displayBirthday: true,
-        displayDiscord: true,
-        displayMailPersonal: true,
-        displayPhone: true,
-        displaySex: true,
-        displayTimetable: true,
+        wantDiscordUtt: true,
       },
     },
     addresses: {
@@ -87,6 +80,20 @@ const USER_SELECT_FILTER = {
         postalCode: true,
         city: true,
         country: true,
+      },
+    },
+    privacy: {
+      select: {
+        mailUTT: true,
+        mailPersonal: true,
+        phoneNumber: true,
+        birthday: true,
+        birthdayDisplayOnlyAge: true,
+        sex: true,
+        nationality: true,
+        discord: true,
+        address: true,
+        timetable: true,
       },
     },
   },
@@ -101,7 +108,7 @@ export type User = Omit<UnformattedUser, 'permissions'> & {
 export const generateCustomUserModel = (prisma: PrismaClient) =>
   generateCustomModel(prisma, 'user', USER_SELECT_FILTER, formatUser);
 
-export function formatUser(user: UnformattedUser): User {
+export function formatUser(_: PrismaClient, user: UnformattedUser): User {
   return {
     ...user,
     permissions: user.permissions.map((permission) => permission.userPermissionId),

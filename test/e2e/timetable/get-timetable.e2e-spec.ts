@@ -55,7 +55,7 @@ const GetTimetableE2ESpec = e2eSuite('GET /timetable/current/:daysCount/:day/:mo
       .get(`/timetable/current/2/${date}/${month}/${year}`)
       .withBearerToken(user.token)
       .expectStatus(HttpStatus.OK)
-      .expectJson([
+      .expectJsonMatchStrict([
         {
           id: `0@${timetableEntry.id}`,
           start: new Date(0).toISOString(),

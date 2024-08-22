@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsOptional, IsString, IsNumber, IsPositive, IsInt } from "class-validator";
+import { IsOptional, IsString, IsNumber, IsPositive, IsInt } from 'class-validator';
 
 /**
  * Query parameters of the request to search users.
@@ -9,7 +9,7 @@ import { IsOptional, IsString, IsNumber, IsPositive, IsInt } from "class-validat
  * @property {string} nickname - The nickname of the user. Optional.
  * @property {string} branch - The branch of the user. Optional.
  * @property {string} branchOption - The branch option of the user. Optional.
- * @property {string} UE - An UE of the user. Optional.
+ * @property {string} ue - An UE of the user. Optional.
  * @property {string} type - The type of user. Optional.
  * @property {string} semester - The number of semester in the user branch. Optional.
  * @property {string} studentId - The student id given by UTT. Optional.

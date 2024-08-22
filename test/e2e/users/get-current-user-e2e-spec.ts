@@ -3,8 +3,8 @@ import { createUser } from '../../utils/fakedb';
 import * as pactum from 'pactum';
 import { HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../../../src/prisma/prisma.service';
-import { pick } from "../../../src/utils";
-import { deepDateToString } from "../../declarations";
+import { pick } from '../../../src/utils';
+import { deepDateToString } from '../../declarations';
 
 const GetCurrentUserE2ESpec = e2eSuite('GET /users/current', (app) => {
   const user = createUser(app);
@@ -27,6 +27,7 @@ const GetCurrentUserE2ESpec = e2eSuite('GET /users/current', (app) => {
       firstName: userFromDb.firstName,
       lastName: userFromDb.lastName,
       nickname: userFromDb.infos.nickname,
+      type: userFromDb.userType,
       avatar: userFromDb.infos.avatar,
       sex: userFromDb.infos.sex,
       nationality: userFromDb.infos.nationality,
@@ -46,15 +47,15 @@ const GetCurrentUserE2ESpec = e2eSuite('GET /users/current', (app) => {
       linkedin: userFromDb.socialNetwork.linkedin,
       twitch: userFromDb.socialNetwork.twitch,
       spotify: userFromDb.socialNetwork.spotify,
-      discord: userFromDb.socialNetwork.pseudoDiscord,
+      discord: userFromDb.socialNetwork.discord,
       infoDisplayed: {
-        displayBirthday: userFromDb.preference.displayBirthday,
-        displayMailPersonal: userFromDb.preference.displayMailPersonal,
-        displayPhone: userFromDb.preference.displayPhone,
-        displayAddress: userFromDb.preference.displayAddress,
-        displaySex: userFromDb.preference.displaySex,
-        displayDiscord: userFromDb.preference.displayDiscord,
-        displayTimetable: userFromDb.preference.displayTimetable,
+        displayBirthday: userFromDb.privacy.birthday,
+        displayMailPersonal: userFromDb.privacy.mailPersonal,
+        displayPhone: userFromDb.privacy.phoneNumber,
+        displayAddress: userFromDb.privacy.address,
+        displaySex: userFromDb.privacy.sex,
+        displayDiscord: userFromDb.privacy.discord,
+        displayTimetable: userFromDb.privacy.timetable,
       },
     });
 
@@ -63,7 +64,9 @@ const GetCurrentUserE2ESpec = e2eSuite('GET /users/current', (app) => {
       .get(`/users/current`)
       .withBearerToken(user.token)
       .expectStatus(HttpStatus.OK)
-      .expectJson(Object.fromEntries(Object.entries(expectedBody).filter(([, value]) => value !== undefined)));
+      .expectJsonMatchStrict(
+        Object.fromEntries(Object.entries(expectedBody).filter(([, value]) => value !== undefined)),
+      );
   });
 });
 

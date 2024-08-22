@@ -11,8 +11,13 @@ const CRITERION_SELECT_FILTER = {
   },
 } as const;
 
-export type Criterion = Prisma.UEStarCriterionGetPayload<typeof CRITERION_SELECT_FILTER>;
+export type Criterion = Prisma.UeStarCriterionGetPayload<typeof CRITERION_SELECT_FILTER>;
 
 export function generateCustomCriterionModel(prisma: PrismaClient) {
-  return generateCustomModel(prisma, 'uEStarCriterion', CRITERION_SELECT_FILTER, (criterion: Criterion) => criterion);
+  return generateCustomModel(
+    prisma,
+    'ueStarCriterion',
+    CRITERION_SELECT_FILTER,
+    (_, criterion: Criterion) => criterion,
+  );
 }

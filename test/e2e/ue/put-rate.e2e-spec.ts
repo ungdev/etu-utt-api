@@ -1,11 +1,11 @@
 import {
   createUser,
-  createUE,
+  createUe,
   createCriterion,
   createBranchOption,
   createBranch,
   createSemester,
-  createUESubscription,
+  createUeSubscription,
 } from '../../utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from 'src/exceptions';
@@ -19,9 +19,9 @@ const PutRate = e2eSuite('PUT /ue/{ueCode}/rate', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUE(app, { openSemesters: [semester], branchOption: [branchOption] });
+  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
   const criterion = createCriterion(app);
-  createUESubscription(app, { user, ue, semester });
+  createUeSubscription(app, { user, ue, semester });
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum.spec().put(`/ue/${ue.code}/rate`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
@@ -48,7 +48,19 @@ const PutRate = e2eSuite('PUT /ue/{ueCode}/rate', (app) => {
         criterion: criterion.id,
         value: 'helloWorld',
       })
-      .expectAppError(ERROR_CODE.PARAM_NOT_NUMBER, 'value');
+      .expectAppError(ERROR_CODE.PARAM_NOT_INT, 'value');
+  });
+
+  it('should return a 400 as value is not an int', () => {
+    return pactum
+      .spec()
+      .withBearerToken(user2.token)
+      .put(`/ue/${ue.code}/rate`)
+      .withBody({
+        criterion: criterion.id,
+        value: 1.5,
+      })
+      .expectAppError(ERROR_CODE.PARAM_NOT_INT, 'value');
   });
 
   it('should return a 400 as value is too high', () => {
@@ -121,11 +133,11 @@ const PutRate = e2eSuite('PUT /ue/{ueCode}/rate', (app) => {
         criterion: criterion.id,
         value: 1,
       })
-      .expectUERate({
+      .expectUeRate({
         criterionId: criterion.id,
         value: 1,
       });
-    return app().get(PrismaService).uEStarVote.deleteMany();
+    return app().get(PrismaService).ueStarVote.deleteMany();
   });
 });
 

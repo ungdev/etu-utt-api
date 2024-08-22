@@ -3,8 +3,8 @@ import {
   createBranchOption,
   createCriterion,
   createSemester,
-  createUE,
-  createUERating,
+  createUe,
+  createUeRating,
   createUser,
 } from '../../utils/fakedb';
 import * as pactum from 'pactum';
@@ -17,24 +17,24 @@ const GetRateE2ESpec = e2eSuite('GET /ue/{ueCode}/rate', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUE(app, { openSemesters: [semester], branchOption: [branchOption] });
+  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
   const c1 = createCriterion(app);
   const c2 = createCriterion(app);
-  createUERating(app, { ue, criterion: c1, user }, { value: 1 });
-  createUERating(app, { ue, criterion: c2, user }, { value: 5 });
-  createUERating(app, { ue, criterion: c1, user: user2 }, { value: 2 });
+  createUeRating(app, { ue, criterion: c1, user }, { value: 1 });
+  createUeRating(app, { ue, criterion: c2, user }, { value: 5 });
+  createUeRating(app, { ue, criterion: c1, user: user2 }, { value: 2 });
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum.spec().get(`/ue/${ue.code}/rate`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
   it('should return an error if the ue does not exist', () => {
-    const otherUECode = ue.code === 'AA01' ? 'AA02' : 'AA01';
+    const otherUeCode = ue.code === 'AA01' ? 'AA02' : 'AA01';
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .get(`/ue/${otherUECode}/rate`)
-      .expectAppError(ERROR_CODE.NO_SUCH_UE, otherUECode);
+      .get(`/ue/${otherUeCode}/rate`)
+      .expectAppError(ERROR_CODE.NO_SUCH_UE, otherUeCode);
   });
 
   it('should return the user rate for the UE', () => {
@@ -42,7 +42,7 @@ const GetRateE2ESpec = e2eSuite('GET /ue/{ueCode}/rate', (app) => {
       .spec()
       .withBearerToken(user.token)
       .get(`/ue/${ue.code}/rate`)
-      .expectUERates(
+      .expectUeRates(
         [
           {
             criterion: c1,
@@ -66,7 +66,7 @@ const GetRateE2ESpec = e2eSuite('GET /ue/{ueCode}/rate', (app) => {
       .spec()
       .withBearerToken(user2.token)
       .get(`/ue/${ue.code}/rate`)
-      .expectUERates([
+      .expectUeRates([
         {
           criterionId: c1.id,
           value: 2,

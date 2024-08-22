@@ -1,14 +1,22 @@
 import { ERROR_CODE, ErrorData, ExtrasTypeBuilder } from '../src/exceptions';
-import { UEComment } from 'src/ue/interfaces/comment.interface';
-import { UECommentReply } from 'src/ue/interfaces/comment-reply.interface';
+import { UeComment } from 'src/ue/interfaces/comment.interface';
+import { UeCommentReply } from 'src/ue/comments/interfaces/comment-reply.interface';
+import { UeRating } from 'src/ue/interfaces/rate.interface';
+import { FakeUeAnnalType } from './utils/fakedb';
+import { UeAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
-import { UERating } from 'src/ue/interfaces/rate.interface';
-import { FakeUE, FakeUser, FakeHomepageWidget } from './utils/fakedb';
+import { UeRating } from 'src/ue/interfaces/rate.interface';
+import { FakeUe, FakeUser, FakeHomepageWidget, FakeAsso } from './utils/fakedb';
 import { AppProvider } from './utils/test_utils';
+import { Language } from '@prisma/client';
 
-type JsonLikeVariant<T> = {
-  [K in keyof T]: T[K] extends string | Date | DeepWritable<Date> ? string | RegExp : JsonLikeVariant<T[K]>;
-};
+type JsonLikeVariant<T> = Partial<{
+  [K in keyof T]: T[K] extends string | Date
+    ? string | RegExp
+    : T[K] extends (infer R)[]
+    ? JsonLikeVariant<R>[]
+    : JsonLikeVariant<T[K]>;
+}>;
 
 /**
  * Overwrites the declarations in pactum/src/models/Spec
@@ -29,32 +37,49 @@ declare module './declarations' {
 
     /** expects to return the given {@link page | page of UserOverView} */
     expectUsers(app: AppProvider, users: FakeUser[], count: number): this;
-    /** expects to return the given {@link UEDetail} */
-    expectUE(ue: FakeUE, rates?: Array<{ criterionId: string; value: number }>): this;
-    /** expects to return the given {@link page | page of UEOverView} */
-    expectUEs(app: AppProvider, ues: FakeUE[], count: number): this;
+    /** expects to return the given {@link UeDetail} */
+    expectUe(ue: FakeUe, rates?: Array<{ criterionId: string; value: number }>): this;
+    /** expects to return the given {@link UeOverView} */
+    expectUes(ues: FakeUe[]): this;
+    /** expects to return the given {@link page | page of UeOverView} */
+    expectUesWithPagination(app: AppProvider, ues: FakeUe[], count: number): this;
     /**
      * expects to return the given {@link comment}. The HTTP Status code may be 200 or 204,
      * depending on the {@link created} property.
      */
-    expectUEComment(
-      comment: JsonLikeVariant<RecursivelySetPartial<UEComment, 'author', 'answers.author'>>,
+    expectUeComment(
+      comment: JsonLikeVariant<RecursivelySetPartial<UeComment, 'author', 'answers.author'>>,
       created = false,
     ): this;
     /** expects to return the given {@link commentPage | page of comments} */
-    expectUEComments(commentPage: JsonLikeVariant<Pagination<UEComment>>): this;
+    expectUeComments(commentPage: JsonLikeVariant<Pagination<UeComment>>): this;
     /**
      * expects to return the given {@link reply}
      * The HTTP Status code may be 200 or 204, depending on the {@link created} property.
      */
-    expectUECommentReply(reply: JsonLikeVariant<UECommentReply>, created = false): this;
+    expectUeCommentReply(reply: JsonLikeVariant<UeCommentReply>, created = false): this;
     /** expects to return the given {@link criterion} list */
-    expectUECriteria(criterion: JsonLikeVariant<Criterion[]>): this;
+    expectUeCriteria(criterion: JsonLikeVariant<Criterion[]>): this;
     /** expects to return the given {@link rate} */
-    expectUERate(rate: JsonLikeVariant<UERating>): this;
+    expectUeRate(rate: JsonLikeVariant<UeRating>): this;
     /** expects to return the given {@link rate} list */
-    expectUERates(rate: JsonLikeVariant<UERating[]>): this;
+    expectUeRates(rate: JsonLikeVariant<UeRating[]>): this;
+    expectUeAnnalMetadata(
+      metadata: JsonLikeVariant<{
+        types: FakeUeAnnalType[];
+        semesters: string[];
+      }>,
+    ): this;
+    expectUeAnnal(annals: JsonLikeVariant<UeAnnalFile>, created = false): this;
+    expectUeAnnals(annals: JsonLikeVariant<UeAnnalFile>[]): this;
     /** expects to return the given {@link FakeHomepageWidget}s */
     expectHomepageWidgets(widgets: JsonLikeVariant<FakeHomepageWidget[]>): this;
+    /** expects to return the given {@link AssosOverView} */
+    expectAssos(app: AppProvider, assos: FakeAsso[], count: number): this;
+    /** expects to return the given {@link asso} */
+    expectAsso(asso: FakeAsso): this;
+    expectCreditCategories(categories: JsonLikeVariant<FakeUeCreditCategory[]>): this;
+    withLanguage(language: Language): this;
+    language: Language;
   }
 }
