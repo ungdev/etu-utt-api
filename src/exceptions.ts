@@ -1,4 +1,5 @@
-import { HttpException, HttpStatus } from '@nestjs/common';
+import {applyDecorators, HttpException, HttpStatus} from '@nestjs/common';
+import * as ApiResponses from '@nestjs/swagger';
 
 /**
  * Error codes
@@ -301,12 +302,13 @@ export const ErrorData = Object.freeze({
 /**
  * Counts the number of occurrences of a string in another string. It the returns a string array type with that number of elements.
  * @example
- * type A = ExtrasTypeBuilder<'hello', '%'>; // []
- * type B = ExtrasTypeBuilder<'%hel%lo%', '%'>; // [string, string, string]
+ * type A = ExtrasTypeBuilder<'hello'>; // []
+ * type B = ExtrasTypeBuilder<'%hel%lo%'>; // [string, string, string]
  */
 export type ExtrasTypeBuilder<S extends string> = S extends `${infer Part1}%${infer Part2}`
   ? [...ExtrasTypeBuilder<Part1>, ...ExtrasTypeBuilder<Part2>, string]
   : [];
+
 
 /**
  * An exception that can be thrown in the API. Every exception should be thrown using this class, to ensure that the errors are normalized.

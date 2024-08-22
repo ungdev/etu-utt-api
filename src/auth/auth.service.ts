@@ -36,7 +36,7 @@ export class AuthService {
    * It returns an access token that the user can then use to authenticate their requests.
    * @param dto Data about the user to create.
    */
-  async signup(dto: SetPartial<AuthSignUpDto, 'password'>, fetchLdap = false): Promise<string> {
+  async signup(dto: SetPartial<AuthSignUpRequestDto, 'password'>, fetchLdap = false): Promise<string> {
     let phoneNumber: string = undefined;
     let formation: string = undefined;
     const branch: string[] = [];
@@ -190,7 +190,7 @@ export class AuthService {
    * It then returns an access_token the user can use to authenticate their requests.
    * @param dto Data needed to sign in the user (login & password).
    */
-  async signin(dto: AuthSignInRequestDto): Promise<string> {
+  async signin(dto: AuthSignInRequestDto): Promise<string | null> {
     // find the user by login, if it does not exist, throw exception
     const user = await this.prisma.withDefaultBehaviour.user.findUnique({
       where: {
@@ -198,14 +198,14 @@ export class AuthService {
       },
     });
     if (!user) {
-      throw new AppException(ERROR_CODE.INVALID_CREDENTIALS);
+      return null;
     }
 
     // compare password, if incorrect, throw exception
     const pwMatches = await bcrypt.compare(dto.password, user.hash);
 
     if (!pwMatches) {
-      throw new AppException(ERROR_CODE.INVALID_CREDENTIALS);
+      return null;
     }
 
     return this.signToken(user.id, user.login);
