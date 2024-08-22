@@ -11,7 +11,7 @@ import {ApiBody, ApiCreatedResponse, ApiHeader, ApiOkResponse, ApiOperation, Api
 import AccessTokenResponse from './dto/res/auth-access-token-res.dto';
 import TokenValidityResDto from './dto/res/token-validity-res.dto';
 import CasLoginResDto from './dto/res/cas-login-res.dto';
-import {ApiAppErrorResponse} from "../exceptions.dto";
+import {ApiAppErrorResponse} from "../app.dto";
 
 @Controller('auth')
 @ApiTags('Authentication')
