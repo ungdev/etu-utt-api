@@ -5,7 +5,8 @@ Cette page traite des conventions utilisées dans le développement de l’API E
 ## Langue
 
 Les noms de variables, de fonctions, de classe, de fichiers, de dossiers, les commentaires, etc. doivent être en
-anglais.
+anglais. La documentation Swagger est aussi en anglais. Cette documentation est écrite en français (vous le voyez ^^),
+les TODOs peuvent être écrits en français puisqu'ils devraient normalement être temporaires.
 
 ## Noms de fichiers, dossiers, variables, fonctions, etc.
 
@@ -23,7 +24,7 @@ Le nom d'une classe doit être suffixé par ce qu'elle représente :
 * Les classes de type pipe : `Pipe` (`RegexPipe`).
 * etc.
 
-Les noms de fichiers et de dossiers doivent être _kebab-case_ : entièrement en minuscule, sans espace, et séparés par
+Les noms de fichiers et de dossiers doivent être en _kebab-case_ : entièrement en minuscule, sans espace, et séparés par
 des tirets (`-`). Par exemple, un fichier nommé `MyClass.ts` devrait être renommé en `my-class.ts`.
 
 Sauf pour certains fichiers particuliers (`main.ts`, `exceeptions.ts`, etc.), l'extension des fichiers TypeScript doit
@@ -40,6 +41,6 @@ On aura alors par exemple `auth.service.ts` ou `profile-update-req.dto.ts`.
 
 Le fichier `.eslintrc.js` contient les conventions de syntaxe utilisées dans le projet. Avant d’être acceptée, une PR
 doit toujours suivre ces conventions. Pour s’assurer que l’intégralité du projet les suit, vous pouvez simplement
-exécuter la commande `pnpm lint`. Si cette commande produit des erreurs, vous devez les corriger avant de merge la PR.
+exécuter la commande `pnpm lint`. Si cette commande produit des erreurs, vous devez les corriger avant de _merge_ la PR.
 
 

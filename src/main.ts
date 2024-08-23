@@ -26,7 +26,7 @@ async function bootstrap() {
     .addSecurityRequirements('bearer')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  sortSchemasAlphabetically(document);
+  sortSchemasAlphabetically(document); // Not possible using only configurations.
   SwaggerModule.setup(`${process.env.API_PREFIX}docs`, app, document, {
     jsonDocumentUrl: 'docs/json',
     yamlDocumentUrl: 'docs/yaml',
