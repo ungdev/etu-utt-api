@@ -33,7 +33,6 @@ const COMMENT_SELECT_FILTER = {
             id: true,
             firstName: true,
             lastName: true,
-            studentId: true,
           },
         },
         body: true,
@@ -70,15 +69,13 @@ export type UEExtraArgs = {
 };
 
 export type UnformattedUEComment = Prisma.UeCommentGetPayload<typeof COMMENT_SELECT_FILTER>;
-export type UeComment = Omit<UnformattedUEComment, 'upvotes' | 'deletedAt' | 'validatedAt' | 'answers'> & {
+export type UeComment = Omit<UnformattedUEComment, 'upvotes' | 'deletedAt' | 'validatedAt' | 'answers' | 'semester'> & {
   upvotes: number;
   upvoted: boolean;
   status: CommentStatus;
   answers: UeCommentReply[];
   lastValidatedBody?: string | undefined;
-};
-export type UECommentWithValidSemesters = UeComment & {
-  semesters: string[];
+  semester: string;
 };
 
 export function generateCustomCommentModel(prisma: PrismaClient) {
@@ -118,6 +115,7 @@ export function formatComment(prisma: PrismaClient, comment: UnformattedUECommen
     status: (comment.deletedAt && CommentStatus.DELETED) | (comment.validatedAt && CommentStatus.VALIDATED),
     upvotes: comment.upvotes.length,
     upvoted: comment.upvotes.some((upvote) => upvote.userId == userId),
+    semester: comment.semester.code,
   };
 }
 

@@ -1,6 +1,6 @@
 import { IsOptional, IsString } from 'class-validator';
 
-export class ProfileUpdateDto {
+export class ProfileUpdateReqDto {
   @IsString()
   @IsOptional()
   nickname?: string;

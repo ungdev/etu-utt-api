@@ -1,7 +1,7 @@
 import { e2eSuite } from '../../utils/test_utils';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
-import { HomepageWidgetsUpdateElement } from '../../../src/profile/dto/homepage-widgets-update.dto';
+import { HomepageWidgetsUpdateElement } from '../../../src/profile/dto/req/homepage-widgets-update-req.dto';
 import * as fakedb from '../../utils/fakedb';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 

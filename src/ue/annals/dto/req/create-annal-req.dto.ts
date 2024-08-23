@@ -1,6 +1,6 @@
 import { IsAlphanumeric, IsNotEmpty, IsString, IsUUID, Length, MaxLength, MinLength } from 'class-validator';
 
-export class CreateAnnal {
+export class CreateAnnalReqDto {
   @IsString()
   @IsNotEmpty()
   @Length(3)

@@ -19,7 +19,7 @@ Le nom d'une classe doit être suffixé par ce qu'elle représente :
 
 * Les classes de type module : `Module` (`UsersModule`),
 * Les classes de type service : `Service` (`UsersService`),
-* Les classes de type DTO (Data Transfer Object) : `Dto` (`UsersSearchDto`).
+* Les classes de type DTO (Data Transfer Object) : `Dto` (`UsersSearchReqDto`).
 * Les classes de type pipe : `Pipe` (`RegexPipe`).
 * etc.
 
@@ -34,7 +34,7 @@ Sauf pour certains fichiers particuliers (`main.ts`, `exceeptions.ts`, etc.), l'
 * `dto` si le fichier contient un DTO (Data Transfer Object)
 * etc.
 
-On aura alors par exemple `auth.service.ts` ou `profile-update.dto.ts`.
+On aura alors par exemple `auth.service.ts` ou `profile-update-req.dto.ts`.
 
 ## Style de code
 

@@ -1,7 +1,7 @@
 import { AddressPrivacy, Language } from '@prisma/client';
 import { IsArray, IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
 
-export class UserUpdateDto {
+export class UserUpdateReqDto {
   @IsString()
   @IsOptional()
   nickname?: string;
@@ -16,7 +16,7 @@ export class UserUpdateDto {
 
   @IsOptional()
   @IsArray({ each: true })
-  addresses?: Address[];
+  addresses?: UserUpdateReqDto_Address[];
 
   @IsString()
   @IsOptional()
@@ -103,7 +103,7 @@ export class UserUpdateDto {
   displayTimetable?: boolean;
 }
 
-class Address {
+class UserUpdateReqDto_Address {
   @IsString()
   @IsOptional()
   street?: string;

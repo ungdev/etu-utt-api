@@ -1,4 +1,4 @@
-import { AuthSignInDto } from '../../../src/auth/dto';
+import AuthSignInDto from '../../../src/auth/dto/req/auth-sign-in-req.dto';
 import * as pactum from 'pactum';
 import { e2eSuite } from '../../utils/test_utils';
 import * as fakedb from '../../utils/fakedb';

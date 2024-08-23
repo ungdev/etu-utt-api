@@ -1,25 +1,35 @@
 import { Body, Controller, Delete, Get, Headers, Param, Put, Query } from '@nestjs/common';
-import { UeSearchDto } from './dto/ue-search.dto';
+import { UeSearchReqDto } from './dto/req/ue-search-req.dto';
 import { UeService } from './ue.service';
 import { GetUser, IsPublic, RequireUserType } from '../auth/decorator';
 import { User } from '../users/interfaces/user.interface';
 import { UUIDParam } from '../app.pipe';
 import { AppException, ERROR_CODE } from '../exceptions';
-import { UeRateDto } from './dto/ue-rate.dto';
+import { UeRateReqDto } from './dto/req/ue-rate-req.dto';
 import { Ue } from './interfaces/ue.interface';
 import { Language } from '@prisma/client';
-import { Translation } from '../prisma/types';
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiAppErrorResponse, paginatedResponseDto } from '../app.dto';
+import { UeDetailResDto } from './dto/res/ue-detail-res.dto';
+import UeOverviewResDto from './dto/res/ue-overview-res.dto';
+import UeRateCriterionResDto from './dto/res/ue-rate-criterion-res.dto';
+import UeRateResDto from './dto/res/ue-rate-res.dto';
 
 @Controller('ue')
+@ApiTags('UE')
 export class UeController {
   constructor(readonly ueService: UeService) {}
 
   @Get()
   @IsPublic()
+  @ApiOperation({
+    description: 'Search for UE, eventually with advanced search using the available fields in the request.',
+  })
+  @ApiOkResponse({ type: paginatedResponseDto(UeOverviewResDto) })
   async searchUe(
     @Headers('language') language: Language,
-    @Query() queryParams: UeSearchDto,
-  ): Promise<Pagination<UeOverview>> {
+    @Query() queryParams: UeSearchReqDto,
+  ): Promise<Pagination<UeOverviewResDto>> {
     const res = await this.ueService.searchUes(queryParams, language);
     return {
       ...res,
@@ -29,27 +39,52 @@ export class UeController {
 
   @Get('/:ueCode')
   @IsPublic()
-  async getUe(@Param('ueCode') ueCode: string): Promise<UeDetail> {
+  @ApiOperation({ description: 'Search for a specific UE by its code.' })
+  @ApiOkResponse({ type: UeDetailResDto })
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_UE, 'There is no UE with the provided code.')
+  async getUe(@Param('ueCode') ueCode: string): Promise<UeDetailResDto> {
     if (!(await this.ueService.doesUeExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     return this.formatDetailedUe(await this.ueService.getUe(ueCode.toUpperCase())); // TODO: remove starVotes in not student
   }
 
   @Get('/rate/criteria')
   @RequireUserType('STUDENT', 'FORMER_STUDENT')
-  async GetRateCriteria() {
+  @ApiOperation({ description: 'Get the different criteria on which users can rate UEs.' })
+  @ApiOkResponse({ type: UeRateCriterionResDto, isArray: true })
+  async GetRateCriteria(): Promise<UeRateCriterionResDto[]> {
     return this.ueService.getRateCriteria();
   }
 
   @Get('/:ueCode/rate')
   @RequireUserType('STUDENT', 'FORMER_STUDENT')
-  async GetRateUe(@Param('ueCode') ueCode: string, @GetUser() user: User) {
+  @ApiOperation({ description: 'Get the rates given by the current user.' })
+  @ApiOkResponse({
+    description: 'Keys are criterionId and values are the marks.',
+    schema: { type: 'object', additionalProperties: { type: 'number' } },
+  })
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_UE, 'There is no UE with the provided code.')
+  async GetRateUe(@Param('ueCode') ueCode: string, @GetUser() user: User): Promise<{ [criterionId: string]: number }> {
     if (!(await this.ueService.doesUeExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
-    return this.ueService.getRateUe(user.id, ueCode);
+    const rates = await this.ueService.getRateUe(user.id, ueCode);
+    const res = {};
+    for (const rate of rates) {
+      res[rate.criterionId] = rate.value;
+    }
+    return res;
   }
 
   @Put('/:ueCode/rate')
   @RequireUserType('STUDENT')
-  async RateUe(@Param('ueCode') ueCode: string, @GetUser() user: User, @Body() dto: UeRateDto) {
+  @ApiOperation({ description: 'Rate the UE by some criterion.' })
+  @ApiOkResponse({ type: UeRateReqDto })
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_UE, 'There is no UE with the provided code.')
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_CRITERION, 'There is no criterion with the provided id.')
+  @ApiAppErrorResponse(ERROR_CODE.NOT_ALREADY_DONE_UE, 'Thrown when user has not done the UE.')
+  async RateUe(
+    @Param('ueCode') ueCode: string,
+    @GetUser() user: User,
+    @Body() dto: UeRateReqDto,
+  ): Promise<UeRateResDto> {
     if (!(await this.ueService.doesUeExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     if (!(await this.ueService.doesCriterionExist(dto.criterion))) throw new AppException(ERROR_CODE.NO_SUCH_CRITERION);
     if (!(await this.ueService.hasAlreadyDoneThisUe(user.id, ueCode)))
@@ -59,11 +94,16 @@ export class UeController {
 
   @Delete('/:ueCode/rate/:criterionId')
   @RequireUserType('STUDENT', 'FORMER_STUDENT')
+  @ApiOperation({ description: 'Remove the rate on the UE about some criterion.' })
+  @ApiOkResponse({ type: UeRateReqDto })
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_UE, 'There is no UE with the provided code.')
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_CRITERION, 'There is no criterion with the provided id.')
+  @ApiAppErrorResponse(ERROR_CODE.NOT_ALREADY_RATED_UE, 'Thrown if user has not rated the UE.')
   async UnRateUe(
     @Param('ueCode') ueCode: string,
     @UUIDParam('criterionId') criterionId: string,
     @GetUser() user: User,
-  ) {
+  ): Promise<UeRateResDto> {
     if (!(await this.ueService.doesUeExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     if (!(await this.ueService.doesCriterionExist(criterionId))) throw new AppException(ERROR_CODE.NO_SUCH_CRITERION);
     if (!(await this.ueService.hasAlreadyRated(user.id, ueCode, criterionId)))
@@ -73,11 +113,13 @@ export class UeController {
 
   @Get('/of/me')
   @RequireUserType('STUDENT')
-  async getMyUes(@GetUser() user: User): Promise<UeOverview[]> {
+  @ApiOperation({ description: 'Get the UEs of the current user.' })
+  @ApiOkResponse({ type: UeOverviewResDto, isArray: true })
+  async getMyUes(@GetUser() user: User): Promise<UeOverviewResDto[]> {
     return (await this.ueService.getUesOfUser(user.id)).map((ue) => this.formatUeOverview(ue));
   }
 
-  private formatUeOverview(ue: Ue): UeOverview {
+  private formatUeOverview(ue: Ue): UeOverviewResDto {
     return {
       code: ue.code,
       inscriptionCode: ue.inscriptionCode,
@@ -114,7 +156,7 @@ export class UeController {
     };
   }
 
-  private formatDetailedUe(ue: Ue): UeDetail {
+  private formatDetailedUe(ue: Ue): UeDetailResDto {
     return {
       code: ue.code,
       inscriptionCode: ue.inscriptionCode,
@@ -160,82 +202,3 @@ export class UeController {
     };
   }
 }
-
-export type UeOverview = {
-  code: string;
-  inscriptionCode: string;
-  name: Translation;
-  credits: Array<{
-    credits: number;
-    category: {
-      code: string;
-      name: string;
-    };
-  }>;
-  branchOption: Array<{
-    branch: {
-      code: string;
-      name: string;
-    };
-    code: string;
-    name: string;
-  }>;
-  info: {
-    requirements: string[];
-    comment: Translation;
-    degree: string;
-    languages: string;
-    minors: string;
-    objectives: Translation;
-    program: Translation;
-  };
-  openSemester: Array<{
-    code: string;
-    start: Date;
-    end: Date;
-  }>;
-};
-
-export type UeDetail = {
-  code: string;
-  inscriptionCode: string;
-  name: Translation;
-  credits: Array<{
-    credits: number;
-    category: {
-      code: string;
-      name: string;
-    };
-  }>;
-  branchOption: Array<{
-    branch: {
-      code: string;
-      name: string;
-    };
-    code: string;
-    name: string;
-  }>;
-  info: {
-    requirements: string[];
-    comment: Translation;
-    degree: string;
-    languages: string;
-    minors: string;
-    objectives: Translation;
-    program: Translation;
-  };
-  openSemester: Array<{
-    code: string;
-    start: Date;
-    end: Date;
-  }>;
-  workTime: {
-    cm: number;
-    td: number;
-    tp: number;
-    the: number;
-    project: number;
-    internship: number;
-  };
-  starVotes: { [criterionId: string]: number };
-};

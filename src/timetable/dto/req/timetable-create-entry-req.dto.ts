@@ -1,7 +1,7 @@
 import { ArrayNotEmpty, IsArray, IsDate, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
 import { Type } from 'class-transformer';
 
-export default class TimetableCreateEntryDto {
+export default class TimetableCreateEntryReqDto {
   @IsString()
   @IsNotEmpty()
   location: string;

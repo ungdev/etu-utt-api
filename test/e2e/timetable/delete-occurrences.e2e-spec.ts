@@ -4,7 +4,7 @@ import * as pactum from 'pactum';
 import { HttpStatus } from '@nestjs/common';
 import { uuid } from 'pactum-matchers';
 import { PrismaService } from '../../../src/prisma/prisma.service';
-import TimetableDeleteOccurrencesDto from '../../../src/timetable/dto/timetable-delete-occurrences.dto';
+import TimetableDeleteOccurrencesReqDto from '../../../src/timetable/dto/req/timetable-delete-occurrences-req.dto';
 import { ERROR_CODE } from '../../../src/exceptions';
 
 const DeleteEntryE2ESpec = e2eSuite('DELETE /timetable/current/:entryId', (app) => {
@@ -28,7 +28,9 @@ const DeleteEntryE2ESpec = e2eSuite('DELETE /timetable/current/:entryId', (app) 
     },
   );
   const otherEntry = fakedb.createTimetableEntry(app);
-  const dummyPayload = (overrides: Partial<TimetableDeleteOccurrencesDto> = {}): TimetableDeleteOccurrencesDto => ({
+  const dummyPayload = (
+    overrides: Partial<TimetableDeleteOccurrencesReqDto> = {},
+  ): TimetableDeleteOccurrencesReqDto => ({
     from: 0,
     until: 0,
     every: 1,

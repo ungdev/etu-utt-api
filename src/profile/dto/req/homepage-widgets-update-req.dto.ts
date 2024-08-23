@@ -1,6 +1,6 @@
 import { IsInt, IsNumber, IsPositive, IsString, Min, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { ArrayDto } from '../../app.pipe';
+import { ArrayDto } from '../../../app.pipe';
 
 export class HomepageWidgetsUpdateElement {
   @IsNumber()
@@ -27,7 +27,7 @@ export class HomepageWidgetsUpdateElement {
   widget: string;
 }
 
-export class HomepageWidgetsUpdateDto extends ArrayDto<HomepageWidgetsUpdateElement> {
+export class HomepageWidgetsUpdateReqDto extends ArrayDto<HomepageWidgetsUpdateElement> {
   public constructor(items: HomepageWidgetsUpdateElement[]) {
     super();
     this.items = items;

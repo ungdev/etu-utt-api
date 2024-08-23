@@ -17,7 +17,7 @@ import { IsOptional, IsString, IsNumber, IsPositive, IsInt } from 'class-validat
  * @property {string} mail - The mail of the user. Optional.
  * @property {number} page - The page of the results. Optional. Must be a positive number.
  */
-export default class UsersSearchDto {
+export default class UsersSearchReqDto {
   @IsString()
   @IsOptional()
   q?: string;

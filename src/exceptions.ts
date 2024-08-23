@@ -1,5 +1,4 @@
-import {applyDecorators, HttpException, HttpStatus} from '@nestjs/common';
-import * as ApiResponses from '@nestjs/swagger';
+import { HttpException, HttpStatus } from '@nestjs/common';
 
 /**
  * Error codes
@@ -47,7 +46,7 @@ export const enum ERROR_CODE {
   INVALID_CAS_TICKET = 3006,
   FORBIDDEN_ALREADY_COMMENTED = 3101,
   FORBIDDEN_ALREADY_UPVOTED = 3102,
-  FORBIDDEN_ALREADY_UNUPVOTED = 3103,
+  FORBIDDEN_NOT_UPVOTED = 3103,
   NOT_COMMENT_AUTHOR = 4221,
   NOT_ALREADY_DONE_UE = 4222,
   NOT_REPLY_AUTHOR = 4223,
@@ -208,7 +207,7 @@ export const ErrorData = Object.freeze({
     message: 'You must un-upvote this comment before upvoting it again',
     httpCode: HttpStatus.FORBIDDEN,
   },
-  [ERROR_CODE.FORBIDDEN_ALREADY_UNUPVOTED]: {
+  [ERROR_CODE.FORBIDDEN_NOT_UPVOTED]: {
     message: 'You must upvote this comment before un-upvoting it',
     httpCode: HttpStatus.FORBIDDEN,
   },
@@ -308,7 +307,6 @@ export const ErrorData = Object.freeze({
 export type ExtrasTypeBuilder<S extends string> = S extends `${infer Part1}%${infer Part2}`
   ? [...ExtrasTypeBuilder<Part1>, ...ExtrasTypeBuilder<Part2>, string]
   : [];
-
 
 /**
  * An exception that can be thrown in the API. Every exception should be thrown using this class, to ensure that the errors are normalized.

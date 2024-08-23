@@ -1,3 +1,3 @@
-export default class AccessTokenResponseDto {
+export default class AccessTokenResDto {
   access_token: string;
 }

@@ -6,7 +6,7 @@ import { IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
  * @property {string} criterion - The id of the criterion to rate.
  * @property {number} value - The value of the rating. Must be between 1 and 5.
  */
-export class UeRateDto {
+export class UeRateReqDto {
   @IsString()
   @IsNotEmpty()
   criterion: string;

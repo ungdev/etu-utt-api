@@ -1,6 +1,6 @@
 import { IsAlphanumeric, IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
 
-export class GetFromUeCodeDto {
+export class GetFromUeReqDto {
   @IsString()
   @IsNotEmpty()
   @IsAlphanumeric()

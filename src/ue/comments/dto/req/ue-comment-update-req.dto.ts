@@ -6,7 +6,7 @@ import { IsBoolean, IsOptional, IsString, MinLength } from 'class-validator';
  * @property body The new body of the comment. Must be at least 5 characters long. Optional.
  * @property isAnonymous Whether the comment should be anonymous or not. Optional.
  */
-export class UeCommentUpdateDto {
+export default class UeCommentUpdateReqDto {
   @IsString()
   @MinLength(5)
   @IsOptional()

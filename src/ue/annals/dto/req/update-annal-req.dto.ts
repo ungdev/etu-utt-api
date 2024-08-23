@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsString, Length, IsUUID, IsOptional } from 'class-validator';
 
-export class UpdateAnnalDto {
+export class UpdateAnnalReqDto {
   @IsNotEmpty()
   @IsString()
   @Length(3)
