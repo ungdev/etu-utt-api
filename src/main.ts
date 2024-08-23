@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { VersioningType } from '@nestjs/common';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { AppValidationPipe } from './app.pipe';
 import './array';
@@ -26,9 +26,33 @@ async function bootstrap() {
     .addSecurityRequirements('bearer')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup(process.env.API_PREFIX, app, document);
+  sortSchemasAlphabetically(document);
+  SwaggerModule.setup(`${process.env.API_PREFIX}docs`, app, document, {
+    jsonDocumentUrl: 'docs/json',
+    yamlDocumentUrl: 'docs/yaml',
+    swaggerOptions: {
+      tagsSorter: 'alpha',
+      operationsSorter: 'alpha',
+    },
+  });
 
   await app.listen(3000);
+}
+
+// ChatGPT in combination with https://stackoverflow.com/questions/62473023/how-to-sort-the-schemas-on-swagger-ui-springdoc-open-ui#answer-62585730
+function sortSchemasAlphabetically(document: OpenAPIObject) {
+  if (document.components && document.components.schemas) {
+    const sortedSchemas = new Map(
+      Object.entries(document.components.schemas).sort(([a], [b]) => {
+        const aIsError = a.startsWith('AppErrorResDto$');
+        const bIsError = b.startsWith('AppErrorResDto$');
+        if (aIsError && !bIsError) return 1;
+        if (!aIsError && bIsError) return -1;
+        return a.localeCompare(b);
+      }),
+    );
+    document.components.schemas = Object.fromEntries(sortedSchemas);
+  }
 }
 
 bootstrap();
