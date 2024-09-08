@@ -71,13 +71,13 @@ Spec.prototype.expectAppError = function <ErrorCode extends ERROR_CODE>(
     error: (args as string[]).reduce((arg, extra) => arg.replaceAll('%', extra), ErrorData[errorCode].message),
   });
 };
-Spec.prototype.expectUe = function (ue: FakeUe, rates: Array<{ criterionId: string; value: number }> = []) {
+Spec.prototype.expectUe = function (ue: FakeUe, rates: Array<{ criterionId: string; value: number }>) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonMatchStrict(
     deepDateToString({
       code: ue.code,
       creationYear: ue.creationYear,
       updateYear: ue.updateYear,
-      ...(rates.length ? { starVotes: Object.fromEntries(rates.map((rate) => [rate.criterionId, rate.value])) } : {}),
+      ...(rates ? { starVotes: Object.fromEntries(rates.map((rate) => [rate.criterionId, rate.value])) } : {}),
       ofs: [
         {
           name: getTranslation(ue.name, this.language),

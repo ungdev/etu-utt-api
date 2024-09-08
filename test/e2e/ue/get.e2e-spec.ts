@@ -14,12 +14,18 @@ import { e2eSuite } from '../../utils/test_utils';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
 import { computeRate } from '../../../src/ue/interfaces/ue.interface';
+import { UserType } from '@prisma/client';
 
 const GetE2ESpec = e2eSuite('GET /ue/{ueCode}', (app) => {
   const user = createUser(app);
   const user2 = createUser(app, {
     login: 'user2',
     studentId: 2,
+  });
+  const user3 = createUser(app, {
+    login: 'user3',
+    studentId: 3,
+    userType: UserType.EMPLOYEE,
   });
   const semesters = [createSemester(app), createSemester(app)];
   const branches = [createBranch(app), createBranch(app)];
@@ -77,7 +83,11 @@ const GetE2ESpec = e2eSuite('GET /ue/{ueCode}', (app) => {
   });
 
   it('should return the UE XX01', () => {
-    return pactum.spec().withBearerToken(user.token).get('/ue/XX01').expectUe(ues[1]);
+    return pactum.spec().withBearerToken(user.token).get('/ue/XX01').expectUe(ues[1], []);
+  });
+
+  it('should return the UE XX01 without ratings', () => {
+    return pactum.spec().withBearerToken(user3.token).get('/ue/XX01').expectUe(ues[1]);
   });
 
   it('should return the UE XX30 with rating', () => {
