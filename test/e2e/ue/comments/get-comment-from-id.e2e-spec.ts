@@ -43,13 +43,13 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
       .withBearerToken(user.token)
       .get(`/ue/comments/${comment.id}`)
       .expectUeComment({
+        ue,
         ...(omit(
           comment,
           'semesterId',
           'authorId',
           'deletedAt',
           'validatedAt',
-          'ueId',
           'lastValidatedBody',
         ) as Required<FakeComment>),
         answers: [
@@ -78,13 +78,13 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
       .withBearerToken(user2.token)
       .get(`/ue/comments/${comment.id}`)
       .expectUeComment({
+        ue,
         ...(omit(
           comment,
           'semesterId',
           'authorId',
           'deletedAt',
           'validatedAt',
-          'ueId',
           'lastValidatedBody',
         ) as Required<FakeComment>),
         answers: [

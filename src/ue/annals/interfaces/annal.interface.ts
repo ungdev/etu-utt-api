@@ -25,8 +25,7 @@ const UE_ANNAL_SELECT_FILTER = {
       },
     },
     validatedAt: true,
-    ue: { select: { code: true } },
-    ueof: { select: { code: true, info: { select: { language: true } } } },
+    ueof: { select: { code: true, info: { select: { language: true } }, ue: { select: { code: true } } } },
   },
 } satisfies Prisma.UeAnnalFindManyArgs;
 

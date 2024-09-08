@@ -28,7 +28,7 @@ export class UeSearchDto {
   creditType?: string;
 
   @IsString()
-  @Length(3)
+  @Length(3, 3)
   @IsOptional()
   availableAtSemester?: string;
 

@@ -35,8 +35,10 @@ export class CommentsService {
           includeDeletedReplied: bypassAnonymousData,
         },
         where: {
-          ue: {
-            code: dto.ueCode,
+          ueof: {
+            ue: {
+              code: dto.ueCode,
+            },
           },
         },
         take: this.config.PAGINATION_PAGE_SIZE,
@@ -45,7 +47,7 @@ export class CommentsService {
       userId,
     );
     const commentCount = await this.prisma.ueComment.count({
-      where: { ue: { code: dto.ueCode } },
+      where: { ueof: { ue: { code: dto.ueCode } } },
     });
     // If the user is neither a moderator or the comment author, and the comment is anonymous,
     // we remove the author from the response
@@ -182,7 +184,9 @@ export class CommentsService {
       },
       where: {
         authorId: userId,
-        ueId: ue.code,
+        ueof: {
+          ueId: ue.code,
+        },
       },
     });
     return comment.length > 0;
@@ -212,11 +216,6 @@ export class CommentsService {
           author: {
             connect: {
               id: userId,
-            },
-          },
-          ue: {
-            connect: {
-              code: body.ueCode,
             },
           },
           ueof: {

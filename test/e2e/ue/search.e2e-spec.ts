@@ -53,7 +53,7 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
       .spec()
       .withBearerToken(user.token)
       .get('/ue?q=XX01&availableAtSemester=AP28')
-      .expectAppError(ERROR_CODE.PARAM_TOO_LONG, 'availableAtSemester');
+      .expectAppError(ERROR_CODE.PARAM_INVALID_SIZE, 'availableAtSemester');
   });
 
   it('should return a 400 as page is negative', () => {

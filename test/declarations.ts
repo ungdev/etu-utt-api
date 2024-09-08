@@ -15,12 +15,12 @@ import { isArray } from 'class-validator';
 import { Language } from '@prisma/client';
 
 /** Shortcut function for `this.expectStatus(200).expectJsonLike` */
-function expect<T>(obj: JsonLikeVariant<T>) {
-  return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonMatchStrict(obj);
+function expect<T>(this: Spec, obj: JsonLikeVariant<T>) {
+  return this.expectStatus(HttpStatus.OK).expectJsonMatchStrict(obj);
 }
 /** Shortcut function for `this.expectStatus(200|204).expectJsonLike` */
-function expectOkOrCreate<T>(obj: JsonLikeVariant<T>, created = false) {
-  return (<Spec>this).expectStatus(created ? HttpStatus.CREATED : HttpStatus.OK).expectJsonLike(obj);
+function expectOkOrCreate<T>(this: Spec, obj: JsonLikeVariant<T>, created = false) {
+  return this.expectStatus(created ? HttpStatus.CREATED : HttpStatus.OK).expectJsonLike(obj);
 }
 
 export function deepDateToString<T>(obj: T): JsonLikeVariant<T> {
@@ -44,7 +44,8 @@ function ueOverviewExpectation(ue: FakeUe, spec: Spec) {
       })),
     })),
     info: {
-      ...omit(ue.info, 'id', 'program', 'objectives'),
+      ...omit(ue.info, 'id', 'program', 'objectives', 'language'),
+      languages: [ue.info.language],
       program: getTranslation(ue.info.program, spec.language),
       objectives: getTranslation(ue.info.objectives, spec.language),
     },
@@ -76,7 +77,7 @@ Spec.prototype.expectUe = function (ue: FakeUe, rates: Array<{ criterionId: stri
       code: ue.code,
       creationYear: ue.creationYear,
       updateYear: ue.updateYear,
-      starVotes: Object.fromEntries(rates.map((rate) => [rate.criterionId, rate.value])),
+      ...(rates.length ? { starVotes: Object.fromEntries(rates.map((rate) => [rate.criterionId, rate.value])) } : {}),
       ofs: [
         {
           name: getTranslation(ue.name, this.language),
@@ -131,8 +132,18 @@ Spec.prototype.expectUesWithPagination = function (app: AppProvider, ues: FakeUe
     itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
   });
 };
-Spec.prototype.expectUeComment = expectOkOrCreate<SetPartial<UeComment, 'author'>>;
-Spec.prototype.expectUeComments = function expect(obj: Pagination<UeComment>) {
+Spec.prototype.expectUeComment = function expect(this: Spec, obj, created = false) {
+  return this.expectStatus(created ? HttpStatus.CREATED : HttpStatus.OK).expectJsonLike({
+    ...omit(obj as any, 'ue', 'ueofId'),
+    ueof: {
+      code: obj.ue.ueofCode,
+      info: {
+        language: obj.ue.info.language,
+      },
+    },
+  });
+};
+Spec.prototype.expectUeComments = function expect(obj) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonMatchStrict({
     itemCount: obj.itemCount,
     itemsPerPage: obj.itemsPerPage,
@@ -149,6 +160,12 @@ Spec.prototype.expectUeComments = function expect(obj: Pagination<UeComment>) {
         'upvoted',
         'upvotes',
       ),
+      ueof: {
+        code: comment.ue.ueofCode,
+        info: {
+          language: comment.ue.info.language,
+        },
+      },
       createdAt: comment.createdAt.toISOString(),
       updatedAt: comment.updatedAt.toISOString(),
       answers: comment.answers.map((answer) => ({

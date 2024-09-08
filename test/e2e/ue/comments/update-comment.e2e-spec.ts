@@ -100,6 +100,7 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
         isAnonymous: true,
       })
       .expectUeComment({
+        ue,
         id: JsonLike.ANY_UUID,
         author: {
           id: user.id,
@@ -133,6 +134,7 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
         isAnonymous: false,
       })
       .expectUeComment({
+        ue,
         id: JsonLike.ANY_UUID,
         author: {
           id: user.id,

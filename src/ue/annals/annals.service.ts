@@ -84,11 +84,6 @@ export class AnnalsService {
             id: user.id,
           },
         },
-        ue: {
-          connect: {
-            code: params.ueCode,
-          },
-        },
         ueof: {
           connect: {
             code: subscription.ueofId ?? ueof,
@@ -151,7 +146,7 @@ export class AnnalsService {
           size,
           compress: true,
           info: {
-            Title: `${fileEntry.type.name} ${fileEntry.ue.code} - ${fileEntry.semesterId}`,
+            Title: `${fileEntry.type.name} ${fileEntry.ueof.code} - ${fileEntry.semesterId}`,
             Creator: 'EtuUTT',
             Producer: 'EtuUTT',
           },
@@ -187,8 +182,10 @@ export class AnnalsService {
     return (
       await this.prisma.ueAnnal.findMany({
         where: {
-          ue: {
-            code: ueCode,
+          ueof: {
+            ue: {
+              code: ueCode,
+            },
           },
           deletedAt: includeAll ? undefined : null,
           ...(includeAll

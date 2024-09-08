@@ -96,6 +96,7 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
       .expectUeComment(
         {
           id: JsonLike.ANY_UUID,
+          ue,
           author: {
             id: user2.id,
             firstName: user2.firstName,
@@ -144,6 +145,7 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
       })
       .expectUeComment(
         {
+          ue,
           id: JsonLike.ANY_UUID,
           author: {
             id: user2.id,

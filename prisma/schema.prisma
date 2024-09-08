@@ -215,8 +215,6 @@ model Ue {
   createdAt     DateTime     @default(now())
   creationYear  Int
   updateYear    Int
-  comments      UeComment[]
-  annals        UeAnnal[]
   starVotes     UeStarVote[]
   ueofs         Ueof[]
   subsequentUes Ueof[]       @relation("ueRequirements")
@@ -261,13 +259,11 @@ model UeAnnal {
   updatedAt      DateTime  @updatedAt
   deletedAt      DateTime?
   validatedAt    DateTime?
-  ueId           String
   ueofId         String
   senderId       String?
   semesterId     String
   typeId         String
 
-  ue       Ue              @relation(fields: [ueId], references: [code], onDelete: Cascade)
   ueof     Ueof            @relation(fields: [ueofId], references: [code], onDelete: Cascade)
   sender   User?           @relation(fields: [senderId], references: [id], onDelete: SetNull)
   type     UeAnnalType     @relation(fields: [typeId], references: [id])
@@ -316,12 +312,10 @@ model UeComment {
   deletedAt         DateTime?
   validatedAt       DateTime?
   lastValidatedBody String?
-  ueId              String
   ueofId            String
   authorId          String?
   semesterId        String
 
-  ue       Ue                @relation(fields: [ueId], references: [code], onDelete: Cascade)
   ueof     Ueof              @relation(fields: [ueofId], references: [code], onDelete: Cascade)
   author   User?             @relation(fields: [authorId], references: [id], onDelete: SetNull)
   semester Semester          @relation(fields: [semesterId], references: [code])

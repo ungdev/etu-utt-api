@@ -57,6 +57,7 @@ const DeleteComment = e2eSuite('DELETE /ue/comments/{commentId}', (app) => {
       .withBearerToken(user.token)
       .delete(`/ue/comments/${comment1.id}`)
       .expectUeComment({
+        ue,
         id: comment1.id,
         author: {
           id: comment1.authorId,

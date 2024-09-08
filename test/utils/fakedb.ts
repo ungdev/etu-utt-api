@@ -664,7 +664,6 @@ export const createAnnal = entityFaker(
           semesterId: semester.code,
           senderId: sender.id,
           typeId: type.id,
-          ueId: ue.code,
           ueofId: ue.ueofCode,
         },
       }),
@@ -799,8 +798,11 @@ export const createUe = entityFaker(
       .then((ue) => ({
         ...omit(ue, 'ueofs'),
         ueofCode: ue.ueofs[0].code,
-        ...omit(ue.ueofs[0], 'code', 'ueId', 'ueInfoId', 'openSemester', 'nameTranslationId'),
-        info: omit(ue.ueofs[0].info, 'objectivesTranslationId', 'programTranslationId'),
+        ...omit(ue.ueofs[0], 'code', 'ueId', 'ueInfoId', 'openSemester', 'nameTranslationId', 'requirements'),
+        info: {
+          ...omit(ue.ueofs[0].info, 'objectivesTranslationId', 'programTranslationId'),
+          requirements: ue.ueofs[0].requirements,
+        },
         openSemesters: ue.ueofs[0].openSemester,
       })),
 );
@@ -898,14 +900,9 @@ export const createComment = entityFaker(
       .get(PrismaService)
       .withDefaultBehaviour.ueComment.create({
         data: {
-          ...omit(params, 'ueId', 'ueofId', 'authorId', 'semesterId', 'status'),
+          ...omit(params, 'ueofId', 'authorId', 'semesterId', 'status'),
           validatedAt: params.status & CommentStatus.VALIDATED ? new Date() : undefined,
           deletedAt: params.status & CommentStatus.DELETED ? new Date() : undefined,
-          ue: {
-            connect: {
-              code: dependencies.ue.code,
-            },
-          },
           ueof: {
             connect: {
               code: dependencies.ue.ueofCode,

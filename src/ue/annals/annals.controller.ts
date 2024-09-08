@@ -32,7 +32,7 @@ export class AnnalsController {
     if (!(await this.ueService.doesUeExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     if (!(await this.annalsService.doesAnnalTypeExist(typeId))) throw new AppException(ERROR_CODE.NO_SUCH_ANNAL_TYPE);
     try {
-      return this.annalsService.createAnnalFile(user, { ueCode, semester, typeId }, ueof);
+      return await this.annalsService.createAnnalFile(user, { ueCode, semester, typeId }, ueof);
     } catch (error) {
       if (user.permissions.includes('annalUploader')) throw new AppException(ERROR_CODE.NO_SUCH_UEOF, ueof);
       throw new AppException(ERROR_CODE.NOT_DONE_UE_IN_SEMESTER, ueCode, semester);
@@ -89,7 +89,7 @@ export class AnnalsController {
     response.setHeader('Content-Type', 'application/pdf');
     response.setHeader(
       'Content-Disposition',
-      `attachment; filename=${annalFile.metadata.type.name} ${annalFile.metadata.ue.code} - ${annalFile.metadata.semesterId}`,
+      `attachment; filename=${annalFile.metadata.type.name} ${annalFile.metadata.ueof.code} - ${annalFile.metadata.semesterId}`,
     );
     annalFile.stream.pipe(response);
   }

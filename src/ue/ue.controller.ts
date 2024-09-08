@@ -39,7 +39,11 @@ export class UeController {
 
   @Get('/:ueCode')
   @IsPublic()
-  async getUe(@GetUser() user: User, @Param('ueCode') ueCode: string, @Res() res: Response): Promise<void | UeDetail> {
+  async getUe(
+    @GetUser() user: User,
+    @Param('ueCode') ueCode: string,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<void | UeDetail> {
     if (!(await this.ueService.doesUeExist(ueCode))) {
       // Check for aliases or throw an error
       const alias = await this.ueService.findAlias(ueCode);
@@ -47,7 +51,7 @@ export class UeController {
       throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     }
     const result = this.formatDetailedUe(await this.ueService.getUe(ueCode.toUpperCase()));
-    if (user.userType === UserType.STUDENT || user.userType === UserType.FORMER_STUDENT) return result;
+    if (user?.userType === UserType.STUDENT || user?.userType === UserType.FORMER_STUDENT) return result;
     return omit(result, 'starVotes');
   }
 
@@ -124,7 +128,7 @@ export class UeController {
       })),
       info: {
         requirements: chosenOf.requirements.map((r) => r.code),
-        languages: [...new Set(ue.ueofs.map((ueof) => ueof.info.language))],
+        languages: ue.ueofs.map((ueof) => ueof.info.language).uniqueValues,
         minors: chosenOf.info.minors,
         objectives: chosenOf.info.objectives,
         program: chosenOf.info.program,
