@@ -7,7 +7,7 @@ import { UUIDParam } from '../app.pipe';
 import { AppException, ERROR_CODE } from '../exceptions';
 import { UeRateDto } from './dto/ue-rate.dto';
 import { Ue } from './interfaces/ue.interface';
-import { Language } from '@prisma/client';
+import { Language, UserType } from '@prisma/client';
 import { Translation } from '../prisma/types';
 
 @Controller('ue')
@@ -29,9 +29,9 @@ export class UeController {
 
   @Get('/:ueCode')
   @IsPublic()
-  async getUe(@Param('ueCode') ueCode: string): Promise<UeDetail> {
+  async getUe(@Param('ueCode') ueCode: string, @GetUser() user: User): Promise<UeDetail> {
     if (!(await this.ueService.doesUeExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
-    return this.formatDetailedUe(await this.ueService.getUe(ueCode.toUpperCase())); // TODO: remove starVotes in not student
+    return this.formatDetailedUe(await this.ueService.getUe(ueCode.toUpperCase()), user);
   }
 
   @Get('/rate/criteria')
@@ -114,8 +114,8 @@ export class UeController {
     };
   }
 
-  private formatDetailedUe(ue: Ue): UeDetail {
-    return {
+  private formatDetailedUe(ue: Ue, user?: User): UeDetail {
+    const format = {
       code: ue.code,
       inscriptionCode: ue.inscriptionCode,
       name: ue.name,
@@ -156,8 +156,10 @@ export class UeController {
         project: ue.workTime.project,
         internship: ue.workTime.internship,
       },
-      starVotes: ue.starVotes,
-    };
+    } as UeDetail;
+    if (user?.userType === UserType.STUDENT || user?.userType === UserType.FORMER_STUDENT)
+      format.starVotes = ue.starVotes;
+    return format;
   }
 }
 
@@ -237,5 +239,5 @@ export type UeDetail = {
     project: number;
     internship: number;
   };
-  starVotes: { [criterionId: string]: number };
+  starVotes?: { [criterionId: string]: number };
 };
