@@ -58,3 +58,15 @@ Pour définir aux mieux les UEs, nous utilisont plusieurs structures de données
 - **`UeStarCriterion`**. Les critères sur lesquels les utilisateurs peuvent évaluer une UE. Ces critères ne sont pas fixes et pourront être modifiés par les administrateurs du site s'ils se rendent compte qu'ils sont mal définis.
 - **`UeStarVote`**, c'est le vote d'un utilisateur pour une UE donnée et un critère donné. Il ne peut y avoir qu'un seul vote par Utilisateur & Ue & Critère.
 - **`UeWorkTime`**. Cette structure rassemble les heures de travail estimé pour effectuer l'UE. Il n'y a plus de nombre d'heures pour la réalisation d'un projet éventuel mais l'indication porte désormais sur le fait qu'il y ait un projet ou non.
+
+## Les Semestres
+
+La DFP a intégré certaines formations au guide des UEs qui n'ont pas lieu sur les semestres classiques d'automne et de printemps. Il a donc fallu intégrer de nouveaux laps de temps au site étudiant. Voici une correspondance entre les codes et leur signification :
+
+| Sigle | Signification                 |
+| ----- | ----------------------------- |
+| A24   | Semestre d'automne 2024       |
+| P25   | Semestre de printemps 2025    |
+| H25   | Intersemestre d'hiver 2025    |
+| E25   | Intersemestre d'été 2025      |
+| U24   | Année universitaire 2024-2025 |
