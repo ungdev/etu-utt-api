@@ -135,7 +135,7 @@ async function main() {
   const importYear = new Date().getFullYear(); // Can be changed to the year of the import if done with web interface
 
   console.info('\x1b[42;30mFetching UE list\x1b[0m');
-  const ues = await parseDocument('scripts/seed/Export UE_OF pour UNG 20240727.csv');
+  const ues = await parseDocument('scripts/seed/dfp_data.csv');
   await prisma.ueof.updateMany({
     data: { available: false },
   });
