@@ -4,10 +4,10 @@
 
 On supposera que :
 
-* Vous avez une connexion internet (sinon comment vous êtes-vous retrouvé ici ?) ;
-* Vous avez [Git](https://git-scm.org) ;
-* Vous avez un compte GitHub ;
-* Vous savez utiliser les commandes de base d'un système UNIX (`cd`, `ls`, `mkdir`, `cp`, etc.)
+- Vous avez une connexion internet (sinon comment vous êtes-vous retrouvé ici ?) ;
+- Vous avez [Git](https://git-scm.org) ;
+- Vous avez un compte GitHub ;
+- Vous savez utiliser les commandes de base d'un système UNIX (`cd`, `ls`, `mkdir`, `cp`, etc.)
 
 La documentation est écrite pour un ordinateur sous
 Ubuntu, vous pouvez aussi utiliser WSL (Windows Subsystem for Linux).
@@ -110,13 +110,13 @@ Ensuite, vous pouvez ajouter votre clé SSH à votre compte GitHub. Pour cela, c
 fichier `~/.ssh/id_rsa.pub` et collez-le dans la section "SSH and GPG keys" des paramètres de votre compte GitHub.
 
 Déplacez-vous alors dans le dossier dans lequel vous voudrez que le dossier racine se situe (par exemple, `~/dev/etuutt`
-pour que le projet se situe dans `~/dev/etuutt/etuutt-api`). Vous pouvez maintenant récupérer le code source de l'API :
+pour que le projet se situe dans `~/dev/etuutt/api`). Vous pouvez maintenant récupérer le code source de l'API :
 
 ```bash
-git clone git@github.com:ungdev/etuutt-api.git
+git clone git@github.com:ungdev/etu-utt-api.git api
 ```
 
-Vous pouvez alors aller dans le dossier `etuutt-api`.
+Vous pouvez alors aller dans le dossier `api`.
 
 ## Configuration du projet
 
