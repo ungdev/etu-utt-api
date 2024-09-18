@@ -23,7 +23,6 @@ export class AuthController {
   @ApiOperation({
     description: 'Signs up the user, and returns an authentication token. This token should be used as a Bearer token.',
   })
-  @ApiBody({ type: AuthSignUpReqDto })
   @ApiCreatedResponse({
     description: 'The account was created successfully, the user is now authenticated and the token is returned.',
     type: AccessTokenResponse,
@@ -43,7 +42,6 @@ export class AuthController {
   @ApiOperation({
     description: 'Signs in the user, and returns an authentication token. This token should be used as a Bearer token.',
   })
-  @ApiBody({ type: AuthSignInReqDto })
   @ApiOkResponse({
     description: 'The user was successfully authenticated, the token is returned.',
     type: AccessTokenResponse,

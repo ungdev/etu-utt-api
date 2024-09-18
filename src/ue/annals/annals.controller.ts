@@ -11,7 +11,7 @@ import { CreateAnnalReqDto } from './dto/req/create-annal-req.dto';
 import { UpdateAnnalReqDto } from './dto/req/update-annal-req.dto';
 import { User } from '../../users/interfaces/user.interface';
 import { GetFromUeReqDto } from './dto/req/get-from-ue-req.dto';
-import { UploadAnnalReqDto } from './dto/req/upload-annal-req.dto';
+import UploadAnnalReqDto from './dto/req/upload-annal-req.dto';
 import { ApiBody, ApiConsumes, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiAppErrorResponse } from '../../app.dto';
 import UeAnnalResDto from './dto/res/ue-annal-res.dto';
