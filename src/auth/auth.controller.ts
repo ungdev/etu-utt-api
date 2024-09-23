@@ -7,7 +7,7 @@ import { AppException, ERROR_CODE } from '../exceptions';
 import AuthCasSignInReqDto from './dto/req/auth-cas-sign-in-req.dto';
 import AuthCasSignUpReqDto from './dto/req/auth-cas-sign-up-req.dto';
 import UsersService from '../users/users.service';
-import { ApiBody, ApiCreatedResponse, ApiHeader, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiHeader, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import AccessTokenResponse from './dto/res/auth-access-token-res.dto';
 import TokenValidityResDto from './dto/res/token-validity-res.dto';
 import CasLoginResDto from './dto/res/cas-login-res.dto';

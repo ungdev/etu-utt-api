@@ -4,10 +4,10 @@
 
 On supposera que :
 
-* Vous avez une connexion internet (sinon comment vous êtes-vous retrouvé ici ?) ;
-* Vous avez [Git](https://git-scm.org) ;
-* Vous avez un compte GitHub ;
-* Vous savez utiliser les commandes de base d'un système UNIX (`cd`, `ls`, `mkdir`, `cp`, etc.)
+- Vous avez une connexion internet (sinon comment vous êtes-vous retrouvé ici ?) ;
+- Vous avez [Git](https://git-scm.org) ;
+- Vous avez un compte GitHub ;
+- Vous savez utiliser les commandes de base d'un système UNIX (`cd`, `ls`, `mkdir`, `cp`, etc.)
 
 La documentation est écrite pour un ordinateur sous
 Ubuntu, vous pouvez aussi utiliser WSL (Windows Subsystem for Linux).
@@ -183,3 +183,5 @@ python -m sphinx -T -b html -d _build/doctrees -D language=fr . build/html
 
 Le résultat du build se situe alors dans `docs/build/html`. Le fichier racine est `index.html`. Le résultat de la
 compilation est cette documentation que vous êtes en train de lire.
+
+La documentation est écrite en markdown mais les directives RST sont supportées. Leur syntaxe est disponible sur [cette page](https://myst-parser.readthedocs.io/en/latest/syntax/typography.html).
