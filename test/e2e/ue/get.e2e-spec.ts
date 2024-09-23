@@ -14,12 +14,18 @@ import { e2eSuite } from '../../utils/test_utils';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
 import { computeRate } from '../../../src/ue/interfaces/ue.interface';
+import { UserType } from '@prisma/client';
 
 const GetE2ESpec = e2eSuite('GET /ue/{ueCode}', (app) => {
   const user = createUser(app);
   const user2 = createUser(app, {
     login: 'user2',
     studentId: 2,
+  });
+  const user3 = createUser(app, {
+    login: 'user3',
+    studentId: 3,
+    userType: UserType.EMPLOYEE,
   });
   const semesters = [createSemester(app), createSemester(app)];
   const branches = [createBranch(app), createBranch(app)];
@@ -40,26 +46,32 @@ const GetE2ESpec = e2eSuite('GET /ue/{ueCode}', (app) => {
   const ues: FakeUe[] = [];
   for (let i = 0; i < 30; i++)
     ues.push(
-      createUe(app, {
-        code: `XX${`${i}`.padStart(2, '0')}`,
-        credits: [
-          {
-            category: {
-              code: i % 3 == 0 ? 'CS' : 'TM',
-              name: i % 3 == 0 ? 'CS' : 'TM',
+      createUe(
+        app,
+        { branchOptions: [branchOptions[(i * 3) % 4]] },
+        {
+          code: `XX${`${i}`.padStart(2, '0')}`,
+          credits: [
+            {
+              category: {
+                code: i % 3 == 0 ? 'CS' : 'TM',
+                name: i % 3 == 0 ? 'CS' : 'TM',
+              },
+              credits: 6,
             },
-            credits: 6,
-          },
-        ],
-        openSemesters: [semesters[i % 2]],
-        branchOption: [branchOptions[(i * 3) % 4]],
-      }),
+          ],
+          openSemesters: [semesters[i % 2]],
+        },
+      ),
     );
-  const ueWithRating = createUe(app, {
-    code: `XX30`,
-    openSemesters: semesters,
-    branchOption: [branchOptions[0]],
-  });
+  const ueWithRating = createUe(
+    app,
+    { branchOptions: [branchOptions[0]] },
+    {
+      code: `XX30`,
+      openSemesters: semesters,
+    },
+  );
   const criterion = createCriterion(app);
   createUeSubscription(app, { user, ue: ueWithRating, semester: semesters[0] });
   createUeSubscription(app, { user: user2, ue: ueWithRating, semester: semesters[0] });
@@ -71,7 +83,11 @@ const GetE2ESpec = e2eSuite('GET /ue/{ueCode}', (app) => {
   });
 
   it('should return the UE XX01', () => {
-    return pactum.spec().withBearerToken(user.token).get('/ue/XX01').expectUe(ues[1]);
+    return pactum.spec().withBearerToken(user.token).get('/ue/XX01').expectUe(ues[1], []);
+  });
+
+  it('should return the UE XX01 without ratings', () => {
+    return pactum.spec().withBearerToken(user3.token).get('/ue/XX01').expectUe(ues[1]);
   });
 
   it('should return the UE XX30 with rating', () => {

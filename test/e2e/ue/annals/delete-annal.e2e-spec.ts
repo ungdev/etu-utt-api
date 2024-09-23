@@ -23,7 +23,7 @@ const DeleteAnnal = e2eSuite('DELETE /ue/annals/{annalId}', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
+  const ue = createUe(app, { branchOptions: [branchOption] }, { openSemesters: [semester] });
   createUeSubscription(app, { user: senderUser, ue, semester });
   const annal_validated = createAnnal(app, { semester, sender: senderUser, type: annalType, ue });
 
@@ -67,9 +67,6 @@ const DeleteAnnal = e2eSuite('DELETE /ue/annals/{annalId}', (app) => {
         sender: pick(senderUser, 'id', 'firstName', 'lastName'),
         createdAt: annal_validated.createdAt.toISOString(),
         updatedAt: JsonLike.ANY_DATE,
-        ue: {
-          code: ue.code,
-        },
       });
     return app()
       .get(PrismaService)

@@ -15,12 +15,12 @@ import { isArray } from 'class-validator';
 import { Language } from '@prisma/client';
 
 /** Shortcut function for `this.expectStatus(200).expectJsonLike` */
-function expect<T>(obj: JsonLikeVariant<T>) {
-  return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonMatchStrict(obj);
+function expect<T>(this: Spec, obj: JsonLikeVariant<T>) {
+  return this.expectStatus(HttpStatus.OK).expectJsonMatchStrict(obj);
 }
 /** Shortcut function for `this.expectStatus(200|204).expectJsonLike` */
-function expectOkOrCreate<T>(obj: JsonLikeVariant<T>, created = false) {
-  return (<Spec>this).expectStatus(created ? HttpStatus.CREATED : HttpStatus.OK).expectJsonLike(obj);
+function expectOkOrCreate<T>(this: Spec, obj: JsonLikeVariant<T>, created = false) {
+  return this.expectStatus(created ? HttpStatus.CREATED : HttpStatus.OK).expectJsonLike(obj);
 }
 
 export function deepDateToString<T>(obj: T): JsonLikeVariant<T> {
@@ -34,19 +34,21 @@ export function deepDateToString<T>(obj: T): JsonLikeVariant<T> {
 
 function ueOverviewExpectation(ue: FakeUe, spec: Spec) {
   return {
-    ...omit(ue, 'id', 'validationRate', 'createdAt', 'updatedAt', 'openSemesters', 'workTime'),
+    code: ue.code,
     name: getTranslation(ue.name, spec.language),
+    credits: ue.credits.map((credit) => ({
+      ...omit(credit, 'id', 'ueofId', 'categoryId', 'branchOptions'),
+      branchOptions: credit.branchOptions.map((branchOption) => ({
+        ...pick(branchOption, 'code', 'name'),
+        branch: pick(branchOption.branch, 'code', 'name'),
+      })),
+    })),
     info: {
-      ...omit(ue.info, 'id', 'comment', 'program', 'objectives'),
-      comment: getTranslation(ue.info.comment, spec.language),
+      ...omit(ue.info, 'id', 'program', 'objectives', 'language'),
+      languages: [ue.info.language],
       program: getTranslation(ue.info.program, spec.language),
       objectives: getTranslation(ue.info.objectives, spec.language),
     },
-    credits: ue.credits.map((credit) => omit(credit, 'id', 'ueId', 'categoryId')),
-    branchOption: ue.branchOption.map((branchOption) => ({
-      ...pick(branchOption, 'code', 'name'),
-      branch: pick(branchOption.branch, 'code', 'name'),
-    })),
     openSemester: ue.openSemesters.map((semester) => ({
       ...semester,
       start: semester.start.toISOString(),
@@ -69,31 +71,38 @@ Spec.prototype.expectAppError = function <ErrorCode extends ERROR_CODE>(
     error: (args as string[]).reduce((arg, extra) => arg.replaceAll('%', extra), ErrorData[errorCode].message),
   });
 };
-Spec.prototype.expectUe = function (ue: FakeUe, rates: Array<{ criterionId: string; value: number }> = []) {
+Spec.prototype.expectUe = function (ue: FakeUe, rates: Array<{ criterionId: string; value: number }>) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonMatchStrict(
     deepDateToString({
-      ...omit(ue, 'id', 'validationRate', 'createdAt', 'updatedAt', 'openSemesters'),
-      name: getTranslation(ue.name, this.language),
-      info: {
-        ...omit(ue.info, 'id'),
-        objectives: getTranslation(ue.info.objectives, this.language),
-        comment: getTranslation(ue.info.comment, this.language),
-        program: getTranslation(ue.info.program, this.language),
-      },
-      workTime: omit(ue.workTime, 'id', 'ueId'),
-      credits: ue.credits.map((credit) => omit(credit, 'id', 'ueId', 'categoryId')),
-      branchOption: ue.branchOption.map((branchOption) => ({
-        ...pick(branchOption, 'code', 'name'),
-        branch: pick(branchOption.branch, 'code', 'name'),
-      })),
-      openSemester: ue.openSemesters
-        .mappedSort((semester) => semester.start.toISOString())
-        .map((semester) => ({
-          ...semester,
-          start: semester.start.toISOString(),
-          end: semester.end.toISOString(),
-        })),
-      starVotes: Object.fromEntries(rates.map((rate) => [rate.criterionId, rate.value])),
+      code: ue.code,
+      creationYear: ue.creationYear,
+      updateYear: ue.updateYear,
+      ...(rates ? { starVotes: Object.fromEntries(rates.map((rate) => [rate.criterionId, rate.value])) } : {}),
+      ofs: [
+        {
+          name: getTranslation(ue.name, this.language),
+          credits: ue.credits.map((credit) => ({
+            ...omit(credit, 'id', 'ueofId', 'categoryId', 'branchOptions'),
+            branchOptions: credit.branchOptions.map((branchOption) => ({
+              ...pick(branchOption, 'code', 'name'),
+              branch: pick(branchOption.branch, 'code', 'name'),
+            })),
+          })),
+          info: {
+            ...omit(ue.info, 'id'),
+            objectives: getTranslation(ue.info.objectives, this.language),
+            program: getTranslation(ue.info.program, this.language),
+          },
+          openSemester: ue.openSemesters
+            .mappedSort((semester) => semester.start.toISOString())
+            .map((semester) => ({
+              ...semester,
+              start: semester.start.toISOString(),
+              end: semester.end.toISOString(),
+            })),
+          workTime: omit(ue.workTime, 'id', 'ueofId'),
+        },
+      ],
     }),
   );
 };
@@ -123,8 +132,18 @@ Spec.prototype.expectUesWithPagination = function (app: AppProvider, ues: FakeUe
     itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
   });
 };
-Spec.prototype.expectUeComment = expectOkOrCreate<SetPartial<UeComment, 'author'>>;
-Spec.prototype.expectUeComments = function expect(obj: Pagination<UeComment>) {
+Spec.prototype.expectUeComment = function expect(this: Spec, obj, created = false) {
+  return this.expectStatus(created ? HttpStatus.CREATED : HttpStatus.OK).expectJsonLike({
+    ...omit(obj as any, 'ue', 'ueofId'),
+    ueof: {
+      code: obj.ue.ueofCode,
+      info: {
+        language: obj.ue.info.language,
+      },
+    },
+  });
+};
+Spec.prototype.expectUeComments = function expect(obj) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonMatchStrict({
     itemCount: obj.itemCount,
     itemsPerPage: obj.itemsPerPage,
@@ -141,6 +160,12 @@ Spec.prototype.expectUeComments = function expect(obj: Pagination<UeComment>) {
         'upvoted',
         'upvotes',
       ),
+      ueof: {
+        code: comment.ue.ueofCode,
+        info: {
+          language: comment.ue.info.language,
+        },
+      },
       createdAt: comment.createdAt.toISOString(),
       updatedAt: comment.updatedAt.toISOString(),
       answers: comment.answers.map((answer) => ({

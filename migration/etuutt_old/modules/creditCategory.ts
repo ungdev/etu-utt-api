@@ -3,42 +3,14 @@ import { RawCreditCategory } from '../../../src/prisma/types';
 
 export async function createCreditCategories(prisma: PrismaClient) {
   const creditCategoriesData = [
-    {
-      code: 'CS',
-      name: 'Connaissances scientifiques',
-    },
-    {
-      code: 'TM',
-      name: 'Techniques et méthodes',
-    },
-    {
-      code: 'EC',
-      name: 'Expression et communication',
-    },
-    {
-      code: 'ME',
-      name: "Management de l'entreprise",
-    },
-    {
-      code: 'HT',
-      name: 'Humanité et technologie',
-    },
-    {
-      code: 'ST',
-      name: 'Stage',
-    },
-    {
-      code: 'HP',
-      name: 'Hors profil',
-    },
-    {
-      code: 'MASTER',
-      name: 'Master',
-    },
-    {
-      code: 'OTHER',
-      name: 'Autre',
-    },
+    { code: 'CS', name: 'Connaissances scientifiques' },
+    { code: 'TM', name: 'Techniques et méthodes' },
+    { code: 'ST', name: 'Stage' },
+    { code: 'HT', name: 'Humanités et technologies' },
+    { code: 'ME', name: 'Mise en situation' },
+    { code: 'EC', name: 'Expression et communication' },
+    { code: 'AC', name: 'Autres Crédits' },
+    { code: 'MA', name: 'Master' },
   ];
   const operations: Promise<PrismaOperationResult<RawCreditCategory>>[] = [];
   for (const creditCategoryData of creditCategoriesData) {

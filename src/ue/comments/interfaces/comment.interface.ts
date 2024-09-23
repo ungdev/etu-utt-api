@@ -25,6 +25,16 @@ const COMMENT_SELECT_FILTER = {
     },
     isAnonymous: true,
     body: true,
+    ueof: {
+      select: {
+        code: true,
+        info: {
+          select: {
+            language: true,
+          },
+        },
+      },
+    },
     answers: {
       select: {
         id: true,

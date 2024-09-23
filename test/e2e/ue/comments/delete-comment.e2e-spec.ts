@@ -19,7 +19,7 @@ const DeleteComment = e2eSuite('DELETE /ue/comments/{commentId}', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
+  const ue = createUe(app, { branchOptions: [branchOption] }, { openSemesters: [semester] });
   const comment1 = createComment(app, { user, ue, semester });
   createCommentUpvote(app, { user, comment: comment1 });
 
@@ -57,6 +57,7 @@ const DeleteComment = e2eSuite('DELETE /ue/comments/{commentId}', (app) => {
       .withBearerToken(user.token)
       .delete(`/ue/comments/${comment1.id}`)
       .expectUeComment({
+        ue,
         id: comment1.id,
         author: {
           id: comment1.authorId,

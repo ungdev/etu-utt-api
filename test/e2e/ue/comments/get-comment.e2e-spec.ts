@@ -22,7 +22,7 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
+  const ue = createUe(app, { branchOptions: [branchOption] }, { openSemesters: [semester] });
   const comments: FakeComment[] = [];
   comments.push(
     createComment(
@@ -108,7 +108,7 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
         .slice(0, app().get(ConfigModule).PAGINATION_PAGE_SIZE)
         .map((comment) => {
           if (comment.isAnonymous && comment.author.id !== user.id) delete comment.author;
-          return comment;
+          return { ...comment, ue };
         }),
       itemCount: comments.length,
       itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
@@ -154,7 +154,7 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
           .slice(app().get(ConfigModule).PAGINATION_PAGE_SIZE, app().get(ConfigModule).PAGINATION_PAGE_SIZE * 2)
           .map((comment) => {
             if (comment.isAnonymous && comment.author.id !== user.id) delete comment.author;
-            return comment;
+            return { ...comment, ue };
           }),
         itemCount: comments.length,
         itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
@@ -188,6 +188,7 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
             ? (<Date>b.createdAt).getTime() - (<Date>a.createdAt).getTime()
             : b.upvotes - a.upvotes,
         )
+        .map((comment) => ({ ...comment, ue }))
         .slice(0, app().get(ConfigModule).PAGINATION_PAGE_SIZE),
       itemCount: comments.length,
       itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,

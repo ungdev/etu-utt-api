@@ -1,5 +1,5 @@
 import { ERROR_CODE, ErrorData, ExtrasTypeBuilder } from '../src/exceptions';
-import { UeComment } from 'src/ue/interfaces/comment.interface';
+import { UeComment } from 'src/ue/comments/interfaces/comment.interface';
 import { UeCommentReply } from 'src/ue/comments/interfaces/comment-reply.interface';
 import { UeRating } from 'src/ue/interfaces/rate.interface';
 import { FakeUeAnnalType } from './utils/fakedb';
@@ -48,11 +48,11 @@ declare module './declarations' {
      * depending on the {@link created} property.
      */
     expectUeComment(
-      comment: JsonLikeVariant<RecursivelySetPartial<UeComment, 'author', 'answers.author'>>,
+      comment: JsonLikeVariant<RecursivelySetPartial<UeComment, 'author' | 'answers.author'>> & { ue: FakeUe },
       created = false,
     ): this;
     /** expects to return the given {@link commentPage | page of comments} */
-    expectUeComments(commentPage: JsonLikeVariant<Pagination<UeComment>>): this;
+    expectUeComments(commentPage: Pagination<UeComment & { ue: FakeUe }>): this;
     /**
      * expects to return the given {@link reply}
      * The HTTP Status code may be 200 or 204, depending on the {@link created} property.

@@ -19,7 +19,7 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
+  const ue = createUe(app, { branchOptions: [branchOption] }, { openSemesters: [semester] });
   const comment = createComment(app, { ue, user, semester });
   createCommentUpvote(app, { user: user2, comment });
 
@@ -100,6 +100,7 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
         isAnonymous: true,
       })
       .expectUeComment({
+        ue,
         id: JsonLike.ANY_UUID,
         author: {
           id: user.id,
@@ -133,6 +134,7 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
         isAnonymous: false,
       })
       .expectUeComment({
+        ue,
         id: JsonLike.ANY_UUID,
         author: {
           id: user.id,

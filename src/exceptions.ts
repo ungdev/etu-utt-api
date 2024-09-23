@@ -23,16 +23,17 @@ export const enum ERROR_CODE {
   PARAM_NOT_ENUM = 2007,
   PARAM_NOT_DATE = 2008,
   PARAM_NOT_UUID = 2009,
-  PARAM_TOO_LONG = 20010,
-  PARAM_TOO_SHORT = 2011,
-  PARAM_SIZE_TOO_SMALL = 2012,
-  PARAM_SIZE_TOO_BIG = 2013,
-  PARAM_IS_EMPTY = 2014,
-  PARAM_NOT_POSITIVE = 2015,
-  PARAM_TOO_LOW = 2016,
-  PARAM_TOO_HIGH = 2017,
-  PARAM_NOT_INT = 2018,
-  NO_FILE_PROVIDED = 2019,
+  PARAM_INVALID_SIZE = 2010,
+  PARAM_TOO_LONG = 2011,
+  PARAM_TOO_SHORT = 2012,
+  PARAM_SIZE_TOO_SMALL = 2013,
+  PARAM_SIZE_TOO_BIG = 2014,
+  PARAM_IS_EMPTY = 2015,
+  PARAM_NOT_POSITIVE = 2016,
+  PARAM_TOO_LOW = 2017,
+  PARAM_TOO_HIGH = 2018,
+  PARAM_NOT_INT = 2019,
+  NO_FILE_PROVIDED = 2020,
   PARAM_DOES_NOT_MATCH_REGEX = 2102,
   NO_FIELD_PROVIDED = 2201,
   WIDGET_OVERLAPPING = 2301,
@@ -65,6 +66,7 @@ export const enum ERROR_CODE {
   NO_SUCH_ANNAL = 4408,
   NO_SUCH_ANNAL_TYPE = 4409,
   NO_SUCH_ASSO = 4410,
+  NO_SUCH_UEOF = 4411,
   ANNAL_ALREADY_UPLOADED = 4901,
   CREDENTIALS_ALREADY_TAKEN = 5001,
 }
@@ -113,6 +115,10 @@ export const ErrorData = Object.freeze({
   },
   [ERROR_CODE.PARAM_NOT_UUID]: {
     message: 'The following parameters must be a valid UUID: %',
+    httpCode: HttpStatus.BAD_REQUEST,
+  },
+  [ERROR_CODE.PARAM_INVALID_SIZE]: {
+    message: 'The following parameters do not match required size: %',
     httpCode: HttpStatus.BAD_REQUEST,
   },
   [ERROR_CODE.PARAM_TOO_LONG]: {
@@ -281,6 +287,10 @@ export const ErrorData = Object.freeze({
   },
   [ERROR_CODE.NO_SUCH_ASSO]: {
     message: 'The asso % does no exist',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
+  [ERROR_CODE.NO_SUCH_UEOF]: {
+    message: 'UEOF % does no exist',
     httpCode: HttpStatus.NOT_FOUND,
   },
   [ERROR_CODE.ANNAL_ALREADY_UPLOADED]: {

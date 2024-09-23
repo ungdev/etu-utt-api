@@ -22,7 +22,7 @@ const EditAnnal = e2eSuite('PATCH /ue/annals/{annalId}', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
+  const ue = createUe(app, { branchOptions: [branchOption] }, { openSemesters: [semester] });
   createUeSubscription(app, { user: senderUser, ue, semester });
   const annal_validated = createAnnal(app, { semester, sender: senderUser, type: annalType, ue });
   const annal_not_uploaded = createAnnal(
@@ -106,9 +106,6 @@ const EditAnnal = e2eSuite('PATCH /ue/annals/{annalId}', (app) => {
         id: annal_validated.id,
         createdAt: annal_validated.createdAt.toISOString(),
         updatedAt: JsonLike.ANY_DATE,
-        ue: {
-          code: ue.code,
-        },
       });
   });
 });

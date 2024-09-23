@@ -25,7 +25,7 @@ const GetAnnal = e2eSuite('GET /ue/annals', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
+  const ue = createUe(app, { branchOptions: [branchOption] }, { openSemesters: [semester] });
   createUeSubscription(app, { user: senderUser, ue, semester });
   const annal_not_validated = createAnnal(
     app,
@@ -105,7 +105,7 @@ const GetAnnal = e2eSuite('GET /ue/annals', (app) => {
 
   const formatAnnalFile = (from: Partial<UeAnnalFile>): JsonLikeVariant<UeAnnalFile> => {
     return {
-      ...pick(from, 'id', 'semesterId', 'status', 'sender', 'type', 'ue'),
+      ...pick(from, 'id', 'semesterId', 'status', 'sender', 'type', 'ueof'),
       createdAt: from.createdAt?.toISOString(),
       updatedAt: from.updatedAt?.toISOString(),
     };

@@ -20,6 +20,8 @@ declare global {
      *               The length of the array should be fixed, not dependent on the value to map.
      */
     mappedSort(mapper: (e: T) => any[] | any): this;
+    /** Retrieves all unique values of this array, skipping all duplicates. Does not alter original array */
+    readonly uniqueValues: this;
   }
 }
 
@@ -40,5 +42,11 @@ Array.prototype.mappedSort = function <T>(this: Array<T>, mapper: (e: T) => any[
     return 0;
   });
 };
+
+Object.defineProperty(Array.prototype, 'uniqueValues', {
+  get: function <T>(this: Array<T>) {
+    return this.filter((value, index) => this.indexOf(value) === index);
+  },
+});
 
 export {};
