@@ -7,13 +7,14 @@ import { UUIDParam } from '../app.pipe';
 import { AppException, ERROR_CODE } from '../exceptions';
 import { UeRateReqDto } from './dto/req/ue-rate-req.dto';
 import { Ue } from './interfaces/ue.interface';
-import { Language } from '@prisma/client';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiAppErrorResponse, paginatedResponseDto } from '../app.dto';
 import { UeDetailResDto } from './dto/res/ue-detail-res.dto';
 import UeOverviewResDto from './dto/res/ue-overview-res.dto';
 import UeRateCriterionResDto from './dto/res/ue-rate-criterion-res.dto';
 import UeRateResDto from './dto/res/ue-rate-res.dto';
+import { Language, UserType } from '@prisma/client';
+import { Translation } from '../prisma/types';
 
 @Controller('ue')
 @ApiTags('UE')
@@ -42,9 +43,9 @@ export class UeController {
   @ApiOperation({ description: 'Search for a specific UE by its code.' })
   @ApiOkResponse({ type: UeDetailResDto })
   @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_UE, 'There is no UE with the provided code.')
-  async getUe(@Param('ueCode') ueCode: string): Promise<UeDetailResDto> {
+  async getUe(@Param('ueCode') ueCode: string, @GetUser() user: User): Promise<UeDetail> {
     if (!(await this.ueService.doesUeExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
-    return this.formatDetailedUe(await this.ueService.getUe(ueCode.toUpperCase())); // TODO: remove starVotes in not student
+    return this.formatDetailedUe(await this.ueService.getUe(ueCode.toUpperCase()), user);
   }
 
   @Get('/rate/criteria')
@@ -156,7 +157,8 @@ export class UeController {
     };
   }
 
-  private formatDetailedUe(ue: Ue): UeDetailResDto {
+  private formatDetailedUe(ue: Ue, user?: User): UeDetailResDto {
+    const includeStarVotes = user?.userType === UserType.STUDENT || user?.userType === UserType.FORMER_STUDENT;
     return {
       code: ue.code,
       inscriptionCode: ue.inscriptionCode,
@@ -198,7 +200,7 @@ export class UeController {
         project: ue.workTime.project,
         internship: ue.workTime.internship,
       },
-      starVotes: ue.starVotes,
+      starVotes: includeStarVotes ? ue.starVotes : null,
     };
   }
 }

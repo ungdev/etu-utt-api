@@ -1,11 +1,10 @@
 version: '3.7'
 
 services:
-
   application:
-    container_name: etuutt-api
+    container_name: etu-utt-api
     ports:
-      - "3000:3000"
+      - '3000:3000'
     depends_on:
       - database
 
