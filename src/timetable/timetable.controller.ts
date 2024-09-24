@@ -3,10 +3,10 @@ import TimetableService from './timetable.service';
 import { GetUser } from '../auth/decorator';
 import { User } from '../users/interfaces/user.interface';
 import { PositiveNumberValidationPipe, regex, RegexPipe } from '../app.pipe';
-import TimetableCreateEntryDto from './dto/timetable-create-entry.dto';
-import TimetableUpdateEntryDto from './dto/timetable-update-entry.dto';
+import TimetableCreateEntryReqDto from './dto/req/timetable-create-entry-req.dto';
+import TimetableUpdateEntryReqDto from './dto/req/timetable-update-entry-req.dto';
 import { DetailedTimetableEntry, ResponseDetailedTimetableEntry } from './interfaces/timetable.interface';
-import TimetableDeleteOccurrencesDto from './dto/timetable-delete-occurrences.dto';
+import TimetableDeleteOccurrencesReqDto from './dto/req/timetable-delete-occurrences-req.dto';
 import { AppException, ERROR_CODE } from '../exceptions';
 
 @Controller('/timetable')
@@ -76,7 +76,7 @@ export class TimetableController {
   }
 
   @Post('/current')
-  async createEntry(@GetUser('id') userId: string, @Body() body: TimetableCreateEntryDto) {
+  async createEntry(@GetUser('id') userId: string, @Body() body: TimetableCreateEntryReqDto) {
     for (const groupId of body.groups) {
       if (!(await this.timetableService.groupExists(groupId, userId))) {
         throw new AppException(ERROR_CODE.NO_SUCH_TIMETABLE_GROUP, groupId);
@@ -104,7 +104,7 @@ export class TimetableController {
       new ParseUUIDPipe({ exceptionFactory: () => new AppException(ERROR_CODE.PARAM_NOT_UUID, 'entryId') }),
     )
     entryId: string,
-    @Body() body: TimetableUpdateEntryDto,
+    @Body() body: TimetableUpdateEntryReqDto,
   ) {
     if (!(await this.timetableService.entryExists(entryId, user.id))) {
       throw new AppException(ERROR_CODE.NO_SUCH_TIMETABLE_ENTRY, entryId);
@@ -132,7 +132,7 @@ export class TimetableController {
       new ParseUUIDPipe({ exceptionFactory: () => new AppException(ERROR_CODE.PARAM_NOT_UUID, 'entryId') }),
     )
     entryId: string,
-    @Body() body: TimetableDeleteOccurrencesDto,
+    @Body() body: TimetableDeleteOccurrencesReqDto,
   ) {
     if (!(await this.timetableService.entryExists(entryId, user.id))) {
       throw new AppException(ERROR_CODE.NO_SUCH_TIMETABLE_ENTRY, entryId);

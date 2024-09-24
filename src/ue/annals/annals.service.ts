@@ -5,8 +5,8 @@ import sharp from 'sharp';
 import PDFDocument from 'pdfkit';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MulterWithMime } from '../../upload.interceptor';
-import { CreateAnnal } from './dto/create-annal.dto';
-import { UpdateAnnalDto } from './dto/update-annal.dto';
+import { CreateAnnalReqDto } from './dto/req/create-annal-req.dto';
+import { UpdateAnnalReqDto } from './dto/req/update-annal-req.dto';
 import { ConfigModule } from '../../config/config.module';
 import { User } from '../../users/interfaces/user.interface';
 
@@ -47,7 +47,7 @@ export class AnnalsService {
     );
   }
 
-  async createAnnalFile(user: User, params: CreateAnnal) {
+  async createAnnalFile(user: User, params: CreateAnnalReqDto) {
     // Create upload/file entry
     return this.prisma.ueAnnal.create({
       data: {
@@ -128,7 +128,7 @@ export class AnnalsService {
           size,
           compress: true,
           info: {
-            Title: `${fileEntry.type.name} ${fileEntry.ue.code} - ${fileEntry.semesterId}`,
+            Title: `${fileEntry.type.name} ${fileEntry.ueCode} - ${fileEntry.semesterId}`,
             Creator: 'EtuUTT',
             Producer: 'EtuUTT',
           },
@@ -300,7 +300,7 @@ export class AnnalsService {
     };
   }
 
-  async isUEAnnalSender(userId: string, annalId: string) {
+  async isUeAnnalSender(userId: string, annalId: string) {
     return (
       (await this.prisma.ueAnnal.count({
         where: {
@@ -311,7 +311,7 @@ export class AnnalsService {
     );
   }
 
-  async updateAnnalMetadata(annalId: string, metadata: UpdateAnnalDto) {
+  async updateAnnalMetadata(annalId: string, metadata: UpdateAnnalReqDto) {
     return this.prisma.ueAnnal.update({
       where: {
         id: annalId,

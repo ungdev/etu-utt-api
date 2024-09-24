@@ -5,7 +5,7 @@ import { HttpStatus } from '@nestjs/common';
 import { uuid } from 'pactum-matchers';
 import { faker } from '@faker-js/faker';
 import { PrismaService } from '../../../src/prisma/prisma.service';
-import TimetableUpdateEntryDto from '../../../src/timetable/dto/timetable-update-entry.dto';
+import TimetableUpdateEntryReqDto from '../../../src/timetable/dto/req/timetable-update-entry-req.dto';
 import { ERROR_CODE } from '../../../src/exceptions';
 
 const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) => {
@@ -29,7 +29,7 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
     },
   );
   const otherEntry = fakedb.createTimetableEntry(app);
-  const dummyPayload = (overrides: Partial<TimetableUpdateEntryDto> = {}): TimetableUpdateEntryDto => ({
+  const dummyPayload = (overrides: Partial<TimetableUpdateEntryReqDto> = {}): TimetableUpdateEntryReqDto => ({
     location: "bet you can't find it",
     updateFrom: 0,
     updateUntil: 0,

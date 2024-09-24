@@ -13,7 +13,7 @@ import { ERROR_CODE } from '../../../../src/exceptions';
 import { CommentStatus } from 'src/ue/comments/interfaces/comment.interface';
 import { PrismaService } from '../../../../src/prisma/prisma.service';
 
-const DeleteComment = e2eSuite('DELETE /ue/comments/{commentId}', (app) => {
+const DeleteComment = e2eSuite('DELETE /ue/comments/:commentId', (app) => {
   const user = createUser(app);
   const user2 = createUser(app, { login: 'user2' });
   const semester = createSemester(app);
@@ -62,13 +62,10 @@ const DeleteComment = e2eSuite('DELETE /ue/comments/{commentId}', (app) => {
           id: comment1.authorId,
           firstName: user.firstName,
           lastName: user.lastName,
-          studentId: user.studentId,
         },
         createdAt: comment1.createdAt.toISOString(),
         updatedAt: comment1.updatedAt.toISOString(),
-        semester: {
-          code: semester.code,
-        },
+        semester: semester.code,
         isAnonymous: comment1.isAnonymous,
         body: comment1.body,
         answers: [],

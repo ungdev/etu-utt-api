@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { User, UserAssoMembership } from './interfaces/user.interface';
-import UsersSearchDto from './dto/users-search.dto';
-import { UserUpdateDto } from './dto/users-update.dto';
-import { omit } from '../utils';
+import UsersSearchReqDto from './dto/req/users-search-req.dto';
+import { UserUpdateReqDto } from './dto/req/users-update-req.dto';
+import { omit, translationSelect } from '../utils';
 import { ConfigModule } from '../config/config.module';
 import { Prisma } from '@prisma/client';
 
@@ -11,7 +11,7 @@ import { Prisma } from '@prisma/client';
 export default class UsersService {
   constructor(private prisma: PrismaService, readonly config: ConfigModule) {}
 
-  async searchUsers(dto: UsersSearchDto) {
+  async searchUsers(dto: UsersSearchReqDto) {
     const where = {
       firstName: dto.firstName ? { contains: dto.firstName } : undefined,
       lastName: dto.lastName ? { contains: dto.lastName } : undefined,
@@ -115,7 +115,7 @@ export default class UsersService {
             select: {
               name: true,
               logo: true,
-              descriptionShortTranslationId: true,
+              descriptionShortTranslation: translationSelect,
               mail: true,
             },
           },
@@ -125,7 +125,7 @@ export default class UsersService {
     return membership;
   }
 
-  async updateUserProfil(userId: string, dto: UserUpdateDto): Promise<User> {
+  async updateUserProfil(userId: string, dto: UserUpdateReqDto): Promise<User> {
     return this.prisma.user.update({
       where: { id: userId },
       data: {

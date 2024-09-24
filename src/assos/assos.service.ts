@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigModule } from '../config/config.module';
 import { PrismaService } from '../prisma/prisma.service';
-import { AssosSearchDto } from './dto/assos-search.dto';
+import AssosSearchReqDto from './dto/req/assos-search-req.dto';
 import { Asso } from './interfaces/asso.interface';
 
 @Injectable()
@@ -14,7 +14,7 @@ export class AssosService {
    * @param query the query parameters of this route
    * @returns a page of {@link assosFormatted} matching the user query
    */
-  async searchAssos(query: AssosSearchDto): Promise<Pagination<Asso>> {
+  async searchAssos(query: AssosSearchReqDto): Promise<Pagination<Asso>> {
     const where = {
       ...(query.q
         ? {

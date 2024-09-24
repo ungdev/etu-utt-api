@@ -69,7 +69,7 @@ const DeleteUpvote = e2eSuite('DELETE /ue/comments/{commentId}/upvote', (app) =>
       .spec()
       .withBearerToken(user2.token)
       .delete(`/ue/comments/${comment1.id}/upvote`)
-      .expectAppError(ERROR_CODE.FORBIDDEN_ALREADY_UNUPVOTED);
+      .expectAppError(ERROR_CODE.FORBIDDEN_NOT_UPVOTED);
     return createCommentUpvote(app, { user: user2, comment: comment1 }, upvote, true);
   });
 });
