@@ -30,6 +30,9 @@ export class ProfileController {
     @GetUser() user: User,
     @Body() dto: HomepageWidgetsUpdateReqDto,
   ): Promise<HomepageWidgetResDto[]> {
+    if (!Array.isArray(dto)) {
+      throw new AppException(ERROR_CODE.HIDDEN_DUCK, 'param is not an array');
+    }
     for (let i = 0; i < dto.length; i++) {
       for (let j = 0; j < dto.length; j++) {
         if (

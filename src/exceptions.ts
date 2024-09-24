@@ -67,6 +67,7 @@ export const enum ERROR_CODE {
   NO_SUCH_ASSO = 4410,
   ANNAL_ALREADY_UPLOADED = 4901,
   CREDENTIALS_ALREADY_TAKEN = 5001,
+  HIDDEN_DUCK = 9999,
 }
 
 /**
@@ -290,6 +291,10 @@ export const ErrorData = Object.freeze({
   [ERROR_CODE.CREDENTIALS_ALREADY_TAKEN]: {
     message: 'The given credentials are already taken',
     httpCode: HttpStatus.CONFLICT,
+  },
+  [ERROR_CODE.HIDDEN_DUCK]: {
+    message: 'Hey, you found the hidden duck ! Error : %',
+    httpCode: HttpStatus.I_AM_A_TEAPOT,
   },
 } as const) satisfies Readonly<{
   [error in ERROR_CODE]: {
