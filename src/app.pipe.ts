@@ -67,7 +67,7 @@ export class AppValidationPipe extends ValidationPipe {
     if (argumentMetadata.metatype && argumentMetadata.metatype.prototype instanceof ArrayDto) {
       const res = await super.transform(new argumentMetadata.metatype(value), argumentMetadata);
       // Now, res contains an ArrayDto with the right types inside.
-      // We want to convert it what the interface tells it is.
+      // We want to convert it to what the interface tells it is.
       // First, we can take the items, we now have the most part of the type.
       const toArray = res.items;
       // We only need the items field, so we add it.

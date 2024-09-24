@@ -29,7 +29,6 @@ async function bootstrap() {
   sortSchemasAlphabetically(document); // Not possible using only configurations.
   SwaggerModule.setup(`${process.env.API_PREFIX}docs`, app, document, {
     jsonDocumentUrl: 'docs/json',
-    yamlDocumentUrl: 'docs/yaml',
     swaggerOptions: {
       tagsSorter: 'alpha',
       operationsSorter: 'alpha',
