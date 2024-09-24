@@ -14,7 +14,6 @@ import UeOverviewResDto from './dto/res/ue-overview-res.dto';
 import UeRateCriterionResDto from './dto/res/ue-rate-criterion-res.dto';
 import UeRateResDto from './dto/res/ue-rate-res.dto';
 import { Language, UserType } from '@prisma/client';
-import { Translation } from '../prisma/types';
 
 @Controller('ue')
 @ApiTags('UE')
@@ -43,7 +42,7 @@ export class UeController {
   @ApiOperation({ description: 'Search for a specific UE by its code.' })
   @ApiOkResponse({ type: UeDetailResDto })
   @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_UE, 'There is no UE with the provided code.')
-  async getUe(@Param('ueCode') ueCode: string, @GetUser() user: User): Promise<UeDetail> {
+  async getUe(@Param('ueCode') ueCode: string, @GetUser() user: User): Promise<UeDetailResDto> {
     if (!(await this.ueService.doesUeExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     return this.formatDetailedUe(await this.ueService.getUe(ueCode.toUpperCase()), user);
   }

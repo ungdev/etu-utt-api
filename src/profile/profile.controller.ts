@@ -5,7 +5,7 @@ import { AppException, ERROR_CODE } from '../exceptions';
 import { ProfileService } from './profile.service';
 import { HomepageWidgetsUpdateReqDto } from './dto/req/homepage-widgets-update-req.dto';
 import { RawHomepageWidget } from '../prisma/types';
-import {ApiBody, ApiOkResponse, ApiOperation, ApiTags} from '@nestjs/swagger';
+import { ApiBody, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import HomepageWidgetResDto from './dto/res/homepage-widget-res.dto';
 import { ApiAppErrorResponse } from '../app.dto';
 
