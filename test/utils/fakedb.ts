@@ -75,6 +75,7 @@ export type FakeAsso = Partial<
     descriptionShortTranslation: Partial<Translation>;
     descriptionTranslation: Partial<Translation>;
     president: Partial<RawUser>;
+    presidentRole: Partial<RawAssoMembershipRole>;
   }
 >;
 export type FakeSemester = Partial<RawSemester>;
@@ -484,7 +485,7 @@ export const createAsso = entityFaker(
           },
         },
       });
-    return { ...asso, president: null };
+    return { ...asso, president: null, presidentRole: null };
   },
 );
 

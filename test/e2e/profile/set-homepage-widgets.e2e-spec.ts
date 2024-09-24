@@ -1,7 +1,7 @@
 import { e2eSuite } from '../../utils/test_utils';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
-import { HomepageWidgetsUpdateElement } from '../../../src/profile/dto/homepage-widgets-update.dto';
+import { HomepageWidgetsUpdateElement } from '../../../src/profile/dto/req/homepage-widgets-update-req.dto';
 import * as fakedb from '../../utils/fakedb';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 
@@ -28,6 +28,14 @@ const SetHomepageWidgetsE2ESpec = e2eSuite('PUT /profile/homepage', (app) => {
 
   it('should fail as user is not connected', () =>
     pactum.spec().put('/profile/homepage').withJson(body).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
+
+  it('should fail as body is not valid', () =>
+    pactum
+      .spec()
+      .put('/profile/homepage')
+      .withBearerToken(user.token)
+      .withJson({ widget: 'a_widget', height: 1, width: 1, x: 0, y: 0 })
+      .expectAppError(ERROR_CODE.PARAM_MALFORMED, 'items'));
 
   it('should fail for each value of the body as they are not allowed (too small, wrong type, ...)', async () => {
     await pactum

@@ -3,20 +3,36 @@ import { GetUser } from '../auth/decorator';
 import { User } from '../users/interfaces/user.interface';
 import { AppException, ERROR_CODE } from '../exceptions';
 import { ProfileService } from './profile.service';
-import { HomepageWidgetsUpdateDto } from './dto/homepage-widgets-update.dto';
+import { HomepageWidgetsUpdateReqDto } from './dto/req/homepage-widgets-update-req.dto';
 import { RawHomepageWidget } from '../prisma/types';
+import { ApiBody, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import HomepageWidgetResDto from './dto/res/homepage-widget-res.dto';
+import { ApiAppErrorResponse } from '../app.dto';
 
 @Controller('profile')
+@ApiTags('Profile')
 export class ProfileController {
   constructor(private profileService: ProfileService) {}
 
   @Get('/homepage')
-  async getHomepageWidgets(@GetUser() user: User) {
+  @ApiOperation({ description: 'Get the homepage disposition of logged in user.' })
+  @ApiOkResponse({ type: HomepageWidgetResDto, isArray: true })
+  async getHomepageWidgets(@GetUser() user: User): Promise<HomepageWidgetResDto[]> {
     return this.formatHomepageWidgets(await this.profileService.getHomepageWidgets(user.id));
   }
 
   @Put('/homepage')
-  async setHomepageWidget(@GetUser() user: User, @Body() dto: HomepageWidgetsUpdateDto) {
+  @ApiOperation({ description: 'Get the homepage disposition of logged in user.' })
+  @ApiBody({ type: HomepageWidgetsUpdateReqDto })
+  @ApiOkResponse({ type: HomepageWidgetResDto, isArray: true })
+  @ApiAppErrorResponse(ERROR_CODE.WIDGET_OVERLAPPING, 'Some widgets are overlapping.')
+  async setHomepageWidget(
+    @GetUser() user: User,
+    @Body() dto: HomepageWidgetsUpdateReqDto,
+  ): Promise<HomepageWidgetResDto[]> {
+    if (!Array.isArray(dto)) {
+      throw new AppException(ERROR_CODE.HIDDEN_DUCK, 'param is not an array');
+    }
     for (let i = 0; i < dto.length; i++) {
       for (let j = 0; j < dto.length; j++) {
         if (
@@ -33,7 +49,7 @@ export class ProfileController {
     return this.formatHomepageWidgets(await this.profileService.setHomepageWidgets(user.id, dto));
   }
 
-  private formatHomepageWidgets(widgets: RawHomepageWidget[]) {
+  private formatHomepageWidgets(widgets: RawHomepageWidget[]): HomepageWidgetResDto[] {
     return widgets.map((widget) => ({
       x: widget.x,
       y: widget.y,

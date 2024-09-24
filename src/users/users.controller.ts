@@ -1,30 +1,49 @@
-import { Controller, Get, Body, BadRequestException, Param, Patch, Query } from '@nestjs/common';
-import UsersSearchDto from './dto/users-search.dto';
-import { UserUpdateDto } from './dto/users-update.dto';
+import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
+import UsersSearchReqDto from './dto/req/users-search-req.dto';
+import { UserUpdateReqDto } from './dto/req/users-update-req.dto';
 import { GetUser } from '../auth/decorator';
 import { User } from './interfaces/user.interface';
 import UsersService from './users.service';
 import { AppException, ERROR_CODE } from '../exceptions';
 import { pick } from '../utils';
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import UserOverviewResDto from './dto/res/user-overview-res.dto';
+import { ApiAppErrorResponse, paginatedResponseDto } from '../app.dto';
+import UserDetailResDto from './dto/res/user-detail-res.dto';
+import UserBirthdayResDto from './dto/res/user-birthday-res.dto';
+import UserAssoMembershipResDto from './dto/res/user-asso-membership-res.dto';
 
 @Controller('users')
+@ApiTags('User')
 export default class UsersController {
   constructor(private usersService: UsersService) {}
 
   @Get()
-  async searchUser(@Query() queryParams: UsersSearchDto) {
+  @ApiOperation({
+    description: 'Searches for user, eventually with advanced search fields. The users returned are paginated.',
+  })
+  @ApiOkResponse({ type: paginatedResponseDto(UserOverviewResDto) })
+  async searchUser(@Query() queryParams: UsersSearchReqDto): Promise<Pagination<UserOverviewResDto>> {
     const users = await this.usersService.searchUsers(queryParams);
     const formattedReturn = users.items.map((user) => this.formatUserPreview(user, false));
     return { ...users, items: formattedReturn };
   }
 
   @Get('/current')
-  async getCurrentUser(@GetUser() user: User) {
-    return this.getSingleUser(user, user.id);
+  @ApiOperation({ description: 'Returns the details of the currently logged in user.' })
+  @ApiOkResponse({ type: UserDetailResDto })
+  async getCurrentUser(@GetUser() user: User): Promise<UserDetailResDto> {
+    return this.formatUserDetails(user, true);
   }
 
   @Get('/:userId')
-  async getSingleUser(@GetUser() user: User, @Param('userId') userId: string) {
+  @ApiOperation({
+    description:
+      'Returns the details of the user with the given id. Private details are hidden if currently logged in user does not have the permissions to access them.',
+  })
+  @ApiOkResponse({ type: UserDetailResDto })
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_USER, 'There is no user with the given userId.')
+  async getSingleUser(@GetUser() user: User, @Param('userId') userId: string): Promise<UserDetailResDto> {
     const userToFind = await this.usersService.fetchUser(userId);
     if (!userToFind) {
       throw new AppException(ERROR_CODE.NO_SUCH_USER, userId);
@@ -33,25 +52,48 @@ export default class UsersController {
   }
 
   @Get('/:userId/associations')
-  async getUserAssociations(@Param('userId') userId: string) {
+  @ApiOperation({
+    description:
+      'Get the associations in which the user is, along with his roles, for how long he has been a member, ...',
+  })
+  @ApiOkResponse({ type: UserAssoMembershipResDto, isArray: true })
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_USER, 'There is no user with the given userId.')
+  async getUserAssociations(@Param('userId') userId: string): Promise<UserAssoMembershipResDto[]> {
     const user = await this.usersService.fetchUser(userId);
     if (!user) {
       throw new AppException(ERROR_CODE.NO_SUCH_USER, userId);
     }
     const assos = await this.usersService.fetchUserAssoMemberships(userId);
-    return assos;
+    return assos.map((membership) => ({
+      ...pick(membership, 'role', 'startAt', 'endAt'),
+      asso: {
+        ...pick(membership.asso, 'name', 'logo', 'mail'),
+        shortDescription: membership.asso.descriptionShortTranslation,
+      },
+    }));
   }
 
   @Patch('/current')
-  async updateInfos(@GetUser() user: User, @Body() dto: UserUpdateDto) {
+  @ApiOperation({ description: 'Modifies the user currently connected.' })
+  @ApiOkResponse({ type: UserDetailResDto })
+  @ApiAppErrorResponse(
+    ERROR_CODE.NO_FIELD_PROVIDED,
+    'Occurs when the body is empty, ie when nothing should be updated.',
+  )
+  async updateInfos(@GetUser() user: User, @Body() dto: UserUpdateReqDto): Promise<UserDetailResDto> {
     if (Object.values(dto).every((element) => element === undefined))
-      throw new BadRequestException('You must provide at least one field to update');
+      throw new AppException(ERROR_CODE.NO_FIELD_PROVIDED);
     await this.usersService.updateUserProfil(user.id, dto);
     return this.formatUserDetails(await this.usersService.fetchUser(user.id), true);
   }
 
   @Get('/birthdays/today')
-  async getTodaysBirthdays() {
+  @ApiOperation({
+    description:
+      'Get the birthdays of the current day. Only users who accepted to share their birthday with others will be sent back.',
+  })
+  @ApiOkResponse({ type: UserBirthdayResDto, isArray: true })
+  async getTodaysBirthdays(): Promise<UserBirthdayResDto[]> {
     return (await this.usersService.getBirthdayOfDay(new Date())).map((user) => ({
       id: user.id,
       firstName: user.firstName,
@@ -61,7 +103,7 @@ export default class UsersController {
     }));
   }
 
-  private formatUserPreview(user: User, includeAll: boolean) {
+  private formatUserPreview(user: User, includeAll: boolean): UserOverviewResDto {
     return {
       id: user.id,
       firstName: user.firstName,
@@ -102,7 +144,7 @@ export default class UsersController {
     };
   }
 
-  formatUserDetails(user: User, includeAll: boolean) {
+  formatUserDetails(user: User, includeAll: boolean): UserDetailResDto {
     const branch = user.branchSubscriptions.find(
       (subscription) => subscription.semester.start >= new Date() && subscription.semester.end <= new Date(),
     );

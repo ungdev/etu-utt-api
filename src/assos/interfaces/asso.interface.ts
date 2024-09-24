@@ -21,38 +21,28 @@ const ASSO_SELECT_FILTER = {
 
 type UnformattedAsso = Prisma.AssoGetPayload<typeof ASSO_SELECT_FILTER>;
 export type Asso = UnformattedAsso & {
-  president: { role: { name: string }; user: { firstName: string; lastName: string } };
+  president: { role: { id: string; name: string }; user: { firstName: string; lastName: string } };
 };
 
 export const generateCustomAssoModel = (prisma: PrismaClient) =>
   generateCustomModel(prisma, 'asso', ASSO_SELECT_FILTER, formatAsso);
 
 export async function formatAsso(prisma: PrismaClient, asso: UnformattedAsso): Promise<Asso> {
-  const president = await prisma.assoMembership.findFirst({
-    where: {
-      asso: {
-        id: asso.id,
-      },
-      role: {
-        isPresident: true,
-      },
-    },
-    select: {
-      role: {
-        select: {
-          name: true,
-        },
-      },
-      user: {
-        select: {
-          firstName: true,
-          lastName: true,
-        },
-      },
-    },
+  const presidentRole = await prisma.assoMembershipRole.findFirst({
+    where: { assoId: asso.id, isPresident: true },
+    select: { id: true, name: true },
   });
+  const presidentMembership = presidentRole
+    ? await prisma.assoMembership.findFirst({
+        where: { roleId: presidentRole.id },
+        select: { user: { select: { firstName: true, lastName: true } } },
+      })
+    : null;
   return {
     ...asso,
-    president,
+    president: {
+      role: presidentRole,
+      user: presidentMembership ? presidentMembership.user : null,
+    },
   };
 }
