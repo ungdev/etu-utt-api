@@ -152,6 +152,18 @@ export class TimetableController {
     return this.formatEntryDetails(entry);
   }
 
+  @Post('/import/:uid')
+  async importTimetable(@GetUser() user: User, @Param('uid') uid: string) {
+    // TODO input validation
+    const raw_timetable = await this.timetableService.downloadTimetable(uid)
+    const events = this.timetableService.parseTimetable(raw_timetable);
+    for(const event of events) {
+      console.log(event);
+      this.timetableService.upsertIcalEntry(event);
+    }
+    return;
+  }
+
   /**
    * Formats a {@link DetailedTimetableEntry} into a {@link ResponseDetailedTimetableEntry}.
    * @param entry The entry to format.

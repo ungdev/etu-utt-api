@@ -5,11 +5,15 @@ import {
   TimetableEntryGroupForUser,
   TimetableEntryOccurrence,
 } from './interfaces/timetable.interface';
+import { IcalEvent } from './interfaces/ical.interface';
 import { RawTimetableEntry, RawTimetableEntryOverride, RawTimetableGroup } from '../prisma/types';
 import { omit } from '../utils';
 import TimetableCreateEntryDto from './dto/timetable-create-entry.dto';
 import TimetableUpdateEntryDto from './dto/timetable-update-entry.dto';
 import TimetableDeleteOccurrencesDto from './dto/timetable-delete-occurrences.dto';
+import { AppException, ERROR_CODE } from 'src/exceptions';
+import { HttpService } from '@nestjs/axios';
+import { lastValueFrom } from 'rxjs';
 
 /**
  * The inclusions to use when fetching a {@link DetailedTimetableEntry}.
@@ -30,7 +34,7 @@ const detailedEntryInclusions = (userId: string) => ({
  */
 @Injectable()
 export default class TimetableService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private http: HttpService) {}
 
   /**
    * Returns the {@link TimetableEntryOccurrence}s for the user for the next 24 hours.
@@ -549,5 +553,132 @@ export default class TimetableService {
       },
     });
     return this.getEntryDetails(entryId, userId);
+  }
+
+  async downloadTimetable(uid: string): Promise<string> {
+    const provider = `https://monedt.utt.fr/calendrier/${uid}.ics`;
+    return (await lastValueFrom(this.http.get(provider))).data;
+  }
+
+  parseTimetable(raw_timetable: string): IcalEvent[] {
+    const event_separator = /(BEGIN:VEVENT\r?\n(?:.|\r?\n)*?END:VEVENT\r?\n)/gm;
+
+    // Slice it into events
+    const raw_events = raw_timetable.match(event_separator);
+
+    if (raw_events === null) {
+      throw new AppException(ERROR_CODE.PARAM_MALFORMED, 'Unable to parse timetable');
+    }
+
+    // TS hashmap
+    const event_map: { [key: string]: IcalEvent } = {};
+
+    for (const data of raw_events.values()) {
+      const event = this.parseIcalEvent(data);
+
+      if (event_map[event.shared_id] == null) {
+        event_map[event.shared_id] = event;
+      } else {
+        event_map[event.shared_id].count += 1;
+        if (event_map[event.shared_id].startDate > event.startDate) {
+          event_map[event.shared_id].startDate = event.startDate;
+        }
+      }
+    }
+
+    const events: IcalEvent[] = [];
+
+    for (const unique_event of Object.keys(event_map)) {
+      events.push(event_map[unique_event]);
+    }
+    return events;
+
+    
+  }
+
+  
+  async upsertIcalEntry(entry: IcalEvent): Promise<RawTimetableEntry> {
+    // Unable to use upsert from prisma because I don't have any unique key to compare
+
+    const dbEntry: RawTimetableEntry =  await this.prisma.timetableEntry.findFirst({
+      where: {
+        location: entry.location,
+        occurrenceDuration: entry.duration,
+        eventStart: entry.startDate,
+      },
+    });
+
+    if (dbEntry != null) {
+      return dbEntry;
+    }
+
+    const SECONDS_IN_WEEK = 60 * 60 * 24 * 7;
+
+    return await this.prisma.timetableEntry.create({
+      data: {
+        eventStart: entry.startDate,
+        location: entry.location,
+        occurrenceDuration: entry.duration,
+        type: 'COURSE',
+        createdAt: new Date(),
+        occurrencesCount: entry.count,
+        repeatEvery: SECONDS_IN_WEEK,
+      },
+    });
+  }
+
+  private parseIcalDateTime(icalDateTime: string): Date {
+    const year = parseInt(icalDateTime.slice(0, 4));
+    const month = parseInt(icalDateTime.slice(4, 6)) - 1;
+    const day = parseInt(icalDateTime.slice(6, 8));
+    const hour = parseInt(icalDateTime.slice(9, 11));
+    const minute = parseInt(icalDateTime.slice(11, 13));
+    // Hope the server have the correct timezone
+    const offset = new Date().getTimezoneOffset();
+    return new Date(Date.UTC(year, month, day, hour, minute) + offset * 60 * 1000);
+  }
+
+  private parseIcalField(raw_event: string, fieldName: string): string {
+    return raw_event
+      .match(new RegExp(`${fieldName.toUpperCase()}:.*`))[0]
+      .replace(`${fieldName.toUpperCase()}:`, '')
+      .trim();
+  }
+
+  private parseIcalEvent(raw_event: string): IcalEvent {
+    let courseType: 'CM' | 'TD' | 'TP';
+    switch (this.parseIcalField(raw_event, 'description').split(' - ')[0]) {
+      case 'CM':
+        courseType = 'CM';
+        break;
+      case 'TD':
+        courseType = 'TD';
+        break;
+      case 'TP':
+        courseType = 'TD';
+        break;
+      default:
+        throw new AppException(ERROR_CODE.PARAM_MALFORMED, 'iCal contains unrecognised value');
+    }
+    const name = this.parseIcalField(raw_event, 'summary').split(' - ')[0];
+    const date = this.parseIcalDateTime(this.parseIcalField(raw_event, 'dtstart'));
+    const end_date = this.parseIcalDateTime(this.parseIcalField(raw_event, 'dtend'));
+    const diff = (end_date.valueOf() - date.valueOf()) / 1000;
+    const event: IcalEvent = {
+      shared_id: `${name}-${date.getDay()}/${date.getHours()}/${date.getMinutes()}`,
+      count: 1,
+      location: this.parseIcalField(raw_event, 'location'),
+      name: name,
+      courseType: courseType,
+      weekDate: {
+        day: date.getDay(),
+        hour: date.getHours(),
+        minutes: date.getMinutes(),
+      },
+      startDate: date,
+      duration: diff,
+    };
+
+    return event;
   }
 }
