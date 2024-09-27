@@ -3,11 +3,10 @@
  * This event should represent an unique course entry repeated every week
  */
 export interface IcalEvent {
-  
   /**
    * An id shared by all event occurences.
    */
-  shared_id: string
+  shared_id: string;
 
   /**
    * Where the course takes place
@@ -58,7 +57,7 @@ export interface IcalEvent {
   startDate: Date;
 
   /**
-   * The course duration in seconds
+   * The course duration in miliseconds
    */
   duration: number;
 }

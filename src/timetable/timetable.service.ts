@@ -14,6 +14,7 @@ import TimetableDeleteOccurrencesDto from './dto/timetable-delete-occurrences.dt
 import { AppException, ERROR_CODE } from 'src/exceptions';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
+import TimetableImportDto from './dto/timetable-import-dto';
 
 /**
  * The inclusions to use when fetching a {@link DetailedTimetableEntry}.
@@ -555,9 +556,8 @@ export default class TimetableService {
     return this.getEntryDetails(entryId, userId);
   }
 
-  async downloadTimetable(uid: string): Promise<string> {
-    const provider = `https://monedt.utt.fr/calendrier/${uid}.ics`;
-    return (await lastValueFrom(this.http.get(provider))).data;
+  async downloadTimetable({ uid, service }: TimetableImportDto): Promise<string> {
+    return (await lastValueFrom(this.http.get(`${service}${uid}.ics`))).data;
   }
 
   parseTimetable(raw_timetable: string): IcalEvent[] {
@@ -567,7 +567,7 @@ export default class TimetableService {
     const raw_events = raw_timetable.match(event_separator);
 
     if (raw_events === null) {
-      throw new AppException(ERROR_CODE.PARAM_MALFORMED, 'Unable to parse timetable');
+      throw new AppException(ERROR_CODE.PARAM_MALFORMED, 'uid');
     }
 
     // TS hashmap
@@ -592,39 +592,6 @@ export default class TimetableService {
       events.push(event_map[unique_event]);
     }
     return events;
-
-    
-  }
-
-  
-  async upsertIcalEntry(entry: IcalEvent): Promise<RawTimetableEntry> {
-    // Unable to use upsert from prisma because I don't have any unique key to compare
-
-    const dbEntry: RawTimetableEntry =  await this.prisma.timetableEntry.findFirst({
-      where: {
-        location: entry.location,
-        occurrenceDuration: entry.duration,
-        eventStart: entry.startDate,
-      },
-    });
-
-    if (dbEntry != null) {
-      return dbEntry;
-    }
-
-    const SECONDS_IN_WEEK = 60 * 60 * 24 * 7;
-
-    return await this.prisma.timetableEntry.create({
-      data: {
-        eventStart: entry.startDate,
-        location: entry.location,
-        occurrenceDuration: entry.duration,
-        type: 'COURSE',
-        createdAt: new Date(),
-        occurrencesCount: entry.count,
-        repeatEvery: SECONDS_IN_WEEK,
-      },
-    });
   }
 
   private parseIcalDateTime(icalDateTime: string): Date {
@@ -658,12 +625,12 @@ export default class TimetableService {
         courseType = 'TD';
         break;
       default:
-        throw new AppException(ERROR_CODE.PARAM_MALFORMED, 'iCal contains unrecognised value');
+        throw new AppException(ERROR_CODE.FILE_INVALID_TYPE, 'ical');
     }
     const name = this.parseIcalField(raw_event, 'summary').split(' - ')[0];
     const date = this.parseIcalDateTime(this.parseIcalField(raw_event, 'dtstart'));
     const end_date = this.parseIcalDateTime(this.parseIcalField(raw_event, 'dtend'));
-    const diff = (end_date.valueOf() - date.valueOf()) / 1000;
+    const diff = end_date.valueOf() - date.valueOf();
     const event: IcalEvent = {
       shared_id: `${name}-${date.getDay()}/${date.getHours()}/${date.getMinutes()}`,
       count: 1,

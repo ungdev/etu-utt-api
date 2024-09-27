@@ -157,10 +157,9 @@ model TimetableEntry {
   type               TimetableEntryType
   location           String
   eventId            String?
-  ueCourseId         String?
   createdAt          DateTime           @default(now())
 
-  ueCourse        UeCourse?                @relation(fields: [ueCourseId], references: [id])
+  ueCourse        UeCourse?
   event           Event?                   @relation(fields: [eventId], references: [id])
   overwrittenBy   TimetableEntryOverride[] @relation(name: "overrideTimetableEntry")
   timetableGroups TimetableGroup[]
@@ -375,19 +374,19 @@ model UeCommentUpvote {
 }
 
 model UeCourse {
-  id         String     @id @default(uuid())
-  type       CourseType
-  room       String     @db.VarChar(50)
-  createdAt  DateTime   @default(now())
-  ueId       String
-  semesterId String
+  id          String     @id @default(uuid())
+  type        CourseType
+  createdAt   DateTime   @default(now())
+  ueId        String
+  semesterId  String
+  timetableId String     @unique()
 
   students            User[]
   ue                  Ue                 @relation(fields: [ueId], references: [id])
   semester            Semester           @relation(fields: [semesterId], references: [code])
   courseExchangesFrom UeCourseExchange[] @relation(name: "courseFrom")
   courseExchangesTo   UeCourseExchange[] @relation(name: "courseTo")
-  timetableEntries    TimetableEntry[]
+  timetableEntry      TimetableEntry     @relation(fields: [timetableId], references: [id])
 }
 
 model UeCourseExchange {

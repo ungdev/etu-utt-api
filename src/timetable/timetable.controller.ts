@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseIntPipe,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import TimetableService from './timetable.service';
 import { GetUser } from '../auth/decorator';
 import { User } from '../users/interfaces/user.interface';
@@ -8,10 +20,18 @@ import TimetableUpdateEntryDto from './dto/timetable-update-entry.dto';
 import { DetailedTimetableEntry, ResponseDetailedTimetableEntry } from './interfaces/timetable.interface';
 import TimetableDeleteOccurrencesDto from './dto/timetable-delete-occurrences.dto';
 import { AppException, ERROR_CODE } from '../exceptions';
+import { CourseService } from 'src/ue/course/course.service';
+import { UeService } from 'src/ue/ue.service';
+import { UeCourse } from 'src/ue/course/interfaces/course.interface';
+import TimetableImportDto from './dto/timetable-import-dto';
 
 @Controller('/timetable')
 export class TimetableController {
-  constructor(private timetableService: TimetableService) {}
+  constructor(
+    private timetableService: TimetableService,
+    private courseService: CourseService,
+    private ueService: UeService,
+  ) {}
 
   @Get('/current/daily/:date/:month/:year')
   async getSelfDaily(
@@ -152,14 +172,33 @@ export class TimetableController {
     return this.formatEntryDetails(entry);
   }
 
-  @Post('/import/:uid')
-  async importTimetable(@GetUser() user: User, @Param('uid') uid: string) {
-    // TODO input validation
-    const raw_timetable = await this.timetableService.downloadTimetable(uid)
+  @HttpCode(HttpStatus.CREATED)
+  @Post('/import')
+  async importTimetable(@GetUser() user: User, @Body() body: TimetableImportDto) {
+    const allowed_services = ['https://monedt.utt.fr/calendrier/', 'http://localhost:3042/'];
+    if (!allowed_services.includes(body.service)) {
+      throw new AppException(ERROR_CODE.PARAM_MALFORMED, 'service');
+    }
+
+    const raw_timetable = await this.timetableService.downloadTimetable(body);
     const events = this.timetableService.parseTimetable(raw_timetable);
-    for(const event of events) {
-      console.log(event);
-      this.timetableService.upsertIcalEntry(event);
+    for (const event of events) {
+      const ueCode = event.name.split('_')[1];
+      if (!(await this.ueService.doesUeExist(ueCode))) {
+        throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
+      }
+      const course: UeCourse = {
+        semesterId: event.name.split('_')[0],
+        timetableEntry: event,
+        type: event.courseType,
+        ueCode: event.name.split('_')[1],
+      };
+
+      let courseId = await this.courseService.getUeCourseId(course);
+      if (courseId == null) {
+        courseId = (await this.courseService.createCourse(course)).id;
+      }
+      await this.courseService.addUserToCourse(courseId, user.id);
     }
     return;
   }

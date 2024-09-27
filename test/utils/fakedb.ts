@@ -542,7 +542,7 @@ export const createTimetableEntry = entityFaker(
       .timetableEntry.create({
         data: {
           timetableGroups: { connect: params.groups.map((group) => ({ id: group.id })) },
-          ...omit(params, 'groups', 'eventId', 'ueCourseId'),
+          ...omit(params, 'groups', 'eventId'),
         },
       }),
 );
