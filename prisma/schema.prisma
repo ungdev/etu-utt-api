@@ -7,6 +7,40 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model ApiKey {
+  id             String   @id @default(uuid())
+  name           String
+  token          String
+  tokenUpdatedAt DateTime
+  userId         String
+
+  user                 User                        @relation(fields: [userId], references: [id])
+  permissions      ApiKeyPermission[]
+}
+
+model ApiKeyPermission {
+  id String @id @default(uuid())
+  permission Permission
+  apiKeyId       String
+  soft Boolean
+
+  apiKey ApiKey @relation(fields: [apiKeyId], references: [id])
+  grants ApiKeyGrantedPermission[]
+
+  @@unique([apiKeyId, permission])
+}
+
+model ApiKeyGrantedPermission {
+  apiKeyPermissionId String
+  userId   String
+  createdAt DateTime @default(now())
+
+  apiKeyPermission ApiKeyPermission @relation(fields: [apiKeyPermissionId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@id([apiKeyPermissionId, userId])
+}
+
 model Asso {
   id                            String    @id @default(uuid())
   login                         String    @unique @db.VarChar(50)
@@ -21,12 +55,12 @@ model Asso {
   descriptionShortTranslationId String    @unique
   descriptionTranslationId      String    @unique
 
-  descriptionShortTranslation Translation      @relation(name: "descriptionShortTranslation", fields: [descriptionShortTranslationId], references: [id], onDelete: Cascade)
-  descriptionTranslation      Translation      @relation(name: "descriptionTranslation", fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
+  descriptionShortTranslation Translation          @relation(name: "descriptionShortTranslation", fields: [descriptionShortTranslationId], references: [id], onDelete: Cascade)
+  descriptionTranslation      Translation          @relation(name: "descriptionTranslation", fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
   assoMemberships             AssoMembership[]
   assoMessages                AssoMessage[]
   events                      Event[]
-  assoMembershipRoles AssoMembershipRole[]
+  assoMembershipRoles         AssoMembershipRole[]
 }
 
 model AssoMembership {
@@ -55,10 +89,10 @@ model AssoMembershipRole {
   name        String
   position    Int
   isPresident Boolean
-  assoId String
+  assoId      String
 
   assoMembership AssoMembership[]
-  asso Asso @relation(fields: [assoId], references: [id])
+  asso           Asso             @relation(fields: [assoId], references: [id])
 }
 
 model AssoMessage {
@@ -196,8 +230,6 @@ model Translation {
   assoMessageTitleBody                 AssoMessage?                 @relation("bodyTranslation")
   eventDescription                     Event?                       @relation("descriptionTranslation")
   eventTitle                           Event?                       @relation("titleTranslation")
-  userPermissionName                   UserPermission?              @relation("userPermissionName")
-  userPermissionDescription            UserPermission?              @relation("userPermissionDescription")
   annalReportReasonDescriptions        UeAnnalReportReason?
   commentReportReasonDescriptions      UeCommentReportReason?
   starCriterionDescriptions            UeStarCriterion?
@@ -490,28 +522,6 @@ model UeWorkTime {
   ue Ue @relation(fields: [ueId], references: [id], onDelete: Cascade)
 }
 
-model UserPermission {
-  id                       String  @id
-  nameTranslationId        String  @unique
-  descriptionTranslationId String? @unique
-
-  name        Translation                 @relation(name: "userPermissionName", fields: [nameTranslationId], references: [id], onDelete: Cascade)
-  description Translation?                @relation(name: "userPermissionDescription", fields: [descriptionTranslationId], references: [id], onDelete: SetNull)
-  users       UserPermissionAssignement[]
-}
-
-model UserPermissionAssignement {
-  id               String   @id @default(uuid())
-  userPermissionId String
-  userId           String
-  assignedAt       DateTime @default(now())
-  assignedById     String?
-
-  userPermission UserPermission @relation(fields: [userPermissionId], references: [id], onDelete: Cascade)
-  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  assignedBy     User?          @relation(fields: [assignedById], references: [id], name: "permissions_assigned", onDelete: SetNull)
-}
-
 model User {
   id              String  @id @default(uuid())
   login           String  @unique @db.VarChar(50)
@@ -525,21 +535,21 @@ model User {
   infosId         String  @unique
   mailsPhonesId   String  @unique
   socialNetworkId String  @unique
-  privacyId       String @unique
+  privacyId       String  @unique
 
   userType              UserType
   timestamps            UserTimestamps?
-  socialNetwork         UserSocialNetwork           @relation(fields: [socialNetworkId], references: [id])
+  socialNetwork         UserSocialNetwork        @relation(fields: [socialNetworkId], references: [id])
   bans                  UserBan[]
-  rgpd                  UserRGPD                    @relation(fields: [rgpdId], references: [id])
+  rgpd                  UserRGPD                 @relation(fields: [rgpdId], references: [id])
   bdeContributions      UserBDEContribution[]
   assoMembership        AssoMembership[]
   branchSubscriptions   UserBranchSubscription[]
   formation             UserFormation?
-  preference            UserPreference              @relation(fields: [preferenceId], references: [id])
-  infos                 UserInfos                   @relation(fields: [infosId], references: [id])
+  preference            UserPreference           @relation(fields: [preferenceId], references: [id])
+  infos                 UserInfos                @relation(fields: [infosId], references: [id])
   addresses             UserAddress[]
-  mailsPhones           UserMailsPhones             @relation(fields: [mailsPhonesId], references: [id])
+  mailsPhones           UserMailsPhones          @relation(fields: [mailsPhonesId], references: [id])
   otherAttributes       UserOtherAttributValue[]
   UesSubscriptions      UserUeSubscription[]
   UeStarVotes           UeStarVote[]
@@ -553,16 +563,14 @@ model User {
   repliesReported       UeCommentReplyReport[]
   gitHubIssues          GitHubIssue[]
   etuUTTTeam            UserEtuUTTTeam[]
-  // Permissions assigned to the user
-  permissions           UserPermissionAssignement[]
-  // Permission assigned by the user to other users. Used for access control history
-  permissionsAssigned   UserPermissionAssignement[] @relation(name: "permissions_assigned")
   courseExchanges       UeCourseExchange[]
   courseExchangeReplies UeCourseExchangeReply[]
   commentUpvotes        UeCommentUpvote[]
   timetableGroups       UserTimetableGroup[]
   homepageWidgets       UserHomepageWidget[]
-  privacy               UserPrivacy                 @relation(fields: [privacyId], references: [id])
+  privacy               UserPrivacy              @relation(fields: [privacyId], references: [id])
+  apiKeys               ApiKey[]
+  apiKeyGrantedPermissions ApiKeyGrantedPermission[]
 }
 
 model UserAddress {
@@ -599,12 +607,12 @@ model UserBDEContribution {
 }
 
 model UserBranchSubscription {
-  id               String   @id @default(uuid())
-  userId           String
-  semesterNumber   Int      @db.SmallInt
-  createdAt        DateTime @default(now())
-  branchOptionId   String
-  semesterCode     String
+  id             String   @id @default(uuid())
+  userId         String
+  semesterNumber Int      @db.SmallInt
+  createdAt      DateTime @default(now())
+  branchOptionId String
+  semesterCode   String
 
   user         User            @relation(fields: [userId], references: [id])
   branchOption UTTBranchOption @relation(fields: [branchOptionId], references: [id])
@@ -701,11 +709,11 @@ model UserHomepageWidget {
 }
 
 model UserPreference {
-  id                     String   @id @default(uuid())
-  language               Language @default(fr)
-  wantDaymail            Boolean  @default(false)
-  wantDayNotif           Boolean  @default(false)
-  wantDiscordUtt         Boolean @default(false)
+  id             String   @id @default(uuid())
+  language       Language @default(fr)
+  wantDaymail    Boolean  @default(false)
+  wantDayNotif   Boolean  @default(false)
+  wantDiscordUtt Boolean  @default(false)
 
   user User?
 }
@@ -719,14 +727,14 @@ model UserRGPD {
 }
 
 model UserSocialNetwork {
-  id             String  @id @default(uuid())
-  facebook       String? @db.VarChar(255)
-  twitter        String? @db.VarChar(255)
-  instagram      String? @db.VarChar(255)
-  linkedin       String? @db.VarChar(255)
-  twitch         String? @db.VarChar(255)
-  spotify        String? @db.VarChar(255)
-  discord        String? @db.VarChar(255)
+  id        String  @id @default(uuid())
+  facebook  String? @db.VarChar(255)
+  twitter   String? @db.VarChar(255)
+  instagram String? @db.VarChar(255)
+  linkedin  String? @db.VarChar(255)
+  twitch    String? @db.VarChar(255)
+  spotify   String? @db.VarChar(255)
+  discord   String? @db.VarChar(255)
 
   user User?
 }
@@ -867,4 +875,13 @@ enum AddressPrivacy {
   CITY_PRIVATE
   ADDRESS_PRIVATE
   ALL_PUBLIC
+}
+
+enum Permission {
+  API_SEE_OPINIONS_UE
+  API_UPLOAD_ANNAL
+  API_MODERATE_COMMENTS
+
+  USER_SEE_DETAILS
+  USER_UPDATE_DETAILS
 }
