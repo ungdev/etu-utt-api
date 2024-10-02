@@ -94,8 +94,6 @@ const prisma = _prisma.$extends({
             data: await _prisma.ue.create({
               data: {
                 code: ueCode,
-                creationYear: new Date('2023-01-01').getTime() / 1000,
-                updateYear: new Date('2023-01-01').getTime() / 1000,
                 ueofs: {
                   connectOrCreate: {
                     where: {

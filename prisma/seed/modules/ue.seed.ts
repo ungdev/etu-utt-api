@@ -24,8 +24,6 @@ export default function ueSeed(
       prisma.ue.create({
         data: {
           code,
-          creationYear: faker.datatype.number({ min: 2000, max: 2024 }),
-          updateYear: faker.datatype.number({ min: 2001, max: 2024 }),
           ueofs: {
             create: {
               code: `${code}${OF_SUFFIX}`,

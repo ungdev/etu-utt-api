@@ -30,7 +30,7 @@ C'est dans cet état d'esprit que nous menons la refonte du site étudiant :
   > Ces commentaires sont bien entendu **modérés** et ne sont visibles que par les étudiants (et anciens étudiants). \
   > ⚠️ Il faudra impérativement **avoir fait l'UE** pour pouvoir laisser un commentaire. Si un étudiant crée sont compte EtuUTT après le semestre où il a suivi l'UE<sup>1</sup>, il ne pourra pas s'exprimer sur cette UE.
 - les utilisateurs peuvent désormais réagir à un commentaire d'UE en y répondant. Cela peut permettre de nuancer certains propos spécifiques ou au contraire de les développer par un argument supplémentaire !
-- les étudiants peuvent désormais _upvote_ les commentaires qui leurs semblent les plus pertinents. Ils remontront dans la liste des commentaires.
+- les étudiants peuvent désormais _upvote_ les commentaires qui leurs semblent les plus pertinents. Ils remonteront dans la liste des commentaires.
   > ❓ Les commentaires sont triés en fonction de leur nombre d'upvotes mais aussi de leur ancienneté et de l'UEOF à laquelle ils sont liés
 - Pour que les étudiants donnent plus leur avis sur leurs cours, il est désormais possible de noter avec une note sur 5 les UEs déjà suivies<sup>1</sup> sur des critères prédéfinis par les administrateurs. Il s'agira principalement d'évaluer la qualité des contenus et de l'enseignement.
 - la recherche d'une UE affichera toutes les différentes version de l'UE (dans toutes ses langues d'enseignement et les différents semestres où elle est disponible). Les UEs sont désormais rattachées à aux branches au profil desquelles elles comptent. Cela permettra d'identifier facilement les UEs hors profil.
@@ -42,19 +42,19 @@ Les objectifs de la refonte du guide des UEs étant présentés, nous allons pou
 
 ## Les structures
 
-Pour définir aux mieux les UEs, nous utilisont plusieurs structures de données. Passons-les en revue afin de comprendre l'usage de chacune d'elles :
+Pour définir aux mieux les UEs, nous utilisons plusieurs structures de données. Passons-les en revue afin de comprendre l'usage de chacune d'elles :
 
 - **`Ue`**, il s'agit d'une UE au sens de la refonte du SIEP. C'est à dire qu'elle ne contient elle même que peu d'informations : sa date de création et de dernière modification ainsi que les notes des utilisateurs. Ce sont les `Ueof` liées à cette UE qui contiendront la majorité des détails du guide des UEs.
 - **`UeAlias`**. Certaines UEs n'existent plus. C'est le cas de `MATH03` ou de `EC01` par exemple. Il faut donc gérer les cas où certaines UEs auraient des prérequis qui n'existent plus ! Pour des UEs qui ont changé de nom comme `MT03` il suffit de mettre en place une "redirection" et pour les UEs qui n'existent plus du tout comme `EC01` il faut également le notifier pour faire disparaître la référence. C'est tout l'intérêt de cette table.
-- **`Ueof`**, c'est la structure qui définit une UEOF. Elle va donc être liée à toutes les informations du guide des UEs la concernant : temps de travail, crédits, branche associée, prérequis, commentaires, annales... Pour un soucis de lisibilité, cette structure n'inclut pas les données telles que la langue d'enseignement, les mineurs, le programme et les objectifs. On utilisera `UeInfo` à la place.
+- **`Ueof`**, c'est la structure qui définit une UEOF. Elle va donc être liée à toutes les informations du guide des UEs la concernant : temps de travail, crédits, branche associée, prérequis, commentaires, annales... Pour un soucis de lisibilité, cette structure n'inclut pas les données telles que la langue d'enseignement, les mineurs, le programme et les objectifs. On utilisera `UeofInfo` à la place.
 - **`UeAnnal`**, il s'agit de la structure qui représente un sujet d'examen. Fait référence à l'utilisateur qui a envoyé le sujet, à l'UEOF, au semestre ainsi qu'au type d'examen (médian, final, etc)
 - **`UeAnnalType`**, c'est le type d'examen d'une annale. Ces valeurs sont rentrées par les administrateurs du site qui seront dans la possibilité d'ajouter de nouveaux types d'examens s'ils se rendent compte que les valeurs précédentes ne sont pas assez précises.
 - **`UeComment`**. Le commentaire d'un étudiant au sujet du cours qu'il a suivi. Ce commentaire est rattaché à l'UEOF correspondante afin d'afficher quelle variante de l'UE a été suivie mais sera affiché pour toutes les UEOFs de l'UE. Le commentaire peut être posté en anonyme mais l'auteur sera tout de même visible pour la modération. Egalement, les commentaires ne sont pas supprimés directement lorsque l'utilisateur choisit de les supprimer. Il y aura un petit délai permettant d'annuler la suppression ou de procéder à des actions de modération si nécessaire.
 - **`UeCommentReply`**, c'est la réponse d'un utilisateur à un commentaire d'une UE.
-- **`UeCommentUpvote`** il s'agit d'un upvote donné par n'importe quel étudiant à un commentaire de n'importe quelle UE s'il la trouvé instructif et/ou pertinent.
+- **`UeCommentUpvote`** il s'agit d'un upvote donné par n'importe quel étudiant à un commentaire de n'importe quelle UE s'il l'a trouvé instructif et/ou pertinent.
 - **`UeCredit`**. C'est le nombre de crédits obtenus par un étudiant qui réalise l'UE. C'est ici qu'apparaît les branches et filières auxquelles cette UE est liée. En effet, il arrive qu'une même UE donne des crédits d'un type différent selon si l'étudiant est en master ou en cycle ingénieur.
 - **`UeCreditCategory`**. Il s'agit des différents types de crédits ECTS: `CS`, `TM`, etc
-- **`UeInfo`**. C'est ici que figurent toutes les informations détaillées des UEOFs : leur programme, les objectifs, la langue d'enseignement, les mineurs, etc. Cela permet de ne pas surcharger la structure des UEOFs.
+- **`UeofInfo`**. C'est ici que figurent toutes les informations détaillées des UEOFs : leur programme, les objectifs, la langue d'enseignement, les mineurs, etc. Cela permet de ne pas surcharger la structure des UEOFs.
 - **`UeStarCriterion`**. Les critères sur lesquels les utilisateurs peuvent évaluer une UE. Ces critères ne sont pas fixes et pourront être modifiés par les administrateurs du site s'ils se rendent compte qu'ils sont mal définis.
 - **`UeStarVote`**, c'est le vote d'un utilisateur pour une UE donnée et un critère donné. Il ne peut y avoir qu'un seul vote par Utilisateur & Ue & Critère.
 - **`UeWorkTime`**. Cette structure rassemble les heures de travail estimé pour effectuer l'UE. Il n'y a plus de nombre d'heures pour la réalisation d'un projet éventuel mais l'indication porte désormais sur le fait qu'il y ait un projet ou non.

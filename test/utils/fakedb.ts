@@ -16,7 +16,7 @@ import {
   RawUeCommentReply,
   RawUeCommentUpvote,
   RawUeCredit,
-  RawUeInfo,
+  RawUeofInfo,
   RawUeStarCriterion,
   RawUeStarVote,
   RawUeWorkTime,
@@ -78,7 +78,7 @@ export type FakeAsso = Partial<
   }
 >;
 export type FakeSemester = Partial<RawSemester>;
-export type FakeUe = Partial<Omit<RawUe, 'nameTranslationId' | 'ueInfoId'>> & {
+export type FakeUe = Partial<Omit<RawUe, 'nameTranslationId' | 'ueofInfoId'>> & {
   ueofCode?: string;
   name?: Partial<Translation>;
   siepId?: number;
@@ -87,7 +87,7 @@ export type FakeUe = Partial<Omit<RawUe, 'nameTranslationId' | 'ueInfoId'>> & {
     branchOptions?: Partial<RawBranchOption & { branch: RawBranch }>[];
   })[];
   info?: Partial<
-    Omit<RawUeInfo, 'objectivesTranslationId' | 'programTranslationId'> & {
+    Omit<RawUeofInfo, 'objectivesTranslationId' | 'programTranslationId'> & {
       objectives: Partial<Translation>;
       program: Partial<Translation>;
       requirements: { code: string }[];
@@ -677,8 +677,6 @@ export const createUe = entityFaker(
   {
     code: faker.db.ue.code,
     siepId: () => faker.datatype.number({ min: 100000, max: 999999 }),
-    creationYear: () => faker.datatype.number({ min: 2000, max: 2024 }),
-    updateYear: () => faker.datatype.number({ min: 2001, max: 2024 }),
     name: () => faker.db.translation(faker.name.jobTitle),
     credits: [
       {
@@ -798,7 +796,7 @@ export const createUe = entityFaker(
       .then((ue) => ({
         ...omit(ue, 'ueofs'),
         ueofCode: ue.ueofs[0].code,
-        ...omit(ue.ueofs[0], 'code', 'ueId', 'ueInfoId', 'openSemester', 'nameTranslationId', 'requirements'),
+        ...omit(ue.ueofs[0], 'code', 'ueId', 'ueofInfoId', 'openSemester', 'nameTranslationId', 'requirements'),
         info: {
           ...omit(ue.ueofs[0].info, 'objectivesTranslationId', 'programTranslationId'),
           requirements: ue.ueofs[0].requirements,

@@ -191,8 +191,6 @@ async function main() {
             where: { code: ue.code },
             create: {
               code: ue.code,
-              creationYear: 2000 + Number(ue.ueof_code.slice(-2)),
-              updateYear: 2000 + Number(ue.ueof_code.slice(-2)),
             },
           },
         },
@@ -320,11 +318,6 @@ async function main() {
             code: ueof.ueof_code,
           },
           data: {
-            ue: {
-              update: {
-                updateYear: 2000 + Number(ueof.ueof_code.slice(-2)),
-              },
-            },
             requirements: {
               connect: ueof.requirements
                 .map((code) => {

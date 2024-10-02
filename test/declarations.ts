@@ -75,8 +75,8 @@ Spec.prototype.expectUe = function (ue: FakeUe, rates: Array<{ criterionId: stri
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonMatchStrict(
     deepDateToString({
       code: ue.code,
-      creationYear: ue.creationYear,
-      updateYear: ue.updateYear,
+      creationYear: 2000 + Number(ue.ueofCode.match(/\d+$/)?.[0] ?? 23),
+      updateYear: 2000 + Number(ue.ueofCode.match(/\d+$/)?.[0] ?? 23),
       ...(rates ? { starVotes: Object.fromEntries(rates.map((rate) => [rate.criterionId, rate.value])) } : {}),
       ofs: [
         {

@@ -8,7 +8,7 @@ import { User } from '../users/interfaces/user.interface';
 import { UUIDParam } from '../app.pipe';
 import { AppException, ERROR_CODE } from '../exceptions';
 import { UeRateDto } from './dto/ue-rate.dto';
-import { Ue } from './interfaces/ue.interface';
+import { Ue, UeStarVoteEntry } from './interfaces/ue.interface';
 import { Language, UserType } from '@prisma/client';
 import { Translation } from '../prisma/types';
 import { omit } from '../utils';
@@ -150,6 +150,7 @@ export class UeController {
       creationYear: ue.creationYear,
       updateYear: ue.updateYear,
       ofs: ue.ueofs.map((ueof) => ({
+        code: ueof.code,
         name: ueof.name,
         credits: ueof.credits.map((c) => ({
           credits: c.credits,
@@ -186,9 +187,54 @@ export class UeController {
           project: ueof.workTime.project,
           internship: ueof.workTime.internship,
         },
+        starVotes: {
+          // Compute ratings for each criterion, using an exponential decay function
+          ...Object.fromEntries(
+            Object.entries(ue.starVotes).map(([criterion, rates]) => [criterion, this.computeRate(rates, ueof.code)]),
+          ),
+          voteCount: Math.max(...Object.values(ue.starVotes).map((rates) => rates.length)),
+        },
       })),
-      starVotes: ue.starVotes,
     };
+  }
+
+  private computeRate(rates: UeStarVoteEntry[], targetUeofCode: string) {
+    function aggregate<T>(
+      entities: T[],
+      mapper: (entity: T) => [key: number, value: number],
+      dtModifier = 1,
+      decay = 10,
+      ponderationMultiplier: (entity: T) => number = () => 1,
+    ) {
+      let coefficients = 0;
+      let ponderation = 0;
+      const latestKey = Math.max(...entities.map((entity) => mapper(entity)[0]));
+      for (const entity of entities) {
+        const [key, value] = mapper(entity);
+        const dt = (latestKey - key) / dtModifier;
+        const dp = Math.exp(-dt / decay) * ponderationMultiplier(entity);
+        ponderation += dp * value;
+        coefficients += dp;
+      }
+      return Math.round((ponderation / coefficients) * 10) / 10;
+    }
+    // Ponderate the rates of each ueof
+    const ueofRates = Object.entries(rates.groupyBy((rate) => rate.ueofCode)).map(
+      ([ueofCode, rates]) =>
+        [
+          ueofCode,
+          Number(ueofCode.slice(0, -2)) || 0,
+          aggregate(rates, (ent) => [ent.createdAt.getTime(), ent.value], 1000, 10e7),
+        ] as const,
+    );
+    // Ponderate the rates depending on the ueof
+    return aggregate(
+      ueofRates,
+      (ent) => [ent[1], ent[2]],
+      1,
+      10,
+      ([ueofCode]) => (ueofCode === targetUeofCode ? 2 : ueofCode.startsWith(targetUeofCode.slice(0, -3)) ? 1 : 0.5),
+    );
   }
 }
 
@@ -229,6 +275,7 @@ export type UeDetail = {
   creationYear: number;
   updateYear: number;
   ofs: {
+    code: string;
     name: Translation;
     credits: Array<{
       credits: number;
@@ -266,5 +313,8 @@ export type UeDetail = {
       internship: number;
     };
   }[];
-  starVotes?: { [criterionId: string]: number };
+  starVotes?: {
+    [criterionId: string]: number;
+    voteCount: number;
+  };
 };

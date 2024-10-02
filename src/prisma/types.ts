@@ -13,7 +13,7 @@ export {
   Ue as RawUe,
   UeCredit as RawUeCredit,
   UeCreditCategory as RawCreditCategory,
-  UeInfo as RawUeInfo,
+  UeofInfo as RawUeofInfo,
   UeWorkTime as RawUeWorkTime,
   UeStarVote as RawUeStarVote,
   UeStarCriterion as RawUeStarCriterion,
