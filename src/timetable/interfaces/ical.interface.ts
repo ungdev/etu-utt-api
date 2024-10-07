@@ -1,10 +1,11 @@
 /**
- * Represents an event parsed from an iCalendar
+ * Represents an course parsed from an iCalendar file
  * This event should represent an unique course entry repeated every week
  */
-export interface IcalEvent {
+export interface CourseEvent {
   /**
    * An id shared by all event occurences.
+   * Tells if an occurence is part of the course
    */
   shared_id: string;
 

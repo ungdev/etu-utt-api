@@ -12,6 +12,7 @@ import TimetableE2ESpec from './timetable';
 import UEE2ESpec from './ue';
 import { AppValidationPipe } from '../../src/app.pipe';
 import * as cas from '../external_services/cas';
+import * as timetableProvider from '../external_services/timetable';
 import { ConfigModule } from '../../src/config/config.module';
 import AssoE2ESpec from './assos';
 
@@ -40,6 +41,7 @@ describe('EtuUTT API e2e testing', () => {
       }v1`,
     );
     cas.enable(app.get(ConfigModule).CAS_URL);
+    timetableProvider.enable('https://monedt.utt.fr/calendrier');
   });
 
   afterAll(() => {

@@ -1,4 +1,4 @@
-import { IcalEvent } from 'src/timetable/interfaces/ical.interface';
+import { CourseEvent } from 'src/timetable/interfaces/ical.interface';
 
 export interface UeCourse {
   /**
@@ -19,7 +19,7 @@ export interface UeCourse {
   type: 'CM' | 'TD' | 'TP';
 
   /**
-   * The course date data
+   * The course timetable entry data
    */
-  timetableEntry: IcalEvent;
+  timetableEntry: CourseEvent;
 }

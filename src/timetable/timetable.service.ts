@@ -5,13 +5,13 @@ import {
   TimetableEntryGroupForUser,
   TimetableEntryOccurrence,
 } from './interfaces/timetable.interface';
-import { IcalEvent } from './interfaces/ical.interface';
+import { CourseEvent } from './interfaces/ical.interface';
 import { RawTimetableEntry, RawTimetableEntryOverride, RawTimetableGroup } from '../prisma/types';
 import { omit } from '../utils';
 import TimetableCreateEntryDto from './dto/timetable-create-entry.dto';
 import TimetableUpdateEntryDto from './dto/timetable-update-entry.dto';
 import TimetableDeleteOccurrencesDto from './dto/timetable-delete-occurrences.dto';
-import { AppException, ERROR_CODE } from 'src/exceptions';
+import { AppException, ERROR_CODE } from '../exceptions';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import TimetableImportDto from './dto/timetable-import-dto';
@@ -557,24 +557,33 @@ export default class TimetableService {
   }
 
   async downloadTimetable({ uid, service }: TimetableImportDto): Promise<string> {
-    return (await lastValueFrom(this.http.get(`${service}${uid}.ics`))).data;
+    const url = `${service}${uid}.ics`;
+    try {
+      const response = await lastValueFrom(this.http.get(url));
+      return response.data;
+    } catch (error) {
+      // Assume the error is due to an incorrect uid
+      // TODO better error handling
+      console.warn(error);
+      
+      throw new AppException(ERROR_CODE.RESSOURCE_UNAVAILABLE, url);
+    }
   }
 
-  parseTimetable(raw_timetable: string): IcalEvent[] {
-    const event_separator = /(BEGIN:VEVENT\r?\n(?:.|\r?\n)*?END:VEVENT\r?\n)/gm;
+  parseTimetable(raw_timetable: string): CourseEvent[] {
+    const event_separator = /(BEGIN:VEVENT\r?\n(?:.|\r?\n)*?END:VEVENT\r?\n?)/gm;
 
-    // Slice it into events
+    // Slice timetable into events
     const raw_events = raw_timetable.match(event_separator);
-
     if (raw_events === null) {
-      throw new AppException(ERROR_CODE.PARAM_MALFORMED, 'uid');
+      throw new AppException(ERROR_CODE.RESSOURCE_INVALID_TYPE, 'ical');
     }
 
-    // TS hashmap
-    const event_map: { [key: string]: IcalEvent } = {};
+    // Keep only unique values
+    const event_map: { [key: string]: CourseEvent } = {};
 
     for (const data of raw_events.values()) {
-      const event = this.parseIcalEvent(data);
+      const event = this.parseCourseFromEvent(data);
 
       if (event_map[event.shared_id] == null) {
         event_map[event.shared_id] = event;
@@ -586,12 +595,7 @@ export default class TimetableService {
       }
     }
 
-    const events: IcalEvent[] = [];
-
-    for (const unique_event of Object.keys(event_map)) {
-      events.push(event_map[unique_event]);
-    }
-    return events;
+    return Object.values(event_map);
   }
 
   private parseIcalDateTime(icalDateTime: string): Date {
@@ -612,7 +616,7 @@ export default class TimetableService {
       .trim();
   }
 
-  private parseIcalEvent(raw_event: string): IcalEvent {
+  private parseCourseFromEvent(raw_event: string): CourseEvent {
     let courseType: 'CM' | 'TD' | 'TP';
     switch (this.parseIcalField(raw_event, 'description').split(' - ')[0]) {
       case 'CM':
@@ -625,13 +629,13 @@ export default class TimetableService {
         courseType = 'TD';
         break;
       default:
-        throw new AppException(ERROR_CODE.FILE_INVALID_TYPE, 'ical');
+        throw new AppException(ERROR_CODE.PARAM_MALFORMED, 'courseType');
     }
     const name = this.parseIcalField(raw_event, 'summary').split(' - ')[0];
     const date = this.parseIcalDateTime(this.parseIcalField(raw_event, 'dtstart'));
     const end_date = this.parseIcalDateTime(this.parseIcalField(raw_event, 'dtend'));
     const diff = end_date.valueOf() - date.valueOf();
-    const event: IcalEvent = {
+    const event: CourseEvent = {
       shared_id: `${name}-${date.getDay()}/${date.getHours()}/${date.getMinutes()}`,
       count: 1,
       location: this.parseIcalField(raw_event, 'location'),

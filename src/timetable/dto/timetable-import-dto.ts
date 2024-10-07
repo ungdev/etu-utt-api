@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsHash, IsNotEmpty, IsString } from 'class-validator';
+import { IsHash, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export default class TimetableImportDto {
   @IsString()
@@ -9,7 +9,10 @@ export default class TimetableImportDto {
   uid: string;
 
   @IsString()
-  @IsNotEmpty()
-  @ApiProperty({ enum: ['https://monedt.utt.fr/calendrier/', 'http://localhost:3042/'] })
-  service: string;
+  @IsOptional()
+  @ApiProperty({
+    description: 'Select the timetable provider to use, not all providers are accepted',
+    default: 'https://monedt.utt.fr/calendrier/',
+  })
+  service = 'https://monedt.utt.fr/calendrier/';
 }

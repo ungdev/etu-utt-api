@@ -20,9 +20,9 @@ import TimetableUpdateEntryDto from './dto/timetable-update-entry.dto';
 import { DetailedTimetableEntry, ResponseDetailedTimetableEntry } from './interfaces/timetable.interface';
 import TimetableDeleteOccurrencesDto from './dto/timetable-delete-occurrences.dto';
 import { AppException, ERROR_CODE } from '../exceptions';
-import { CourseService } from 'src/ue/course/course.service';
-import { UeService } from 'src/ue/ue.service';
-import { UeCourse } from 'src/ue/course/interfaces/course.interface';
+import { CourseService } from '../ue/course/course.service';
+import { UeService } from '../ue/ue.service';
+import { UeCourse } from '../ue/course/interfaces/course.interface';
 import TimetableImportDto from './dto/timetable-import-dto';
 
 @Controller('/timetable')
@@ -175,8 +175,8 @@ export class TimetableController {
   @HttpCode(HttpStatus.CREATED)
   @Post('/import')
   async importTimetable(@GetUser() user: User, @Body() body: TimetableImportDto) {
-    const allowed_services = ['https://monedt.utt.fr/calendrier/', 'http://localhost:3042/'];
-    if (!allowed_services.includes(body.service)) {
+    const allowed_services = ['://monedt.utt.fr/calendrier', '://localhost:'];
+    if (!allowed_services.some((testService) => body.service.includes(testService))) {
       throw new AppException(ERROR_CODE.PARAM_MALFORMED, 'service');
     }
 
