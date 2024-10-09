@@ -16,16 +16,17 @@ export class CommentsController {
 
   @Get()
   @RequireUserType('STUDENT', 'FORMER_STUDENT')
-  async getUEComments(@GetUser() user: User, @Query() dto: GetUeCommentsDto) {
+  async getUeComments(@GetUser() user: User, @Query() dto: GetUeCommentsDto) {
     if (!(await this.ueService.doesUeExist(dto.ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, dto.ueCode);
     return this.commentsService.getComments(user.id, dto, user.permissions.includes('commentModerator'));
   }
 
   @Post()
   @RequireUserType('STUDENT')
-  async PostUEComment(@GetUser() user: User, @Body() body: UeCommentPostDto) {
+  async PostUeComment(@GetUser() user: User, @Body() body: UeCommentPostDto) {
+    // FIXME : a user can only post one comment per ue (among all ueofs)
     if (!(await this.ueService.doesUeExist(body.ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, body.ueCode);
-    if (!(await this.ueService.hasAlreadyDoneThisUe(user.id, body.ueCode)))
+    if (!(await this.ueService.hasUserAttended(body.ueCode, user.id)))
       throw new AppException(ERROR_CODE.NOT_ALREADY_DONE_UE);
     if (await this.commentsService.hasAlreadyPostedAComment(user.id, body.ueCode))
       throw new AppException(ERROR_CODE.FORBIDDEN_ALREADY_COMMENTED);
@@ -34,7 +35,7 @@ export class CommentsController {
 
   @Get(':commentId')
   @RequireUserType('STUDENT', 'FORMER_STUDENT')
-  async getUECommentFromId(@UUIDParam('commentId') commentId: string, @GetUser() user: User) {
+  async getUeCommentFromId(@UUIDParam('commentId') commentId: string, @GetUser() user: User) {
     const comment = await this.commentsService.getCommentFromId(
       commentId,
       user.id,
@@ -46,7 +47,7 @@ export class CommentsController {
 
   @Patch(':commentId')
   @RequireUserType('STUDENT', 'FORMER_STUDENT')
-  async EditUEComment(
+  async editUeComment(
     @UUIDParam('commentId') commentId: string,
     @GetUser() user: User,
     @Body() body: UeCommentUpdateDto,
@@ -79,7 +80,7 @@ export class CommentsController {
 
   @Delete(':commentId')
   @RequireUserType('STUDENT', 'FORMER_STUDENT')
-  async DiscardUEComment(@UUIDParam('commentId') commentId: string, @GetUser() user: User) {
+  async discardUeComment(@UUIDParam('commentId') commentId: string, @GetUser() user: User) {
     if (
       !(await this.commentsService.doesCommentExist(commentId, user.id, user.permissions.includes('commentModerator')))
     )
@@ -99,7 +100,7 @@ export class CommentsController {
   @Post(':commentId/upvote')
   @RequireUserType('STUDENT')
   @HttpCode(HttpStatus.OK)
-  async UpvoteUEComment(@UUIDParam('commentId') commentId: string, @GetUser() user: User) {
+  async UpvoteUeComment(@UUIDParam('commentId') commentId: string, @GetUser() user: User) {
     if (
       !(await this.commentsService.doesCommentExist(
         commentId,
@@ -122,7 +123,7 @@ export class CommentsController {
   @Delete(':commentId/upvote')
   @RequireUserType('STUDENT', 'FORMER_STUDENT')
   @HttpCode(HttpStatus.OK)
-  async UnUpvoteUEComment(@UUIDParam('commentId') commentId: string, @GetUser() user: User) {
+  async UnUpvoteUeComment(@UUIDParam('commentId') commentId: string, @GetUser() user: User) {
     if (
       !(await this.commentsService.doesCommentExist(
         commentId,
@@ -144,7 +145,7 @@ export class CommentsController {
 
   @Post(':commentId/reply')
   @RequireUserType('STUDENT')
-  async CreateReplyComment(
+  async createReplyComment(
     @GetUser() user: User,
     @UUIDParam('commentId') commentId: string,
     @Body() body: CommentReplyDto,
@@ -163,7 +164,7 @@ export class CommentsController {
 
   @Patch('reply/:replyId')
   @RequireUserType('STUDENT', 'FORMER_STUDENT')
-  async EditReplyComment(@GetUser() user: User, @UUIDParam('replyId') replyId: string, @Body() body: CommentReplyDto) {
+  async editReplyComment(@GetUser() user: User, @UUIDParam('replyId') replyId: string, @Body() body: CommentReplyDto) {
     if (!(await this.commentsService.doesReplyExist(replyId))) throw new AppException(ERROR_CODE.NO_SUCH_REPLY);
     if (
       (await this.commentsService.isUserCommentReplyAuthor(user.id, replyId)) ||
@@ -175,7 +176,7 @@ export class CommentsController {
 
   @Delete('reply/:replyId')
   @RequireUserType('STUDENT', 'FORMER_STUDENT')
-  async DeleteReplyComment(@GetUser() user: User, @UUIDParam('replyId') replyId: string) {
+  async deleteReplyComment(@GetUser() user: User, @UUIDParam('replyId') replyId: string) {
     if (!(await this.commentsService.doesReplyExist(replyId))) throw new AppException(ERROR_CODE.NO_SUCH_REPLY);
     if (
       (await this.commentsService.isUserCommentReplyAuthor(user.id, replyId)) ||

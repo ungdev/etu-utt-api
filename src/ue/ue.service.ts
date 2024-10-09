@@ -5,7 +5,6 @@ import { UeRateDto } from './dto/ue-rate.dto';
 import { Ue } from './interfaces/ue.interface';
 import { Criterion } from './interfaces/criterion.interface';
 import { UeRating } from './interfaces/rate.interface';
-import { RawUserUeSubscription } from '../prisma/types';
 import { ConfigModule } from '../config/config.module';
 import { Language, Prisma } from '@prisma/client';
 import { SemesterService } from '../semester/semester.service';
@@ -122,7 +121,7 @@ export class UeService {
               some: {
                 openSemester: {
                   some: {
-                    code: query.availableAtSemester?.toUpperCase(),
+                    code: query.availableAtSemester.toUpperCase(),
                   },
                 },
               },
@@ -161,35 +160,12 @@ export class UeService {
   }
 
   /**
-   * Retrieves the last semester done by a user for a given ue
-   * @remarks The user must not be null
-   * @param userId the user to retrieve semesters of
-   * @param ueCode the code of the UE
-   * @returns the last semester done by the {@link user} for the {@link ueCode | ue}
-   */
-  async getLastSemesterDoneByUser(userId: string, ueCode: string): Promise<RawUserUeSubscription> {
-    return this.prisma.userUeSubscription.findFirst({
-      where: {
-        ueof: {
-          ueId: ueCode,
-        },
-        userId,
-      },
-      orderBy: {
-        semester: {
-          end: 'desc',
-        },
-      },
-    });
-  }
-
-  /**
    * Checks whether an ue exists
    * @param ueCode the code of the ue to check
    * @returns whether the ue exists
    */
   async doesUeExist(ueCode: string) {
-    return !!(await this.prisma.ue.findUnique({
+    return !!(await this.prisma.ue.count({
       where: {
         code: ueCode,
       },
@@ -204,15 +180,46 @@ export class UeService {
     });
   }
 
+  async doesUeofExist(ueofCode: string) {
+    return !!(await this.prisma.ueof.count({
+      where: {
+        code: ueofCode,
+      },
+    }));
+  }
+
   /**
-   * Checks whether a user has already done an ue
-   * @remarks The user must not be null
+   * Retrieves the amount of UEOF the given {@link userId | user} has attended.
+   * Not only this method can be used to retrieve the precise count of matching ueofs done by the user,
+   * but also in order to check if a user has attended a specific UEOF.
+   * The key feature of this function is that UEOF matching is done on both UEOF and UE codes,
+   * allowing to check if a user has attended a specific UEOF or a specific UE.
+   *
+   * @param ueCodeOrUeofCode the code of the ue or the ueof to check
    * @param userId the user to check
-   * @param ueCode the code of the ue to check
-   * @returns whether the {@link user} has already done the {@link ueCode | ue}
+   * @param semester provide a semester code to filter the ueofs by semester
+   * @returns the amount of UEOF the {@link userId | user} has attended
+   *
+   * @example
+   * ```typescript
+   * const user: User = ...;
+   * const ueCode: string = 'MT01';
+   * // Check user has already done MT01
+   * if (!(await ueService.hasUserAttended(ueCode, user.id))) {
+   *   throw new AppException(ERROR_CODE.DUMMY_ERROR, 'This feature is only available for students who have attended MT01');
+   * }
+   * ```
    */
-  async hasAlreadyDoneThisUe(userId: string, ueCode: string) {
-    return (await this.getLastSemesterDoneByUser(userId, ueCode)) != null;
+  async hasUserAttended(ueCodeOrUeofCode: string, userId: string, semester?: string): Promise<number> {
+    return this.prisma.userUeSubscription.count({
+      where: {
+        userId: userId ?? null, // We want the filter to be applied in every query
+        semesterId: semester || undefined, // This filter should be applied only if semester is not null
+        ueof: {
+          OR: [{ code: ueCodeOrUeofCode }, { ueId: ueCodeOrUeofCode }],
+        },
+      },
+    });
   }
 
   /**
@@ -230,12 +237,12 @@ export class UeService {
     );
   }
 
-  async hasAlreadyRated(userId: string, ueCode: string, criterionId: string) {
+  async hasAlreadyRated(userId: string, ueofCode: string, criterionId: string) {
     return (
       (await this.prisma.ueStarVote.count({
         where: {
-          ue: {
-            code: ueCode,
+          ueof: {
+            code: ueofCode,
           },
           userId,
           criterionId,
@@ -259,33 +266,50 @@ export class UeService {
    * @param ueCode the code of the ue to fetch the rates of
    * @returns the rates of the {@link ueCode | ue} for the {@link user}
    */
-  async getRateUe(userId: string, ueCode: string): Promise<UeRating[]> {
-    const ue = await this.prisma.ue.findUnique({
+  async getRateUe(
+    userId: string,
+    ueCode: string,
+  ): Promise<{
+    [ueofCode: string]: UeRating[];
+  }> {
+    const ueofs = await this.prisma.ueof.findMany({
       where: {
-        code: ueCode,
+        ue: {
+          code: ueCode,
+        },
       },
     });
-    return this.prisma.ueStarVote.findMany({
-      where: {
-        userId: userId,
-        ueId: ue.code,
-      },
-    });
+    return Object.fromEntries(
+      await Promise.all(
+        ueofs.map(
+          async (ueof) =>
+            [
+              ueof.code,
+              await this.prisma.ueStarVote.findMany({
+                where: {
+                  userId: userId,
+                  ueofId: ueof.code,
+                },
+              }),
+            ] as const,
+        ),
+      ),
+    );
   }
 
   /**
    * Creates or updates a rating for a given ue
    * @remarks The user must not be null and the ue must exist
    * @param userId the user rating the ue
-   * @param ueCode the code of the ue to rate
+   * @param ueofCode the code of the ue to rate
    * @param dto the rating to apply
-   * @returns the new rate of the {@link ueCode | ue} for the {@link user}
+   * @returns the new rate of the {@link ueofCode | ue} for the {@link user}
    */
-  async doRateUe(userId: string, ueCode: string, dto: UeRateDto): Promise<UeRating> {
+  async rateUeof(userId: string, ueofCode: string, dto: UeRateDto): Promise<UeRating> {
     return this.prisma.ueStarVote.upsert({
       where: {
-        ueId_userId_criterionId: {
-          ueId: ueCode,
+        ueofId_userId_criterionId: {
+          ueofId: ueofCode,
           userId,
           criterionId: dto.criterion,
         },
@@ -293,7 +317,7 @@ export class UeService {
       create: {
         value: dto.value,
         criterionId: dto.criterion,
-        ueId: ueCode,
+        ueofId: ueofCode,
         userId,
       },
       update: {
@@ -302,11 +326,11 @@ export class UeService {
     });
   }
 
-  async unRateUe(userId: string, ueCode: string, criterionId: string): Promise<UeRating> {
+  async unRateUeof(userId: string, ueofCode: string, criterionId: string): Promise<UeRating> {
     return this.prisma.ueStarVote.delete({
       where: {
-        ueId_userId_criterionId: {
-          ueId: ueCode,
+        ueofId_userId_criterionId: {
+          ueofId: ueofCode,
           userId,
           criterionId,
         },

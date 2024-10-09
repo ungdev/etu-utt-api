@@ -7,6 +7,7 @@ import {
   Length,
   MaxLength,
   MinLength,
+  ValidateIf,
 } from 'class-validator';
 
 export class CreateAnnal {
@@ -21,6 +22,7 @@ export class CreateAnnal {
   typeId: string;
 
   @IsString()
+  @ValidateIf((obj: CreateAnnal) => !!obj.ueCode || !!obj.ueof)
   @IsNotEmpty()
   @IsAlphanumeric()
   @MinLength(3)

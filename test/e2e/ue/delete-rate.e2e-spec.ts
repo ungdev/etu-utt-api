@@ -33,7 +33,7 @@ const DeleteRate = e2eSuite('DELETE /ue/{ueCode}/rate/{critetionId}', (app) => {
       .spec()
       .withBearerToken(user2.token)
       .delete(`/ue/${ue.code}/rate/${criterion.id}`)
-      .expectAppError(ERROR_CODE.NOT_ALREADY_RATED_UE, ue.code, criterion.id);
+      .expectAppError(ERROR_CODE.NOT_ALREADY_RATED_UEOF, ue.code, criterion.id);
   });
 
   it('should return a 404 as the UE does not exist', () => {

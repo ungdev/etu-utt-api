@@ -53,9 +53,10 @@ export const enum ERROR_CODE {
   NOT_REPLY_AUTHOR = 4223,
   IS_COMMENT_AUTHOR = 4224,
   GROUP_NOT_PART_OF_ENTRY = 4225,
-  NOT_ALREADY_RATED_UE = 4226,
+  NOT_ALREADY_RATED_UEOF = 4226,
   NOT_DONE_UE_IN_SEMESTER = 4227,
   NOT_ANNAL_SENDER = 4228,
+  NOT_ALREADY_DONE_UEOF = 4229,
   NO_SUCH_UE = 4401,
   NO_SUCH_COMMENT = 4402,
   NO_SUCH_REPLY = 4403,
@@ -237,7 +238,7 @@ export const ErrorData = Object.freeze({
     message: 'The group % is not part of the timetable entry %',
     httpCode: HttpStatus.FORBIDDEN,
   },
-  [ERROR_CODE.NOT_ALREADY_RATED_UE]: {
+  [ERROR_CODE.NOT_ALREADY_RATED_UEOF]: {
     message: 'You must have rated the UE % (on criterion %) before deleting your rating',
     httpCode: HttpStatus.FORBIDDEN,
   },
@@ -247,6 +248,10 @@ export const ErrorData = Object.freeze({
   },
   [ERROR_CODE.NOT_ANNAL_SENDER]: {
     message: 'You are not the sender of this annal',
+    httpCode: HttpStatus.FORBIDDEN,
+  },
+  [ERROR_CODE.NOT_ALREADY_DONE_UEOF]: {
+    message: 'You must have done this UEOF before to perform this action',
     httpCode: HttpStatus.FORBIDDEN,
   },
   [ERROR_CODE.NO_SUCH_UE]: {

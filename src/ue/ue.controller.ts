@@ -11,7 +11,6 @@ import { UeRateDto } from './dto/ue-rate.dto';
 import { Ue, UeStarVoteEntry } from './interfaces/ue.interface';
 import { Language, UserType } from '@prisma/client';
 import { Translation } from '../prisma/types';
-import { omit } from '../utils';
 
 @Controller('ue')
 export class UeController {
@@ -50,46 +49,44 @@ export class UeController {
       if (alias?.standsFor) return res.redirect(HttpStatusCode.MovedPermanently, `./${alias.standsFor}`);
       throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     }
-    const result = this.formatDetailedUe(await this.ueService.getUe(ueCode.toUpperCase()));
-    if (user?.userType === UserType.STUDENT || user?.userType === UserType.FORMER_STUDENT) return result;
-    return omit(result, 'starVotes');
+    return this.formatDetailedUe(await this.ueService.getUe(ueCode.toUpperCase()), user?.userType);
   }
 
   @Get('/rate/criteria')
   @RequireUserType('STUDENT', 'FORMER_STUDENT')
-  async GetRateCriteria() {
+  async getRateCriteria() {
     return this.ueService.getRateCriteria();
   }
 
   @Get('/:ueCode/rate')
   @RequireUserType('STUDENT', 'FORMER_STUDENT')
-  async GetRateUe(@Param('ueCode') ueCode: string, @GetUser() user: User) {
+  async getUeRate(@Param('ueCode') ueCode: string, @GetUser() user: User) {
     if (!(await this.ueService.doesUeExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     return this.ueService.getRateUe(user.id, ueCode);
   }
 
-  @Put('/:ueCode/rate')
+  @Put('/ueof/:ueofCode/rate')
   @RequireUserType('STUDENT')
-  async RateUe(@Param('ueCode') ueCode: string, @GetUser() user: User, @Body() dto: UeRateDto) {
-    if (!(await this.ueService.doesUeExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
+  async rateUe(@Param('ueofCode') ueofCode: string, @GetUser() user: User, @Body() dto: UeRateDto) {
+    if (!(await this.ueService.doesUeofExist(ueofCode))) throw new AppException(ERROR_CODE.NO_SUCH_UEOF, ueofCode);
     if (!(await this.ueService.doesCriterionExist(dto.criterion))) throw new AppException(ERROR_CODE.NO_SUCH_CRITERION);
-    if (!(await this.ueService.hasAlreadyDoneThisUe(user.id, ueCode)))
-      throw new AppException(ERROR_CODE.NOT_ALREADY_DONE_UE);
-    return this.ueService.doRateUe(user.id, ueCode, dto);
+    if (!(await this.ueService.hasUserAttended(ueofCode, user.id)))
+      throw new AppException(ERROR_CODE.NOT_ALREADY_DONE_UEOF);
+    return this.ueService.rateUeof(user.id, ueofCode, dto);
   }
 
-  @Delete('/:ueCode/rate/:criterionId')
+  @Delete('/ueof/:ueofCode/rate/:criterionId')
   @RequireUserType('STUDENT', 'FORMER_STUDENT')
-  async UnRateUe(
-    @Param('ueCode') ueCode: string,
+  async unRateUe(
+    @Param('ueofCode') ueofCode: string,
     @UUIDParam('criterionId') criterionId: string,
     @GetUser() user: User,
   ) {
-    if (!(await this.ueService.doesUeExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
+    if (!(await this.ueService.doesUeofExist(ueofCode))) throw new AppException(ERROR_CODE.NO_SUCH_UEOF, ueofCode);
     if (!(await this.ueService.doesCriterionExist(criterionId))) throw new AppException(ERROR_CODE.NO_SUCH_CRITERION);
-    if (!(await this.ueService.hasAlreadyRated(user.id, ueCode, criterionId)))
-      throw new AppException(ERROR_CODE.NOT_ALREADY_RATED_UE, ueCode, criterionId);
-    return this.ueService.unRateUe(user.id, ueCode, criterionId);
+    if (!(await this.ueService.hasAlreadyRated(user.id, ueofCode, criterionId)))
+      throw new AppException(ERROR_CODE.NOT_ALREADY_RATED_UEOF, ueofCode, criterionId);
+    return this.ueService.unRateUeof(user.id, ueofCode, criterionId);
   }
 
   @Get('/of/me')
@@ -129,9 +126,6 @@ export class UeController {
       info: {
         requirements: chosenOf.requirements.map((r) => r.code),
         languages: ue.ueofs.map((ueof) => ueof.info.language).uniqueValues,
-        minors: chosenOf.info.minors,
-        objectives: chosenOf.info.objectives,
-        program: chosenOf.info.program,
       },
       openSemester: ue.ueofs
         .map((ueof) => ueof.openSemester)
@@ -144,12 +138,12 @@ export class UeController {
     };
   }
 
-  private formatDetailedUe(ue: Ue): UeDetail {
+  private formatDetailedUe(ue: Ue, userType: UserType): UeDetail {
     return {
       code: ue.code,
       creationYear: ue.creationYear,
       updateYear: ue.updateYear,
-      ofs: ue.ueofs.map((ueof) => ({
+      ueofs: ue.ueofs.map((ueof) => ({
         code: ueof.code,
         name: ueof.name,
         credits: ueof.credits.map((c) => ({
@@ -187,18 +181,24 @@ export class UeController {
           project: ueof.workTime.project,
           internship: ueof.workTime.internship,
         },
-        starVotes: {
-          // Compute ratings for each criterion, using an exponential decay function
-          ...Object.fromEntries(
-            Object.entries(ue.starVotes).map(([criterion, rates]) => [criterion, this.computeRate(rates, ueof.code)]),
-          ),
-          voteCount: Math.max(...Object.values(ue.starVotes).map((rates) => rates.length)),
-        },
+        starVotes:
+          userType === UserType.STUDENT || userType === UserType.FORMER_STUDENT
+            ? {
+                // Compute ratings for each criterion, using an exponential decay function
+                ...Object.fromEntries(
+                  Object.entries(ue.starVotes).map(([criterion, rates]) => [
+                    criterion,
+                    this.computeRate(rates, ueof.code),
+                  ]),
+                ),
+                voteCount: Math.max(...Object.values(ue.starVotes).map((rates) => rates.length)),
+              }
+            : undefined,
       })),
     };
   }
 
-  private computeRate(rates: UeStarVoteEntry[], targetUeofCode: string) {
+  public computeRate(rates: UeStarVoteEntry[], targetUeofCode: string) {
     function aggregate<T>(
       entities: T[],
       mapper: (entity: T) => [key: number, value: number],
@@ -259,9 +259,6 @@ export type UeOverview = {
   info: {
     requirements: string[];
     languages: string[];
-    minors: string;
-    objectives: Translation;
-    program: Translation;
   };
   openSemester: Array<{
     code: string;
@@ -274,7 +271,7 @@ export type UeDetail = {
   code: string;
   creationYear: number;
   updateYear: number;
-  ofs: {
+  ueofs: {
     code: string;
     name: Translation;
     credits: Array<{

@@ -2,9 +2,9 @@ import { getOperationResults, PrismaOperationResult, QueryFunction } from '../ma
 import { PrismaClient } from '../make-migration';
 import { RawUe } from '../../../src/prisma/types';
 
-export function findLegacyUeofName(ueCode: string, commentaire: string) {
+export function findLegacyUeofName(ueCode: string, comment: string) {
   let LOCATION = 'TRO';
-  if (commentaire.match(/UE réalisée à Reims/)) LOCATION = 'REI';
+  if (comment.match(/UE réalisée à Reims/)) LOCATION = 'REI';
   let UECODE = ueCode;
   let LANG = 'FR';
   if (ueCode.length > 4 && ueCode.slice(-1).match(/[APR]/)) {

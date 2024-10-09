@@ -52,7 +52,7 @@ async function findPadding(document: string) {
 
 async function parseDocument(document: string) {
   return new Promise<UEOF[]>(async (resolve, reject) => {
-    const ues: UEOF[] = [];
+    const ueofs: UEOF[] = [];
     const padding = await findPadding(document);
     createReadStream(document)
       .pipe(
@@ -94,7 +94,7 @@ async function parseDocument(document: string) {
         reject();
       })
       .on('data', (ue) =>
-        ues.push({
+        ueofs.push({
           ...ue,
           siep_id: Number(ue.siep_id),
           cm_hours: Number(ue.cm_hours) || 0,
@@ -105,27 +105,26 @@ async function parseDocument(document: string) {
           internship_hours: Number(ue.internship_hours) || 0,
           credit_count: Number(ue.credit_count) || 0,
           requirements: ue.requirements ? [ue.requirements as unknown as string] : [],
-          semesters: ue.semesters ? (ue.semesters as unknown as string)?.split(/\s\/\s/g) : [],
-          minors: ue.minors ? (ue.minors as unknown as string)?.split(/\s\/\s/g) : [],
-          engineer_branch: ue.engineer_branch ? (ue.engineer_branch as unknown as string)?.split(/\s\/\s/g) : [],
+          semesters: ue.semesters ? (ue.semesters as unknown as string).split(/\s\/\s/g) : [],
+          minors: ue.minors ? (ue.minors as unknown as string).split(/\s\/\s/g) : [],
+          engineer_branch: ue.engineer_branch ? (ue.engineer_branch as unknown as string).split(/\s\/\s/g) : [],
           engineer_branch_option: ue.engineer_branch_option
             ? (ue.engineer_branch_option as unknown as string)?.split(/\s\/\s/g)
             : [],
-          master_branch: ue.master_branch ? (ue.master_branch as unknown as string)?.split(/\s\/\s/g) : [],
+          master_branch: ue.master_branch ? (ue.master_branch as unknown as string).split(/\s\/\s/g) : [],
           master_branch_option: ue.master_branch_option
-            ? (ue.master_branch_option as unknown as string)?.split(/\s\/\s/g)
+            ? (ue.master_branch_option as unknown as string).split(/\s\/\s/g)
             : [],
         }),
       )
       .on('end', () =>
         resolve(
-          ues.reduce<UEOF[]>((prev, ueof) => {
-            // Data has not been merged in the CSV for the field `requirements`, we need to merge it manually
-            const existing = prev.find((ue) => ue.ueof_code === ueof.ueof_code);
-            if (!existing) return [...prev, ueof];
-            existing.requirements.push(...ueof.requirements);
-            return prev;
-          }, []),
+          // A single UEOF can appear multiple times in the CSV with a different requirement
+          // We group the UEOFs by their code and merge the requirements
+          Object.values(ueofs.groupyBy((ueof) => ueof.ueof_code)).map((duplicates) => ({
+            ...duplicates[0],
+            requirements: duplicates.flatMap((ueof) => ueof.requirements),
+          })),
         ),
       );
   });

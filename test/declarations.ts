@@ -78,7 +78,7 @@ Spec.prototype.expectUe = function (ue: FakeUe, rates: Array<{ criterionId: stri
       creationYear: 2000 + Number(ue.ueofCode.match(/\d+$/)?.[0] ?? 23),
       updateYear: 2000 + Number(ue.ueofCode.match(/\d+$/)?.[0] ?? 23),
       ...(rates ? { starVotes: Object.fromEntries(rates.map((rate) => [rate.criterionId, rate.value])) } : {}),
-      ofs: [
+      ueofs: [
         {
           name: getTranslation(ue.name, this.language),
           credits: ue.credits.map((credit) => ({

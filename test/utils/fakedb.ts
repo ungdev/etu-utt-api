@@ -670,7 +670,7 @@ export const createAnnal = entityFaker(
 );
 
 export type CreateUeParameters = Omit<FakeUe, 'credits'> & {
-  credits: (FakeUe['credits'] extends Array<infer R> ? Omit<R, 'branchOptions'> : never)[];
+  credits: Omit<ItemType<FakeUe['credits']>, 'branchOptions'>[];
 };
 export const createUe = entityFaker(
   'ue',
@@ -696,7 +696,7 @@ export const createUe = entityFaker(
       td: () => faker.datatype.number({ min: 0, max: 100 }),
       tp: () => faker.datatype.number({ min: 0, max: 100 }),
       the: () => faker.datatype.number({ min: 0, max: 100 }),
-      project: () => faker.datatype.boolean(),
+      project: faker.datatype.boolean,
       internship: () => faker.datatype.number({ min: 0, max: 100 }),
     },
     openSemesters: [],
@@ -864,15 +864,15 @@ export const createUeRating = entityFaker(
       .get(PrismaService)
       .withDefaultBehaviour.ueStarVote.create({
         data: {
-          ...omit(params, 'criterionId', 'ueId', 'userId'),
+          ...omit(params, 'criterionId', 'ueofId', 'userId'),
           criterion: {
             connect: {
               id: dependencies.criterion.id,
             },
           },
-          ue: {
+          ueof: {
             connect: {
-              code: dependencies.ue.code,
+              code: dependencies.ue.ueofCode,
             },
           },
           user: {

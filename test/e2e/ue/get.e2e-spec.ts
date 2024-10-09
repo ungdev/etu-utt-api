@@ -11,9 +11,9 @@ import {
   FakeUeStarVote,
 } from '../../utils/fakedb';
 import { e2eSuite } from '../../utils/test_utils';
+import { UeController } from '../../../src/ue/ue.controller';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
-import { computeRate } from '../../../src/ue/interfaces/ue.interface';
 import { UserType } from '@prisma/client';
 
 const GetE2ESpec = e2eSuite('GET /ue/{ueCode}', (app) => {
@@ -98,7 +98,15 @@ const GetE2ESpec = e2eSuite('GET /ue/{ueCode}', (app) => {
       .expectUe(ueWithRating, [
         {
           criterionId: criterion.id,
-          value: computeRate([rate2 as Required<FakeUeStarVote>, rate1 as Required<FakeUeStarVote>]),
+          value: app()
+            .get(UeController)
+            .computeRate(
+              [
+                { ...(rate2 as Required<FakeUeStarVote>), ueofCode: ueWithRating.ueofCode },
+                { ...(rate1 as Required<FakeUeStarVote>), ueofCode: ueWithRating.ueofCode },
+              ],
+              ueWithRating.ueofCode,
+            ),
         },
       ]);
   });

@@ -15,7 +15,7 @@ import { Semester } from '@prisma/client';
 export class AnnalsService {
   constructor(readonly prisma: PrismaService, readonly config: ConfigModule) {}
 
-  async getUEAnnalMetadata(user: User, ueCode: string, isModerator: boolean) {
+  async getUeAnnalMetadata(user: User, ueCode: string, isModerator: boolean) {
     const ueof = await this.prisma.ueof.findMany({
       where: {
         ueId: ueCode,
@@ -56,7 +56,7 @@ export class AnnalsService {
     );
   }
 
-  async createAnnalFile(user: User, params: CreateAnnal, ueof?: string) {
+  async createAnnalFile(user: User, params: CreateAnnal) {
     const subscription = await this.prisma.userUeSubscription.findFirst({
       where: {
         semesterId: params.semester,
@@ -86,7 +86,7 @@ export class AnnalsService {
         },
         ueof: {
           connect: {
-            code: subscription.ueofId ?? ueof,
+            code: subscription.ueofId ?? params.ueof,
           },
         },
       },
@@ -178,7 +178,7 @@ export class AnnalsService {
     return fileEntry;
   }
 
-  async getUEAnnalsList(user: User, ueCode: string, includeAll: boolean) {
+  async getUeAnnalsList(user: User, ueCode: string, includeAll: boolean) {
     return (
       await this.prisma.ueAnnal.findMany({
         where: {
@@ -253,7 +253,7 @@ export class AnnalsService {
     );
   }
 
-  async getUEAnnal(annalId: string, userId: string, includeAll: boolean) {
+  async getUeAnnal(annalId: string, userId: string, includeAll: boolean) {
     return this.prisma.ueAnnal.findUnique({
       where: {
         id: annalId,
@@ -284,7 +284,7 @@ export class AnnalsService {
     });
   }
 
-  async getUEAnnalFile(annalId: string, userId: string, includeAll: boolean) {
+  async getUeAnnalFile(annalId: string, userId: string, includeAll: boolean) {
     const metadata = await this.prisma.ueAnnal.findUnique({
       where: {
         id: annalId,
@@ -320,7 +320,7 @@ export class AnnalsService {
     };
   }
 
-  async isUEAnnalSender(userId: string, annalId: string) {
+  async isUeAnnalSender(userId: string, annalId: string) {
     return (
       (await this.prisma.ueAnnal.count({
         where: {
