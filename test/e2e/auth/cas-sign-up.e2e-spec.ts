@@ -3,7 +3,7 @@ import * as pactum from 'pactum';
 import { faker } from '@faker-js/faker';
 import { JwtService } from '@nestjs/jwt';
 import * as fakedb from '../../utils/fakedb';
-import { AuthService, RegisterData } from '../../../src/auth/auth.service';
+import { AuthService, RegisterUserData } from '../../../src/auth/auth.service';
 import { pick } from '../../../src/utils';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { FakeUser } from '../../utils/fakedb';
@@ -44,7 +44,7 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
     pactum
       .spec()
       .post('/auth/signup/cas')
-      .withJson({ registerToken: faker.random.alpha() })
+      .withJson({ registerToken: faker.random.alpha(), tokenExpiresIn: 1000 })
       .expectAppError(ERROR_CODE.INVALID_TOKEN_FORMAT));
 
   it('should fail as the provided token does not contains an object in the right form', async () => {
@@ -54,7 +54,7 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
     pactum
       .spec()
       .post('/auth/signup/cas')
-      .withJson({ registerToken: token })
+      .withJson({ registerToken: token, tokenExpiresIn: 1000 })
       .expectAppError(ERROR_CODE.INVALID_TOKEN_FORMAT);
   });
 
@@ -64,12 +64,13 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
       .spec()
       .post('/auth/signup/cas')
       .withJson({
-        registerToken: app()
+        registerToken: await app()
           .get(AuthService)
           .signRegisterToken({
             ...pick(user as Required<FakeUser>, 'login', 'firstName', 'lastName'),
             mail: faker.internet.email(),
           }),
+        tokenExpiresIn: 1000,
       })
       .expectAppError(ERROR_CODE.CREDENTIALS_ALREADY_TAKEN);
     await app()
@@ -77,10 +78,10 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
       .user.delete({ where: { id: user.id } });
   });
 
-  const executeValidSignupRequest = (type: string) => {
+  const executeValidSignupRequest = async (type: string) => {
     const firstName = faker.name.firstName();
     const lastName = faker.name.lastName();
-    const userData: RegisterData = {
+    const userData: RegisterUserData = {
       login: `${lastName.toLowerCase().slice(0, 7)}${firstName.toLowerCase()}`.slice(0, 8),
       mail: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@utt.fr`,
       firstName,
@@ -111,7 +112,7 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
     return pactum
       .spec()
       .post('/auth/signup/cas')
-      .withJson({ registerToken: app().get(AuthService).signRegisterToken(userData) })
+      .withJson({ registerToken: await app().get(AuthService).signRegisterToken(userData), tokenExpiresIn: 1000 })
       .expectStatus(HttpStatus.CREATED)
       .expectJsonMatch({ access_token: string() });
     // TODO : test that the user has been created, along with all its data

@@ -32,6 +32,7 @@ export {
   AssoMembership as RawAssoMembership,
   UserHomepageWidget as RawHomepageWidget,
   UserPrivacy as RawUserPrivacy,
+  ApiApplication as RawApiApplication
 } from '@prisma/client';
 
 export { RawTranslation };

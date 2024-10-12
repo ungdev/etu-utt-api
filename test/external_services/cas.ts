@@ -2,11 +2,11 @@ import axios from 'axios';
 import nock from 'nock';
 import { HttpStatus } from '@nestjs/common';
 import { faker } from '@faker-js/faker';
-import { RegisterData } from '../../src/auth/auth.service';
+import { RegisterUserData } from '../../src/auth/auth.service';
 
 export const validService = faker.internet.url();
 export const validTicket = faker.datatype.uuid();
-export const user: RegisterData = {
+export const user: RegisterUserData = {
   login: faker.datatype.uuid(),
   mail: faker.internet.email(),
   lastName: faker.name.lastName(),

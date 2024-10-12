@@ -16,6 +16,9 @@ import { ApiBody, ApiConsumes, ApiOkResponse, ApiOperation, ApiTags } from '@nes
 import { ApiAppErrorResponse } from '../../app.dto';
 import UeAnnalResDto from './dto/res/ue-annal-res.dto';
 import UeAnnalMetadataResDto from './dto/res/ue-annal-metadata-res.dto';
+import { GetPermissions } from '../../auth/decorator/get-permissions.decorator';
+import { RequestPermissions } from '../../auth/interfaces/request-auth-data.interface';
+import { Permission } from '@prisma/client';
 
 @Controller('ue/annals')
 @ApiTags('Annal')
@@ -27,9 +30,13 @@ export class AnnalsController {
   @ApiOperation({ description: 'Get the list of annals of a UE.' })
   @ApiOkResponse({ type: UeAnnalResDto, isArray: true })
   @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_UE, 'Thrown when there is no UE with code `ueCode`.')
-  async getUeAnnalList(@Query() { ueCode }: GetFromUeReqDto, @GetUser() user: User): Promise<UeAnnalResDto[]> {
+  async getUeAnnalList(
+    @Query() { ueCode }: GetFromUeReqDto,
+    @GetUser() user: User,
+    @GetPermissions() permissions: RequestPermissions,
+  ): Promise<UeAnnalResDto[]> {
     if (!(await this.ueService.doesUeExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
-    return this.annalsService.getUEAnnalsList(user, ueCode, user.permissions.includes('annalModerator'));
+    return this.annalsService.getUEAnnalsList(user, ueCode, permissions[Permission.API_MODERATE_ANNAL] === '*');
   }
 
   @Post()
@@ -51,12 +58,13 @@ export class AnnalsController {
   async createUeAnnal(
     @Body() { ueCode, semester, typeId }: CreateAnnalReqDto,
     @GetUser() user: User,
+    @GetPermissions() permissions: RequestPermissions,
   ): Promise<UeAnnalResDto> {
     if (!(await this.ueService.doesUeExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     if (!(await this.annalsService.doesAnnalTypeExist(typeId))) throw new AppException(ERROR_CODE.NO_SUCH_ANNAL_TYPE);
     if (
       !(await this.ueService.hasDoneThisUeInSemester(user.id, ueCode, semester)) &&
-      !user.permissions.includes('annalUploader')
+      permissions[Permission.API_UPLOAD_ANNAL] !== '*'
     )
       throw new AppException(ERROR_CODE.NOT_DONE_UE_IN_SEMESTER, ueCode, semester);
     return this.annalsService.createAnnalFile(user, { ueCode, semester, typeId });
@@ -78,11 +86,12 @@ export class AnnalsController {
   async getUeAnnalMetadata(
     @Query() { ueCode }: GetFromUeReqDto,
     @GetUser() user: User,
+    @GetPermissions() permissions: RequestPermissions,
   ): Promise<UeAnnalMetadataResDto> {
     if (!(await this.ueService.doesUeExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
-    if (!(await this.ueService.hasAlreadyDoneThisUe(user.id, ueCode)) && !user.permissions.includes('annalUploader'))
+    if (!(await this.ueService.hasAlreadyDoneThisUe(user.id, ueCode)) && permissions[Permission.API_UPLOAD_ANNAL] !== '*')
       throw new AppException(ERROR_CODE.NOT_ALREADY_DONE_UE);
-    return this.annalsService.getUEAnnalMetadata(user, ueCode, user.permissions.includes('annalUploader'));
+    return this.annalsService.getUEAnnalMetadata(user, ueCode, permissions[Permission.API_UPLOAD_ANNAL] === '*');
   }
 
   @Put(':annalId')
@@ -108,11 +117,12 @@ export class AnnalsController {
     @Param('annalId') annalId: string,
     @Query() { rotate }: UploadAnnalReqDto,
     @GetUser() user: User,
+    @GetPermissions() permissions: RequestPermissions,
   ) {
     if (!(await this.annalsService.isUeAnnalSender(user.id, annalId)))
       throw new AppException(ERROR_CODE.NOT_ANNAL_SENDER);
     if (
-      (await this.annalsService.getUEAnnal(annalId, user.id, user.permissions.includes('annalModerator'))).status !==
+      (await this.annalsService.getUEAnnal(annalId, user.id, permissions[Permission.API_MODERATE_ANNAL] === '*')).status !==
       CommentStatus.PROCESSING
     )
       throw new AppException(ERROR_CODE.ANNAL_ALREADY_UPLOADED);
@@ -131,13 +141,20 @@ export class AnnalsController {
     @UUIDParam('annalId') annalId: string,
     @GetUser() user: User,
     @Response() response: ExpressResponse,
+    @GetPermissions() permissions: RequestPermissions,
   ) {
-    if (!(await this.annalsService.isAnnalAccessible(user.id, annalId, user.permissions.includes('annalModerator'))))
+    if (
+      !(await this.annalsService.isAnnalAccessible(
+        user.id,
+        annalId,
+        permissions[Permission.API_MODERATE_ANNAL] === '*',
+      ))
+    )
       throw new AppException(ERROR_CODE.NO_SUCH_ANNAL, annalId);
     const annalFile = await this.annalsService.getUEAnnalFile(
       annalId,
       user.id,
-      user.permissions.includes('annalModerator'),
+      permissions[Permission.API_MODERATE_ANNAL] === '*',
     );
     if (!annalFile) throw new AppException(ERROR_CODE.NO_SUCH_ANNAL, annalId);
     response.setHeader('Content-Type', 'application/pdf');
@@ -161,10 +178,20 @@ export class AnnalsController {
     @UUIDParam('annalId') annalId: string,
     @Body() body: UpdateAnnalReqDto,
     @GetUser() user: User,
+    @GetPermissions() permissions: RequestPermissions,
   ): Promise<UeAnnalResDto> {
-    if (!(await this.annalsService.isAnnalAccessible(user.id, annalId, user.permissions.includes('annalModerator'))))
+    if (
+      !(await this.annalsService.isAnnalAccessible(
+        user.id,
+        annalId,
+        permissions[Permission.API_MODERATE_ANNAL] === '*',
+      ))
+    )
       throw new AppException(ERROR_CODE.NO_SUCH_ANNAL, annalId);
-    if (!(await this.annalsService.isUeAnnalSender(user.id, annalId)) && !user.permissions.includes('annalModerator'))
+    if (
+      !(await this.annalsService.isUeAnnalSender(user.id, annalId)) &&
+      permissions[Permission.API_MODERATE_ANNAL] !== '*'
+    )
       throw new AppException(ERROR_CODE.NOT_ANNAL_SENDER);
     return this.annalsService.updateAnnalMetadata(annalId, body);
   }
@@ -178,10 +205,23 @@ export class AnnalsController {
   @ApiOkResponse({ type: UeAnnalResDto })
   @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_ANNAL)
   @ApiAppErrorResponse(ERROR_CODE.NOT_ANNAL_SENDER)
-  async deleteUeAnnal(@UUIDParam('annalId') annalId: string, @GetUser() user: User) {
-    if (!(await this.annalsService.isAnnalAccessible(user.id, annalId, user.permissions.includes('annalModerator'))))
+  async deleteUeAnnal(
+    @UUIDParam('annalId') annalId: string,
+    @GetUser() user: User,
+    @GetPermissions() permissions: RequestPermissions,
+  ) {
+    if (
+      !(await this.annalsService.isAnnalAccessible(
+        user.id,
+        annalId,
+        permissions[Permission.API_MODERATE_ANNAL] === '*',
+      ))
+    )
       throw new AppException(ERROR_CODE.NO_SUCH_ANNAL, annalId);
-    if (!(await this.annalsService.isUeAnnalSender(user.id, annalId)) && !user.permissions.includes('annalModerator'))
+    if (
+      !(await this.annalsService.isUeAnnalSender(user.id, annalId)) &&
+      permissions[Permission.API_MODERATE_ANNAL] !== '*'
+    )
       throw new AppException(ERROR_CODE.NOT_ANNAL_SENDER);
     return this.annalsService.deleteAnnal(annalId);
   }

@@ -34,8 +34,8 @@ import {
 import { faker } from '@faker-js/faker';
 import { AuthService } from '../../src/auth/auth.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
-import { AppProvider } from './test_utils';
-import { Sex, TimetableEntryType, UserType } from '@prisma/client';
+import {AppProvider, DEFAULT_APPLICATION} from './test_utils';
+import { Permission, Sex, TimetableEntryType, UserType } from '@prisma/client';
 import { CommentStatus } from '../../src/ue/comments/interfaces/comment.interface';
 import { UeAnnalFile } from '../../src/ue/annals/interfaces/annal.interface';
 import { omit, pick, translationSelect } from '../../src/utils';
@@ -46,8 +46,7 @@ import { omit, pick, translationSelect } from '../../src/utils';
  */
 export type FakeUser = Partial<RawUser> & {
   infos?: Partial<RawUserInfos>;
-  permissions?: string[];
-  token?: string;
+  permissions?: Permission[];
   mailsPhones?: Partial<RawUserMailsPhones>;
   addresses?: Array<Partial<RawUserAddress>>;
   socialNetwork?: Partial<RawUserSocialNetwork>;
@@ -59,7 +58,8 @@ export type FakeUser = Partial<RawUser> & {
       semester?: Partial<RawSemester>;
     }
   >;
-  privacy: Partial<RawUserPrivacy>;
+  privacy?: Partial<RawUserPrivacy>;
+  token?: string;
 };
 export type FakeTimetableGroup = Partial<RawTimetableGroup>;
 export type FakeTimetableEntry = Partial<RawTimetableEntry>;
@@ -161,7 +161,7 @@ export interface FakeEntityMap {
     params: CreateUserSubscriptionParameters;
     deps: { user: FakeUser; ue: FakeUe; semester: FakeSemester };
   };
-  ueCriterion: {
+  ueStarCriterion: {
     entity: FakeUeStarCriterion;
     params: CreateCriterionParameters;
   };
@@ -250,35 +250,6 @@ export const createUser = entityFaker(
     privacy: {},
   },
   async (app, params) => {
-    const permissions = await app()
-      .get(PrismaService)
-      .userPermission.findMany({
-        where: {
-          id: {
-            in: params.permissions,
-          },
-        },
-      });
-    permissions.push(
-      ...(await Promise.all(
-        (params.permissions ?? [])
-          .filter((perm) => !permissions.some((p) => p.id === perm))
-          .map((perm) =>
-            app()
-              .get(PrismaService)
-              .userPermission.create({
-                data: {
-                  id: perm,
-                  name: {
-                    create: {
-                      fr: 'TODO : implement this value',
-                    },
-                  },
-                },
-              }),
-          ),
-      )),
-    );
     const user = await app()
       .get(PrismaService)
       .withDefaultBehaviour.user.create({
@@ -291,11 +262,6 @@ export const createUser = entityFaker(
               birthday: params.infos.birthday
                 ? new Date(params.infos.birthday.getTime() - params.infos.birthday.getTimezoneOffset() * 60000)
                 : null, // Add the 1h timezone offset (in you are in France ^^) to make the time the same as the one expected if you don't look at the timezone offset
-            },
-          },
-          permissions: {
-            createMany: {
-              data: permissions.map((perm) => ({ userPermissionId: perm.id })),
             },
           },
           rgpd: { create: {} },
@@ -326,11 +292,6 @@ export const createUser = entityFaker(
         },
         include: {
           infos: true,
-          permissions: {
-            select: {
-              userPermissionId: true,
-            },
-          },
           mailsPhones: true,
           addresses: {
             select: {
@@ -352,10 +313,46 @@ export const createUser = entityFaker(
           privacy: true,
         },
       });
+    const apiKey = await app()
+      .get(PrismaService)
+      .apiKey.create({
+        data: {
+          token: faker.random.alpha({ count: 30 }),
+          tokenUpdatedAt: new Date(),
+          user: { connect: { id: user.id } },
+          application: { connect: { id: DEFAULT_APPLICATION } },
+          apiKeyPermissions: {
+            create: [
+              {
+                permission: 'USER_SEE_DETAILS',
+                soft: true,
+                grants: {
+                  create: {
+                    user: { connect: { id: user.id } },
+                  },
+                },
+              },
+              {
+                permission: 'USER_UPDATE_DETAILS',
+                soft: true,
+                grants: {
+                  create: {
+                    user: { connect: { id: user.id } },
+                  },
+                },
+              },
+              ...params.permissions.map((permission) => ({
+                permission,
+                soft: false,
+              })),
+            ],
+          },
+        },
+      });
     return {
       ...user,
-      permissions: user.permissions.map((perm) => perm.userPermissionId),
-      token: await app().get(AuthService).signToken(user.id, user.login),
+      permissions: [],
+      token: await app().get(AuthService).signAuthenticationToken(apiKey.token),
     };
   },
 );
@@ -820,9 +817,9 @@ export const createUeSubscription = entityFaker('userUeSubscription', {}, async 
 
 export type CreateCriterionParameters = FakeUeStarCriterion;
 export const createCriterion = entityFaker(
-  'ueCriterion',
+  'ueStarCriterion',
   {
-    name: faker.word.adjective,
+    name: faker.db.ueStarCriterion.name,
   },
   async (app, params) =>
     app()

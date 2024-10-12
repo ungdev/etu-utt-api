@@ -1,7 +1,7 @@
 declare global {
   interface Array<T> {
     /**
-     * Sorts the current array and returns it.
+     * Sorts the current array (in place) and returns it.
      * Array is sorted based on a mapper function, that returns in order the values by which to sort the array.
      * @example
      * const array = [
@@ -20,6 +20,22 @@ declare global {
      *               The length of the array should be fixed, not dependent on the value to map.
      */
     mappedSort(mapper: (e: T) => any[] | any): this;
+
+    /**
+     * Creates a new array containing the same values as the original array, but removing duplicates.
+     * The order is not changed. A duplicate gets the position where it was found first.
+     * The original array is not modified.
+     * @example
+     * const array = [1, 2, 3, 3, 2, 5, 2, 6];
+     * array.unique();
+     * // Result :
+     * // [1, 2, 3, 5, 6]
+     */
+    unique(): Array<T>;
+  }
+
+  interface ObjectConstructor {
+    keys<O extends object>(o: O): (keyof O)[];
   }
 }
 
@@ -39,6 +55,10 @@ Array.prototype.mappedSort = function <T>(this: Array<T>, mapper: (e: T) => any[
     }
     return 0;
   });
+};
+
+Array.prototype.unique = function <T>(this: Array<T>) {
+  return this.reduce((acc, curr) => (acc.includes(curr) ? acc : [...acc, curr]), [] as T[]);
 };
 
 export {};

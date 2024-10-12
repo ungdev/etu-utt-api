@@ -12,6 +12,8 @@ import AccessTokenResponse from './dto/res/auth-access-token-res.dto';
 import TokenValidityResDto from './dto/res/token-validity-res.dto';
 import CasLoginResDto from './dto/res/cas-login-res.dto';
 import { ApiAppErrorResponse } from '../app.dto';
+import { GetApplication } from './decorator/get-application.decorator';
+import CreateApiKeyReqDto from './dto/req/create-api-key-req.dto';
 
 @Controller('auth')
 @ApiTags('Authentication')
@@ -31,8 +33,8 @@ export class AuthController {
     ERROR_CODE.CREDENTIALS_ALREADY_TAKEN,
     'Login, email address or any field that should be unique is already taken',
   )
-  async signup(@Body() dto: AuthSignUpReqDto): Promise<AccessTokenResponse> {
-    const token = await this.authService.signup(dto);
+  async signup(@Body() dto: AuthSignUpReqDto, @GetApplication() applicationId: string): Promise<AccessTokenResponse> {
+    const token = await this.authService.signup(dto, applicationId, false, dto.tokenExpiresIn);
     return { access_token: token };
   }
 
@@ -47,8 +49,8 @@ export class AuthController {
     type: AccessTokenResponse,
   })
   @ApiAppErrorResponse(ERROR_CODE.INVALID_CREDENTIALS, 'Either the login or the password is incorrect')
-  async signin(@Body() dto: AuthSignInReqDto) {
-    const token = await this.authService.signin(dto);
+  async signin(@Body() dto: AuthSignInReqDto, @GetApplication() application: string) {
+    const token = await this.authService.signin(dto, application, dto.tokenExpiresIn);
     if (!token) throw new AppException(ERROR_CODE.INVALID_CREDENTIALS);
     return { access_token: token };
   }
@@ -97,12 +99,12 @@ export class AuthController {
       'The CAS ticket was successfully validated. If signedIn is true, the user is authenticated and can use the access_token to authenticate his requests. If signedIn is false, the user should use the access_token to sign up with "POST /auth/signup/cas".',
     type: AccessTokenResponse,
   })
-  async casSignIn(@Body() dto: AuthCasSignInReqDto): Promise<CasLoginResDto> {
-    const res = await this.authService.casSignIn(dto.service, dto.ticket);
+  async casSignIn(@Body() dto: AuthCasSignInReqDto, @GetApplication() application: string): Promise<CasLoginResDto> {
+    const res = await this.authService.casSignIn(dto.service, dto.ticket, application, dto.tokenExpiresIn);
     if (res.status === 'invalid') {
       throw new AppException(ERROR_CODE.INVALID_CAS_TICKET);
     }
-    return { signedIn: res.status === 'ok', access_token: res.token };
+    return { status: res.status, access_token: res.token };
   }
 
   @IsPublic()
@@ -124,12 +126,32 @@ export class AuthController {
     ERROR_CODE.CREDENTIALS_ALREADY_TAKEN,
     'Login, email, or any other field that should be unique about a user is already bound to another user',
   )
-  async casSignUp(@Body() dto: AuthCasSignUpReqDto) {
-    const data = this.authService.decodeRegisterToken(dto.registerToken);
+  async casSignUp(@Body() dto: AuthCasSignUpReqDto, @GetApplication() application: string) {
+    const data = this.authService.decodeRegisterUserToken(dto.registerToken);
     if (!data) throw new AppException(ERROR_CODE.INVALID_TOKEN_FORMAT);
     if (await this.usersService.doesUserExist({ login: data.login }))
       throw new AppException(ERROR_CODE.CREDENTIALS_ALREADY_TAKEN);
-    const token = await this.authService.signup(data, true);
+    const token = await this.authService.signup(data, application, true, dto.tokenExpiresIn);
+    return { access_token: token };
+  }
+
+  @IsPublic()
+  @Post('/api-key')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    description:
+      'Creates an API Key to allow user to connect to an application through EtuUTT. Returns a token that can be used to authenticate requests',
+  })
+  @ApiCreatedResponse({
+    description:
+      'Create an API access for user to the application that made the request. Returns an authentication token. A route to sign-in should be called before, to get the required token in body.',
+  })
+  async createApiKey(@Body() dto: CreateApiKeyReqDto, @GetApplication() application: string) {
+    const data = this.authService.decodeRegisterApiKeyToken(dto.token);
+    if (!data) throw new AppException(ERROR_CODE.INVALID_TOKEN_FORMAT);
+    if (!(await this.usersService.doesUserExist({ id: data.userId })))
+      throw new AppException(ERROR_CODE.NO_SUCH_USER, data.userId); // Can only happen if user has deleted his account
+    const token = await this.authService.createApiKey(data.userId, application, dto.tokenExpiresIn);
     return { access_token: token };
   }
 }

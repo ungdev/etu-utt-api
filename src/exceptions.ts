@@ -14,6 +14,8 @@ import { HttpException, HttpStatus } from '@nestjs/common';
  */
 export const enum ERROR_CODE {
   NOT_LOGGED_IN = 1001,
+  APPLICATION_HEADER_MISSING = 1002,
+  INCONSISTENT_APPLICATION = 1003,
   PARAM_DOES_NOT_EXIST = 2001,
   PARAM_MALFORMED = 2002,
   PARAM_MISSING = 2003,
@@ -79,6 +81,14 @@ export const ErrorData = Object.freeze({
   [ERROR_CODE.NOT_LOGGED_IN]: {
     message: 'You must be logged in to access this resource',
     httpCode: HttpStatus.UNAUTHORIZED,
+  },
+  [ERROR_CODE.APPLICATION_HEADER_MISSING]: {
+    message: 'You should specify your application ID in the X-Application header',
+    httpCode: HttpStatus.BAD_REQUEST,
+  },
+  [ERROR_CODE.INCONSISTENT_APPLICATION]: {
+    message: 'The application used to log in is different from the application given in the X-Application header',
+    httpCode: HttpStatus.CONFLICT,
   },
   [ERROR_CODE.PARAM_DOES_NOT_EXIST]: {
     message: 'The parameter % does not exist',

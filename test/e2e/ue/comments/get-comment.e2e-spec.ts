@@ -18,7 +18,7 @@ import { PrismaService } from '../../../../src/prisma/prisma.service';
 const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
   const user = createUser(app);
   const user2 = createUser(app, { login: 'user2', studentId: 3 });
-  const moderator = createUser(app, { login: 'user3', studentId: 3, permissions: ['commentModerator'] });
+  const moderator = createUser(app, { login: 'user3', studentId: 3, permissions: ['API_MODERATE_COMMENTS'] });
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });

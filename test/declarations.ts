@@ -9,7 +9,7 @@ import { UeRating } from 'src/ue/interfaces/rate.interface';
 import { FakeUeAnnalType, FakeUser, FakeUe, FakeHomepageWidget, FakeAsso, FakeUeCreditCategory } from './utils/fakedb';
 import { UeAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
 import { ConfigModule } from '../src/config/config.module';
-import { AppProvider } from './utils/test_utils';
+import {AppProvider, DEFAULT_APPLICATION} from './utils/test_utils';
 import { getTranslation, omit, pick } from '../src/utils';
 import { isArray } from 'class-validator';
 import { Language } from '@prisma/client';
@@ -55,10 +55,21 @@ function ueOverviewExpectation(ue: FakeUe, spec: Spec) {
   };
 }
 
+const baseToss = Spec.prototype.toss;
+
 Spec.prototype.language = 'fr';
 Spec.prototype.withLanguage = function (language: Language) {
   this.language = language;
   return <Spec>this;
+};
+Spec.prototype.application = DEFAULT_APPLICATION;
+Spec.prototype.withApplication = function (application: string) {
+  this.application = application;
+  return <Spec>this;
+};
+Spec.prototype.toss = function () {
+  (<Spec>this).withHeaders('X-Language', (<Spec>this).language).withHeaders('X-Application', (<Spec>this).application);
+  return baseToss.call(<Spec>this);
 };
 Spec.prototype.expectAppError = function <ErrorCode extends ERROR_CODE>(
   errorCode: ErrorCode,
