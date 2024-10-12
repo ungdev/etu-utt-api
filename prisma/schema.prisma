@@ -7,38 +7,48 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model ApiApplication {
+  id     String @id @default(uuid())
+  name   String
+  userId String
+
+  user   User     @relation(fields: [userId], references: [id])
+  ApiKey ApiKey[]
+}
+
 model ApiKey {
   id             String   @id @default(uuid())
-  name           String
-  token          String
+  token          String   @unique
   tokenUpdatedAt DateTime
   userId         String
+  applicationId  String
 
-  user                 User                        @relation(fields: [userId], references: [id])
-  permissions      ApiKeyPermission[]
+  user                      User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  application               ApiApplication         @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  apiKeyPermissions ApiKeyPermission[]
 }
 
 model ApiKeyPermission {
-  id String @id @default(uuid())
+  id         String     @id @default(uuid())
   permission Permission
-  apiKeyId       String
-  soft Boolean
+  apiKeyId   String
+  soft       Boolean
 
-  apiKey ApiKey @relation(fields: [apiKeyId], references: [id])
-  grants ApiKeyGrantedPermission[]
+  apiKey ApiKey                 @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  grants ApiGrantedPermission[]
 
   @@unique([apiKeyId, permission])
 }
 
-model ApiKeyGrantedPermission {
+model ApiGrantedPermission {
   apiKeyPermissionId String
-  userId   String
-  createdAt DateTime @default(now())
+  userId                     String
+  createdAt                  DateTime @default(now())
 
-  apiKeyPermission ApiKeyPermission @relation(fields: [apiKeyPermissionId], references: [id])
-  user User @relation(fields: [userId], references: [id])
+  apiKeyPermission ApiKeyPermission @relation(fields: [apiKeyPermissionId], references: [id], onDelete: Cascade)
+  user                     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@id([apiKeyPermissionId, userId])
+  @@id([userId, apiKeyPermissionId])
 }
 
 model Asso {
@@ -487,7 +497,7 @@ model UeInfo {
 
 model UeStarCriterion {
   id                       String @id @default(uuid())
-  name                     String @db.VarChar(255)
+  name                     String @db.VarChar(255) @unique
   descriptionTranslationId String @unique
 
   descriptionTranslation Translation  @relation(fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
@@ -569,8 +579,9 @@ model User {
   timetableGroups       UserTimetableGroup[]
   homepageWidgets       UserHomepageWidget[]
   privacy               UserPrivacy              @relation(fields: [privacyId], references: [id])
+  apiApplications       ApiApplication[]
   apiKeys               ApiKey[]
-  apiKeyGrantedPermissions ApiKeyGrantedPermission[]
+  apiGrants             ApiGrantedPermission[]
 }
 
 model UserAddress {
@@ -880,6 +891,7 @@ enum AddressPrivacy {
 enum Permission {
   API_SEE_OPINIONS_UE
   API_UPLOAD_ANNAL
+  API_MODERATE_ANNAL
   API_MODERATE_COMMENTS
 
   USER_SEE_DETAILS

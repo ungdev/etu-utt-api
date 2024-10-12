@@ -1,6 +1,7 @@
-import { Prisma, PrismaClient } from '@prisma/client';
+import { Permission, Prisma, PrismaClient } from '@prisma/client';
 import { generateCustomModel, RequestType } from '../../prisma/prisma.service';
 import { Translation } from '../../prisma/types';
+import { omit } from '../../utils';
 
 const USER_SELECT_FILTER = {
   select: {
@@ -19,11 +20,6 @@ const USER_SELECT_FILTER = {
         sex: true,
         avatar: true,
         nationality: true,
-      },
-    },
-    permissions: {
-      select: {
-        userPermissionId: true,
       },
     },
     branchSubscriptions: {
@@ -97,23 +93,47 @@ const USER_SELECT_FILTER = {
         timetable: true,
       },
     },
+    apiKeys: {
+      select: {
+        id: true,
+        apiKeyPermissions: {
+          select: {
+            permission: true,
+            soft: true,
+            grants: {
+              select: {
+                userId: true,
+              },
+            },
+          },
+        },
+      },
+    },
   },
   orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
 } satisfies Partial<RequestType<'user'>>;
 
 type UnformattedUser = Prisma.UserGetPayload<typeof USER_SELECT_FILTER>;
-export type User = Omit<UnformattedUser, 'permissions'> & {
-  permissions: string[];
+export type User = Omit<UnformattedUser, 'apiKeys'> & {
+  permissions: { [k: string]: { [p in Permission]?: '*' | string[] } };
 };
 
 export const generateCustomUserModel = (prisma: PrismaClient) =>
   generateCustomModel(prisma, 'user', USER_SELECT_FILTER, formatUser);
 
-export function formatUser(_: PrismaClient, user: UnformattedUser): User {
-  return {
-    ...user,
-    permissions: user.permissions.map((permission) => permission.userPermissionId),
-  };
+function formatUser(_, user: UnformattedUser) {
+  const permissions: User['permissions'] = {};
+  for (const apiKey of user.apiKeys) {
+    permissions[apiKey.id] = {};
+    for (const permission of apiKey.apiKeyPermissions) {
+      if (!permission.soft) {
+        permissions[apiKey.id][permission.permission] = '*';
+      } else {
+        permissions[apiKey.id][permission.permission] = permission.grants.map((p) => p.userId);
+      }
+    }
+  }
+  return { ...omit(user, 'apiKeys'), permissions };
 }
 
 export type UserAssoMembership = {

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Sex, UserType } from '@prisma/client';
+import { Permission, Sex, UserType } from '@prisma/client';
 
 export default class UserOverviewResDto {
   id: string;
@@ -7,7 +7,8 @@ export default class UserOverviewResDto {
   lastName: string;
   login: string;
   studentId: number;
-  permissions: string[];
+  @ApiProperty({ enum: Permission })
+  permissions: Permission[];
   @ApiProperty({ enum: UserType })
   userType: UserType;
   infos: UserOverviewResDto_Infos;

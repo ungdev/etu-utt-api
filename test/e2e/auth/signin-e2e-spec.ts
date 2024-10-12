@@ -8,6 +8,7 @@ const SignInE2ESpec = e2eSuite('POST /auth/signin', (app) => {
   const dto = {
     login: 'testLogin',
     password: 'testPassword',
+    tokenExpiresIn: 1000,
   } as AuthSignInDto;
 
   fakedb.createUser(app, dto);

@@ -81,5 +81,7 @@ declare module './declarations' {
     expectCreditCategories(categories: JsonLikeVariant<FakeUeCreditCategory[]>): this;
     withLanguage(language: Language): this;
     language: Language;
+    withApplication(application: string): this;
+    application: string;
   }
 }

@@ -5,7 +5,7 @@ import { faker } from '@faker-js/faker';
 import { ConfigModule } from '../../src/config/config.module';
 import { DMMF } from '@prisma/client/runtime/library';
 import { clearUniqueValues } from '../../prisma/seed/utils';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, UserType } from '@prisma/client';
 
 /**
  * Initializes this file.
@@ -45,6 +45,28 @@ function suite<T extends AppProvider>(name: string, func: (app: T) => void) {
     describe(name, () => {
       beforeAll(async () => {
         await cleanDb(app().get(PrismaService));
+        await app()
+          .get(PrismaService)
+          .user.create({
+            data: {
+              login: "etuutt",
+              firstName: "Etu",
+              lastName: "UTT",
+              userType: UserType.STUDENT,
+              apiApplications: {
+                create: {
+                  id: DEFAULT_APPLICATION,
+                  name: faker.company.name(),
+                },
+              },
+              socialNetwork: { create: {} },
+              rgpd: { create: {} },
+              preference: { create: {} },
+              infos: { create: {} },
+              mailsPhones: { create: {} },
+              privacy: { create: {} },
+            },
+          });
         clearUniqueValues();
       });
       func(app);
@@ -82,7 +104,7 @@ export async function cleanDb(prisma: PrismaService | PrismaClient) {
   // We can't delete each table one by one, because of foreign key constraints
   const tablesCleared = [] as string[];
   // _runtimeDataModel.models basically contains a JS-ified version of the schema.prisma
-  for (const modelName of Object.keys((prisma as any)._runtimeDataModel.models)) {
+  for (const modelName of Object.keys((prisma as any)._runtimeDataModel.models) as string[]) {
     // Check the table hasn't been already cleaned
     if (tablesCleared.includes(modelName)) continue;
     await clearTableWithCascade(prisma, modelName, tablesCleared);
@@ -122,3 +144,5 @@ async function clearTableWithCascade(prisma: PrismaService | PrismaClient, model
   await prisma[modelName].deleteMany();
   tablesCleared.push(modelName);
 }
+
+export const DEFAULT_APPLICATION = '52ce644d-183f-49e9-bd21-d2d4f37e2196';

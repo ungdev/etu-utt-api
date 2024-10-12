@@ -93,7 +93,7 @@ function fakeSafeUniqueData<T extends keyof FakeEntityMap, K extends keyof Entit
  * Extends the faker module with custom functions.
  * These functions are used to generate values for the database.
  * This is the schema of the extension:
- * {@code {db: { [tableName]: { [columnName]: () => value } } } }
+ * {@code { db: { [tableName]: { [columnName]: () => value } } } }
  */
 declare module '@faker-js/faker' {
   export interface Faker {
@@ -120,6 +120,9 @@ declare module '@faker-js/faker' {
       assoMembershipRole: {
         position: () => number;
       };
+      ueStarCriterion: {
+        name: () => string;
+      }
     };
   }
 }
@@ -177,6 +180,9 @@ Faker.prototype.db = {
         'position',
         () => Math.max(...(registeredUniqueValues.assoMembershipRole?.position ?? [0])) + 1,
       ),
+  },
+  ueStarCriterion: {
+    name: () => fakeSafeUniqueData('ueStarCriterion', 'name', faker.word.adjective),
   },
 };
 

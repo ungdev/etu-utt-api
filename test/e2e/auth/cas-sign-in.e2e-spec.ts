@@ -6,9 +6,10 @@ import { ERROR_CODE } from '../../../src/exceptions';
 import { string } from 'pactum-matchers';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../../src/prisma/prisma.service';
+import AuthCasSignInReqDto from '../../../src/auth/dto/req/auth-cas-sign-in-req.dto';
 
-const CasSignInE2ESpec = e2eSuite('/auth/signin/cas', (app) => {
-  const body = { service: cas.validService, ticket: cas.validTicket };
+const CasSignInE2ESpec = e2eSuite('POST /auth/signin/cas', (app) => {
+  const body: AuthCasSignInReqDto = { service: cas.validService, ticket: cas.validTicket, tokenExpiresIn: 1000 };
 
   it('should fail as provided service is not valid', async () => {
     await pactum

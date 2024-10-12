@@ -14,6 +14,9 @@ import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiAppErrorResponse, paginatedResponseDto } from '../../app.dto';
 import { UeCommentUpvoteResDto$False, UeCommentUpvoteResDto$True } from './dto/res/ue-comment-upvote-res.dto';
 import UeCommentReplyResDto from './dto/res/ue-comment-reply-res.dto';
+import { Permission } from '@prisma/client';
+import { GetPermissions } from '../../auth/decorator/get-permissions.decorator';
+import { RequestPermissions } from '../../auth/interfaces/request-auth-data.interface';
 
 @Controller('ue/comments')
 @ApiTags('UE Comment')
@@ -28,9 +31,13 @@ export class CommentsController {
     ERROR_CODE.NO_SUCH_UE,
     'This error is sent back when there is no UE associated with the code provided.',
   )
-  async getUEComments(@GetUser() user: User, @Query() dto: GetUeCommentsReqDto): Promise<Pagination<UeCommentResDto>> {
+  async getUEComments(
+    @GetUser() user: User,
+    @Query() dto: GetUeCommentsReqDto,
+    @GetPermissions() permissions: RequestPermissions,
+  ): Promise<Pagination<UeCommentResDto>> {
     if (!(await this.ueService.doesUeExist(dto.ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, dto.ueCode);
-    return this.commentsService.getComments(user.id, dto, user.permissions.includes('commentModerator'));
+    return this.commentsService.getComments(user.id, dto, permissions[Permission.API_MODERATE_COMMENTS] === '*');
   }
 
   @Post()
@@ -64,11 +71,15 @@ export class CommentsController {
   @ApiOperation({ description: 'Fetch a specific comment.' })
   @ApiOkResponse({ type: UeCommentResDto })
   @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_COMMENT, 'No comment is associated with the given commentId')
-  async getUECommentFromId(@UUIDParam('commentId') commentId: string, @GetUser() user: User): Promise<UeCommentResDto> {
+  async getUECommentFromId(
+    @UUIDParam('commentId') commentId: string,
+    @GetUser() user: User,
+    @GetPermissions() permissions: RequestPermissions,
+  ): Promise<UeCommentResDto> {
     const comment = await this.commentsService.getCommentFromId(
       commentId,
       user.id,
-      user.permissions.includes('commentModerator'),
+      permissions[Permission.API_MODERATE_COMMENTS] === '*',
     );
     if (!comment) throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
     return comment;
@@ -87,8 +98,9 @@ export class CommentsController {
     @UUIDParam('commentId') commentId: string,
     @GetUser() user: User,
     @Body() body: UeCommentUpdateReqDto,
+    @GetPermissions() permissions: RequestPermissions,
   ): Promise<UeCommentResDto> {
-    const isCommentModerator = user.permissions.includes('commentModerator');
+    const isCommentModerator = permissions[Permission.API_MODERATE_COMMENTS] === '*';
     if (!(await this.commentsService.doesCommentExist(commentId, user.id, isCommentModerator, isCommentModerator)))
       throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
     if (isCommentModerator || (await this.commentsService.isUserCommentAuthor(user.id, commentId)))
@@ -107,8 +119,12 @@ export class CommentsController {
     ERROR_CODE.NOT_COMMENT_AUTHOR,
     'The user is not the author of the comment and does not have the `commentModerator` permission.',
   )
-  async DiscardUEComment(@UUIDParam('commentId') commentId: string, @GetUser() user: User): Promise<UeCommentResDto> {
-    const isCommentModerator = user.permissions.includes('commentModerator');
+  async DiscardUEComment(
+    @UUIDParam('commentId') commentId: string,
+    @GetUser() user: User,
+    @GetPermissions() permissions: RequestPermissions,
+  ): Promise<UeCommentResDto> {
+    const isCommentModerator = permissions[Permission.API_MODERATE_COMMENTS] === '*';
     if (!(await this.commentsService.doesCommentExist(commentId, user.id, isCommentModerator)))
       throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
     if ((await this.commentsService.isUserCommentAuthor(user.id, commentId)) || isCommentModerator)
@@ -132,8 +148,9 @@ export class CommentsController {
   async UpvoteUEComment(
     @UUIDParam('commentId') commentId: string,
     @GetUser() user: User,
+    @GetPermissions() permissions: RequestPermissions,
   ): Promise<UeCommentUpvoteResDto$True> {
-    const commentModerator = user.permissions.includes('commentModerator');
+    const commentModerator = permissions[Permission.API_MODERATE_COMMENTS] === '*';
     if (!(await this.commentsService.doesCommentExist(commentId, user.id, commentModerator, commentModerator)))
       throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
     if (await this.commentsService.isUserCommentAuthor(user.id, commentId))
@@ -157,11 +174,12 @@ export class CommentsController {
   async UnUpvoteUEComment(
     @UUIDParam('commentId') commentId: string,
     @GetUser() user: User,
+    @GetPermissions() permissions: RequestPermissions,
   ): Promise<UeCommentUpvoteResDto$False> {
-    const commentModerator = user.permissions.includes('commentModerator');
+    const commentModerator = permissions[Permission.API_MODERATE_COMMENTS] === '*';
     if (!(await this.commentsService.doesCommentExist(commentId, user.id, commentModerator, commentModerator)))
       throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
-    // TODO : on est d'accord qu'on peut virer cette condition ? Puisque de toutes manières l'utilisateur ne peut pas mettre un comment.
+    // TODO : on est d'accord qu'on peut virer cette condition ? Puisque de toutes manières l'utilisateur ne peut pas mettre un upvote.
     if (await this.commentsService.isUserCommentAuthor(user.id, commentId))
       throw new AppException(ERROR_CODE.IS_COMMENT_AUTHOR);
     if (!(await this.commentsService.hasAlreadyUpvoted(user.id, commentId)))
@@ -179,8 +197,9 @@ export class CommentsController {
     @GetUser() user: User,
     @UUIDParam('commentId') commentId: string,
     @Body() body: CommentReplyReqDto,
+    @GetPermissions() permissions: RequestPermissions,
   ): Promise<UeCommentReplyResDto> {
-    const isCommentModerator = user.permissions.includes('commentModerator');
+    const isCommentModerator = permissions[Permission.API_MODERATE_COMMENTS] === '*';
     if (!(await this.commentsService.doesCommentExist(commentId, user.id, isCommentModerator, isCommentModerator)))
       throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
     return this.commentsService.replyComment(user.id, commentId, body);
@@ -199,11 +218,12 @@ export class CommentsController {
     @GetUser() user: User,
     @UUIDParam('replyId') replyId: string,
     @Body() body: CommentReplyReqDto,
+    @GetPermissions() permissions: RequestPermissions,
   ): Promise<UeCommentReplyResDto> {
     if (!(await this.commentsService.doesReplyExist(replyId))) throw new AppException(ERROR_CODE.NO_SUCH_REPLY);
     if (
       (await this.commentsService.isUserCommentReplyAuthor(user.id, replyId)) ||
-      user.permissions.includes('commentModerator')
+      permissions[Permission.API_MODERATE_COMMENTS] === '*'
     )
       return this.commentsService.editReply(replyId, body);
     throw new AppException(ERROR_CODE.NOT_REPLY_AUTHOR);
@@ -221,11 +241,12 @@ export class CommentsController {
   async DeleteReplyComment(
     @GetUser() user: User,
     @UUIDParam('replyId') replyId: string,
+    @GetPermissions() permissions: RequestPermissions,
   ): Promise<UeCommentReplyResDto> {
     if (!(await this.commentsService.doesReplyExist(replyId))) throw new AppException(ERROR_CODE.NO_SUCH_REPLY);
     if (
       (await this.commentsService.isUserCommentReplyAuthor(user.id, replyId)) ||
-      user.permissions.includes('commentModerator')
+      permissions[Permission.API_MODERATE_COMMENTS] === '*'
     )
       return this.commentsService.deleteReply(replyId);
     throw new AppException(ERROR_CODE.NOT_REPLY_AUTHOR);

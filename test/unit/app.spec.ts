@@ -1,7 +1,7 @@
 //import TimetableServiceUnitSpec from './timetable/timetable.service.spec';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '../../src/app.module';
-import '../../src/array';
+import '../../src/std.type';
 
 describe('EtuUTT API unit testing', () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

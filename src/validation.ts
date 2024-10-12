@@ -47,7 +47,7 @@ export const validationExceptionFactory = (errors: ValidationError[]) => {
   for (const [constraint, error] of Object.entries(mappedErrors)) {
     if (constraint in errorsByType) return new AppException(error, errorsByType[constraint].sort().join(', '));
   }
-  console.log(errors); // TODO : send to sentry. soon™
+  console.error(errors); // TODO : send to sentry. soon™
   // If errors are not registered in the mappedErrors object, throw a generic error
   return new AppException(
     ERROR_CODE.PARAM_MALFORMED,

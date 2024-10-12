@@ -10,11 +10,12 @@ import {
 } from '../../../utils/fakedb';
 import { e2eSuite } from '../../../utils/test_utils';
 import { ERROR_CODE } from '../../../../src/exceptions';
+import {Permission} from "@prisma/client";
 
 const GetAnnalMetadata = e2eSuite('GET /ue/annals/metadata', (app) => {
   const ueUser = createUser(app);
   const nonUeUser = createUser(app, { login: 'user2', studentId: 3 });
-  const uploader = createUser(app, { login: 'user3', studentId: 4, permissions: ['annalUploader'] });
+  const uploader = createUser(app, { login: 'user3', studentId: 4, permissions: [Permission.API_UPLOAD_ANNAL] });
   const annalType = createAnnalType(app);
   const semester = createSemester(app);
   const branch = createBranch(app);
