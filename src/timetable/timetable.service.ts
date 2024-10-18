@@ -556,6 +556,11 @@ export default class TimetableService {
     return this.getEntryDetails(entryId, userId);
   }
 
+  /**
+   * Download the ical file from a selected service.
+   * @param param Where to download the file from
+   * @returns the file content as a string
+   */
   async downloadTimetable({ uid, service }: TimetableImportDto): Promise<string> {
     const url = `${service}${uid}.ics`;
     try {
@@ -563,13 +568,15 @@ export default class TimetableService {
       return response.data;
     } catch (error) {
       // Assume the error is due to an incorrect uid
-      // TODO better error handling
-      console.warn(error);
-      
       throw new AppException(ERROR_CODE.RESSOURCE_UNAVAILABLE, url);
     }
   }
 
+  /**
+   * Parse a raw string into a list of CourseEvent
+   * @param raw_timetable the string must be the content of an Ical file
+   * @returns {CourseEvent[]}
+   */
   parseTimetable(raw_timetable: string): CourseEvent[] {
     const event_separator = /(BEGIN:VEVENT\r?\n(?:.|\r?\n)*?END:VEVENT\r?\n?)/gm;
 
@@ -598,6 +605,12 @@ export default class TimetableService {
     return Object.values(event_map);
   }
 
+  /**
+   * Parse an ical DATETIME into a javascript Date object.
+   * Assumes the server is using local time and DATETIME is expressed in UTC
+   * @param icalDateTime the DATETIME
+   * @returns
+   */
   private parseIcalDateTime(icalDateTime: string): Date {
     const year = parseInt(icalDateTime.slice(0, 4));
     const month = parseInt(icalDateTime.slice(4, 6)) - 1;
@@ -609,13 +622,24 @@ export default class TimetableService {
     return new Date(Date.UTC(year, month, day, hour, minute) + offset * 60 * 1000);
   }
 
-  private parseIcalField(raw_event: string, fieldName: string): string {
+  /**
+   * Retrieve from an ical event a value from the provided key
+   * @param raw_event the ical event, if many given, return the first occurence of the key
+   * @param key the key does not need to be uppercase
+   * @returns {string}
+   */
+  private parseIcalField(raw_event: string, key: string): string {
     return raw_event
-      .match(new RegExp(`${fieldName.toUpperCase()}:.*`))[0]
-      .replace(`${fieldName.toUpperCase()}:`, '')
+      .match(new RegExp(`${key.toUpperCase()}:.*`))[0]
+      .replace(`${key.toUpperCase()}:`, '')
       .trim();
   }
 
+  /**
+   * Convert an ical event into a CourseEvent
+   * @param raw_event
+   * @returns
+   */
   private parseCourseFromEvent(raw_event: string): CourseEvent {
     let courseType: 'CM' | 'TD' | 'TP';
     switch (this.parseIcalField(raw_event, 'description').split(' - ')[0]) {

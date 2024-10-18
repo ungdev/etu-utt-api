@@ -7,7 +7,13 @@ import { UeCourse } from './interfaces/course.interface';
 export class CourseService {
   constructor(private prisma: PrismaService) {}
 
-  async getUeCourseId(course: UeCourse): Promise<string | null> {
+  /**
+   * Fetch the database and try to match the ueCourse with an existing ueCourse.
+   * If found return it's id, otherwise null
+   * @param course the course to match
+   * @returns {Promise<string | null>}
+   */
+  async existAlready(course: UeCourse): Promise<string | null> {
     const result = await this.prisma.ueCourse.findFirst({
       select: {
         id: true,
@@ -22,15 +28,10 @@ export class CourseService {
           eventStart: course.timetableEntry.startDate,
           location: course.timetableEntry.location,
           type: 'COURSE',
-          occurrencesCount: course.timetableEntry.count,
-          occurrenceDuration: course.timetableEntry.duration,
         },
       },
     });
-    if (result == null) {
-      return null;
-    }
-    return result.id;
+    return result?.id;
   }
 
   async createCourse(course: UeCourse): Promise<RawUeCourse> {

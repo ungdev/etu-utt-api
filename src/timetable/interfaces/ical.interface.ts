@@ -37,7 +37,7 @@ export interface CourseEvent {
 
     /**
      * The hour of the course.
-     * It is stored using French Timezone as provided in the ical file
+     * It uses local Timezone as provided in the ical file
      */
     hour: number;
 

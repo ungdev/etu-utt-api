@@ -14,5 +14,10 @@ export const setTimetable = (data: string) => {
 
 export function enable(timetableUrl: string) {
   axios.defaults.adapter = 'http';
-  nock(timetableUrl).persist().get(/.*/).reply(HttpStatus.OK, ()=>timetableData);
+  // Match everything except the calendar with id 9999[...]999.ics
+  // which would be considered an invalid url
+  nock(timetableUrl)
+    .persist()
+    .get(/^(?!.*\/calendrier\/9{64}\.ics).*/)
+    .reply(HttpStatus.OK, () => timetableData);
 }

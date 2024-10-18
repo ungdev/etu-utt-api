@@ -194,7 +194,7 @@ export class TimetableController {
         ueCode: event.name.split('_')[1],
       };
 
-      let courseId = await this.courseService.getUeCourseId(course);
+      let courseId = await this.courseService.existAlready(course);
       if (courseId == null) {
         courseId = (await this.courseService.createCourse(course)).id;
       }
