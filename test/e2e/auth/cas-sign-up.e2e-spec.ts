@@ -12,10 +12,11 @@ import { ERROR_CODE } from '../../../src/exceptions';
 import { ConfigModule } from '../../../src/config/config.module';
 import { LdapServerMock, LdapUser } from 'ldap-server-mock';
 import { HttpStatus } from '@nestjs/common';
+import {mockLdapServer} from "../../external_services/ldap";
 
 const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
   const list: LdapUser[] = [];
-  const ldapServer = new LdapServerMock(
+  /*const ldapServer = new LdapServerMock(
     list,
     {
       searchBase: 'ou=people,dc=utt,dc=fr',
@@ -27,7 +28,7 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
       // Disable default logging
       info: () => undefined,
     },
-  );
+  );*/
   const branch = fakedb.createBranch(app);
   const branchOption = fakedb.createBranchOption(app, { branch });
   fakedb.createSemester(app, {
@@ -37,8 +38,9 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
   });
   const ue = fakedb.createUe(app);
 
-  beforeAll(() => ldapServer.start());
-  afterAll(() => ldapServer.stop());
+  //beforeAll(() => ldapServer.start());
+  //afterAll(() => ldapServer.stop());
+  mockLdapServer(list);
 
   it('should fail as the provided token is not jwt-generated', () =>
     pactum

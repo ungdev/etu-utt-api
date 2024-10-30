@@ -13,7 +13,7 @@ model ApiApplication {
   userId String
 
   user   User     @relation(fields: [userId], references: [id])
-  ApiKey ApiKey[]
+  apiKeys ApiKey[]
 }
 
 model ApiKey {
