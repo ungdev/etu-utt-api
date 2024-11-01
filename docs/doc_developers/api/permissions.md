@@ -108,3 +108,13 @@ Pour un utilisateur, on passe par le CAS de l'UTT, avec la route `POST /auth/sig
 Pour une application, on génère un token pour la _clé API_ demandée, puis on retourne le _bearer token_ associé. Il faut aussi bien sauvegarder la date de dernière mise à jour (`tokenUpdatedAt`), et utiliser cette date pour toujours retourner la même version du token (champ `iat` dans l'objet à encoder avec JWT).
 
 L'utilisateur peut renouveler les token de ses `ApiKey`. Le token sera alors modifié, pour empêcher l'accès avec l'ancien token.
+
+## Grant
+
+### Soft grant
+
+N'importe quelle application peut se _soft grant_ une _permission_.
+
+Pour permettre à un utilisateur d'accepter cette _soft grant_, l'_application_ doit rediriger l'utilisateur vers une route sur le front{sup}`route à déterminer`, en lui passant en paramètre l'id de l'_application_, l'URL de redirection, et les IDs des `ApiKeyPermission` pour nécessaires à _l'application_{sup}`noms des arguments à déterminer`.
+
+L'utilisateur sera alors invité à se connecter, à accepter ou refuser les différentes _permissions_, et sera redirigé vers l'URL, avec en paramètre les _permissions_ acceptées{sup}`format à déterminer`.
