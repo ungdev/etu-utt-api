@@ -5,7 +5,6 @@ import { e2eSuite } from '../../utils/test_utils';
 import { ERROR_CODE } from '../../../src/exceptions';
 import { UserType } from '@prisma/client';
 import { createUser } from '../../utils/fakedb';
-import { AuthService } from '../../../src/auth/auth.service';
 import { JwtService } from '@nestjs/jwt';
 
 const SignupE2ESpec = e2eSuite('POST /auth/signup', (app) => {

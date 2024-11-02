@@ -1,4 +1,4 @@
-import { LdapServerMock, LdapUser } from "ldap-server-mock";
+import { LdapServerMock, LdapUser } from 'ldap-server-mock';
 
 export function mockLdapServer(list: LdapUser[]) {
   //console.log("loading server ", process.env.LDAP_URL)

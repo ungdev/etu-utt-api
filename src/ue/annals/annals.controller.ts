@@ -89,7 +89,10 @@ export class AnnalsController {
     @GetPermissions() permissions: RequestPermissions,
   ): Promise<UeAnnalMetadataResDto> {
     if (!(await this.ueService.doesUeExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
-    if (!(await this.ueService.hasAlreadyDoneThisUe(user.id, ueCode)) && permissions[Permission.API_UPLOAD_ANNAL] !== '*')
+    if (
+      !(await this.ueService.hasAlreadyDoneThisUe(user.id, ueCode)) &&
+      permissions[Permission.API_UPLOAD_ANNAL] !== '*'
+    )
       throw new AppException(ERROR_CODE.NOT_ALREADY_DONE_UE);
     return this.annalsService.getUEAnnalMetadata(user, ueCode, permissions[Permission.API_UPLOAD_ANNAL] === '*');
   }
@@ -122,8 +125,8 @@ export class AnnalsController {
     if (!(await this.annalsService.isUeAnnalSender(user.id, annalId)))
       throw new AppException(ERROR_CODE.NOT_ANNAL_SENDER);
     if (
-      (await this.annalsService.getUEAnnal(annalId, user.id, permissions[Permission.API_MODERATE_ANNAL] === '*')).status !==
-      CommentStatus.PROCESSING
+      (await this.annalsService.getUEAnnal(annalId, user.id, permissions[Permission.API_MODERATE_ANNAL] === '*'))
+        .status !== CommentStatus.PROCESSING
     )
       throw new AppException(ERROR_CODE.ANNAL_ALREADY_UPLOADED);
     return this.annalsService.uploadAnnalFile(await file, annalId, rotate);

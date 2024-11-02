@@ -1,7 +1,6 @@
 import * as pactum from 'pactum';
 import { e2eSuite } from '../../utils/test_utils';
 import { AuthService } from '../../../src/auth/auth.service';
-import { ConfigModule } from '../../../src/config/config.module';
 import { ERROR_CODE } from '../../../src/exceptions';
 
 const VerifyE2ESpec = e2eSuite('GET /token/signin', (app) => {

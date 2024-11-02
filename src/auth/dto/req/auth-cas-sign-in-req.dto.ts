@@ -1,6 +1,6 @@
-import {IsInt, IsNotEmpty, IsString} from 'class-validator';
-import {Type} from "class-transformer";
-import {ApiProperty} from "@nestjs/swagger";
+import { IsInt, IsNotEmpty, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
 
 export default class AuthCasSignInReqDto {
   @IsString()

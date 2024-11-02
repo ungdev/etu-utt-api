@@ -49,9 +49,9 @@ function suite<T extends AppProvider>(name: string, func: (app: T) => void) {
           .get(PrismaService)
           .user.create({
             data: {
-              login: "etuutt",
-              firstName: "Etu",
-              lastName: "UTT",
+              login: 'etuutt',
+              firstName: 'Etu',
+              lastName: 'UTT',
               userType: UserType.STUDENT,
               apiApplications: {
                 create: {

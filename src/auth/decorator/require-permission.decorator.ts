@@ -1,6 +1,6 @@
 import { SetMetadata, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import {Permission} from "@prisma/client";
+import { Permission } from '@prisma/client';
 
 export const REQUIRED_PERMISSIONS_KEY = 'requiredPermissions';
 /**

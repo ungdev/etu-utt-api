@@ -10,9 +10,9 @@ import { FakeUser } from '../../utils/fakedb';
 import { string } from 'pactum-matchers';
 import { ERROR_CODE } from '../../../src/exceptions';
 import { ConfigModule } from '../../../src/config/config.module';
-import { LdapServerMock, LdapUser } from 'ldap-server-mock';
+import { LdapUser } from 'ldap-server-mock';
 import { HttpStatus } from '@nestjs/common';
-import {mockLdapServer} from "../../external_services/ldap";
+import { mockLdapServer } from '../../external_services/ldap';
 
 const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
   const list: LdapUser[] = [];

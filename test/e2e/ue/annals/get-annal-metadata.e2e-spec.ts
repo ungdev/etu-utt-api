@@ -10,7 +10,7 @@ import {
 } from '../../../utils/fakedb';
 import { e2eSuite } from '../../../utils/test_utils';
 import { ERROR_CODE } from '../../../../src/exceptions';
-import {Permission} from "@prisma/client";
+import { Permission } from '@prisma/client';
 
 const GetAnnalMetadata = e2eSuite('GET /ue/annals/metadata', (app) => {
   const ueUser = createUser(app);

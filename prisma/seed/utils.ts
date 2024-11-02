@@ -122,7 +122,7 @@ declare module '@faker-js/faker' {
       };
       ueStarCriterion: {
         name: () => string;
-      }
+      };
     };
   }
 }
