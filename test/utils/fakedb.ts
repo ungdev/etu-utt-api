@@ -30,11 +30,12 @@ import {
   RawUserUeSubscription,
   Translation,
   RawUserPrivacy,
+  RawApiKey,
 } from '../../src/prisma/types';
 import { faker } from '@faker-js/faker';
 import { AuthService } from '../../src/auth/auth.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
-import {AppProvider, DEFAULT_APPLICATION} from './test_utils';
+import { AppProvider, DEFAULT_APPLICATION } from './test_utils';
 import { Permission, Sex, TimetableEntryType, UserType } from '@prisma/client';
 import { CommentStatus } from '../../src/ue/comments/interfaces/comment.interface';
 import { UeAnnalFile } from '../../src/ue/annals/interfaces/annal.interface';
@@ -60,6 +61,7 @@ export type FakeUser = Partial<RawUser> & {
   >;
   privacy?: Partial<RawUserPrivacy>;
   token?: string;
+  apiKey?: Partial<RawApiKey>;
 };
 export type FakeTimetableGroup = Partial<RawTimetableGroup>;
 export type FakeTimetableEntry = Partial<RawTimetableEntry>;
@@ -353,6 +355,7 @@ export const createUser = entityFaker(
       ...user,
       permissions: [],
       token: await app().get(AuthService).signAuthenticationToken(apiKey.token),
+      apiKey,
     };
   },
 );

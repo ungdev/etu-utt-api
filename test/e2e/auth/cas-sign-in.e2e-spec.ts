@@ -1,4 +1,4 @@
-import { e2eSuite } from '../../utils/test_utils';
+import { DEFAULT_APPLICATION, e2eSuite } from '../../utils/test_utils';
 import * as cas from '../../external_services/cas';
 import * as fakedb from '../../utils/fakedb';
 import * as pactum from 'pactum';
@@ -24,17 +24,37 @@ const CasSignInE2ESpec = e2eSuite('POST /auth/signin/cas', (app) => {
       .expectAppError(ERROR_CODE.INVALID_CAS_TICKET);
   });
 
-  it('should successfully return a register code', () =>
+  it('should successfully return a user-register code', () =>
     pactum
       .spec()
       .post('/auth/signin/cas')
       .withBody(body)
-      .expectJsonMatch({ signedIn: false, access_token: string() })
+      .expectJsonMatch({ status: 'no_account', access_token: string() })
       .expect((res) => {
         const jwt = app().get(JwtService);
         const data = jwt.decode((res.res.json as { access_token: string }).access_token);
         expect(data).toMatchObject(cas.user);
       }));
+
+  it('should successfully return an apikey-register code', async () => {
+    const user = await fakedb.createUser(app, { login: cas.user.login }, true);
+    await app()
+      .get(PrismaService)
+      .apiKey.delete({ where: { id: user.apiKey.id } });
+    await pactum
+      .spec()
+      .post('/auth/signin/cas')
+      .withBody(body)
+      .expectJsonMatch({ status: 'no_api_key', access_token: string() })
+      .expect((res) => {
+        const jwt = app().get(JwtService);
+        const data = jwt.decode((res.res.json as { access_token: string }).access_token);
+        expect(data).toMatchObject({ userId: user.id, applicationId: DEFAULT_APPLICATION });
+      });
+    await app()
+      .get(PrismaService)
+      .user.delete({ where: { id: user.id } });
+  });
 
   it('should successfully sign in the user', async () => {
     const user = await fakedb.createUser(app, { login: cas.user.login }, true);
@@ -42,11 +62,11 @@ const CasSignInE2ESpec = e2eSuite('POST /auth/signin/cas', (app) => {
       .spec()
       .post('/auth/signin/cas')
       .withBody(body)
-      .expectJsonMatch({ signedIn: true, access_token: string() })
+      .expectJsonMatch({ status: 'ok', access_token: string() })
       .expect((res) => {
         const jwt = app().get(JwtService);
         const data = jwt.decode((res.res.json as { access_token: string }).access_token);
-        expect(data).toMatchObject({ sub: user.id, login: cas.user.login });
+        expect(data).toMatchObject({ token: user.apiKey.token });
       });
     await app()
       .get(PrismaService)

@@ -23,7 +23,6 @@ export class LdapModule {
     if (this.config.LDAP_USER && this.config.LDAP_PWD)
       await ldapClient.bind(this.config.LDAP_USER, this.config.LDAP_PWD);
     // Search User in LDAP
-    console.log("making request")
     const {
       searchEntries: [ldapUser],
     } = await ldapClient.search('ou=people,dc=utt,dc=fr', {

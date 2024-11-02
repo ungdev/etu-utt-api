@@ -17,13 +17,9 @@ export function mockLdapServer(list: LdapUser[]) {
   );
 
   beforeAll(async () => {
-    console.log("starting");
     await ldapServer.start();
-    console.log("started");
   });
   afterAll(async () => {
-    console.log("stopping");
     await ldapServer.stop();
-    console.log("stopped");
   });
 }
