@@ -8,6 +8,7 @@ import GetUeCommentsReqDto from './dto/req/ue-get-comments-req.dto';
 import { UeCommentReply } from './interfaces/comment-reply.interface';
 import { CommentStatus, UeComment } from './interfaces/comment.interface';
 import { ConfigModule } from '../../config/config.module';
+import { Pagination } from '../../types';
 
 @Injectable()
 export class CommentsService {

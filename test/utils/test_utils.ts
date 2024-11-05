@@ -4,8 +4,8 @@ import { TestingModule } from '@nestjs/testing';
 import { faker } from '@faker-js/faker';
 import { ConfigModule } from '../../src/config/config.module';
 import { DMMF } from '@prisma/client/runtime/library';
-import { clearUniqueValues } from '../../prisma/seed/utils';
-import { PrismaClient, UserType } from '@prisma/client';
+import { clearUniqueValues, generateDefaultApplication } from '../../prisma/seed/utils';
+import { PrismaClient } from '@prisma/client';
 
 /**
  * Initializes this file.
@@ -44,30 +44,10 @@ function suite<T extends AppProvider>(name: string, func: (app: T) => void) {
   return (app: T) =>
     describe(name, () => {
       beforeAll(async () => {
-        await cleanDb(app().get(PrismaService));
-        await app()
-          .get(PrismaService)
-          .user.create({
-            data: {
-              login: 'etuutt',
-              firstName: 'Etu',
-              lastName: 'UTT',
-              userType: UserType.STUDENT,
-              apiApplications: {
-                create: {
-                  id: DEFAULT_APPLICATION,
-                  name: faker.company.name(),
-                },
-              },
-              socialNetwork: { create: {} },
-              rgpd: { create: {} },
-              preference: { create: {} },
-              infos: { create: {} },
-              mailsPhones: { create: {} },
-              privacy: { create: {} },
-            },
-          });
+        const prisma = app().get(PrismaService);
+        await cleanDb(prisma);
         clearUniqueValues();
+        await generateDefaultApplication(prisma);
       });
       func(app);
     });
@@ -144,5 +124,3 @@ async function clearTableWithCascade(prisma: PrismaService | PrismaClient, model
   await prisma[modelName].deleteMany();
   tablesCleared.push(modelName);
 }
-
-export const DEFAULT_APPLICATION = '52ce644d-183f-49e9-bd21-d2d4f37e2196';

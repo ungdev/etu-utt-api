@@ -9,6 +9,7 @@ import { RawUserUeSubscription } from '../prisma/types';
 import { ConfigModule } from '../config/config.module';
 import { Language, Prisma } from '@prisma/client';
 import { SemesterService } from '../semester/semester.service';
+import { Pagination } from '../types';
 
 @Injectable()
 export class UeService {

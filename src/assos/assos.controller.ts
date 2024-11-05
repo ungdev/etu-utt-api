@@ -9,6 +9,7 @@ import AssoOverviewResDto from './dto/res/asso-overview-res.dto';
 import AssoDetailResDto from './dto/res/asso-detail-res.dto';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiAppErrorResponse, paginatedResponseDto } from '../app.dto';
+import { Pagination } from '../types';
 
 @Controller('assos')
 @ApiTags('Assos')

@@ -35,11 +35,12 @@ import {
 import { faker } from '@faker-js/faker';
 import { AuthService } from '../../src/auth/auth.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
-import { AppProvider, DEFAULT_APPLICATION } from './test_utils';
+import { AppProvider } from './test_utils';
 import { Permission, Sex, TimetableEntryType, UserType } from '@prisma/client';
 import { CommentStatus } from '../../src/ue/comments/interfaces/comment.interface';
 import { UeAnnalFile } from '../../src/ue/annals/interfaces/annal.interface';
 import { omit, pick, translationSelect } from '../../src/utils';
+import { DEFAULT_APPLICATION } from '../../prisma/seed/utils';
 
 /**
  * The fake entities can be used like normal entities in the <code>it(string, () => void)</code> functions.

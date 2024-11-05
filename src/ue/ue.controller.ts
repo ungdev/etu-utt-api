@@ -14,6 +14,7 @@ import UeOverviewResDto from './dto/res/ue-overview-res.dto';
 import UeRateCriterionResDto from './dto/res/ue-rate-criterion-res.dto';
 import UeRateResDto from './dto/res/ue-rate-res.dto';
 import { Language, UserType } from '@prisma/client';
+import { Pagination } from '../types';
 
 @Controller('ue')
 @ApiTags('UE')

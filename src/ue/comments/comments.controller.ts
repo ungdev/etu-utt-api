@@ -17,6 +17,7 @@ import UeCommentReplyResDto from './dto/res/ue-comment-reply-res.dto';
 import { Permission } from '@prisma/client';
 import { GetPermissions } from '../../auth/decorator/get-permissions.decorator';
 import { RequestPermissions } from '../../auth/interfaces/request-auth-data.interface';
+import { Pagination } from '../../types';
 
 @Controller('ue/comments')
 @ApiTags('UE Comment')

@@ -1,4 +1,4 @@
-import { DEFAULT_APPLICATION, e2eSuite } from '../../utils/test_utils';
+import { e2eSuite } from '../../utils/test_utils';
 import * as cas from '../../external_services/cas';
 import * as fakedb from '../../utils/fakedb';
 import * as pactum from 'pactum';
@@ -7,6 +7,7 @@ import { string } from 'pactum-matchers';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import AuthCasSignInReqDto from '../../../src/auth/dto/req/auth-cas-sign-in-req.dto';
+import { DEFAULT_APPLICATION } from '../../../prisma/seed/utils';
 
 const CasSignInE2ESpec = e2eSuite('POST /auth/signin/cas', (app) => {
   const body: AuthCasSignInReqDto = { service: cas.validService, ticket: cas.validTicket, tokenExpiresIn: 1000 };

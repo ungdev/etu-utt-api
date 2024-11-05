@@ -9,10 +9,12 @@ import { UeRating } from 'src/ue/interfaces/rate.interface';
 import { FakeUeAnnalType, FakeUser, FakeUe, FakeHomepageWidget, FakeAsso, FakeUeCreditCategory } from './utils/fakedb';
 import { UeAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
 import { ConfigModule } from '../src/config/config.module';
-import { AppProvider, DEFAULT_APPLICATION } from './utils/test_utils';
+import { AppProvider } from './utils/test_utils';
 import { getTranslation, omit, pick } from '../src/utils';
 import { isArray } from 'class-validator';
 import { Language } from '@prisma/client';
+import { DEFAULT_APPLICATION } from '../prisma/seed/utils';
+import { Pagination, SetPartial } from '../src/types';
 
 /** Shortcut function for `this.expectStatus(200).expectJsonLike` */
 function expect<T>(obj: JsonLikeVariant<T>) {

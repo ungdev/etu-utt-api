@@ -15,6 +15,7 @@ import { UeService } from '../ue/ue.service';
 import { SemesterService } from '../semester/semester.service';
 import AuthSignUpReqDto from './dto/req/auth-sign-up-req.dto';
 import AuthSignInReqDto from './dto/req/auth-sign-in-req.dto';
+import { SetPartial } from '../types';
 
 export type RegisterUserData = { login: string; mail: string; lastName: string; firstName: string };
 export type RegisterApiKeyData = { userId: string; applicationId: string };
@@ -83,7 +84,7 @@ export class AuthService {
           },
           apiKeys: {
             create: {
-              token: this.generateToken(),
+              token: AuthService.generateToken(),
               tokenUpdatedAt: new Date(),
               application: { connect: { id: applicationId } },
             },
@@ -391,7 +392,7 @@ export class AuthService {
             id: applicationId,
           },
         },
-        token: this.generateToken(),
+        token: AuthService.generateToken(),
         tokenUpdatedAt: new Date(),
       },
     });
@@ -402,7 +403,7 @@ export class AuthService {
    * Generates a completely random string composed of
    * @private
    */
-  private generateToken(): string {
+  static generateToken(): string {
     const random = () => Math.random().toString(36).substring(2);
     const tokenLength = 128;
     let token = '';

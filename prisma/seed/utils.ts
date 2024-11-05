@@ -1,6 +1,8 @@
 import { Faker, faker } from '@faker-js/faker';
 import { Entity, FakeEntityMap } from '../../test/utils/fakedb';
 import { Translation } from 'src/prisma/types';
+import { PrismaClient, UserType } from '@prisma/client';
+import { PrismaService } from '../../src/prisma/prisma.service';
 
 // While waiting to be able to recover the real data
 export const branchesCode = ['ISI', 'GM', 'RT', 'MTE', 'GI', 'SN', 'A2I', 'MM'];
@@ -186,6 +188,8 @@ Faker.prototype.db = {
   },
 };
 
+export { Faker };
+
 export function generateTranslation(rng: () => string = faker.random.words) {
   return {
     create: {
@@ -196,4 +200,28 @@ export function generateTranslation(rng: () => string = faker.random.words) {
   };
 }
 
-export { Faker };
+export async function generateDefaultApplication(prisma: PrismaService | PrismaClient): Promise<void> {
+  // Ok typing is broken there
+  await (prisma.user.create as any)({
+    data: {
+      login: 'etuutt',
+      firstName: 'Etu',
+      lastName: 'UTT',
+      userType: UserType.STUDENT,
+      apiApplications: {
+        create: {
+          id: DEFAULT_APPLICATION,
+          name: faker.company.name(),
+        },
+      },
+      socialNetwork: { create: {} },
+      rgpd: { create: {} },
+      preference: { create: {} },
+      infos: { create: {} },
+      mailsPhones: { create: {} },
+      privacy: { create: {} },
+    },
+  });
+}
+
+export const DEFAULT_APPLICATION = '52ce644d-183f-49e9-bd21-d2d4f37e2196';

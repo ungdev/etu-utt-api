@@ -3,6 +3,7 @@ import { ConfigModule } from '../config/config.module';
 import { PrismaService } from '../prisma/prisma.service';
 import AssosSearchReqDto from './dto/req/assos-search-req.dto';
 import { Asso } from './interfaces/asso.interface';
+import { Pagination } from '../types';
 
 @Injectable()
 export class AssosService {
