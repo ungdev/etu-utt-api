@@ -14,7 +14,7 @@ import TimetableDeleteOccurrencesDto from './dto/timetable-delete-occurrences.dt
 import { AppException, ERROR_CODE } from '../exceptions';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
-import TimetableImportDto from './dto/timetable-import-dto';
+import { ConfigModule } from '../config/config.module';
 
 /**
  * The inclusions to use when fetching a {@link DetailedTimetableEntry}.
@@ -35,7 +35,7 @@ const detailedEntryInclusions = (userId: string) => ({
  */
 @Injectable()
 export default class TimetableService {
-  constructor(private prisma: PrismaService, private http: HttpService) {}
+  constructor(private prisma: PrismaService, private http: HttpService, readonly config: ConfigModule) {}
 
   /**
    * Returns the {@link TimetableEntryOccurrence}s for the user for the next 24 hours.
@@ -557,17 +557,23 @@ export default class TimetableService {
   }
 
   /**
-   * Download the ical file from a selected service.
+   * Check if the url domain is part of the authorised list,
+   * then download the timetable from this url
    * @param param Where to download the file from
    * @returns the file content as a string
    */
-  async downloadTimetable({ uid, service }: TimetableImportDto): Promise<string> {
-    const url = `${service}${uid}.ics`;
+  async downloadTimetable(url: string): Promise<string> {
+    const allowedServices = ['monedt.utt.fr'];
+    if (!this.config.IS_PROD_ENV) {
+      allowedServices.push('localhost');
+    }
+    if (!allowedServices.includes(new URL(url).hostname)) {
+      throw new AppException(ERROR_CODE.PARAM_MALFORMED, 'url');
+    }
     try {
       const response = await lastValueFrom(this.http.get(url));
       return response.data;
     } catch (error) {
-      // Assume the error is due to an incorrect uid
       throw new AppException(ERROR_CODE.RESSOURCE_UNAVAILABLE, url);
     }
   }

@@ -7,28 +7,17 @@ import { setTimetable } from '../../external_services/timetable';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 
 const ImportTimetableE2ESpec = e2eSuite('POST /timetable/import', (app) => {
-  const user = fakedb.createUser(app);
-  const user2 = fakedb.createUser(app);
-  const user3 = fakedb.createUser(app);
-  const user4 = fakedb.createUser(app);
+  const users = Array.from({ length: 10 }, () => fakedb.createUser(app));
   const semester = fakedb.createSemester(app);
   const ue = fakedb.createUe(app);
   const ue2 = fakedb.createUe(app);
+  const defaultUrl = encodeURIComponent(`https://monedt.utt.fr/calendrier/test.ics`);
 
   it('should fail as user is not authenticated', async () =>
-    await pactum.spec().post('/timetable/import').expectStatus(HttpStatus.UNAUTHORIZED));
-
-  it('should fail as service is invalid', async () => {
     await pactum
       .spec()
-      .post('/timetable/import')
-      .withBearerToken(user.token)
-      .withBody({
-        uid: '0'.repeat(64),
-        service: 'invalid service',
-      })
-      .expectAppError(ERROR_CODE.PARAM_MALFORMED, 'service');
-  });
+      .post('/timetable/import/' + defaultUrl)
+      .expectStatus(HttpStatus.UNAUTHORIZED));
 
   it('should fail as UE is invalid', async () => {
     setTimetable(
@@ -45,11 +34,8 @@ const ImportTimetableE2ESpec = e2eSuite('POST /timetable/import', (app) => {
 
     await pactum
       .spec()
-      .post('/timetable/import')
-      .withBearerToken(user.token)
-      .withBody({
-        uid: '0'.repeat(64),
-      })
+      .post(`/timetable/import/${defaultUrl}`)
+      .withBearerToken(users[0].token)
       .expectAppError(ERROR_CODE.NO_SUCH_UE, 'UNKNOWN');
   });
 
@@ -68,15 +54,12 @@ const ImportTimetableE2ESpec = e2eSuite('POST /timetable/import', (app) => {
 
     await pactum
       .spec()
-      .post('/timetable/import')
-      .withBearerToken(user.token)
-      .withBody({
-        uid: '0'.repeat(64),
-      })
+      .post(`/timetable/import/${defaultUrl}`)
+      .withBearerToken(users[0].token)
       .expectAppError(ERROR_CODE.PARAM_MALFORMED, 'courseType');
   });
 
-  it('should create an ueCourse', async () => {
+  it('should create a UECourse', async () => {
     setTimetable(
       `BEGIN:VEVENT
       UID:a85c5f9f0a3b3f0364e6ee9d4290ecd8
@@ -89,13 +72,7 @@ const ImportTimetableE2ESpec = e2eSuite('POST /timetable/import', (app) => {
       END:VEVENT`.replace(/^\s+/gm, ''),
     );
 
-    await pactum
-      .spec()
-      .post('/timetable/import')
-      .withBearerToken(user.token)
-      .withBody({
-        uid: '0'.repeat(64),
-      });
+    await pactum.spec().post(`/timetable/import/${defaultUrl}`).withBearerToken(users[0].token);
 
     const prisma = app().get(PrismaService);
 
@@ -135,13 +112,7 @@ const ImportTimetableE2ESpec = e2eSuite('POST /timetable/import', (app) => {
       END:VEVENT`.replace(/^\s+/gm, ''),
     );
 
-    await pactum
-      .spec()
-      .post('/timetable/import')
-      .withBearerToken(user.token)
-      .withBody({
-        uid: '0'.repeat(64),
-      });
+    await pactum.spec().post(`/timetable/import/${defaultUrl}`).withBearerToken(users[0].token);
 
     const prisma = app().get(PrismaService);
 
@@ -181,13 +152,7 @@ const ImportTimetableE2ESpec = e2eSuite('POST /timetable/import', (app) => {
       END:VEVENT`.replace(/^\s+/gm, ''),
     );
 
-    await pactum
-      .spec()
-      .post('/timetable/import')
-      .withBearerToken(user.token)
-      .withBody({
-        uid: '0'.repeat(64),
-      });
+    await pactum.spec().post(`/timetable/import/${defaultUrl}`).withBearerToken(users[0].token);
 
     const prisma = app().get(PrismaService);
 
@@ -229,13 +194,7 @@ const ImportTimetableE2ESpec = e2eSuite('POST /timetable/import', (app) => {
       END:VEVENT`.replace(/^\s+/gm, ''),
     );
 
-    await pactum
-      .spec()
-      .post('/timetable/import')
-      .withBearerToken(user.token)
-      .withBody({
-        uid: '0'.repeat(64),
-      });
+    await pactum.spec().post(`/timetable/import/${defaultUrl}`).withBearerToken(users[0].token);
 
     const prisma = app().get(PrismaService);
 
@@ -244,7 +203,7 @@ const ImportTimetableE2ESpec = e2eSuite('POST /timetable/import', (app) => {
         where: {
           students: {
             some: {
-              id: user.id,
+              id: users[0].id,
             },
           },
         },
@@ -265,34 +224,9 @@ const ImportTimetableE2ESpec = e2eSuite('POST /timetable/import', (app) => {
       END:VEVENT`.replace(/^\s+/gm, ''),
     );
 
-    await pactum
-      .spec()
-      .post('/timetable/import')
-      .withBearerToken(user.token)
-      .withBody({
-        uid: '0'.repeat(64),
-      });
-    await pactum
-      .spec()
-      .post('/timetable/import')
-      .withBearerToken(user2.token)
-      .withBody({
-        uid: '0'.repeat(64),
-      });
-    await pactum
-      .spec()
-      .post('/timetable/import')
-      .withBearerToken(user3.token)
-      .withBody({
-        uid: '0'.repeat(64),
-      });
-    await pactum
-      .spec()
-      .post('/timetable/import')
-      .withBearerToken(user4.token)
-      .withBody({
-        uid: '0'.repeat(64),
-      });
+    for (let i = 0; i < users.length; i++) {
+      await pactum.spec().post(`/timetable/import/${defaultUrl}`).withBearerToken(users[i].token);
+    }
 
     const prisma = app().get(PrismaService);
 
@@ -315,25 +249,20 @@ const ImportTimetableE2ESpec = e2eSuite('POST /timetable/import', (app) => {
   });
 
   it('Should return an error when the url is invalid', async () => {
+    const invalidUrl = encodeURIComponent(`https://monedt.utt.fr/calendrier/invalid.ics`);
     await pactum
       .spec()
-      .post('/timetable/import')
-      .withBearerToken(user.token)
-      .withBody({
-        uid: '9'.repeat(64),
-      })
-      .expectAppError(ERROR_CODE.RESSOURCE_UNAVAILABLE, `https://monedt.utt.fr/calendrier/${'9'.repeat(64)}.ics`);
+      .post(`/timetable/import/${invalidUrl}`)
+      .withBearerToken(users[0].token)
+      .expectAppError(ERROR_CODE.RESSOURCE_UNAVAILABLE, `https://monedt.utt.fr/calendrier/invalid.ics`);
   });
 
   it('Should return an error when the service send something of the wrong format', async () => {
     setTimetable('I am not respecting the .ics file format');
     await pactum
       .spec()
-      .post('/timetable/import')
-      .withBearerToken(user.token)
-      .withBody({
-        uid: '0'.repeat(64),
-      })
+      .post(`/timetable/import/${defaultUrl}`)
+      .withBearerToken(users[0].token)
       .expectAppError(ERROR_CODE.RESSOURCE_INVALID_TYPE, 'ical');
   });
 
@@ -360,13 +289,7 @@ const ImportTimetableE2ESpec = e2eSuite('POST /timetable/import', (app) => {
     );
     const prisma = app().get(PrismaService);
 
-    await pactum
-      .spec()
-      .post('/timetable/import')
-      .withBearerToken(user.token)
-      .withBody({
-        uid: '0'.repeat(64),
-      });
+    await pactum.spec().post(`/timetable/import/${defaultUrl}`).withBearerToken(users[0].token);
     expect(
       (
         await prisma.ueCourse.findMany({

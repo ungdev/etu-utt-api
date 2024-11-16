@@ -2,6 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { ConfigModule as NestConfigModule, ConfigService as NestConfigService } from '@nestjs/config';
 
 const isTestEnv = process.env.NODE_ENV === 'test';
+const isProdEnv = process.env.NODE_ENV === 'prod';
 
 @Global()
 @Module({
@@ -27,6 +28,7 @@ export class ConfigModule {
   public readonly LDAP_USER: string;
   public readonly LDAP_PWD: string;
   public readonly ANNAL_UPLOAD_DIR: string;
+  public readonly IS_PROD_ENV: boolean;
 
   // DEV ENVIRONMENT ONLY
 
@@ -44,6 +46,7 @@ export class ConfigModule {
     this.LDAP_USER = config.get('LDAP_USER');
     this.LDAP_PWD = config.get('LDAP_PWD');
     this.ANNAL_UPLOAD_DIR = config.get<string>('ANNAL_UPLOAD_DIR');
+    this.IS_PROD_ENV = isProdEnv;
     if (this.ANNAL_UPLOAD_DIR.endsWith('/')) this.ANNAL_UPLOAD_DIR = this.ANNAL_UPLOAD_DIR.slice(0, -1);
 
     this._FAKER_SEED = isTestEnv ? Number(config.get('FAKER_SEED')) : undefined;
