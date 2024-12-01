@@ -56,10 +56,28 @@ const ImportTimetableE2ESpec = e2eSuite('POST /timetable/import', (app) => {
       .spec()
       .post(`/timetable/import/${defaultUrl}`)
       .withBearerToken(users[0].token)
-      .expectAppError(ERROR_CODE.PARAM_MALFORMED, 'courseType');
+      .expectAppError(ERROR_CODE.PARAM_MALFORMED, 'DESCRIPTION');
   });
 
-  it('should create a UECourse', async () => {
+  it('should fail as the provided url is invalid', async () => {
+    const invalidUrl = encodeURIComponent(`https://monedt.utt.fr/calendrier/invalid.ics`);
+    await pactum
+      .spec()
+      .post(`/timetable/import/${invalidUrl}`)
+      .withBearerToken(users[0].token)
+      .expectAppError(ERROR_CODE.RESOURCE_UNAVAILABLE, `https://monedt.utt.fr/calendrier/invalid.ics`);
+  });
+
+  it('should fail as the timetable is not respecting the file format', async () => {
+    setTimetable('I am not respecting the .ics file format');
+    await pactum
+      .spec()
+      .post(`/timetable/import/${defaultUrl}`)
+      .withBearerToken(users[0].token)
+      .expectAppError(ERROR_CODE.RESOURCE_INVALID_TYPE, 'ical');
+  });
+
+  it('should create a UECourse and add the user', async () => {
     setTimetable(
       `BEGIN:VEVENT
       UID:a85c5f9f0a3b3f0364e6ee9d4290ecd8
@@ -84,52 +102,17 @@ const ImportTimetableE2ESpec = e2eSuite('POST /timetable/import', (app) => {
             id: ue.id,
           },
           semester: semester,
-        },
-      })) == 1,
-    );
-  });
-
-  it('should not create another course if it already exist', async () => {
-    // Twice the same event
-    setTimetable(
-      `BEGIN:VEVENT
-      UID:a85c5f9f0a3b3f0364e6ee9d4290ecd8
-      DTSTAMP:20240927T112949Z
-      SUMMARY:${semester.code}_${ue.code}_FR_TRO - CM 
-      DESCRIPTION:CM 
-      DTSTART:20240906T100000
-      DTEND:20240906T120000
-      LOCATION:A001
-      END:VEVENT
-      BEGIN:VEVENT
-      UID:a85c5f9f0a3b3f0364e6ee9d4290ecd8
-      DTSTAMP:20240927T112949Z
-      SUMMARY:${semester.code}_${ue.code}_FR_TRO - CM 
-      DESCRIPTION:CM 
-      DTSTART:20240906T100000
-      DTEND:20240906T120000
-      LOCATION:A001
-      END:VEVENT`.replace(/^\s+/gm, ''),
-    );
-
-    await pactum.spec().post(`/timetable/import/${defaultUrl}`).withBearerToken(users[0].token);
-
-    const prisma = app().get(PrismaService);
-
-    expect(
-      (await prisma.ueCourse.count({
-        where: {
-          ue: {
-            code: ue.code,
-            id: ue.id,
+          students: {
+            some: {
+              id: users[0].id,
+            },
           },
-          semester: semester,
         },
       })) == 1,
     );
   });
 
-  it('should create multiple courses', async () => {
+  it('should create multiple different courses and add user to all of them', async () => {
     // Two different events
     setTimetable(
       `BEGIN:VEVENT
@@ -164,6 +147,11 @@ const ImportTimetableE2ESpec = e2eSuite('POST /timetable/import', (app) => {
             id: ue.id,
           },
           semester: semester,
+          students: {
+            some: {
+              id: users[0].id,
+            },
+          },
         },
       })) == 1,
     );
@@ -176,31 +164,6 @@ const ImportTimetableE2ESpec = e2eSuite('POST /timetable/import', (app) => {
             id: ue2.id,
           },
           semester: semester,
-        },
-      })) == 1,
-    );
-  });
-
-  it('should add the first user to course', async () => {
-    setTimetable(
-      `BEGIN:VEVENT
-      UID:a85c5f9f0a3b3f0364e6ee9d4290ecd8
-      DTSTAMP:20240927T112949Z
-      SUMMARY:${semester.code}_${ue.code}_FR_TRO - CM 
-      DESCRIPTION:TP 
-      DTSTART:20240906T100000
-      DTEND:20240906T120000
-      LOCATION:A001
-      END:VEVENT`.replace(/^\s+/gm, ''),
-    );
-
-    await pactum.spec().post(`/timetable/import/${defaultUrl}`).withBearerToken(users[0].token);
-
-    const prisma = app().get(PrismaService);
-
-    expect(
-      (await prisma.ueCourse.count({
-        where: {
           students: {
             some: {
               id: users[0].id,
@@ -223,13 +186,14 @@ const ImportTimetableE2ESpec = e2eSuite('POST /timetable/import', (app) => {
       LOCATION:A001
       END:VEVENT`.replace(/^\s+/gm, ''),
     );
-
+    // 10 differents users imports the same course
     for (let i = 0; i < users.length; i++) {
       await pactum.spec().post(`/timetable/import/${defaultUrl}`).withBearerToken(users[i].token);
     }
 
     const prisma = app().get(PrismaService);
 
+    // Only a single course should be created (by the first user) and all other users are only added to it
     expect(
       (
         await prisma.ueCourse.findFirst({
@@ -248,25 +212,7 @@ const ImportTimetableE2ESpec = e2eSuite('POST /timetable/import', (app) => {
     );
   });
 
-  it('Should return an error when the url is invalid', async () => {
-    const invalidUrl = encodeURIComponent(`https://monedt.utt.fr/calendrier/invalid.ics`);
-    await pactum
-      .spec()
-      .post(`/timetable/import/${invalidUrl}`)
-      .withBearerToken(users[0].token)
-      .expectAppError(ERROR_CODE.RESSOURCE_UNAVAILABLE, `https://monedt.utt.fr/calendrier/invalid.ics`);
-  });
-
-  it('Should return an error when the service send something of the wrong format', async () => {
-    setTimetable('I am not respecting the .ics file format');
-    await pactum
-      .spec()
-      .post(`/timetable/import/${defaultUrl}`)
-      .withBearerToken(users[0].token)
-      .expectAppError(ERROR_CODE.RESSOURCE_INVALID_TYPE, 'ical');
-  });
-
-  it('Should not create duplicates for the same course occurence', async () => {
+  it('should not create duplicates for the same course occurence', async () => {
     setTimetable(
       `BEGIN:VEVENT
       UID:a85c5f9f0a3b3f0364e6ee9d4290ecd8
@@ -300,6 +246,7 @@ const ImportTimetableE2ESpec = e2eSuite('POST /timetable/import', (app) => {
             },
             timetableEntry: {
               location: 'P42',
+              occurrencesCount: 2,
             },
           },
         })

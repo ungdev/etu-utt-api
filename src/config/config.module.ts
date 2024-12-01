@@ -2,7 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { ConfigModule as NestConfigModule, ConfigService as NestConfigService } from '@nestjs/config';
 
 const isTestEnv = process.env.NODE_ENV === 'test';
-const isProdEnv = process.env.NODE_ENV === 'prod';
+const isProdEnv = process.env.NODE_ENV === 'production';
 
 @Global()
 @Module({

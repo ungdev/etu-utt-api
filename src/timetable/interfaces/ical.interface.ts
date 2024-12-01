@@ -7,7 +7,7 @@ export interface CourseEvent {
    * An id shared by all event occurences.
    * Tells if an occurence is part of the course
    */
-  shared_id: string;
+  sharedId: string;
 
   /**
    * Where the course takes place

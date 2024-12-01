@@ -14,7 +14,7 @@ export const setTimetable = (data: string) => {
 
 export function enable(timetableUrl: string) {
   axios.defaults.adapter = 'http';
-  // Match all urls exepted the ones containing "invalid" in it
+  // Match all urls excepted the ones containing "invalid" in it
   nock(timetableUrl)
     .persist()
     .get(/^(?!.*\binvalid\b).*/)

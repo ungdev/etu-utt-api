@@ -563,18 +563,15 @@ export default class TimetableService {
    * @returns the file content as a string
    */
   async downloadTimetable(url: string): Promise<string> {
-    const allowedServices = ['monedt.utt.fr'];
-    if (!this.config.IS_PROD_ENV) {
-      allowedServices.push('localhost');
-    }
-    if (!allowedServices.includes(new URL(url).hostname)) {
+    const TIMETABLE_URL = 'monedt.utt.fr';
+    if (new URL(url).hostname != TIMETABLE_URL || (this.config.IS_PROD_ENV && new URL(url).hostname == 'localhost')) {
       throw new AppException(ERROR_CODE.PARAM_MALFORMED, 'url');
     }
     try {
       const response = await lastValueFrom(this.http.get(url));
       return response.data;
     } catch (error) {
-      throw new AppException(ERROR_CODE.RESSOURCE_UNAVAILABLE, url);
+      throw new AppException(ERROR_CODE.RESOURCE_UNAVAILABLE, url);
     }
   }
 
@@ -589,7 +586,7 @@ export default class TimetableService {
     // Slice timetable into events
     const raw_events = raw_timetable.match(event_separator);
     if (raw_events === null) {
-      throw new AppException(ERROR_CODE.RESSOURCE_INVALID_TYPE, 'ical');
+      throw new AppException(ERROR_CODE.RESOURCE_INVALID_TYPE, 'ical');
     }
 
     // Keep only unique values
@@ -598,12 +595,12 @@ export default class TimetableService {
     for (const data of raw_events.values()) {
       const event = this.parseCourseFromEvent(data);
 
-      if (event_map[event.shared_id] == null) {
-        event_map[event.shared_id] = event;
+      if (event_map[event.sharedId] == null) {
+        event_map[event.sharedId] = event;
       } else {
-        event_map[event.shared_id].count += 1;
-        if (event_map[event.shared_id].startDate > event.startDate) {
-          event_map[event.shared_id].startDate = event.startDate;
+        event_map[event.sharedId].count += 1;
+        if (event_map[event.sharedId].startDate > event.startDate) {
+          event_map[event.sharedId].startDate = event.startDate;
         }
       }
     }
@@ -624,6 +621,7 @@ export default class TimetableService {
     const hour = parseInt(icalDateTime.slice(9, 11));
     const minute = parseInt(icalDateTime.slice(11, 13));
     // Hope the server have the correct timezone
+    // This is the only way I found to convert a date with an unknown timezone (UTC+1 or +2) to UTC
     const offset = new Date().getTimezoneOffset();
     return new Date(Date.UTC(year, month, day, hour, minute) + offset * 60 * 1000);
   }
@@ -631,13 +629,13 @@ export default class TimetableService {
   /**
    * Retrieve from an ical event a value from the provided key
    * @param raw_event the ical event, if many given, return the first occurence of the key
-   * @param key the key does not need to be uppercase
+   * @param key
    * @returns {string}
    */
   private parseIcalField(raw_event: string, key: string): string {
     return raw_event
-      .match(new RegExp(`${key.toUpperCase()}:.*`))[0]
-      .replace(`${key.toUpperCase()}:`, '')
+      .match(new RegExp(`${key}:.*`))[0]
+      .replace(`${key}:`, '')
       .trim();
   }
 
@@ -648,7 +646,7 @@ export default class TimetableService {
    */
   private parseCourseFromEvent(raw_event: string): CourseEvent {
     let courseType: 'CM' | 'TD' | 'TP';
-    switch (this.parseIcalField(raw_event, 'description').split(' - ')[0]) {
+    switch (this.parseIcalField(raw_event, 'DESCRIPTION').split(' - ')[0]) {
       case 'CM':
         courseType = 'CM';
         break;
@@ -659,16 +657,16 @@ export default class TimetableService {
         courseType = 'TD';
         break;
       default:
-        throw new AppException(ERROR_CODE.PARAM_MALFORMED, 'courseType');
+        throw new AppException(ERROR_CODE.PARAM_MALFORMED, 'DESCRIPTION');
     }
-    const name = this.parseIcalField(raw_event, 'summary').split(' - ')[0];
-    const date = this.parseIcalDateTime(this.parseIcalField(raw_event, 'dtstart'));
-    const end_date = this.parseIcalDateTime(this.parseIcalField(raw_event, 'dtend'));
+    const name = this.parseIcalField(raw_event, 'SUMMARY').split(' - ')[0];
+    const date = this.parseIcalDateTime(this.parseIcalField(raw_event, 'DTSTART'));
+    const end_date = this.parseIcalDateTime(this.parseIcalField(raw_event, 'DTEND'));
     const diff = end_date.valueOf() - date.valueOf();
     const event: CourseEvent = {
-      shared_id: `${name}-${date.getDay()}/${date.getHours()}/${date.getMinutes()}`,
+      sharedId: `${name}-${date.getDay()}/${date.getHours()}/${date.getMinutes()}`,
       count: 1,
-      location: this.parseIcalField(raw_event, 'location'),
+      location: this.parseIcalField(raw_event, 'LOCATION'),
       name: name,
       courseType: courseType,
       weekDate: {

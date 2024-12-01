@@ -13,7 +13,7 @@ export class CourseService {
    * @param course the course to match
    * @returns {Promise<string | null>}
    */
-  async existAlready(course: UeCourse): Promise<string | null> {
+  async findCourse(course: UeCourse): Promise<string | null> {
     const result = await this.prisma.ueCourse.findFirst({
       select: {
         id: true,

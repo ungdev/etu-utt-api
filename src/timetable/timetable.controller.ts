@@ -174,21 +174,21 @@ export class TimetableController {
   @HttpCode(HttpStatus.CREATED)
   @Post('/import/:url')
   async importTimetable(@Param('url') url: string, @GetUser() user: User) {
-    const raw_timetable = await this.timetableService.downloadTimetable(url);
-    const events = this.timetableService.parseTimetable(raw_timetable);
+    const rawTimetable = await this.timetableService.downloadTimetable(url);
+    const events = this.timetableService.parseTimetable(rawTimetable);
     for (const event of events) {
-      const ueCode = event.name.split('_')[1];
+      const [semesterId, ueCode] = event.name.split('_');
       if (!(await this.ueService.doesUeExist(ueCode))) {
         throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
       }
       const course: UeCourse = {
-        semesterId: event.name.split('_')[0],
+        semesterId: semesterId,
         timetableEntry: event,
         type: event.courseType,
-        ueCode: event.name.split('_')[1],
+        ueCode: ueCode,
       };
 
-      let courseId = await this.courseService.existAlready(course);
+      let courseId = await this.courseService.findCourse(course);
       if (courseId == null) {
         courseId = (await this.courseService.createCourse(course)).id;
       }

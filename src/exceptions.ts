@@ -66,8 +66,8 @@ export const enum ERROR_CODE {
   NO_SUCH_ANNAL_TYPE = 4409,
   NO_SUCH_ASSO = 4410,
   ANNAL_ALREADY_UPLOADED = 4901,
-  RESSOURCE_UNAVAILABLE = 4902,
-  RESSOURCE_INVALID_TYPE = 4903,
+  RESOURCE_UNAVAILABLE = 4902,
+  RESOURCE_INVALID_TYPE = 4903,
   CREDENTIALS_ALREADY_TAKEN = 5001,
 }
 
@@ -289,12 +289,12 @@ export const ErrorData = Object.freeze({
     message: 'A file has alreay been uploaded for this annal',
     httpCode: HttpStatus.CONFLICT,
   },
-  [ERROR_CODE.RESSOURCE_UNAVAILABLE]: {
-    message: 'Unable to fetch ressource at %',
+  [ERROR_CODE.RESOURCE_UNAVAILABLE]: {
+    message: 'Unable to fetch resource at %',
     httpCode: HttpStatus.NOT_FOUND,
   },
-  [ERROR_CODE.RESSOURCE_INVALID_TYPE]: {
-    message: 'Ressource have incorrect type, expected %',
+  [ERROR_CODE.RESOURCE_INVALID_TYPE]: {
+    message: 'Resource have incorrect type, expected %',
     httpCode: HttpStatus.BAD_REQUEST,
   },
   [ERROR_CODE.CREDENTIALS_ALREADY_TAKEN]: {
