@@ -1,8 +1,9 @@
 import { User } from '../../users/interfaces/user.interface';
 import { Permission } from '@prisma/client';
+import { Application } from '../application/interfaces/application.interface';
 
 export interface RequestAuthData {
-  applicationId: string;
+  application: Application;
   user?: User;
   permissions: RequestPermissions;
 }

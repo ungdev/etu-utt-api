@@ -1,30 +1,17 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { RequestAuthData } from '../interfaces/request-auth-data.interface';
+import { Application } from '../application/interfaces/application.interface';
 
 /**
- * Get the id of the application that made the request.
- * @returns The user property or the whole user.
+ * Get the application that made the request.
+ * @returns The application property or the whole application.
  *
  * @example
  * ```
- * @Get('/:ueCode/comments')
- * async getUEComments(
- *   @Param('ueCode') ueCode: string,
- *   @GetUser() user: User,
- *   @Query() dto: GetUECommentsDto,
- * ) {
- *   if (!(await this.ueService.doesUEExist(ueCode)))
- *     throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
- *   return this.ueService.getComments(
- *     ueCode,
- *     user,
- *     dto,
- *     user.permissions.includes('commentModerator'),
- *   );
- * }
+ * // INSERT EXAMPLE HERE
  * ```
  */
-export const GetApplication = createParamDecorator((data: never, ctx: ExecutionContext) => {
+export const GetApplication = createParamDecorator((data: keyof Application, ctx: ExecutionContext) => {
   const request = ctx.switchToHttp().getRequest();
-  return (request.user as RequestAuthData)?.applicationId;
+  return data ? (request.user as RequestAuthData)?.application[data] : (request.user as RequestAuthData)?.application;
 });

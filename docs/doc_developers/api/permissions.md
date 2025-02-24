@@ -54,7 +54,7 @@ Le _bearer token_ est une chaîne de caractère encodant une certaine _clé API_
 
 Un _soft grant_ ne peut se faire que sur des _user permissions_ (ça n'aurait pas de sens sur des _api permissions_).
 
-Les _soft grant_ ne donne pas la permission à la _clé API_ sur tous les utilisateurs. Chaque utilisateur doit explicitement donner son consentement pour que la _clé API_ puisse exercer sa _permission_ sur son compte.
+Les _soft grant_ ne donnent pas la permission à la _clé API_ sur tous les utilisateurs. Chaque utilisateur doit explicitement donner son consentement pour que la _clé API_ puisse exercer sa _permission_ sur son compte.
 
 Une _clé API_ peut se soft grant n'importe quelle _user permission_. Tant qu'elle n'aura reçu le consentement de personne, elle n'aura aucun droit supplémentaire.
 

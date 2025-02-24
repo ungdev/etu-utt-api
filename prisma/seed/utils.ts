@@ -211,7 +211,9 @@ export async function generateDefaultApplication(prisma: PrismaService | PrismaC
       apiApplications: {
         create: {
           id: DEFAULT_APPLICATION,
-          name: faker.company.name(),
+          name: 'EtuUTT Website',
+          redirectUrl: 'http://localhost:8080/',
+          clientSecret: 'theetuuttwebsite',
         },
       },
       socialNetwork: { create: {} },

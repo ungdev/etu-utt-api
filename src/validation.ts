@@ -27,6 +27,7 @@ const mappedErrors = {
   isPositive: ERROR_CODE.PARAM_NOT_POSITIVE,
   min: ERROR_CODE.PARAM_TOO_LOW,
   max: ERROR_CODE.PARAM_TOO_HIGH,
+  isUrl: ERROR_CODE.PARAM_NOT_URL,
 } satisfies {
   [constraint: string]: ERROR_CODE;
 };

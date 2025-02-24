@@ -8,17 +8,28 @@ import AuthCasSignInReqDto from './dto/req/auth-cas-sign-in-req.dto';
 import AuthCasSignUpReqDto from './dto/req/auth-cas-sign-up-req.dto';
 import UsersService from '../users/users.service';
 import { ApiCreatedResponse, ApiHeader, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import AccessTokenResponse from './dto/res/auth-access-token-res.dto';
+import AuthSigninResDto from './dto/res/auth-signin-res.dto';
 import TokenValidityResDto from './dto/res/token-validity-res.dto';
 import CasLoginResDto from './dto/res/cas-login-res.dto';
 import { ApiAppErrorResponse } from '../app.dto';
 import { GetApplication } from './decorator/get-application.decorator';
 import CreateApiKeyReqDto from './dto/req/create-api-key-req.dto';
+import ApplicationService from './application/application.service';
+import { Application } from './application/interfaces/application.interface';
+import AuthValidateReqDto from './dto/req/auth-validate-req.dto';
+import { ConfigModule } from '../config/config.module';
+import AuthTokenResDto from './dto/res/auth-token-res.dto';
+import AuthRedirectionResDto from './dto/res/auth-redirection-res.dto';
 
 @Controller('auth')
 @ApiTags('Authentication')
 export class AuthController {
-  constructor(private authService: AuthService, private usersService: UsersService) {}
+  constructor(
+    private authService: AuthService,
+    private usersService: UsersService,
+    private applicationService: ApplicationService,
+    private config: ConfigModule,
+  ) {}
 
   @IsPublic()
   @Post('signup')
@@ -27,15 +38,16 @@ export class AuthController {
   })
   @ApiCreatedResponse({
     description: 'The account was created successfully, the user is now authenticated and the token is returned.',
-    type: AccessTokenResponse,
+    type: AuthSigninResDto,
   })
   @ApiAppErrorResponse(
     ERROR_CODE.CREDENTIALS_ALREADY_TAKEN,
     'Login, email address or any field that should be unique is already taken',
   )
-  async signup(@Body() dto: AuthSignUpReqDto, @GetApplication() applicationId: string): Promise<AccessTokenResponse> {
-    const token = await this.authService.signup(dto, applicationId, false, dto.tokenExpiresIn);
-    return { access_token: token };
+  async signup(@Body() dto: AuthSignUpReqDto, @GetApplication() application: Application): Promise<AuthSigninResDto> {
+    const token = await this.authService.signup(dto, application.id, false, dto.tokenExpiresIn);
+    const redirectUrl = `${application.redirectUrl}/${token}`;
+    return { signedIn: true, token, redirectUrl };
   }
 
   @HttpCode(HttpStatus.OK)
@@ -46,13 +58,35 @@ export class AuthController {
   })
   @ApiOkResponse({
     description: 'The user was successfully authenticated, the token is returned.',
-    type: AccessTokenResponse,
+    type: AuthSigninResDto,
   })
   @ApiAppErrorResponse(ERROR_CODE.INVALID_CREDENTIALS, 'Either the login or the password is incorrect')
-  async signin(@Body() dto: AuthSignInReqDto, @GetApplication() application: string) {
-    const token = await this.authService.signin(dto, application, dto.tokenExpiresIn);
-    if (!token) throw new AppException(ERROR_CODE.INVALID_CREDENTIALS);
-    return { access_token: token };
+  async signin(@Body() dto: AuthSignInReqDto, @GetApplication() application: Application): Promise<AuthSigninResDto> {
+    const res = await this.authService.signin(dto.login, dto.password, application.id);
+    if (!res) throw new AppException(ERROR_CODE.INVALID_CREDENTIALS);
+    if (!res.apiKey)
+      return {
+        signedIn: false,
+        token: await this.authService.signRegisterApiKeyToken(res.userId, application.id, dto.tokenExpiresIn),
+        redirectUrl: null,
+      };
+    if (application.id === this.config.ETUUTT_WEBSITE_APPLICATION_ID)
+      return {
+        signedIn: true,
+        token: await this.authService.signApiKey(res.apiKey.id, dto.tokenExpiresIn),
+        redirectUrl: null,
+      };
+    const token = await this.authService.signValidationToken(
+      application.clientSecret,
+      res.apiKey.id,
+      application.id,
+      dto.tokenExpiresIn,
+    );
+    return {
+      signedIn: true,
+      token: null,
+      redirectUrl: this.formatRedirectUrl(application.redirectUrl, token),
+    };
   }
 
   @HttpCode(HttpStatus.OK)
@@ -97,14 +131,31 @@ export class AuthController {
   @ApiCreatedResponse({
     description:
       'The CAS ticket was successfully validated. If signedIn is true, the user is authenticated and can use the access_token to authenticate his requests. If signedIn is false, the user should use the access_token to sign up with "POST /auth/signup/cas".',
-    type: AccessTokenResponse,
+    type: AuthSigninResDto,
   })
-  async casSignIn(@Body() dto: AuthCasSignInReqDto, @GetApplication() application: string): Promise<CasLoginResDto> {
-    const res = await this.authService.casSignIn(dto.service, dto.ticket, application, dto.tokenExpiresIn);
-    if (res.status === 'invalid') {
-      throw new AppException(ERROR_CODE.INVALID_CAS_TICKET);
-    }
-    return { status: res.status, access_token: res.token };
+  async casSignIn(
+    @Body() dto: AuthCasSignInReqDto,
+    @GetApplication('id') applicationId: string,
+  ): Promise<CasLoginResDto> {
+    const res = await this.authService.casSignIn(dto.service, dto.ticket, applicationId);
+    if (!res) throw new AppException(ERROR_CODE.INVALID_CAS_TICKET);
+    if (!res.userId)
+      return {
+        status: 'no_account',
+        token: await this.authService.signRegisterUserToken(
+          res.basicUserData.login,
+          res.basicUserData.mail,
+          res.basicUserData.lastName,
+          res.basicUserData.lastName,
+          dto.tokenExpiresIn,
+        ),
+      };
+    if (!res.apiKeyId)
+      return {
+        status: 'no_api_key',
+        token: await this.authService.signRegisterApiKeyToken(res.userId, applicationId, dto.tokenExpiresIn),
+      };
+    return { status: 'ok', token: await this.authService.signApiKey(res.apiKeyId, dto.tokenExpiresIn) };
   }
 
   @IsPublic()
@@ -126,13 +177,16 @@ export class AuthController {
     ERROR_CODE.CREDENTIALS_ALREADY_TAKEN,
     'Login, email, or any other field that should be unique about a user is already bound to another user',
   )
-  async casSignUp(@Body() dto: AuthCasSignUpReqDto, @GetApplication() application: string) {
+  async casSignUp(
+    @Body() dto: AuthCasSignUpReqDto,
+    @GetApplication('id') application: string,
+  ): Promise<AuthTokenResDto> {
     const data = this.authService.decodeRegisterUserToken(dto.registerToken);
     if (!data) throw new AppException(ERROR_CODE.INVALID_TOKEN_FORMAT);
     if (await this.usersService.doesUserExist({ login: data.login }))
       throw new AppException(ERROR_CODE.CREDENTIALS_ALREADY_TAKEN);
-    const token = await this.authService.signup(data, application, true, dto.tokenExpiresIn);
-    return { access_token: token };
+    const token = await this.authService.signup(data, application, true, data.tokenExpiresIn);
+    return { token };
   }
 
   @IsPublic()
@@ -146,12 +200,36 @@ export class AuthController {
     description:
       'Create an API access for user to the application that made the request. Returns an authentication token. A route to sign-in should be called before, to get the required token in body.',
   })
-  async createApiKey(@Body() dto: CreateApiKeyReqDto, @GetApplication() application: string) {
+  async createApiKey(
+    @Body() dto: CreateApiKeyReqDto,
+    @GetApplication() application: Application,
+  ): Promise<AuthRedirectionResDto> {
     const data = this.authService.decodeRegisterApiKeyToken(dto.token);
     if (!data) throw new AppException(ERROR_CODE.INVALID_TOKEN_FORMAT);
     if (!(await this.usersService.doesUserExist({ id: data.userId })))
       throw new AppException(ERROR_CODE.NO_SUCH_USER, data.userId); // Can only happen if user has deleted his account
-    const token = await this.authService.createApiKey(data.userId, application, dto.tokenExpiresIn);
-    return { access_token: token };
+    const token = await this.authService.createApiKey(data.userId, application.id, data.tokenExpiresIn);
+    const redirectUrl = this.formatRedirectUrl(application.redirectUrl, token);
+    return { redirectUrl };
+  }
+
+  @IsPublic()
+  @Post('/login/validate')
+  @HttpCode(HttpStatus.OK)
+  async validate(
+    @Body() dto: AuthValidateReqDto,
+    @GetApplication() application: Application,
+  ): Promise<AuthTokenResDto> {
+    const data = this.authService.decodeValidationToken(dto.token);
+    if (!data) throw new AppException(ERROR_CODE.INVALID_TOKEN_FORMAT);
+    if (data.applicationId !== application.id) throw new AppException(ERROR_CODE.INCONSISTENT_APPLICATION);
+    if (data.clientSecret !== application.clientSecret) throw new AppException(ERROR_CODE.INVALID_TOKEN_FORMAT);
+    const token = await this.authService.signApiKey(data.apiKeyId, data.tokenExpiresIn);
+    if (!token) throw new AppException(ERROR_CODE.INVALID_TOKEN_FORMAT);
+    return { token };
+  }
+
+  private formatRedirectUrl(redirectUrl: string, validationToken: string): string {
+    return `${redirectUrl}?${new URLSearchParams({ token: validationToken }).toString()}`;
   }
 }

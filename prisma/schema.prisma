@@ -11,6 +11,8 @@ model ApiApplication {
   id     String @id @default(uuid())
   name   String
   userId String
+  redirectUrl String
+  clientSecret String
 
   user   User     @relation(fields: [userId], references: [id])
   apiKeys ApiKey[]
@@ -22,10 +24,13 @@ model ApiKey {
   tokenUpdatedAt DateTime
   userId         String
   applicationId  String
+  validationToken String?
 
   user                      User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
   application               ApiApplication         @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   apiKeyPermissions ApiKeyPermission[]
+
+  @@unique([userId, applicationId])
 }
 
 model ApiKeyPermission {
