@@ -38,7 +38,7 @@ const SignInE2ESpec = e2eSuite('POST /auth/signin', (app) => {
     pactum.spec().post('/auth/signin').withBody(undefined).expectAppError(ERROR_CODE.PARAM_MISSING, 'login, password'));
 
   it('should return a token for a valid user', () =>
-    pactum.spec().post('/auth/signin').withBody(dto).expectStatus(200).expectBodyContains('access_token'));
+    pactum.spec().post('/auth/signin').withBody(dto).expectStatus(200).expectBodyContains('token'));
 });
 
 export default SignInE2ESpec;

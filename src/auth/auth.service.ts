@@ -16,6 +16,7 @@ import { SemesterService } from '../semester/semester.service';
 import AuthSignUpReqDto from './dto/req/auth-sign-up-req.dto';
 import { SetPartial } from '../types';
 import { RawApiKey } from '../prisma/types';
+import crypto from 'crypto'
 
 export type RegisterUserData = {
   login: string;
@@ -218,7 +219,7 @@ export class AuthService {
 
   /**
    * Verifies the credentials are right.
-   * It then returns an access_token the user can use to authenticate their requests.
+   * It then returns a token the user can use to authenticate their requests.
    * @param dto Data needed to sign in the user (login & password).
    * @param applicationId The id of the application to which the user should be signed in.
    * @param tokenExpiresIn The time the return token will be valid, in seconds. If not given, token will not expire.
@@ -316,7 +317,7 @@ export class AuthService {
       where: { login: data.login },
       include: { apiKeys: { where: { application: { id: applicationId } } } },
     });
-    return { userId: user?.id, apiKeyId: user.apiKeys[0].id, basicUserData: data };
+    return { userId: user?.id, apiKeyId: user?.apiKeys?.[0]?.id, basicUserData: data };
   }
 
   /**
@@ -457,12 +458,8 @@ export class AuthService {
    * @private
    */
   static generateToken(): string {
-    const random = () => Math.random().toString(36).substring(2);
     const tokenLength = 128;
-    let token = '';
-    while (token.length < tokenLength) {
-      token += random();
-    }
+    const token = crypto.randomBytes(tokenLength).toString('base64');
     return token.slice(0, tokenLength);
   }
 

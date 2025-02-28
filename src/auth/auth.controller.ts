@@ -130,7 +130,7 @@ export class AuthController {
   })
   @ApiCreatedResponse({
     description:
-      'The CAS ticket was successfully validated. If signedIn is true, the user is authenticated and can use the access_token to authenticate his requests. If signedIn is false, the user should use the access_token to sign up with "POST /auth/signup/cas".',
+      'The CAS ticket was successfully validated. If signedIn is true, the user is authenticated and can use the token to authenticate his requests. If signedIn is false, the user should use the token to sign up with "POST /auth/signup/cas".',
     type: AuthSigninResDto,
   })
   async casSignIn(
@@ -145,7 +145,7 @@ export class AuthController {
         token: await this.authService.signRegisterUserToken(
           res.basicUserData.login,
           res.basicUserData.mail,
-          res.basicUserData.lastName,
+          res.basicUserData.firstName,
           res.basicUserData.lastName,
           dto.tokenExpiresIn,
         ),

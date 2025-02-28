@@ -11,6 +11,7 @@ export const user: RegisterUserData = {
   mail: faker.internet.email(),
   lastName: faker.name.lastName(),
   firstName: faker.name.firstName(),
+  tokenExpiresIn: 999999,
 };
 
 export function enable(casUrl: string) {

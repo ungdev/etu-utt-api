@@ -28,7 +28,6 @@ export async function migrateUEs(query: QueryFunction, prisma: PrismaClient) {
     const requirements = operations
       .filter((u) => new RegExp(`(^|\\W)${u.data.code}($|\\W)`).test(ue.antecedents))
       .map((u) => u.data.id);
-    //console.log(ue.code, inscriptionCode);
     operations.push(
       await prisma.ue.create({
         code: ue.code,

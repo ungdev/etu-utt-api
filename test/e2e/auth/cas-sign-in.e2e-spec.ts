@@ -8,9 +8,10 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import AuthCasSignInReqDto from '../../../src/auth/dto/req/auth-cas-sign-in-req.dto';
 import { DEFAULT_APPLICATION } from '../../../prisma/seed/utils';
+import {HttpStatus} from "@nestjs/common";
 
 const CasSignInE2ESpec = e2eSuite('POST /auth/signin/cas', (app) => {
-  const body: AuthCasSignInReqDto = { service: cas.validService, ticket: cas.validTicket, tokenExpiresIn: 1000 };
+  const body: AuthCasSignInReqDto = { service: cas.validService, ticket: cas.validTicket, tokenExpiresIn: cas.user.tokenExpiresIn };
 
   it('should fail as provided service is not valid', async () => {
     await pactum
@@ -30,10 +31,11 @@ const CasSignInE2ESpec = e2eSuite('POST /auth/signin/cas', (app) => {
       .spec()
       .post('/auth/signin/cas')
       .withBody(body)
-      .expectJsonMatch({ status: 'no_account', access_token: string() })
+      .expectStatus(HttpStatus.OK)
+      .expectJsonMatch({ status: 'no_account', token: string() })
       .expect((res) => {
         const jwt = app().get(JwtService);
-        const data = jwt.decode((res.res.json as { access_token: string }).access_token);
+        const data = jwt.decode((res.res.json as { token: string }).token);
         expect(data).toMatchObject(cas.user);
       }));
 
@@ -46,10 +48,10 @@ const CasSignInE2ESpec = e2eSuite('POST /auth/signin/cas', (app) => {
       .spec()
       .post('/auth/signin/cas')
       .withBody(body)
-      .expectJsonMatch({ status: 'no_api_key', access_token: string() })
+      .expectJsonMatch({ status: 'no_api_key', token: string() })
       .expect((res) => {
         const jwt = app().get(JwtService);
-        const data = jwt.decode((res.res.json as { access_token: string }).access_token);
+        const data = jwt.decode((res.res.json as { token: string }).token);
         expect(data).toMatchObject({ userId: user.id, applicationId: DEFAULT_APPLICATION });
       });
     await app()
@@ -63,11 +65,14 @@ const CasSignInE2ESpec = e2eSuite('POST /auth/signin/cas', (app) => {
       .spec()
       .post('/auth/signin/cas')
       .withBody(body)
-      .expectJsonMatch({ status: 'ok', access_token: string() })
-      .expect((res) => {
+      .expectJsonMatch({ status: 'ok', token: string() })
+      .expect(async (res) => {
         const jwt = app().get(JwtService);
-        const data = jwt.decode((res.res.json as { access_token: string }).access_token);
-        expect(data).toMatchObject({ token: user.apiKey.token });
+        const data = jwt.decode((res.res.json as { token: string }).token);
+        const apiKey = await app()
+          .get(PrismaService)
+          .apiKey.findFirst({ where: { userId: user.id } });
+        expect(data).toMatchObject({ token: apiKey.token });
       });
     await app()
       .get(PrismaService)

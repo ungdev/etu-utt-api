@@ -46,10 +46,12 @@ Array.prototype.mappedSort = function <T>(this: Array<T>, mapper: (e: T) => any[
     const aValues = aMapped instanceof Array ? aMapped : [aMapped];
     const bValues = bMapped instanceof Array ? bMapped : [bMapped];
     for (let i = 0; i < Math.min(aValues.length, bValues.length); i++) {
-      if (aValues[i] < bValues[i]) {
+      const aValue = typeof aValues[i] === 'string' ? aValues[i].toUpperCase() : aValues[i];
+      const bValue = typeof bValues[i] === 'string' ? bValues[i].toUpperCase() : bValues[i];
+      if (aValue < bValue) {
         return -1;
       }
-      if (bValues[i] < aValues[i]) {
+      if (bValue < aValue) {
         return 1;
       }
     }

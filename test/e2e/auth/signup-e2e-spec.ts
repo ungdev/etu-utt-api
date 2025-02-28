@@ -99,8 +99,8 @@ const SignupE2ESpec = e2eSuite('POST /auth/signup', (app) => {
       .withBody(dto)
       .expectStatus(201)
       .expect(async (ctx) => {
-        expect(ctx.res.json['access_token']).toBeDefined();
-        const token = app().get(JwtService).decode(ctx.res.json['access_token']).token;
+        expect(ctx.res.json['token']).toBeDefined();
+        const token = app().get(JwtService).decode(ctx.res.json['token']).token;
         const apiKey = await app()
           .get(PrismaService)
           .apiKey.findFirst({ where: { user: { login: dto.login } } });

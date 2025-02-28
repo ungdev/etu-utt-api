@@ -25,6 +25,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
             grants: true,
           },
         },
+        application: true,
       },
     });
     if (!apiKey) return null;
@@ -48,7 +49,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       }
     }
     return {
-      applicationId: apiKey.applicationId,
+      application: apiKey.application,
       user,
       permissions,
     };
