@@ -95,20 +95,24 @@ const GetE2ESpec = e2eSuite('GET /ue/{ueCode}', (app) => {
       .spec()
       .withBearerToken(user.token)
       .get('/ue/XX30')
-      .expectUe(ueWithRating, [
-        {
-          criterionId: criterion.id,
-          value: app()
-            .get(UeController)
-            .computeRate(
-              [
-                { ...(rate2 as Required<FakeUeStarVote>), ueofCode: ueWithRating.ueofCode },
-                { ...(rate1 as Required<FakeUeStarVote>), ueofCode: ueWithRating.ueofCode },
-              ],
-              ueWithRating.ueofCode,
-            ),
-        },
-      ]);
+      .expectUe(
+        ueWithRating,
+        [
+          {
+            criterionId: criterion.id,
+            value: app()
+              .get(UeController)
+              .computeRate(
+                [
+                  { ...(rate2 as Required<FakeUeStarVote>), ueofCode: ueWithRating.ueofCode },
+                  { ...(rate1 as Required<FakeUeStarVote>), ueofCode: ueWithRating.ueofCode },
+                ],
+                ueWithRating.ueofCode,
+              ),
+          },
+        ],
+        2,
+      );
   });
 });
 

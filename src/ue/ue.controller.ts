@@ -126,6 +126,9 @@ export class UeController {
       info: {
         requirements: chosenOf.requirements.map((r) => r.code),
         languages: ue.ueofs.map((ueof) => ueof.info.language).uniqueValues,
+        minors: ue.ueofs
+          .map((ueof) => ueof.info.minors?.split(',') ?? [])
+          .reduce((acc, minors) => [...acc, ...minors], []).uniqueValues,
       },
       openSemester: ue.ueofs
         .map((ueof) => ueof.openSemester)
@@ -191,7 +194,9 @@ export class UeController {
                     this.computeRate(rates, ueof.code),
                   ]),
                 ),
-                voteCount: Math.max(...Object.values(ue.starVotes).map((rates) => rates.length)),
+                voteCount:
+                  Object.values(ue.starVotes)?.length &&
+                  Math.max(...Object.values(ue.starVotes).map((rates) => rates.length)),
               }
             : undefined,
       })),
@@ -259,6 +264,7 @@ export type UeOverview = {
   info: {
     requirements: string[];
     languages: string[];
+    minors: string[];
   };
   openSemester: Array<{
     code: string;

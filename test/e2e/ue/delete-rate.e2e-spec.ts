@@ -13,7 +13,7 @@ import { ERROR_CODE } from 'src/exceptions';
 import { Dummies, e2eSuite } from '../../utils/test_utils';
 import { faker } from '@faker-js/faker';
 
-const DeleteRate = e2eSuite('DELETE /ue/{ueCode}/rate/{critetionId}', (app) => {
+const DeleteRate = e2eSuite('DELETE /ue/ueof/{ueofCode}/rate/{critetionId}', (app) => {
   const user = createUser(app);
   const user2 = createUser(app, { login: 'user2' });
   const semester = createSemester(app);
@@ -25,15 +25,18 @@ const DeleteRate = e2eSuite('DELETE /ue/{ueCode}/rate/{critetionId}', (app) => {
   const rating = createUeRating(app, { user, ue, criterion });
 
   it('should return a 401 as user is not authenticated', () => {
-    return pactum.spec().delete(`/ue/${ue.code}/rate/${criterion.id}`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
+    return pactum
+      .spec()
+      .delete(`/ue/ueof/${ue.ueofCode}/rate/${criterion.id}`)
+      .expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
   it('should return a 403 as user has not rated the UE', () => {
     return pactum
       .spec()
       .withBearerToken(user2.token)
-      .delete(`/ue/${ue.code}/rate/${criterion.id}`)
-      .expectAppError(ERROR_CODE.NOT_ALREADY_RATED_UEOF, ue.code, criterion.id);
+      .delete(`/ue/ueof/${ue.ueofCode}/rate/${criterion.id}`)
+      .expectAppError(ERROR_CODE.NOT_ALREADY_RATED_UEOF, ue.ueofCode, criterion.id);
   });
 
   it('should return a 404 as the UE does not exist', () => {
@@ -41,23 +44,27 @@ const DeleteRate = e2eSuite('DELETE /ue/{ueCode}/rate/{critetionId}', (app) => {
     return pactum
       .spec()
       .withBearerToken(user2.token)
-      .delete(`/ue/${nonExistentCode}/rate/${criterion.id}`)
-      .expectAppError(ERROR_CODE.NO_SUCH_UE, nonExistentCode);
+      .delete(`/ue/ueof/${nonExistentCode}/rate/${criterion.id}`)
+      .expectAppError(ERROR_CODE.NO_SUCH_UEOF, nonExistentCode);
   });
 
   it('should return a 404 as the criterion does not exist', () => {
     return pactum
       .spec()
       .withBearerToken(user2.token)
-      .delete(`/ue/${ue.code}/rate/${Dummies.UUID}`)
+      .delete(`/ue/ueof/${ue.ueofCode}/rate/${Dummies.UUID}`)
       .expectAppError(ERROR_CODE.NO_SUCH_CRITERION);
   });
 
   it('should return the deleted rate for specific criterion', async () => {
-    await pactum.spec().withBearerToken(user.token).delete(`/ue/${ue.code}/rate/${criterion.id}`).expectUeRate({
-      criterionId: criterion.id,
-      value: rating.value,
-    });
+    await pactum
+      .spec()
+      .withBearerToken(user.token)
+      .delete(`/ue/ueof/${ue.ueofCode}/rate/${criterion.id}`)
+      .expectUeRate({
+        criterionId: criterion.id,
+        value: rating.value,
+      });
     return createUeRating(app, { user, ue, criterion }, rating, true);
   });
 });

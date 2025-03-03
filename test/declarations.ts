@@ -44,10 +44,9 @@ function ueOverviewExpectation(ue: FakeUe, spec: Spec) {
       })),
     })),
     info: {
-      ...omit(ue.info, 'id', 'program', 'objectives', 'language'),
+      ...omit(ue.info, 'id', 'program', 'objectives', 'language', 'minors'),
       languages: [ue.info.language],
-      program: getTranslation(ue.info.program, spec.language),
-      objectives: getTranslation(ue.info.objectives, spec.language),
+      minors: ue.info.minors?.split(',') ?? [],
     },
     openSemester: ue.openSemesters.map((semester) => ({
       ...semester,
@@ -71,16 +70,20 @@ Spec.prototype.expectAppError = function <ErrorCode extends ERROR_CODE>(
     error: (args as string[]).reduce((arg, extra) => arg.replaceAll('%', extra), ErrorData[errorCode].message),
   });
 };
-Spec.prototype.expectUe = function (ue: FakeUe, rates: Array<{ criterionId: string; value: number }>) {
+Spec.prototype.expectUe = function (
+  ue: FakeUe,
+  rates: Array<{ criterionId: string; value: number }>,
+  rateCount: number,
+) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonMatchStrict(
     deepDateToString({
       code: ue.code,
       creationYear: 2000 + Number(ue.ueofCode.match(/\d+$/)?.[0] ?? 23),
       updateYear: 2000 + Number(ue.ueofCode.match(/\d+$/)?.[0] ?? 23),
-      ...(rates ? { starVotes: Object.fromEntries(rates.map((rate) => [rate.criterionId, rate.value])) } : {}),
       ueofs: [
         {
           name: getTranslation(ue.name, this.language),
+          code: ue.ueofCode,
           credits: ue.credits.map((credit) => ({
             ...omit(credit, 'id', 'ueofId', 'categoryId', 'branchOptions'),
             branchOptions: credit.branchOptions.map((branchOption) => ({
@@ -101,6 +104,14 @@ Spec.prototype.expectUe = function (ue: FakeUe, rates: Array<{ criterionId: stri
               end: semester.end.toISOString(),
             })),
           workTime: omit(ue.workTime, 'id', 'ueofId'),
+          ...(rates
+            ? {
+                starVotes: Object.fromEntries([
+                  ...rates.map((rate) => [rate.criterionId, rate.value]),
+                  ['voteCount', rateCount || 0],
+                ]),
+              }
+            : {}),
         },
       ],
     }),
@@ -179,7 +190,7 @@ Spec.prototype.expectUeComments = function expect(obj) {
 Spec.prototype.expectUeCommentReply = expectOkOrCreate<UeCommentReply>;
 Spec.prototype.expectUeCriteria = expect<Criterion[]>;
 Spec.prototype.expectUeRate = expect<UeRating>;
-Spec.prototype.expectUeRates = expect<UeRating[]>;
+Spec.prototype.expectUeRates = expect<{ [criterion: string]: UeRating[] }>;
 Spec.prototype.expectUeAnnalMetadata = expect<{
   types: FakeUeAnnalType[];
   semesters: string[];

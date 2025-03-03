@@ -42,8 +42,8 @@ const GetRateE2ESpec = e2eSuite('GET /ue/{ueCode}/rate', (app) => {
       .spec()
       .withBearerToken(user.token)
       .get(`/ue/${ue.code}/rate`)
-      .expectUeRates(
-        [
+      .expectUeRates({
+        [ue.ueofCode]: [
           {
             criterion: c1,
             value: 1,
@@ -58,7 +58,7 @@ const GetRateE2ESpec = e2eSuite('GET /ue/{ueCode}/rate', (app) => {
             criterionId: rate.criterion.id,
             value: rate.value,
           })),
-      );
+      });
   });
 
   it('should return the user rate for the UE (partial rating)', () => {
@@ -66,12 +66,14 @@ const GetRateE2ESpec = e2eSuite('GET /ue/{ueCode}/rate', (app) => {
       .spec()
       .withBearerToken(user2.token)
       .get(`/ue/${ue.code}/rate`)
-      .expectUeRates([
-        {
-          criterionId: c1.id,
-          value: 2,
-        },
-      ]);
+      .expectUeRates({
+        [ue.ueofCode]: [
+          {
+            criterionId: c1.id,
+            value: 2,
+          },
+        ],
+      });
   });
 });
 

@@ -38,7 +38,7 @@ declare module './declarations' {
     /** expects to return the given {@link page | page of UserOverView} */
     expectUsers(app: AppProvider, users: FakeUser[], count: number): this;
     /** expects to return the given {@link UeDetail} */
-    expectUe(ue: FakeUe, rates?: Array<{ criterionId: string; value: number }>): this;
+    expectUe(ue: FakeUe, rates?: Array<{ criterionId: string; value: number }>, rateCount?: number): this;
     /** expects to return the given {@link UeOverView} */
     expectUes(ues: FakeUe[]): this;
     /** expects to return the given {@link page | page of UeOverView} */
@@ -63,7 +63,7 @@ declare module './declarations' {
     /** expects to return the given {@link rate} */
     expectUeRate(rate: JsonLikeVariant<UeRating>): this;
     /** expects to return the given {@link rate} list */
-    expectUeRates(rate: JsonLikeVariant<UeRating[]>): this;
+    expectUeRates(rate: JsonLikeVariant<{ [criterion: string]: UeRating[] }>): this;
     expectUeAnnalMetadata(
       metadata: JsonLikeVariant<{
         types: FakeUeAnnalType[];
