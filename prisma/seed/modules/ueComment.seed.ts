@@ -39,7 +39,7 @@ export default function ueCommentSeed(
           },
           ueof: {
             connect: {
-              code: subscription.ueofId,
+              code: subscription.ueofCode,
             },
           },
           semester: {

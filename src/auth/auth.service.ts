@@ -114,7 +114,7 @@ export class AuthService {
             ? {
                 createMany: {
                   data: ues.map((id) => ({
-                    ueofId: id,
+                    ueofCode: id,
                     semesterId: currentSemester.code,
                   })),
                 },

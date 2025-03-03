@@ -37,7 +37,7 @@ function ueOverviewExpectation(ue: FakeUe, spec: Spec) {
     code: ue.code,
     name: getTranslation(ue.name, spec.language),
     credits: ue.credits.map((credit) => ({
-      ...omit(credit, 'id', 'ueofId', 'categoryId', 'branchOptions'),
+      ...omit(credit, 'id', 'ueofCode', 'categoryId', 'branchOptions'),
       branchOptions: credit.branchOptions.map((branchOption) => ({
         ...pick(branchOption, 'code', 'name'),
         branch: pick(branchOption.branch, 'code', 'name'),
@@ -85,7 +85,7 @@ Spec.prototype.expectUe = function (
           name: getTranslation(ue.name, this.language),
           code: ue.ueofCode,
           credits: ue.credits.map((credit) => ({
-            ...omit(credit, 'id', 'ueofId', 'categoryId', 'branchOptions'),
+            ...omit(credit, 'id', 'ueofCode', 'categoryId', 'branchOptions'),
             branchOptions: credit.branchOptions.map((branchOption) => ({
               ...pick(branchOption, 'code', 'name'),
               branch: pick(branchOption.branch, 'code', 'name'),
@@ -103,7 +103,7 @@ Spec.prototype.expectUe = function (
               start: semester.start.toISOString(),
               end: semester.end.toISOString(),
             })),
-          workTime: omit(ue.workTime, 'id', 'ueofId'),
+          workTime: omit(ue.workTime, 'id', 'ueofCode'),
           ...(rates
             ? {
                 starVotes: Object.fromEntries([
@@ -145,7 +145,7 @@ Spec.prototype.expectUesWithPagination = function (app: AppProvider, ues: FakeUe
 };
 Spec.prototype.expectUeComment = function expect(this: Spec, obj, created = false) {
   return this.expectStatus(created ? HttpStatus.CREATED : HttpStatus.OK).expectJsonLike({
-    ...omit(obj as any, 'ue', 'ueofId'),
+    ...omit(obj as any, 'ue', 'ueofCode'),
     ueof: {
       code: obj.ue.ueofCode,
       info: {

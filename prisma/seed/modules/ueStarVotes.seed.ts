@@ -17,7 +17,7 @@ export default function ueStarVotesSeed(
         prisma.ueStarVote.create({
           data: {
             user: { connect: { id: subscription.userId } },
-            ueof: { connect: { code: subscription.ueofId } },
+            ueof: { connect: { code: subscription.ueofCode } },
             criterion: { connect: { id: criterion.id } },
             value: faker.datatype.number({ min: 1, max: 5 }),
           },

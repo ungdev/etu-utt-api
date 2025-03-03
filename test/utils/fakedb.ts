@@ -664,7 +664,7 @@ export const createAnnal = entityFaker(
           semesterId: semester.code,
           senderId: sender.id,
           typeId: type.id,
-          ueofId: ue.ueofCode,
+          ueofCode: ue.ueofCode,
         },
       }),
 );
@@ -811,7 +811,7 @@ export const createUeSubscription = entityFaker('userUeSubscription', {}, async 
     .get(PrismaService)
     .userUeSubscription.create({
       data: {
-        ...omit(params, 'semesterId', 'ueofId', 'userId'),
+        ...omit(params, 'semesterId', 'ueofCode', 'userId'),
         semester: {
           connect: {
             code: dependencies.semester.code,
@@ -864,7 +864,7 @@ export const createUeRating = entityFaker(
       .get(PrismaService)
       .withDefaultBehaviour.ueStarVote.create({
         data: {
-          ...omit(params, 'criterionId', 'ueofId', 'userId'),
+          ...omit(params, 'criterionId', 'ueofCode', 'userId'),
           criterion: {
             connect: {
               id: dependencies.criterion.id,
@@ -898,7 +898,7 @@ export const createComment = entityFaker(
       .get(PrismaService)
       .withDefaultBehaviour.ueComment.create({
         data: {
-          ...omit(params, 'ueofId', 'authorId', 'semesterId', 'status'),
+          ...omit(params, 'ueofCode', 'authorId', 'semesterId', 'status'),
           validatedAt: params.status & CommentStatus.VALIDATED ? new Date() : undefined,
           deletedAt: params.status & CommentStatus.DELETED ? new Date() : undefined,
           ueof: {

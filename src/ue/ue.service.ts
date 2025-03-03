@@ -288,7 +288,7 @@ export class UeService {
               await this.prisma.ueStarVote.findMany({
                 where: {
                   userId: userId,
-                  ueofId: ueof.code,
+                  ueofCode: ueof.code,
                 },
               }),
             ] as const,
@@ -308,8 +308,8 @@ export class UeService {
   async rateUeof(userId: string, ueofCode: string, dto: UeRateDto): Promise<UeRating> {
     return this.prisma.ueStarVote.upsert({
       where: {
-        ueofId_userId_criterionId: {
-          ueofId: ueofCode,
+        ueofCode_userId_criterionId: {
+          ueofCode: ueofCode,
           userId,
           criterionId: dto.criterion,
         },
@@ -317,7 +317,7 @@ export class UeService {
       create: {
         value: dto.value,
         criterionId: dto.criterion,
-        ueofId: ueofCode,
+        ueofCode: ueofCode,
         userId,
       },
       update: {
@@ -329,8 +329,8 @@ export class UeService {
   async unRateUeof(userId: string, ueofCode: string, criterionId: string): Promise<UeRating> {
     return this.prisma.ueStarVote.delete({
       where: {
-        ueofId_userId_criterionId: {
-          ueofId: ueofCode,
+        ueofCode_userId_criterionId: {
+          ueofCode: ueofCode,
           userId,
           criterionId,
         },

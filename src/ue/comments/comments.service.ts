@@ -220,7 +220,7 @@ export class CommentsService {
           },
           ueof: {
             connect: {
-              code: lastSemester.ueofId,
+              code: lastSemester.ueofCode,
             },
           },
           semester: {

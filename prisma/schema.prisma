@@ -261,13 +261,13 @@ model UeAnnal {
   semesterId     String
   senderId       String?
   typeId         String
-  ueofId         String
+  ueofCode       String
   validatedAt    DateTime?
 
   semester Semester        @relation(fields: [semesterId], references: [code])
   sender   User?           @relation(fields: [senderId], references: [id], onDelete: SetNull)
   type     UeAnnalType     @relation(fields: [typeId], references: [id])
-  ueof     Ueof            @relation(fields: [ueofId], references: [code], onDelete: Cascade)
+  ueof     Ueof            @relation(fields: [ueofCode], references: [code], onDelete: Cascade)
   reports  UeAnnalReport[]
 }
 
@@ -314,11 +314,11 @@ model UeComment {
   authorId          String?
   lastValidatedBody String?
   semesterId        String
-  ueofId            String
+  ueofCode          String
 
   author   User?             @relation(fields: [authorId], references: [id], onDelete: SetNull)
   semester Semester          @relation(fields: [semesterId], references: [code])
-  ueof     Ueof              @relation(fields: [ueofId], references: [code], onDelete: Cascade)
+  ueof     Ueof              @relation(fields: [ueofCode], references: [code], onDelete: Cascade)
   answers  UeCommentReply[]
   reports  UeCommentReport[]
   upvotes  UeCommentUpvote[]
@@ -396,12 +396,12 @@ model UeCourse {
   room       String     @db.VarChar(50)
   semesterId String
   type       CourseType
-  ueofId     String
+  ueofCode   String
 
   courseExchangesFrom UeCourseExchange[] @relation(name: "courseFrom")
   courseExchangesTo   UeCourseExchange[] @relation(name: "courseTo")
   semester            Semester           @relation(fields: [semesterId], references: [code])
-  ueof                Ueof               @relation(fields: [ueofId], references: [code])
+  ueof                Ueof               @relation(fields: [ueofCode], references: [code])
   students            User[]
   timetableEntries    TimetableEntry[]
 }
@@ -440,10 +440,10 @@ model UeCredit {
   id         String  @id @default(uuid())
   categoryId String?
   credits    Int     @db.SmallInt
-  ueofId     String
+  ueofCode   String
 
   category      UeCreditCategory? @relation(fields: [categoryId], references: [code])
-  ueof          Ueof              @relation(fields: [ueofId], references: [code], onDelete: Cascade)
+  ueof          Ueof              @relation(fields: [ueofCode], references: [code], onDelete: Cascade)
   branchOptions UTTBranchOption[]
 }
 
@@ -480,14 +480,14 @@ model UeStarVote {
   value       Int      @db.SmallInt
   createdAt   DateTime @default(now())
   criterionId String
-  ueofId      String
+  ueofCode    String
   userId      String?
 
   criterion UeStarCriterion @relation(fields: [criterionId], references: [id], onDelete: Cascade)
-  ueof      Ueof            @relation(fields: [ueofId], references: [code], onDelete: Cascade)
+  ueof      Ueof            @relation(fields: [ueofCode], references: [code], onDelete: Cascade)
   user      User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-  @@unique([ueofId, userId, criterionId])
+  @@unique([ueofCode, userId, criterionId])
 }
 
 model UeWorkTime {
@@ -498,9 +498,9 @@ model UeWorkTime {
   the        Int?
   project    Boolean?
   internship Int?
-  ueofId     String   @unique
+  ueofCode   String   @unique
 
-  ueof Ueof @relation(fields: [ueofId], references: [code], onDelete: Cascade)
+  ueof Ueof @relation(fields: [ueofCode], references: [code], onDelete: Cascade)
 }
 
 model UserPermission {
@@ -771,14 +771,14 @@ model UserUeSubscription {
   id         String   @id @default(uuid())
   createdAt  DateTime @default(now())
   userId     String
-  ueofId     String
+  ueofCode   String
   semesterId String
 
   user     User     @relation(fields: [userId], references: [id])
-  ueof     Ueof     @relation(fields: [ueofId], references: [code])
+  ueof     Ueof     @relation(fields: [ueofCode], references: [code])
   semester Semester @relation(fields: [semesterId], references: [code])
 
-  @@unique([userId, ueofId, semesterId])
+  @@unique([userId, ueofCode, semesterId])
 }
 
 model UTTBranch {
