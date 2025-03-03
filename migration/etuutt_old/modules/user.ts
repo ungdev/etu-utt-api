@@ -86,7 +86,7 @@ export async function migrateUsers(
               street: user.address,
             },
           },
-          UesSubscriptions: {
+          uesSubscriptions: {
             createMany: {
               data: user.uvs.split('|').map((code) => ({
                 ueId: ues.find((ue) => ue.code === code).code,

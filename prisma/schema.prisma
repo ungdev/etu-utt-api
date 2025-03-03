@@ -131,10 +131,10 @@ model Semester {
   annals                UeAnnal[]
   comments              UeComment[]
   courses               UeCourse[]
-  BDEContributionsStart UserBDEContribution[]    @relation("startSemester")
-  BDEContributionsEnd   UserBDEContribution[]    @relation("endSemester")
+  bdeContributionsStart UserBDEContribution[]    @relation("startSemester")
+  bdeContributionsEnd   UserBDEContribution[]    @relation("endSemester")
   branchSubscriptions   UserBranchSubscription[]
-  UeSubscriptions       UserUeSubscription[]
+  ueSubscriptions       UserUeSubscription[]
   etuUTTTeams           UserEtuUTTTeam[]
 }
 
@@ -554,8 +554,8 @@ model User {
   formation             UserFormation?
   addresses             UserAddress[]
   otherAttributes       UserOtherAttributValue[]
-  UesSubscriptions      UserUeSubscription[]
-  UeStarVotes           UeStarVote[]
+  uesSubscriptions      UserUeSubscription[]
+  ueStarVotes           UeStarVote[]
   courses               UeCourse[]
   eventAnswers          EventAnswer[]
   annalsSent            UeAnnal[]

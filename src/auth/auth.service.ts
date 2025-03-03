@@ -110,7 +110,7 @@ export class AuthService {
                 },
               }
             : {}),
-          UesSubscriptions: currentSemester
+          uesSubscriptions: currentSemester
             ? {
                 createMany: {
                   data: ues.map((id) => ({
