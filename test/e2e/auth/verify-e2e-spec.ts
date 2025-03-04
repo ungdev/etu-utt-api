@@ -3,7 +3,7 @@ import { e2eSuite } from '../../utils/test_utils';
 import { AuthService } from '../../../src/auth/auth.service';
 import { ERROR_CODE } from '../../../src/exceptions';
 
-const VerifyE2ESpec = e2eSuite('GET /token/signin', (app) => {
+const VerifyE2ESpec = e2eSuite('GET /auth/signin', (app) => {
   it('should return a 400 if the token is missing', async () =>
     pactum.spec().get('/auth/signin').expectAppError(ERROR_CODE.NO_TOKEN));
 

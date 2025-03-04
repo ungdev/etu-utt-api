@@ -31,6 +31,7 @@ import {
   Translation,
   RawUserPrivacy,
   RawApiKey,
+  RawApiApplication,
 } from '../../src/prisma/types';
 import { faker } from '@faker-js/faker';
 import { AuthService } from '../../src/auth/auth.service';
@@ -109,6 +110,7 @@ export type FakeUeCreditCategory = Partial<RawCreditCategory>;
 export type FakeUeAnnalType = Partial<RawAnnalType>;
 export type FakeUeAnnal = Partial<UeAnnalFile>;
 export type FakeHomepageWidget = Partial<RawHomepageWidget>;
+export type FakeApiApplication = Partial<RawApiApplication>;
 
 export interface FakeEntityMap {
   assoMembership: {
@@ -217,6 +219,11 @@ export interface FakeEntityMap {
     params: CreateHomepageWidgetParameters;
     deps: { user: FakeUser };
   };
+  application: {
+    entity: FakeApiApplication;
+    params: CreateApiApplicationParameter;
+    deps: { user: FakeUser };
+  };
 }
 
 export type CreateUserParameters = FakeUser & { password: string };
@@ -321,7 +328,6 @@ export const createUser = entityFaker(
       .apiKey.create({
         data: {
           token: faker.random.alpha({ count: 30 }),
-          tokenUpdatedAt: new Date(),
           user: { connect: { id: user.id } },
           application: { connect: { id: DEFAULT_APPLICATION } },
           apiKeyPermissions: {
@@ -975,16 +981,41 @@ export type CreateHomepageWidgetParameters = FakeHomepageWidget;
 export const createHomepageWidget = entityFaker(
   'homepageWidget',
   {
-    widget: faker.datatype.string(),
-    x: faker.datatype.number(10),
-    y: faker.datatype.number(10),
-    width: faker.datatype.number(10),
-    height: faker.datatype.number(10),
+    widget: faker.datatype.string,
+    x: () => faker.datatype.number(10),
+    y: () => faker.datatype.number(10),
+    width: () => faker.datatype.number(10),
+    height: () => faker.datatype.number(10),
   },
   async (app, deps, params) =>
     app()
       .get(PrismaService)
       .userHomepageWidget.create({ data: { ...omit(params, 'userId'), user: { connect: { id: deps.user.id } } } }),
+);
+
+export type CreateApiApplicationParameter = FakeApiApplication;
+export const createApplication = entityFaker(
+  'application',
+  {
+    name: faker.company.name,
+    redirectUrl: faker.internet.url,
+    clientSecret: () => faker.random.alphaNumeric(10),
+  },
+  async (app, dependencies, params) =>
+    app()
+      .get(PrismaService)
+      .apiApplication.create({
+        data: {
+          ...pick(params, 'id', 'name', 'redirectUrl', 'clientSecret'),
+          user: { connect: { id: dependencies.user.id } },
+          apiKeys: {
+            create: {
+              userId: dependencies.user.id,
+              token: faker.random.alphaNumeric(10),
+            },
+          },
+        },
+      }),
 );
 
 /**

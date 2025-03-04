@@ -16,7 +16,7 @@ import { SemesterService } from '../semester/semester.service';
 import AuthSignUpReqDto from './dto/req/auth-sign-up-req.dto';
 import { SetPartial } from '../types';
 import { RawApiKey } from '../prisma/types';
-import crypto from 'crypto'
+import crypto from 'crypto';
 
 export type RegisterUserData = {
   login: string;
@@ -98,7 +98,6 @@ export class AuthService {
           apiKeys: {
             create: {
               token: AuthService.generateToken(),
-              tokenUpdatedAt: new Date(),
               application: { connect: { id: applicationId } },
             },
           },
@@ -433,8 +432,8 @@ export class AuthService {
   /**
    * Creates an API Key, and returns the signed token.
    */
-  async createApiKey(userId: string, applicationId: string, tokenExpiresIn?: number): Promise<string> {
-    const apiKey = await this.prisma.withDefaultBehaviour.apiKey.create({
+  async createApiKey(userId: string, applicationId: string): Promise<RawApiKey> {
+    return this.prisma.withDefaultBehaviour.apiKey.create({
       data: {
         user: {
           connect: {
@@ -447,10 +446,8 @@ export class AuthService {
           },
         },
         token: AuthService.generateToken(),
-        tokenUpdatedAt: new Date(),
       },
     });
-    return this.signAuthenticationToken(apiKey.token, tokenExpiresIn);
   }
 
   /**

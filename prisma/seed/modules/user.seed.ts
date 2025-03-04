@@ -27,7 +27,6 @@ export async function userSeed(prisma: PrismaClient): Promise<RawUser[]> {
           apiKeys: {
             create: {
               token: AuthService.generateToken(),
-              tokenUpdatedAt: new Date(),
               application: {
                 connect: {
                   id: DEFAULT_APPLICATION,

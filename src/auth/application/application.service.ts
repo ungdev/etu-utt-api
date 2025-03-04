@@ -25,8 +25,8 @@ export default class ApplicationService {
   async regenerateApiKeyToken(userId: string, applicationId: string, tokenExpiresIn?: number): Promise<string> {
     const updatedApiKey = await this.prisma.withDefaultBehaviour.apiKey.upsert({
       where: { userId_applicationId: { userId, applicationId } },
-      update: { token: AuthService.generateToken(), tokenUpdatedAt: new Date() },
-      create: { userId, applicationId, token: AuthService.generateToken(), tokenUpdatedAt: new Date() },
+      update: { token: AuthService.generateToken() },
+      create: { userId, applicationId, token: AuthService.generateToken() },
     });
     return this.authService.signAuthenticationToken(updatedApiKey.token, tokenExpiresIn);
   }

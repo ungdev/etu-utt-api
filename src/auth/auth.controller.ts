@@ -200,15 +200,20 @@ export class AuthController {
     description:
       'Create an API access for user to the application that made the request. Returns an authentication token. A route to sign-in should be called before, to get the required token in body.',
   })
-  async createApiKey(
-    @Body() dto: CreateApiKeyReqDto,
-    @GetApplication() application: Application,
-  ): Promise<AuthRedirectionResDto> {
+  async createApiKey(@Body() dto: CreateApiKeyReqDto): Promise<AuthRedirectionResDto> {
     const data = this.authService.decodeRegisterApiKeyToken(dto.token);
     if (!data) throw new AppException(ERROR_CODE.INVALID_TOKEN_FORMAT);
     if (!(await this.usersService.doesUserExist({ id: data.userId })))
       throw new AppException(ERROR_CODE.NO_SUCH_USER, data.userId); // Can only happen if user has deleted his account
-    const token = await this.authService.createApiKey(data.userId, application.id, data.tokenExpiresIn);
+    const application = await this.applicationService.get(data.applicationId);
+    if (!application) throw new AppException(ERROR_CODE.NO_SUCH_APPLICATION, data.applicationId); // Can only happen if application has been deleted
+    const apiKey = await this.authService.createApiKey(data.userId, data.applicationId);
+    const token = await this.authService.signValidationToken(
+      application.clientSecret,
+      apiKey.id,
+      application.id,
+      data.tokenExpiresIn,
+    );
     const redirectUrl = this.formatRedirectUrl(application.redirectUrl, token);
     return { redirectUrl };
   }

@@ -21,7 +21,6 @@ model ApiApplication {
 model ApiKey {
   id             String   @id @default(uuid())
   token          String   @unique
-  tokenUpdatedAt DateTime
   userId         String
   applicationId  String
   validationToken String?
