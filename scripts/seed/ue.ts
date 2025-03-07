@@ -2,6 +2,7 @@ import { createReadStream } from 'fs';
 import { createInterface } from 'readline/promises';
 import { parse } from '@fast-csv/parse';
 import { PrismaClient } from '@prisma/client';
+import '../../src/array';
 
 const prisma = new PrismaClient();
 
@@ -131,7 +132,7 @@ async function parseDocument(document: string) {
 }
 
 async function main() {
-  const importYear = new Date().getFullYear(); // Can be changed to the year of the import if done with web interface
+  const importYear = new Date().getFullYear() - 1; // Can be changed to the year of the import if done with web interface
 
   console.info('\x1b[42;30mFetching UE list\x1b[0m');
   const ues = await parseDocument('scripts/seed/dfp_data.csv');

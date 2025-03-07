@@ -104,11 +104,13 @@ export class UeController {
   /** This method chooses an UEOF and displays its basic data */
   private formatUeOverview(ue: Ue, langPref: string[], branchOptionPref: string[]): UeOverview {
     const lowerCasePref = langPref.map((lang) => lang.toLocaleLowerCase());
+    // Filters ueofs with ueofs that can be taken with the preferred branch options
     const availableOf = ue.ueofs.filter((ueof) =>
       branchOptionPref.some((optionPref) =>
         ueof.credits.some((credit) => credit.branchOptions.some((option) => option.code === optionPref)),
       ),
     );
+    // Chooses an UEOF : the only ueof if there is only one; the one with the preferred language if there is one; the first one otherwise
     const chosenOf = availableOf.length
       ? availableOf.find((ueof) => lowerCasePref.includes(ueof.info.language))
       : ue.ueofs.find((ueof) => lowerCasePref.includes(ueof.info.language)) ?? ue.ueofs[0];
@@ -132,6 +134,7 @@ export class UeController {
       },
       openSemester: ue.ueofs
         .map((ueof) => ueof.openSemester)
+        // Merge semesters and skip duplicates
         .reduce((acc, val) => [...acc, ...val.filter((sem) => acc.every((has) => has.code !== sem.code))], [])
         .map((semester) => ({
           code: semester.code,
