@@ -11,6 +11,7 @@ export {
   UTTBranchOption as RawBranchOption,
   Semester as RawSemester,
   Ue as RawUe,
+  Ueof as RawUeof,
   UeCredit as RawUeCredit,
   UeCreditCategory as RawCreditCategory,
   UeofInfo as RawUeofInfo,

@@ -6,6 +6,7 @@ import {
   createBranchOption,
   createSemester,
   createUeSubscription,
+  createUeof,
 } from '../../../utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../../src/exceptions';
@@ -18,9 +19,10 @@ const PostCommmentReply = e2eSuite('POST /ue/comments/{commentId}/reply', (app) 
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUe(app, { branchOptions: [branchOption] }, { openSemesters: [semester] });
-  const comment = createComment(app, { ue, user, semester });
-  createUeSubscription(app, { user, ue, semester });
+  const ue = createUe(app);
+  const ueof = createUeof(app, { branchOptions: [branchOption], semesters: [semester], ue });
+  const comment = createComment(app, { ueof, user, semester });
+  createUeSubscription(app, { user, ueof, semester });
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum

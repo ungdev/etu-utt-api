@@ -6,6 +6,7 @@ import {
   createBranch,
   createSemester,
   createUeSubscription,
+  createUeof,
 } from '../../utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from 'src/exceptions';
@@ -19,19 +20,20 @@ const PutRate = e2eSuite('PUT /ue/ueof/{ueofCode}/rate', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUe(app, { branchOptions: [branchOption] }, { openSemesters: [semester] });
+  const ue = createUe(app);
+  const ueof = createUeof(app, { branchOptions: [branchOption], semesters: [semester], ue });
   const criterion = createCriterion(app);
-  createUeSubscription(app, { user, ue, semester });
+  createUeSubscription(app, { user, ueof, semester });
 
   it('should return a 401 as user is not authenticated', () => {
-    return pactum.spec().put(`/ue/ueof/${ue.ueofCode}/rate`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
+    return pactum.spec().put(`/ue/ueof/${ueof.code}/rate`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
   it('should return a 403 as user has not done the UE', () => {
     return pactum
       .spec()
       .withBearerToken(user2.token)
-      .put(`/ue/ueof/${ue.ueofCode}/rate`)
+      .put(`/ue/ueof/${ueof.code}/rate`)
       .withBody({
         criterion: criterion.id,
         value: 1,
@@ -43,7 +45,7 @@ const PutRate = e2eSuite('PUT /ue/ueof/{ueofCode}/rate', (app) => {
     return pactum
       .spec()
       .withBearerToken(user2.token)
-      .put(`/ue/ueof/${ue.ueofCode}/rate`)
+      .put(`/ue/ueof/${ueof.code}/rate`)
       .withBody({
         criterion: criterion.id,
         value: 'helloWorld',
@@ -55,7 +57,7 @@ const PutRate = e2eSuite('PUT /ue/ueof/{ueofCode}/rate', (app) => {
     return pactum
       .spec()
       .withBearerToken(user2.token)
-      .put(`/ue/ueof/${ue.ueofCode}/rate`)
+      .put(`/ue/ueof/${ueof.code}/rate`)
       .withBody({
         criterion: criterion.id,
         value: 1.5,
@@ -67,7 +69,7 @@ const PutRate = e2eSuite('PUT /ue/ueof/{ueofCode}/rate', (app) => {
     return pactum
       .spec()
       .withBearerToken(user2.token)
-      .put(`/ue/ueof/${ue.ueofCode}/rate`)
+      .put(`/ue/ueof/${ueof.code}/rate`)
       .withBody({
         criterion: criterion.id,
         value: 6,
@@ -79,7 +81,7 @@ const PutRate = e2eSuite('PUT /ue/ueof/{ueofCode}/rate', (app) => {
     return pactum
       .spec()
       .withBearerToken(user2.token)
-      .put(`/ue/ueof/${ue.ueofCode}/rate`)
+      .put(`/ue/ueof/${ueof.code}/rate`)
       .withBody({
         criterion: criterion.id,
         value: 0,
@@ -91,7 +93,7 @@ const PutRate = e2eSuite('PUT /ue/ueof/{ueofCode}/rate', (app) => {
     return pactum
       .spec()
       .withBearerToken(user2.token)
-      .put(`/ue/ueof/${ue.ueofCode}/rate`)
+      .put(`/ue/ueof/${ueof.code}/rate`)
       .withBody({
         criterion: true,
         value: 1,
@@ -103,7 +105,7 @@ const PutRate = e2eSuite('PUT /ue/ueof/{ueofCode}/rate', (app) => {
     return pactum
       .spec()
       .withBearerToken(user2.token)
-      .put(`/ue/ueof/${ue.ueofCode}/rate`)
+      .put(`/ue/ueof/${ueof.code}/rate`)
       .withBody({
         criterion: criterion.id.slice(0, 10),
         value: 1,
@@ -128,7 +130,7 @@ const PutRate = e2eSuite('PUT /ue/ueof/{ueofCode}/rate', (app) => {
     await pactum
       .spec()
       .withBearerToken(user.token)
-      .put(`/ue/ueof/${ue.ueofCode}/rate`)
+      .put(`/ue/ueof/${ueof.code}/rate`)
       .withBody({
         criterion: criterion.id,
         value: 1,

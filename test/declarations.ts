@@ -1,12 +1,12 @@
 import { HttpStatus } from '@nestjs/common';
 import Spec from 'pactum/src/models/Spec';
-import { JsonLikeVariant } from './declarations.d';
+import { FakeUeWithOfs, JsonLikeVariant } from './declarations.d';
 import { ERROR_CODE, ErrorData, ExtrasTypeBuilder } from '../src/exceptions';
 import { UeComment } from '../src/ue/comments/interfaces/comment.interface';
 import { UeCommentReply } from '../src/ue/comments/interfaces/comment-reply.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { UeRating } from 'src/ue/interfaces/rate.interface';
-import { FakeUeAnnalType, FakeUser, FakeUe, FakeHomepageWidget, FakeAsso, FakeUeCreditCategory } from './utils/fakedb';
+import { FakeUeAnnalType, FakeUser, FakeHomepageWidget, FakeAsso, FakeUeCreditCategory } from './utils/fakedb';
 import { UeAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
 import { ConfigModule } from '../src/config/config.module';
 import { AppProvider } from './utils/test_utils';
@@ -32,11 +32,11 @@ export function deepDateToString<T>(obj: T): JsonLikeVariant<T> {
   ) as JsonLikeVariant<T>;
 }
 
-function ueOverviewExpectation(ue: FakeUe, spec: Spec) {
+function ueOverviewExpectation(ue: FakeUeWithOfs, spec: Spec) {
   return {
     code: ue.code,
-    name: getTranslation(ue.name, spec.language),
-    credits: ue.credits.map((credit) => ({
+    name: getTranslation(ue.ueofs[0].name, spec.language),
+    credits: ue.ueofs[0].credits.map((credit) => ({
       ...omit(credit, 'id', 'ueofCode', 'categoryId', 'branchOptions'),
       branchOptions: credit.branchOptions.map((branchOption) => ({
         ...pick(branchOption, 'code', 'name'),
@@ -44,11 +44,11 @@ function ueOverviewExpectation(ue: FakeUe, spec: Spec) {
       })),
     })),
     info: {
-      ...omit(ue.info, 'id', 'program', 'objectives', 'language', 'minors'),
-      languages: [ue.info.language],
-      minors: ue.info.minors?.split(',') ?? [],
+      ...omit(ue.ueofs[0].info, 'id', 'program', 'objectives', 'language', 'minors'),
+      languages: [ue.ueofs[0].info.language],
+      minors: ue.ueofs[0].info.minors?.split(',') ?? [],
     },
-    openSemester: ue.openSemesters.map((semester) => ({
+    openSemester: ue.ueofs[0].openSemester.map((semester) => ({
       ...semester,
       start: semester.start.toISOString(),
       end: semester.end.toISOString(),
@@ -71,49 +71,47 @@ Spec.prototype.expectAppError = function <ErrorCode extends ERROR_CODE>(
   });
 };
 Spec.prototype.expectUe = function (
-  ue: FakeUe,
+  ue: FakeUeWithOfs,
   rates: Array<{ criterionId: string; value: number }>,
   rateCount: number,
 ) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonMatchStrict(
     deepDateToString({
       code: ue.code,
-      creationYear: 2000 + Number(ue.ueofCode.match(/\d+$/)?.[0] ?? 23),
-      updateYear: 2000 + Number(ue.ueofCode.match(/\d+$/)?.[0] ?? 23),
-      ueofs: [
-        {
-          name: getTranslation(ue.name, this.language),
-          code: ue.ueofCode,
-          credits: ue.credits.map((credit) => ({
-            ...omit(credit, 'id', 'ueofCode', 'categoryId', 'branchOptions'),
-            branchOptions: credit.branchOptions.map((branchOption) => ({
-              ...pick(branchOption, 'code', 'name'),
-              branch: pick(branchOption.branch, 'code', 'name'),
-            })),
+      creationYear: 2000 + Number(ue.ueofs[0].code.match(/\d+$/)?.[0] ?? 23),
+      updateYear: 2000 + Number(ue.ueofs[0].code.match(/\d+$/)?.[0] ?? 23),
+      ueofs: ue.ueofs.map((ueof) => ({
+        name: getTranslation(ueof.name, this.language),
+        code: ueof.code,
+        credits: ueof.credits.map((credit) => ({
+          ...omit(credit, 'id', 'ueofCode', 'categoryId', 'branchOptions'),
+          branchOptions: credit.branchOptions.map((branchOption) => ({
+            ...pick(branchOption, 'code', 'name'),
+            branch: pick(branchOption.branch, 'code', 'name'),
           })),
-          info: {
-            ...omit(ue.info, 'id'),
-            objectives: getTranslation(ue.info.objectives, this.language),
-            program: getTranslation(ue.info.program, this.language),
-          },
-          openSemester: ue.openSemesters
-            .mappedSort((semester) => semester.start.toISOString())
-            .map((semester) => ({
-              ...semester,
-              start: semester.start.toISOString(),
-              end: semester.end.toISOString(),
-            })),
-          workTime: omit(ue.workTime, 'id', 'ueofCode'),
-          ...(rates
-            ? {
-                starVotes: Object.fromEntries([
-                  ...rates.map((rate) => [rate.criterionId, rate.value]),
-                  ['voteCount', rateCount || 0],
-                ]),
-              }
-            : {}),
+        })),
+        info: {
+          ...omit(ueof.info, 'id'),
+          objectives: getTranslation(ueof.info.objectives, this.language),
+          program: getTranslation(ueof.info.program, this.language),
         },
-      ],
+        openSemester: ueof.openSemester
+          .mappedSort((semester) => semester.start.toISOString())
+          .map((semester) => ({
+            ...semester,
+            start: semester.start.toISOString(),
+            end: semester.end.toISOString(),
+          })),
+        workTime: omit(ueof.workTime, 'id', 'ueofCode'),
+        ...(rates
+          ? {
+              starVotes: Object.fromEntries([
+                ...rates.map((rate) => [rate.criterionId, rate.value]),
+                ['voteCount', rateCount || 0],
+              ]),
+            }
+          : {}),
+      })),
     }),
   );
 };
@@ -133,10 +131,10 @@ Spec.prototype.expectUsers = function (app: AppProvider, users: FakeUser[], coun
     }),
   );
 };
-Spec.prototype.expectUes = function (ues: FakeUe[]) {
+Spec.prototype.expectUes = function (ues: FakeUeWithOfs[]) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonLike(ues.map((ue) => ueOverviewExpectation(ue, this)));
 };
-Spec.prototype.expectUesWithPagination = function (app: AppProvider, ues: FakeUe[], count: number) {
+Spec.prototype.expectUesWithPagination = function (app: AppProvider, ues: FakeUeWithOfs[], count: number) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonLike({
     items: ues.map((ue) => ueOverviewExpectation(ue, this)),
     itemCount: count,
@@ -145,11 +143,11 @@ Spec.prototype.expectUesWithPagination = function (app: AppProvider, ues: FakeUe
 };
 Spec.prototype.expectUeComment = function expect(this: Spec, obj, created = false) {
   return this.expectStatus(created ? HttpStatus.CREATED : HttpStatus.OK).expectJsonLike({
-    ...omit(obj as any, 'ue', 'ueofCode'),
+    ...omit(obj as any, 'ueof'),
     ueof: {
-      code: obj.ue.ueofCode,
+      code: obj.ueof.code,
       info: {
-        language: obj.ue.info.language,
+        language: obj.ueof.info.language,
       },
     },
   });
@@ -172,9 +170,9 @@ Spec.prototype.expectUeComments = function expect(obj) {
         'upvotes',
       ),
       ueof: {
-        code: comment.ue.ueofCode,
+        code: comment.ueof.code,
         info: {
-          language: comment.ue.info.language,
+          language: comment.ueof.info.language,
         },
       },
       createdAt: comment.createdAt.toISOString(),
@@ -228,4 +226,4 @@ Spec.prototype.expectCreditCategories = function (creditCategories: FakeUeCredit
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJson(creditCategories);
 };
 
-export { Spec, JsonLikeVariant };
+export { Spec, JsonLikeVariant, FakeUeWithOfs };

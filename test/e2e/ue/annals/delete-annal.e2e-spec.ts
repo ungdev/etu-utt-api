@@ -8,6 +8,7 @@ import {
   createUeSubscription,
   createAnnalType,
   createAnnal,
+  createUeof,
 } from '../../../utils/fakedb';
 import { Dummies, JsonLike, e2eSuite } from '../../../utils/test_utils';
 import { ERROR_CODE } from '../../../../src/exceptions';
@@ -23,9 +24,10 @@ const DeleteAnnal = e2eSuite('DELETE /ue/annals/{annalId}', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUe(app, { branchOptions: [branchOption] }, { openSemesters: [semester] });
-  createUeSubscription(app, { user: senderUser, ue, semester });
-  const annal_validated = createAnnal(app, { semester, sender: senderUser, type: annalType, ue });
+  const ue = createUe(app);
+  const ueof = createUeof(app, { branchOptions: [branchOption], semesters: [semester], ue });
+  createUeSubscription(app, { user: senderUser, ueof, semester });
+  const annal_validated = createAnnal(app, { semester, sender: senderUser, type: annalType, ueof });
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum.spec().delete(`/ue/annals/${annal_validated.id}`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);

@@ -6,6 +6,7 @@ import {
   createSemester,
   createUeSubscription,
   createComment,
+  createUeof,
 } from '../../../utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../../src/exceptions';
@@ -19,8 +20,9 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUe(app, { branchOptions: [branchOption] }, { openSemesters: [semester] });
-  createUeSubscription(app, { user: user2, ue, semester });
+  const ue = createUe(app);
+  const ueof = createUeof(app, { branchOptions: [branchOption], semesters: [semester], ue });
+  createUeSubscription(app, { user: user2, ueof, semester });
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum
@@ -96,7 +98,7 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
       .expectUeComment(
         {
           id: JsonLike.ANY_UUID,
-          ue,
+          ueof,
           author: {
             id: user2.id,
             firstName: user2.firstName,
@@ -121,7 +123,7 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
   });
 
   it('should return a 403 while trying to post another comment', async () => {
-    await createComment(app, { ue, user: user2, semester }, { isAnonymous: true }, true);
+    await createComment(app, { ueof, user: user2, semester }, { isAnonymous: true }, true);
     await pactum
       .spec()
       .withBearerToken(user2.token)
@@ -145,7 +147,7 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
       })
       .expectUeComment(
         {
-          ue,
+          ueof,
           id: JsonLike.ANY_UUID,
           author: {
             id: user2.id,

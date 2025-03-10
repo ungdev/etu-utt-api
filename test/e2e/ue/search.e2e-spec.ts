@@ -1,9 +1,10 @@
-import { FakeUe, createBranch, createBranchOption, createSemester, createUe, createUser } from '../../utils/fakedb';
+import { createBranch, createBranchOption, createSemester, createUe, createUeof, createUser } from '../../utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from 'src/exceptions';
 import { e2eSuite } from '../../utils/test_utils';
 import { registerUniqueValue } from '../../../prisma/seed/utils';
 import { ConfigModule } from '../../../src/config/config.module';
+import { FakeUeWithOfs } from 'test/declarations';
 
 const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
   const user = createUser(app);
@@ -26,14 +27,14 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
       branch: branches[1],
     }),
   ];
-  const ues: FakeUe[] = [];
-  for (let i = 0; i < 30; i++)
-    ues.push(
-      createUe(
+  const ues: FakeUeWithOfs[] = [];
+  for (let i = 0; i < 30; i++) {
+    const ue = createUe(app, { code: `XX${`${i}`.padStart(2, '0')}` }) as FakeUeWithOfs;
+    ue.ueofs = [
+      createUeof(
         app,
-        { branchOptions: [branchOptions[i % 4]] },
+        { branchOptions: [branchOptions[(i * 3) % 4]], semesters: [semesters[i % 2]], ue },
         {
-          code: `XX${`${i}`.padStart(2, '0')}`,
           credits: [
             {
               category: {
@@ -43,10 +44,11 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
               credits: 6,
             },
           ],
-          openSemesters: [semesters[i % 2]],
         },
       ),
-    );
+    ];
+    ues.push(ue);
+  }
 
   it('should return a 400 as semester is in a wrong format', () => {
     return pactum
@@ -89,7 +91,9 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
   });
 
   it('should return a list of ues filtered by semester', () => {
-    const expectedUes = ues.filter((ue) => ue.openSemesters.some((semester) => semester.code === 'A24'));
+    const expectedUes = ues.filter((ue) =>
+      ue.ueofs.some((ueof) => ueof.openSemester.some((semester) => semester.code === 'A24')),
+    );
     return pactum
       .spec()
       .withBearerToken(user.token)
@@ -99,7 +103,9 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
   });
 
   it('should return a list of ues filtered by credit type', () => {
-    const expectedUes = ues.filter((ue) => ue.credits.some((credit) => credit.category.code === 'CS'));
+    const expectedUes = ues.filter((ue) =>
+      ue.ueofs.some((ueof) => ueof.credits.some((credit) => credit.category.code === 'CS')),
+    );
     return pactum
       .spec()
       .withBearerToken(user.token)
@@ -110,7 +116,9 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
 
   it('should return a list of ues filtered by branch option', () => {
     const expectedUes = ues.filter((ue) =>
-      ue.credits.some((credit) => credit.branchOptions.some((branchOption) => branchOption.code === 'T1')),
+      ue.ueofs.some((ueof) =>
+        ueof.credits.some((credit) => credit.branchOptions.some((branchOption) => branchOption.code === 'T1')),
+      ),
     );
     return pactum
       .spec()
@@ -122,7 +130,9 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
 
   it('should return a list of ues filtered by branch', () => {
     const expectedUes = ues.filter((ue) =>
-      ue.credits.some((credit) => credit.branchOptions.some((branchOption) => branchOption.branch.code === 'B1')),
+      ue.ueofs.some((ueof) =>
+        ueof.credits.some((credit) => credit.branchOptions.some((branchOption) => branchOption.branch.code === 'B1')),
+      ),
     );
     return pactum
       .spec()

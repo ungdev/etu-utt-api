@@ -6,6 +6,7 @@ import {
   createBranchOption,
   createSemester,
   createCommentUpvote,
+  createUeof,
 } from '../../../utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../../src/exceptions';
@@ -19,8 +20,9 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUe(app, { branchOptions: [branchOption] }, { openSemesters: [semester] });
-  const comment = createComment(app, { ue, user, semester });
+  const ue = createUe(app);
+  const ueof = createUeof(app, { branchOptions: [branchOption], semesters: [semester], ue });
+  const comment = createComment(app, { ueof, user, semester });
   createCommentUpvote(app, { user: user2, comment });
 
   it('should return a 401 as user is not authenticated', () => {
@@ -100,7 +102,7 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
         isAnonymous: true,
       })
       .expectUeComment({
-        ue,
+        ueof,
         id: JsonLike.ANY_UUID,
         author: {
           id: user.id,
@@ -121,7 +123,7 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
         status: CommentStatus.UNVERIFIED,
       });
     await app().get(PrismaService).ueComment.deleteMany();
-    await createComment(app, { ue, user, semester }, comment, true);
+    await createComment(app, { ueof, user, semester }, comment, true);
     return createCommentUpvote(app, { user: user2, comment }, {}, true);
   });
 
@@ -134,7 +136,7 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
         isAnonymous: false,
       })
       .expectUeComment({
-        ue,
+        ueof,
         id: JsonLike.ANY_UUID,
         author: {
           id: user.id,
@@ -155,7 +157,7 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
         status: CommentStatus.VALIDATED,
       });
     await app().get(PrismaService).ueComment.deleteMany();
-    await createComment(app, { ue, user, semester }, comment, true);
+    await createComment(app, { ueof, user, semester }, comment, true);
     return createCommentUpvote(app, { user: user2, comment }, {}, true);
   });
 });

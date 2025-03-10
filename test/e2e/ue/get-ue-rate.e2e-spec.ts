@@ -4,6 +4,7 @@ import {
   createCriterion,
   createSemester,
   createUe,
+  createUeof,
   createUeRating,
   createUser,
 } from '../../utils/fakedb';
@@ -17,12 +18,13 @@ const GetRateE2ESpec = e2eSuite('GET /ue/{ueCode}/rate', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUe(app, { branchOptions: [branchOption] }, { openSemesters: [semester] });
+  const ue = createUe(app);
+  const ueof = createUeof(app, { branchOptions: [branchOption], semesters: [semester], ue });
   const c1 = createCriterion(app);
   const c2 = createCriterion(app);
-  createUeRating(app, { ue, criterion: c1, user }, { value: 1 });
-  createUeRating(app, { ue, criterion: c2, user }, { value: 5 });
-  createUeRating(app, { ue, criterion: c1, user: user2 }, { value: 2 });
+  createUeRating(app, { ueof, criterion: c1, user }, { value: 1 });
+  createUeRating(app, { ueof, criterion: c2, user }, { value: 5 });
+  createUeRating(app, { ueof, criterion: c1, user: user2 }, { value: 2 });
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum.spec().get(`/ue/${ue.code}/rate`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
@@ -43,7 +45,7 @@ const GetRateE2ESpec = e2eSuite('GET /ue/{ueCode}/rate', (app) => {
       .withBearerToken(user.token)
       .get(`/ue/${ue.code}/rate`)
       .expectUeRates({
-        [ue.ueofCode]: [
+        [ueof.code]: [
           {
             criterion: c1,
             value: 1,
@@ -67,7 +69,7 @@ const GetRateE2ESpec = e2eSuite('GET /ue/{ueCode}/rate', (app) => {
       .withBearerToken(user2.token)
       .get(`/ue/${ue.code}/rate`)
       .expectUeRates({
-        [ue.ueofCode]: [
+        [ueof.code]: [
           {
             criterionId: c1.id,
             value: 2,

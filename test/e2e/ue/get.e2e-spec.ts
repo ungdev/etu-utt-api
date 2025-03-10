@@ -1,10 +1,10 @@
 import {
-  FakeUe,
   createBranch,
   createBranchOption,
   createCriterion,
   createSemester,
   createUe,
+  createUeof,
   createUeRating,
   createUeSubscription,
   createUser,
@@ -15,6 +15,7 @@ import { UeController } from '../../../src/ue/ue.controller';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
 import { UserType } from '@prisma/client';
+import { FakeUeWithOfs } from 'test/declarations';
 
 const GetE2ESpec = e2eSuite('GET /ue/{ueCode}', (app) => {
   const user = createUser(app);
@@ -43,14 +44,14 @@ const GetE2ESpec = e2eSuite('GET /ue/{ueCode}', (app) => {
       branch: branches[1],
     }),
   ];
-  const ues: FakeUe[] = [];
-  for (let i = 0; i < 30; i++)
-    ues.push(
-      createUe(
+  const ues: FakeUeWithOfs[] = [];
+  for (let i = 0; i < 30; i++) {
+    const ue = createUe(app, { code: `XX${`${i}`.padStart(2, '0')}` }) as FakeUeWithOfs;
+    ue.ueofs = [
+      createUeof(
         app,
-        { branchOptions: [branchOptions[(i * 3) % 4]] },
+        { branchOptions: [branchOptions[(i * 3) % 4]], semesters: [semesters[i % 2]], ue },
         {
-          code: `XX${`${i}`.padStart(2, '0')}`,
           credits: [
             {
               category: {
@@ -60,23 +61,18 @@ const GetE2ESpec = e2eSuite('GET /ue/{ueCode}', (app) => {
               credits: 6,
             },
           ],
-          openSemesters: [semesters[i % 2]],
         },
       ),
-    );
-  const ueWithRating = createUe(
-    app,
-    { branchOptions: [branchOptions[0]] },
-    {
-      code: `XX30`,
-      openSemesters: semesters,
-    },
-  );
+    ];
+    ues.push(ue);
+  }
+  const ueWithRating = createUe(app, { code: `XX30` }) as FakeUeWithOfs;
+  ueWithRating.ueofs = [createUeof(app, { branchOptions: [branchOptions[0]], semesters, ue: ueWithRating })];
   const criterion = createCriterion(app);
-  createUeSubscription(app, { user, ue: ueWithRating, semester: semesters[0] });
-  createUeSubscription(app, { user: user2, ue: ueWithRating, semester: semesters[0] });
-  const rate1 = createUeRating(app, { user, criterion, ue: ueWithRating }, { value: 3 });
-  const rate2 = createUeRating(app, { user: user2, criterion, ue: ueWithRating }, { value: 5 });
+  createUeSubscription(app, { user, ueof: ueWithRating.ueofs[0], semester: semesters[0] });
+  createUeSubscription(app, { user: user2, ueof: ueWithRating.ueofs[0], semester: semesters[0] });
+  const rate1 = createUeRating(app, { user, criterion, ueof: ueWithRating.ueofs[0] }, { value: 3 });
+  const rate2 = createUeRating(app, { user: user2, criterion, ueof: ueWithRating.ueofs[0] }, { value: 5 });
 
   it('should return an error if the ue does not exist', () => {
     return pactum.spec().withBearerToken(user.token).get('/ue/AA01').expectAppError(ERROR_CODE.NO_SUCH_UE, 'AA01');
@@ -104,10 +100,10 @@ const GetE2ESpec = e2eSuite('GET /ue/{ueCode}', (app) => {
               .get(UeController)
               .computeRate(
                 [
-                  { ...(rate2 as Required<FakeUeStarVote>), ueofCode: ueWithRating.ueofCode },
-                  { ...(rate1 as Required<FakeUeStarVote>), ueofCode: ueWithRating.ueofCode },
+                  { ...(rate2 as Required<FakeUeStarVote>), ueofCode: ueWithRating.ueofs[0].code },
+                  { ...(rate1 as Required<FakeUeStarVote>), ueofCode: ueWithRating.ueofs[0].code },
                 ],
-                ueWithRating.ueofCode,
+                ueWithRating.ueofs[0].code,
               ),
           },
         ],

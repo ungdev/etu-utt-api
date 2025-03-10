@@ -12,8 +12,9 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
   const semester = fakedb.createSemester(app);
   const branch = fakedb.createBranch(app);
   const branchOption = fakedb.createBranchOption(app, { branch });
-  const ue = fakedb.createUe(app, { branchOptions: [branchOption] }, { code: `XX01`, openSemesters: [semester] });
-  const comment = fakedb.createComment(app, { user, ue, semester });
+  const ue = fakedb.createUe(app);
+  const ueof = fakedb.createUeof(app, { branchOptions: [branchOption], semesters: [semester], ue });
+  const comment = fakedb.createComment(app, { user, ueof, semester });
   fakedb.createCommentUpvote(app, { user: user2, comment });
   const reply = fakedb.createCommentReply(app, { user, comment }, { body: 'HelloWorld' });
 
@@ -43,7 +44,7 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
       .withBearerToken(user.token)
       .get(`/ue/comments/${comment.id}`)
       .expectUeComment({
-        ue,
+        ueof,
         ...(omit(
           comment,
           'semesterId',
@@ -78,7 +79,7 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
       .withBearerToken(user2.token)
       .get(`/ue/comments/${comment.id}`)
       .expectUeComment({
-        ue,
+        ueof,
         ...(omit(
           comment,
           'semesterId',
