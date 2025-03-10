@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import ApplicationResDto from './dto/res/application-res.dto';
 import { ApiBody, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 import ApplicationService from './application.service';
-import {GetUser, IsPublic} from '../decorator';
+import { GetUser, IsPublic } from '../decorator';
 import { Application } from './interfaces/application.interface';
 import CreateApplicationReqDto from './dto/req/create-application-req.dto';
 import { AuthService } from '../auth.service';
@@ -14,9 +14,15 @@ import AuthTokenResDto from '../dto/res/auth-token-res.dto';
 export default class ApplicationController {
   constructor(private applicationService: ApplicationService, private authService: AuthService) {}
 
-  @Get()
+  @Get('/of/me')
   @ApiOkResponse({ type: ApplicationResDto, isArray: true })
   async getMyApplications(@GetUser('id') userId: string): Promise<ApplicationResDto[]> {
+    return this.getApplicationsOf(userId);
+  }
+
+  @Get('/of/:userId')
+  @ApiOkResponse({ type: ApplicationResDto, isArray: true })
+  async getApplicationsOf(@Param('userId') userId: string): Promise<ApplicationResDto[]> {
     const applications = await this.applicationService.getFromUserId(userId);
     return applications.map(this.formatApplicationOverview);
   }

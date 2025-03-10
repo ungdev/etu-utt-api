@@ -6,7 +6,15 @@ import { UeComment } from '../src/ue/comments/interfaces/comment.interface';
 import { UeCommentReply } from '../src/ue/comments/interfaces/comment-reply.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { UeRating } from 'src/ue/interfaces/rate.interface';
-import { FakeUeAnnalType, FakeUser, FakeUe, FakeHomepageWidget, FakeAsso, FakeUeCreditCategory } from './utils/fakedb';
+import {
+  FakeUeAnnalType,
+  FakeUser,
+  FakeUe,
+  FakeHomepageWidget,
+  FakeAsso,
+  FakeUeCreditCategory,
+  FakeApiApplication,
+} from './utils/fakedb';
 import { UeAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
 import { ConfigModule } from '../src/config/config.module';
 import { AppProvider } from './utils/test_utils';
@@ -15,6 +23,7 @@ import { isArray } from 'class-validator';
 import { Language } from '@prisma/client';
 import { DEFAULT_APPLICATION } from '../prisma/seed/utils';
 import { Pagination, SetPartial } from '../src/types';
+import ApplicationResDto from '../src/auth/application/dto/res/application-res.dto';
 
 /** Shortcut function for `this.expectStatus(200).expectJsonLike` */
 function expect<T>(obj: JsonLikeVariant<T>) {
@@ -211,6 +220,21 @@ Spec.prototype.expectAsso = function (asso: FakeAsso) {
 };
 Spec.prototype.expectCreditCategories = function (creditCategories: FakeUeCreditCategory[]) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJson(creditCategories);
+};
+Spec.prototype.expectApplications = function (applications: FakeApiApplication[]) {
+  return (<Spec>this).expectStatus(HttpStatus.OK).expectJson(
+    [...applications]
+      .mappedSort((application) => application.name)
+      .map(
+        (application) =>
+          ({
+            id: application.id,
+            name: application.name,
+            userId: application.userId,
+            redirectUrl: application.redirectUrl,
+          } satisfies ApplicationResDto),
+      ),
+  );
 };
 
 export { Spec, JsonLikeVariant };

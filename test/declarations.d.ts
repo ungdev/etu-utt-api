@@ -2,7 +2,7 @@ import { ERROR_CODE, ErrorData, ExtrasTypeBuilder } from '../src/exceptions';
 import { UeComment } from 'src/ue/interfaces/comment.interface';
 import { UeCommentReply } from 'src/ue/comments/interfaces/comment-reply.interface';
 import { UeRating } from 'src/ue/interfaces/rate.interface';
-import { FakeUeAnnalType } from './utils/fakedb';
+import {FakeApiApplication, FakeUeAnnalType} from './utils/fakedb';
 import { UeAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { UeRating } from 'src/ue/interfaces/rate.interface';
@@ -79,6 +79,8 @@ declare module './declarations' {
     /** expects to return the given {@link asso} */
     expectAsso(asso: FakeAsso): this;
     expectCreditCategories(categories: JsonLikeVariant<FakeUeCreditCategory[]>): this;
+    expectApplications(applications: FakeApiApplication[]): this;
+
     withLanguage(language: Language): this;
     language: Language;
     withApplication(application: string): this;

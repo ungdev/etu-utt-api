@@ -8,10 +8,14 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import AuthCasSignInReqDto from '../../../src/auth/dto/req/auth-cas-sign-in-req.dto';
 import { DEFAULT_APPLICATION } from '../../../prisma/seed/utils';
-import {HttpStatus} from "@nestjs/common";
+import { HttpStatus } from '@nestjs/common';
 
 const CasSignInE2ESpec = e2eSuite('POST /auth/signin/cas', (app) => {
-  const body: AuthCasSignInReqDto = { service: cas.validService, ticket: cas.validTicket, tokenExpiresIn: cas.user.tokenExpiresIn };
+  const body: AuthCasSignInReqDto = {
+    service: cas.validService,
+    ticket: cas.validTicket,
+    tokenExpiresIn: cas.user.tokenExpiresIn,
+  };
 
   it('should fail as provided service is not valid', async () => {
     await pactum
