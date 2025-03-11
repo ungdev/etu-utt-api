@@ -8,7 +8,7 @@ import { PermissionGuard } from './auth/guard/permission.guard';
 import { RoleGuard } from './auth/guard/role.guard';
 import { UeModule } from './ue/ue.module';
 import { JwtGuard } from './auth/guard';
-import { TimetableModule } from './timetable/timetable.module';
+//import { TimetableModule } from './timetable/timetable.module';
 import { ConfigModule } from './config/config.module';
 import { HttpModule } from './http/http.module';
 import { BranchModule } from './branch/branch.module';
@@ -26,7 +26,9 @@ import { SemesterModule } from './semester/semester.module';
     ProfileModule,
     UsersModule,
     UeModule,
-    TimetableModule,
+    /// FOR THE MOMENT, DON'T CARE ABOUT THIS MODULE
+    /// WE WILL SEE LATER HOW WE MANAGE TIMETABLES, IF WE EVEN MANAGE THEM AT ALL
+    //TimetableModule,
     BranchModule,
     AssosModule,
   ],

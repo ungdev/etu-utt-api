@@ -104,7 +104,6 @@ const UpdateCommentReply = e2eSuite('PATCH /ue/comments/reply/{replyId}', (app) 
           id: user.id,
           firstName: user.firstName,
           lastName: user.lastName,
-          studentId: user.studentId,
         },
         createdAt: JsonLike.ANY_DATE,
         updatedAt: JsonLike.ANY_DATE,

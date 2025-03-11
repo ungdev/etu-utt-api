@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { UeSearchDto } from './dto/ue-search.dto';
+import { UeSearchReqDto } from './dto/req/ue-search-req.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { UeRateDto } from './dto/ue-rate.dto';
+import { UeRateReqDto } from './dto/req/ue-rate-req.dto';
 import { Ue } from './interfaces/ue.interface';
 import { Criterion } from './interfaces/criterion.interface';
 import { UeRating } from './interfaces/rate.interface';
@@ -25,7 +25,7 @@ export class UeService {
    * @param language the language in which to search for text
    * @returns a page of {@link Ue} matching the user query
    */
-  async searchUes(query: UeSearchDto, language: Language): Promise<Pagination<Ue>> {
+  async searchUes(query: UeSearchReqDto, language: Language): Promise<Pagination<Ue>> {
     // The where query object for prisma
     const where = {
       // Search for the user query (if there is one)
@@ -305,7 +305,7 @@ export class UeService {
    * @param dto the rating to apply
    * @returns the new rate of the {@link ueofCode | ue} for the {@link user}
    */
-  async rateUeof(userId: string, ueofCode: string, dto: UeRateDto): Promise<UeRating> {
+  async rateUeof(userId: string, ueofCode: string, dto: UeRateReqDto): Promise<UeRating> {
     return this.prisma.ueStarVote.upsert({
       where: {
         ueofCode_userId_criterionId: {

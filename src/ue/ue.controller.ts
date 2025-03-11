@@ -1,28 +1,39 @@
 import { Body, Controller, Delete, Get, Headers, Param, Put, Query, Res } from '@nestjs/common';
 import { HttpStatusCode } from 'axios';
 import type { Response } from 'express';
-import { UeSearchDto } from './dto/ue-search.dto';
+import { UeSearchReqDto } from './dto/req/ue-search-req.dto';
 import { UeService } from './ue.service';
 import { GetUser, IsPublic, RequireUserType } from '../auth/decorator';
 import { User } from '../users/interfaces/user.interface';
 import { UUIDParam } from '../app.pipe';
 import { AppException, ERROR_CODE } from '../exceptions';
-import { UeRateDto } from './dto/ue-rate.dto';
 import { Ue, UeStarVoteEntry } from './interfaces/ue.interface';
+import { UeRateReqDto } from './dto/req/ue-rate-req.dto';
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiAppErrorResponse, paginatedResponseDto } from '../app.dto';
+import { UeDetailResDto } from './dto/res/ue-detail-res.dto';
+import { UeOverviewResDto } from './dto/res/ue-overview-res.dto';
+import UeRateCriterionResDto from './dto/res/ue-rate-criterion-res.dto';
+import UeRateResDto from './dto/res/ue-rate-res.dto';
 import { Language, UserType } from '@prisma/client';
-import { Translation } from '../prisma/types';
+import { UeRating } from './interfaces/rate.interface';
 
 @Controller('ue')
+@ApiTags('UE')
 export class UeController {
   constructor(readonly ueService: UeService) {}
 
   @Get()
   @IsPublic()
+  @ApiOperation({
+    description: 'Search for UE, eventually with advanced search using the available fields in the request.',
+  })
+  @ApiOkResponse({ type: paginatedResponseDto(UeOverviewResDto) })
   async searchUe(
     @GetUser() user: User,
     @Headers('language') language: Language,
-    @Query() queryParams: UeSearchDto,
-  ): Promise<Pagination<UeOverview>> {
+    @Query() queryParams: UeSearchReqDto,
+  ): Promise<Pagination<UeOverviewResDto>> {
     const res = await this.ueService.searchUes(queryParams, language);
     return {
       ...res,
@@ -38,11 +49,14 @@ export class UeController {
 
   @Get('/:ueCode')
   @IsPublic()
+  @ApiOperation({ description: 'Search for a specific UE by its code.' })
+  @ApiOkResponse({ type: UeDetailResDto })
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_UE, 'There is no UE with the provided code.')
   async getUe(
     @GetUser() user: User,
     @Param('ueCode') ueCode: string,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<void | UeDetail> {
+  ): Promise<void | UeDetailResDto> {
     if (!(await this.ueService.doesUeExist(ueCode))) {
       // Check for aliases or throw an error
       const alias = await this.ueService.findAlias(ueCode);
@@ -54,20 +68,37 @@ export class UeController {
 
   @Get('/rate/criteria')
   @RequireUserType('STUDENT', 'FORMER_STUDENT')
-  async getRateCriteria() {
+  @ApiOperation({ description: 'Get the different criteria on which users can rate UEs.' })
+  @ApiOkResponse({ type: UeRateCriterionResDto, isArray: true })
+  async getRateCriteria(): Promise<UeRateCriterionResDto[]> {
     return this.ueService.getRateCriteria();
   }
 
   @Get('/:ueCode/rate')
   @RequireUserType('STUDENT', 'FORMER_STUDENT')
-  async getUeRate(@Param('ueCode') ueCode: string, @GetUser() user: User) {
+  @ApiOperation({ description: 'Get the rates given by the current user.' })
+  @ApiOkResponse({
+    description: 'Keys are criterionId and values are the marks.',
+    schema: { type: 'object', additionalProperties: { type: 'number' } },
+  })
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_UE, 'There is no UE with the provided code.')
+  async getUeRate(@Param('ueCode') ueCode: string, @GetUser() user: User): Promise<{ [ueofCode: string]: UeRating[] }> {
     if (!(await this.ueService.doesUeExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     return this.ueService.getRateUe(user.id, ueCode);
   }
 
   @Put('/ueof/:ueofCode/rate')
   @RequireUserType('STUDENT')
-  async rateUe(@Param('ueofCode') ueofCode: string, @GetUser() user: User, @Body() dto: UeRateDto) {
+  @ApiOperation({ description: 'Rate the UE by some criterion.' })
+  @ApiOkResponse({ type: UeRateReqDto })
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_UE, 'There is no UE with the provided code.')
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_CRITERION, 'There is no criterion with the provided id.')
+  @ApiAppErrorResponse(ERROR_CODE.NOT_ALREADY_DONE_UEOF, 'Thrown when user has not done the UE.')
+  async rateUe(
+    @Param('ueofCode') ueofCode: string,
+    @GetUser() user: User,
+    @Body() dto: UeRateReqDto,
+  ): Promise<UeRateResDto> {
     if (!(await this.ueService.doesUeofExist(ueofCode))) throw new AppException(ERROR_CODE.NO_SUCH_UEOF, ueofCode);
     if (!(await this.ueService.doesCriterionExist(dto.criterion))) throw new AppException(ERROR_CODE.NO_SUCH_CRITERION);
     if (!(await this.ueService.hasUserAttended(ueofCode, user.id)))
@@ -77,11 +108,16 @@ export class UeController {
 
   @Delete('/ueof/:ueofCode/rate/:criterionId')
   @RequireUserType('STUDENT', 'FORMER_STUDENT')
+  @ApiOperation({ description: 'Remove the rate on the UE about some criterion.' })
+  @ApiOkResponse({ type: UeRateReqDto })
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_UE, 'There is no UE with the provided code.')
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_CRITERION, 'There is no criterion with the provided id.')
+  @ApiAppErrorResponse(ERROR_CODE.NOT_ALREADY_RATED_UEOF, 'Thrown if user has not rated the UE.')
   async unRateUe(
     @Param('ueofCode') ueofCode: string,
     @UUIDParam('criterionId') criterionId: string,
     @GetUser() user: User,
-  ) {
+  ): Promise<UeRateResDto> {
     if (!(await this.ueService.doesUeofExist(ueofCode))) throw new AppException(ERROR_CODE.NO_SUCH_UEOF, ueofCode);
     if (!(await this.ueService.doesCriterionExist(criterionId))) throw new AppException(ERROR_CODE.NO_SUCH_CRITERION);
     if (!(await this.ueService.hasAlreadyRated(user.id, ueofCode, criterionId)))
@@ -91,7 +127,9 @@ export class UeController {
 
   @Get('/of/me')
   @RequireUserType('STUDENT')
-  async getMyUes(@GetUser() user: User, @Headers('language') language: Language): Promise<UeOverview[]> {
+  @ApiOperation({ description: 'Get the UEs of the current user.' })
+  @ApiOkResponse({ type: UeOverviewResDto, isArray: true })
+  async getMyUes(@GetUser() user: User, @Headers('language') language: Language): Promise<UeOverviewResDto[]> {
     return (await this.ueService.getUesOfUser(user.id)).map((ue) =>
       this.formatUeOverview(
         ue,
@@ -102,7 +140,7 @@ export class UeController {
   }
 
   /** This method chooses an UEOF and displays its basic data */
-  private formatUeOverview(ue: Ue, langPref: string[], branchOptionPref: string[]): UeOverview {
+  private formatUeOverview(ue: Ue, langPref: string[], branchOptionPref: string[]): UeOverviewResDto {
     const lowerCasePref = langPref.map((lang) => lang.toLocaleLowerCase());
     // Filters ueofs with ueofs that can be taken with the preferred branch options
     const availableOf = ue.ueofs.filter((ueof) =>
@@ -144,7 +182,7 @@ export class UeController {
     };
   }
 
-  private formatDetailedUe(ue: Ue, userType: UserType): UeDetail {
+  private formatDetailedUe(ue: Ue, userType: UserType): UeDetailResDto {
     return {
       code: ue.code,
       creationYear: ue.creationYear,
@@ -170,7 +208,7 @@ export class UeController {
         info: {
           requirements: ueof.requirements.map((r) => r.code),
           language: ueof.info.language,
-          minors: ueof.info.minors,
+          minors: ueof.info.minors?.split(',') ?? [],
           objectives: ueof.info.objectives,
           program: ueof.info.program,
         },
@@ -245,82 +283,3 @@ export class UeController {
     );
   }
 }
-
-export type UeOverview = {
-  code: string;
-  name: Translation;
-  credits: Array<{
-    credits: number;
-    category: {
-      code: string;
-      name: string;
-    };
-    branchOptions: Array<{
-      branch: {
-        code: string;
-        name: string;
-      };
-      code: string;
-      name: string;
-    }>;
-  }>;
-  info: {
-    requirements: string[];
-    languages: string[];
-    minors: string[];
-  };
-  openSemester: Array<{
-    code: string;
-    start: Date;
-    end: Date;
-  }>;
-};
-
-export type UeDetail = {
-  code: string;
-  creationYear: number;
-  updateYear: number;
-  ueofs: {
-    code: string;
-    name: Translation;
-    credits: Array<{
-      credits: number;
-      category: {
-        code: string;
-        name: string;
-      };
-      branchOptions: Array<{
-        branch: {
-          code: string;
-          name: string;
-        };
-        code: string;
-        name: string;
-      }>;
-    }>;
-    info: {
-      requirements: string[];
-      language: string;
-      minors: string;
-      objectives: Translation;
-      program: Translation;
-    };
-    openSemester: Array<{
-      code: string;
-      start: Date;
-      end: Date;
-    }>;
-    workTime: {
-      cm: number;
-      td: number;
-      tp: number;
-      the: number;
-      project: boolean;
-      internship: number;
-    };
-  }[];
-  starVotes?: {
-    [criterionId: string]: number;
-    voteCount: number;
-  };
-};

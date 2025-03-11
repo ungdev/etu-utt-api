@@ -47,7 +47,7 @@ export const enum ERROR_CODE {
   INVALID_CAS_TICKET = 3006,
   FORBIDDEN_ALREADY_COMMENTED = 3101,
   FORBIDDEN_ALREADY_UPVOTED = 3102,
-  FORBIDDEN_ALREADY_UNUPVOTED = 3103,
+  FORBIDDEN_NOT_UPVOTED = 3103,
   NOT_COMMENT_AUTHOR = 4221,
   NOT_ALREADY_DONE_UE = 4222,
   NOT_REPLY_AUTHOR = 4223,
@@ -70,6 +70,7 @@ export const enum ERROR_CODE {
   NO_SUCH_UEOF = 4411,
   ANNAL_ALREADY_UPLOADED = 4901,
   CREDENTIALS_ALREADY_TAKEN = 5001,
+  HIDDEN_DUCK = 9999,
 }
 
 /**
@@ -214,7 +215,7 @@ export const ErrorData = Object.freeze({
     message: 'You must un-upvote this comment before upvoting it again',
     httpCode: HttpStatus.FORBIDDEN,
   },
-  [ERROR_CODE.FORBIDDEN_ALREADY_UNUPVOTED]: {
+  [ERROR_CODE.FORBIDDEN_NOT_UPVOTED]: {
     message: 'You must upvote this comment before un-upvoting it',
     httpCode: HttpStatus.FORBIDDEN,
   },
@@ -306,6 +307,10 @@ export const ErrorData = Object.freeze({
     message: 'The given credentials are already taken',
     httpCode: HttpStatus.CONFLICT,
   },
+  [ERROR_CODE.HIDDEN_DUCK]: {
+    message: 'Hey, you found the hidden duck ! Error : %',
+    httpCode: HttpStatus.I_AM_A_TEAPOT,
+  },
 } as const) satisfies Readonly<{
   [error in ERROR_CODE]: {
     message: string;
@@ -316,8 +321,8 @@ export const ErrorData = Object.freeze({
 /**
  * Counts the number of occurrences of a string in another string. It the returns a string array type with that number of elements.
  * @example
- * type A = ExtrasTypeBuilder<'hello', '%'>; // []
- * type B = ExtrasTypeBuilder<'%hel%lo%', '%'>; // [string, string, string]
+ * type A = ExtrasTypeBuilder<'hello'>; // []
+ * type B = ExtrasTypeBuilder<'%hel%lo%'>; // [string, string, string]
  */
 export type ExtrasTypeBuilder<S extends string> = S extends `${infer Part1}%${infer Part2}`
   ? [...ExtrasTypeBuilder<Part1>, ...ExtrasTypeBuilder<Part2>, string]

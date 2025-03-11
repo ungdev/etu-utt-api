@@ -11,7 +11,6 @@ const REPLY_SELECT_FILTER = {
         id: true,
         lastName: true,
         firstName: true,
-        studentId: true,
       },
     },
     body: true,

@@ -8,7 +8,7 @@ import { FakeComment } from '../../../utils/fakedb';
 
 const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) => {
   const user = fakedb.createUser(app);
-  const user2 = fakedb.createUser(app, { login: 'user2', studentId: 3 });
+  const user2 = fakedb.createUser(app, { login: 'user2' });
   const semester = fakedb.createSemester(app);
   const branch = fakedb.createBranch(app);
   const branchOption = fakedb.createBranchOption(app, { branch });
@@ -60,7 +60,6 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
               id: user.id,
               firstName: user.firstName,
               lastName: user.lastName,
-              studentId: user.studentId,
             },
             createdAt: reply.createdAt.toISOString(),
             updatedAt: reply.updatedAt.toISOString(),
@@ -68,7 +67,7 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
         ],
         updatedAt: comment.updatedAt.toISOString(),
         createdAt: comment.createdAt.toISOString(),
-        semester: { code: semester.code },
+        semester: semester.code,
         upvotes: 1,
         upvoted: false,
       }));
@@ -97,7 +96,7 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
         ],
         updatedAt: comment.updatedAt.toISOString(),
         createdAt: comment.createdAt.toISOString(),
-        semester: { code: semester.code },
+        semester: semester.code,
         upvotes: 1,
         upvoted: true,
       });

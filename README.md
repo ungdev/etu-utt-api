@@ -23,6 +23,7 @@ Everytime that you `up` the project, it will do the following things for you in 
 - Start the NestJS API in dev mode.
 
 Push database changes
+
 ```sh
 npx prisma db push
 ```
@@ -31,17 +32,17 @@ npx prisma db push
 
 You can now go to [http://localhost:3000](http://localhost:3000) to see the app !
 
-| Service name | URL                                              | Description |
-| - |--------------------------------------------------| - |
-| API | [http://localhost:3000](http://localhost:3000)   | The API home page. You can address all requests to that endpoint. |
-| API | [http://localhost:3000/docs](http://localhost:3000) | The API Swagger documentation. You can read the functional documentation and try all endpoints. |
+| Service name | URL                                                 | Description                                                                                     |
+| ------------ | --------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| API          | [http://localhost:3000](http://localhost:3000)      | The API home page. You can address all requests to that endpoint.                               |
+| API          | [http://localhost:3000/docs](http://localhost:3000) | The API Swagger documentation. You can read the functional documentation and try all endpoints. |
 
 ## How to use
 
 To open a terminal inside the container.
 
 ```sh
-docker exec -it etuutt-api sh
+docker exec -it etu-utt-api sh
 ```
 
 Inside that terminal, you can run any command you want, like this one to acces NestJS CLI.
@@ -65,22 +66,26 @@ npm run test:e2e
 ## Setup manually
 
 Setup environment variables
+
 ```sh
 cp .env.example .env
 ```
 
 Install dependencies
+
 ```sh
 yarn
 ```
 
 Setup the database
+
 ```sh
 yarn prisma generate
 yarn prisma db push
 ```
 
 Start the project
+
 ```sh
 # In developping mode
 yarn start:dev

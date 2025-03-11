@@ -5,8 +5,8 @@ import sharp from 'sharp';
 import PDFDocument from 'pdfkit';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MulterWithMime } from '../../upload.interceptor';
-import { CreateAnnal } from './dto/create-annal.dto';
-import { UpdateAnnalDto } from './dto/update-annal.dto';
+import { CreateAnnalReqDto } from './dto/req/create-annal-req.dto';
+import { UpdateAnnalReqDto } from './dto/req/update-annal-req.dto';
 import { ConfigModule } from '../../config/config.module';
 import { User } from '../../users/interfaces/user.interface';
 import { Semester } from '@prisma/client';
@@ -56,7 +56,7 @@ export class AnnalsService {
     );
   }
 
-  async createAnnalFile(user: User, params: CreateAnnal) {
+  async createAnnalFile(user: User, params: CreateAnnalReqDto) {
     const subscription = await this.prisma.userUeSubscription.findFirst({
       where: {
         semesterId: params.semester,
@@ -331,7 +331,7 @@ export class AnnalsService {
     );
   }
 
-  async updateAnnalMetadata(annalId: string, metadata: UpdateAnnalDto) {
+  async updateAnnalMetadata(annalId: string, metadata: UpdateAnnalReqDto) {
     return this.prisma.ueAnnal.update({
       where: {
         id: annalId,

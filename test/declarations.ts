@@ -94,6 +94,7 @@ Spec.prototype.expectUe = function (
           ...omit(ueof.info, 'id'),
           objectives: getTranslation(ueof.info.objectives, this.language),
           program: getTranslation(ueof.info.program, this.language),
+          minors: ueof.info.minors?.split(',') ?? [],
         },
         openSemester: ueof.openSemester
           .mappedSort((semester) => semester.start.toISOString())
@@ -209,8 +210,12 @@ Spec.prototype.expectHomepageWidgets = function (widgets: Omit<FakeHomepageWidge
 Spec.prototype.expectAssos = function (app: AppProvider, assos: FakeAsso[], count: number) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJson({
     items: assos.map((asso) => ({
-      ...pick(asso, 'id', 'name', 'logo', 'president'),
-      descriptionShortTranslation: getTranslation(asso.descriptionShortTranslation, (<Spec>this).language),
+      ...pick(asso, 'id', 'name', 'logo'),
+      shortDescription: getTranslation(asso.descriptionShortTranslation, (<Spec>this).language),
+      president: {
+        role: asso.presidentRole,
+        user: asso.president,
+      },
     })),
     itemCount: count,
     itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
@@ -218,8 +223,12 @@ Spec.prototype.expectAssos = function (app: AppProvider, assos: FakeAsso[], coun
 };
 Spec.prototype.expectAsso = function (asso: FakeAsso) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJson({
-    ...pick(asso, 'id', 'login', 'name', 'mail', 'phoneNumber', 'website', 'logo', 'president'),
-    descriptionTranslation: getTranslation(asso.descriptionTranslation, (<Spec>this).language),
+    ...pick(asso, 'id', 'login', 'name', 'mail', 'phoneNumber', 'website', 'logo'),
+    description: getTranslation(asso.descriptionTranslation, (<Spec>this).language),
+    president: {
+      role: asso.presidentRole,
+      user: asso.president,
+    },
   });
 };
 Spec.prototype.expectCreditCategories = function (creditCategories: FakeUeCreditCategory[]) {

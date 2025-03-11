@@ -11,8 +11,9 @@ import { string } from 'pactum-matchers';
 import { ERROR_CODE } from '../../../src/exceptions';
 import { ConfigModule } from '../../../src/config/config.module';
 import { LdapServerMock, LdapUser } from 'ldap-server-mock';
+import { HttpStatus } from '@nestjs/common';
 
-const CasSignUpE2ESpec = e2eSuite('/auth/signup/cas', (app) => {
+const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
   const list: LdapUser[] = [];
   const ldapServer = new LdapServerMock(
     list,
@@ -112,6 +113,7 @@ const CasSignUpE2ESpec = e2eSuite('/auth/signup/cas', (app) => {
       .spec()
       .post('/auth/signup/cas')
       .withJson({ registerToken: app().get(AuthService).signRegisterToken(userData) })
+      .expectStatus(HttpStatus.CREATED)
       .expectJsonMatch({ access_token: string() });
     // TODO : test that the user has been created, along with all its data
   };

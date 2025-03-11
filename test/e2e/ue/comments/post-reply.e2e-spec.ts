@@ -101,7 +101,6 @@ const PostCommmentReply = e2eSuite('POST /ue/comments/{commentId}/reply', (app) 
             id: user.id,
             lastName: user.lastName,
             firstName: user.firstName,
-            studentId: user.studentId,
           },
           body: 'heyhey',
           createdAt: JsonLike.ANY_DATE,

@@ -14,7 +14,7 @@ import { Dummies, e2eSuite, JsonLike } from '../../../utils/test_utils';
 import { PrismaService } from '../../../../src/prisma/prisma.service';
 import { CommentStatus } from 'src/ue/comments/interfaces/comment.interface';
 
-const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
+const UpdateComment = e2eSuite('PATCH /ue/comments/:commentId', (app) => {
   const user = createUser(app);
   const user2 = createUser(app, { login: 'user2' });
   const semester = createSemester(app);
@@ -108,13 +108,10 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
           id: user.id,
           firstName: user.firstName,
           lastName: user.lastName,
-          studentId: user.studentId,
         },
         createdAt: JsonLike.ANY_DATE,
         updatedAt: JsonLike.ANY_DATE,
-        semester: {
-          code: semester.code,
-        },
+        semester: semester.code,
         isAnonymous: true,
         body: 'Cette  UE est troooop bien',
         answers: [],
@@ -142,13 +139,10 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
           id: user.id,
           firstName: user.firstName,
           lastName: user.lastName,
-          studentId: user.studentId,
         },
         createdAt: JsonLike.ANY_DATE,
         updatedAt: JsonLike.ANY_DATE,
-        semester: {
-          code: semester.code,
-        },
+        semester: semester.code,
         isAnonymous: false,
         body: comment.body,
         answers: [],
