@@ -332,24 +332,32 @@ export const createUser = entityFaker(
           application: { connect: { id: DEFAULT_APPLICATION } },
           apiKeyPermissions: {
             create: [
-              {
-                permission: 'USER_SEE_DETAILS',
-                soft: true,
-                grants: {
-                  create: {
-                    user: { connect: { id: user.id } },
-                  },
-                },
-              },
-              {
-                permission: 'USER_UPDATE_DETAILS',
-                soft: true,
-                grants: {
-                  create: {
-                    user: { connect: { id: user.id } },
-                  },
-                },
-              },
+              ...(params.permissions.includes(Permission.USER_SEE_DETAILS)
+                ? []
+                : [
+                    {
+                      permission: Permission.USER_SEE_DETAILS,
+                      soft: true,
+                      grants: {
+                        create: {
+                          user: { connect: { id: user.id } },
+                        },
+                      },
+                    },
+                  ]),
+              ...(params.permissions.includes(Permission.USER_UPDATE_DETAILS)
+                ? []
+                : [
+                    {
+                      permission: Permission.USER_UPDATE_DETAILS,
+                      soft: true,
+                      grants: {
+                        create: {
+                          user: { connect: { id: user.id } },
+                        },
+                      },
+                    },
+                  ]),
               ...params.permissions.map((permission) => ({
                 permission,
                 soft: false,

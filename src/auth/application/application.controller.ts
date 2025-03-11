@@ -7,8 +7,12 @@ import { Application } from './interfaces/application.interface';
 import CreateApplicationReqDto from './dto/req/create-application-req.dto';
 import { AuthService } from '../auth.service';
 import UpdateTokenReqDto from './dto/req/update-token-req.dto';
-import { pick } from '../../utils';
+import { hasPermissionOnUser, pick } from '../../utils';
 import AuthTokenResDto from '../dto/res/auth-token-res.dto';
+import { GetPermissions } from '../decorator/get-permissions.decorator';
+import { RequestPermissions } from '../interfaces/request-auth-data.interface';
+import { AppException, ERROR_CODE } from '../../exceptions';
+import { Permission } from '@prisma/client';
 
 @Controller('auth/application')
 export default class ApplicationController {
@@ -17,12 +21,17 @@ export default class ApplicationController {
   @Get('/of/me')
   @ApiOkResponse({ type: ApplicationResDto, isArray: true })
   async getMyApplications(@GetUser('id') userId: string): Promise<ApplicationResDto[]> {
-    return this.getApplicationsOf(userId);
+    return this.getApplicationsOf(userId, { [Permission.USER_SEE_DETAILS]: '*' });
   }
 
   @Get('/of/:userId')
   @ApiOkResponse({ type: ApplicationResDto, isArray: true })
-  async getApplicationsOf(@Param('userId') userId: string): Promise<ApplicationResDto[]> {
+  async getApplicationsOf(
+    @Param('userId') userId: string,
+    @GetPermissions() permissions: RequestPermissions,
+  ): Promise<ApplicationResDto[]> {
+    if (!hasPermissionOnUser(Permission.USER_SEE_DETAILS, userId, permissions))
+      throw new AppException(ERROR_CODE.FORBIDDEN_NOT_ENOUGH_USER_PERMISSIONS, 'USER_SEE_DETAILS', userId);
     const applications = await this.applicationService.getFromUserId(userId);
     return applications.map(this.formatApplicationOverview);
   }
@@ -32,6 +41,7 @@ export default class ApplicationController {
   @IsPublic()
   async getApplication(@Param('applicationId') applicationId: string): Promise<ApplicationResDto> {
     const application = await this.applicationService.get(applicationId);
+    if (!application) throw new AppException(ERROR_CODE.NO_SUCH_APPLICATION, applicationId);
     return this.formatApplicationOverview(application);
   }
 

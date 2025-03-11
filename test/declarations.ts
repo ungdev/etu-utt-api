@@ -236,5 +236,13 @@ Spec.prototype.expectApplications = function (applications: FakeApiApplication[]
       ),
   );
 };
+Spec.prototype.expectApplication = function (application: FakeApiApplication) {
+  return (<Spec>this).expectStatus(HttpStatus.OK).expectJson({
+    id: application.id,
+    name: application.name,
+    userId: application.userId,
+    redirectUrl: application.redirectUrl,
+  } satisfies ApplicationResDto);
+};
 
 export { Spec, JsonLikeVariant };

@@ -80,6 +80,7 @@ declare module './declarations' {
     expectAsso(asso: FakeAsso): this;
     expectCreditCategories(categories: JsonLikeVariant<FakeUeCreditCategory[]>): this;
     expectApplications(applications: FakeApiApplication[]): this;
+    expectApplication(application: FakeApiApplication): this;
 
     withLanguage(language: Language): this;
     language: Language;
