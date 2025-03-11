@@ -8,6 +8,7 @@ import {
   createUeSubscription,
   createAnnalType,
   createAnnal,
+  createUeof,
 } from '../../../utils/fakedb';
 import { Dummies, JsonLike, e2eSuite } from '../../../utils/test_utils';
 import { ERROR_CODE } from '../../../../src/exceptions';
@@ -22,17 +23,18 @@ const EditAnnal = e2eSuite('PATCH /ue/annals/{annalId}', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
-  createUeSubscription(app, { user: senderUser, ue, semester });
-  const annal_validated = createAnnal(app, { semester, sender: senderUser, type: annalType, ue });
+  const ue = createUe(app);
+  const ueof = createUeof(app, { branchOptions: [branchOption], semesters: [semester], ue });
+  createUeSubscription(app, { user: senderUser, ueof, semester });
+  const annal_validated = createAnnal(app, { semester, sender: senderUser, type: annalType, ueof });
   const annal_not_uploaded = createAnnal(
     app,
-    { semester, sender: senderUser, type: annalType, ue },
+    { semester, sender: senderUser, type: annalType, ueof },
     { status: CommentStatus.PROCESSING | CommentStatus.UNVERIFIED },
   );
   const annal_deleted = createAnnal(
     app,
-    { semester, sender: senderUser, type: annalType, ue },
+    { semester, sender: senderUser, type: annalType, ueof },
     { status: CommentStatus.VALIDATED | CommentStatus.DELETED },
   );
 
@@ -106,7 +108,6 @@ const EditAnnal = e2eSuite('PATCH /ue/annals/{annalId}', (app) => {
         id: annal_validated.id,
         createdAt: annal_validated.createdAt.toISOString(),
         updatedAt: JsonLike.ANY_DATE,
-        ueCode: ue.code,
       });
   });
 });

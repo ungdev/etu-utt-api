@@ -1,6 +1,7 @@
 import { RawSemester, RawUe, RawUser, RawUserUeSubscription } from '../../../src/prisma/types';
 import { PrismaClient } from '@prisma/client';
 import { faker } from '@faker-js/faker';
+import { OF_SUFFIX } from './ue.seed';
 
 export default function ueSubscriptionSeed(
   prisma: PrismaClient,
@@ -16,7 +17,7 @@ export default function ueSubscriptionSeed(
       subscriptions.push(
         prisma.userUeSubscription.create({
           data: {
-            ue: { connect: { id: ue.id } },
+            ueof: { connect: { code: `${ue.code}$${OF_SUFFIX}` } },
             user: { connect: { id: user.id } },
             semester: { connect: { code: faker.helpers.arrayElement(semesters).code } },
           },

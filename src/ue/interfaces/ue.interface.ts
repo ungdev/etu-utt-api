@@ -1,79 +1,83 @@
 import { Prisma, PrismaClient } from '@prisma/client';
 import { generateCustomModel } from '../../prisma/prisma.service';
-import { translationSelect } from '../../utils';
+import { omit, translationSelect } from '../../utils';
 
 const UE_SELECT_FILTER = {
   select: {
-    id: true,
     code: true,
-    inscriptionCode: true,
-    name: translationSelect,
-    info: {
+    subsequentUes: true,
+    ueofs: {
       select: {
+        code: true,
+        name: translationSelect,
+        available: true,
+        siepId: true,
         requirements: {
           select: {
             code: true,
           },
         },
-        comment: translationSelect,
-        degree: true,
-        languages: true,
-        minors: true,
-        objectives: translationSelect,
-        program: translationSelect,
-      },
-    },
-    openSemester: {
-      select: {
-        code: true,
-        start: true,
-        end: true,
-      },
-      orderBy: {
-        start: 'asc',
-      },
-    },
-    workTime: {
-      select: {
-        cm: true,
-        td: true,
-        tp: true,
-        the: true,
-        project: true,
-        internship: true,
-      },
-    },
-    credits: {
-      select: {
-        credits: true,
-        category: {
+        info: {
           select: {
-            code: true,
-            name: true,
+            language: true,
+            minors: true,
+            objectives: translationSelect,
+            program: translationSelect,
           },
         },
-      },
-    },
-    branchOption: {
-      select: {
-        code: true,
-        name: true,
-        branch: {
+        openSemester: {
           select: {
             code: true,
-            name: true,
+            start: true,
+            end: true,
+          },
+          orderBy: {
+            start: 'asc',
           },
         },
-      },
-    },
-    starVotes: {
-      select: {
-        criterionId: true,
-        createdAt: true,
-        value: true,
-      },
-      orderBy: {
-        criterionId: 'asc',
+        workTime: {
+          select: {
+            cm: true,
+            td: true,
+            tp: true,
+            the: true,
+            project: true,
+            internship: true,
+          },
+        },
+        credits: {
+          select: {
+            credits: true,
+            category: {
+              select: {
+                code: true,
+                name: true,
+              },
+            },
+            branchOptions: {
+              select: {
+                code: true,
+                name: true,
+                branch: {
+                  select: {
+                    code: true,
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        starVotes: {
+          select: {
+            criterionId: true,
+            createdAt: true,
+            value: true,
+          },
+          orderBy: {
+            criterionId: 'asc',
+          },
+        },
       },
     },
   },
@@ -83,8 +87,18 @@ const UE_SELECT_FILTER = {
 } as const satisfies Prisma.UeFindManyArgs;
 
 export type UnformattedUe = Prisma.UeGetPayload<typeof UE_SELECT_FILTER>;
-export type Ue = Omit<UnformattedUe, 'starVotes'> & {
-  starVotes: { [key: string]: number };
+export type Ue = Omit<UnformattedUe, 'ueofs'> & {
+  ueofs: Omit<UnformattedUe['ueofs'] extends (infer R)[] ? R : never, 'starVotes' | 'available'>[];
+  starVotes: {
+    [key: string]: UeStarVoteEntry[];
+  };
+  creationYear: number;
+  updateYear: number;
+};
+export type UeStarVoteEntry = {
+  createdAt: Date;
+  ueofCode: string;
+  value: number;
 };
 
 export function generateCustomUeModel(prisma: PrismaClient) {
@@ -94,42 +108,37 @@ export function generateCustomUeModel(prisma: PrismaClient) {
 function formatUe(_: PrismaClient, ue: UnformattedUe): Ue {
   // We store rates in a object where the key is the criterion id and the value is a list ratings
   const starVoteCriteria: {
-    [key: string]: {
-      createdAt: Date;
-      value: number;
-    }[];
+    [key: string]: UeStarVoteEntry[];
   } = {};
-  for (const starVote of ue.starVotes) {
-    if (starVote.criterionId in starVoteCriteria)
-      starVoteCriteria[starVote.criterionId].push({
-        createdAt: starVote.createdAt,
-        value: starVote.value,
-      });
-    else
-      starVoteCriteria[starVote.criterionId] = [
-        {
+  for (const ueof of ue.ueofs) {
+    for (const starVote of ueof.starVotes) {
+      if (starVote.criterionId in starVoteCriteria)
+        starVoteCriteria[starVote.criterionId].push({
           createdAt: starVote.createdAt,
+          ueofCode: ueof.code,
           value: starVote.value,
-        },
-      ];
+        });
+      else
+        starVoteCriteria[starVote.criterionId] = [
+          {
+            createdAt: starVote.createdAt,
+            ueofCode: ueof.code,
+            value: starVote.value,
+          },
+        ];
+    }
   }
-  // Compute ratings for each criterion, using an exponential decay function
-  // And turn semester into their respective code.
+  // Compute creationYear and updateYear
+  const ueofYears = ue.ueofs
+    .map((ueof) => Number(ueof.code.match(/\d+$/)?.[0]))
+    .filter((ueof) => ueof)
+    .sort();
+
   return {
     ...ue,
-    starVotes: Object.fromEntries(Object.entries(starVoteCriteria).map(([key, entry]) => [key, computeRate(entry)])),
+    ueofs: ue.ueofs.filter((ueof) => ueof.available).map(omit('available')),
+    starVotes: starVoteCriteria,
+    creationYear: 2000 + ueofYears[0],
+    updateYear: 2000 + ueofYears[ueofYears.length - 1],
   };
-}
-
-export function computeRate(rates: Array<{ createdAt: Date; value: number }>) {
-  let coefficients = 0;
-  let ponderation = 0;
-  const newestCreationTimestamp = rates.reduce((acc, rate) => Math.max(rate.createdAt.getTime(), acc), 0);
-  for (const { value, createdAt } of rates) {
-    const dt = (newestCreationTimestamp - createdAt.getTime()) / 1000;
-    const dp = Math.exp(-dt / 10e7);
-    ponderation += dp * value;
-    coefficients += dp;
-  }
-  return Math.round((ponderation / coefficients) * 10) / 10;
 }

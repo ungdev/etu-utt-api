@@ -14,9 +14,11 @@ const GetRateCriteria = e2eSuite('GET /ue/rate/criteria', (app) => {
       .get('/ue/rate/criteria')
       .withBearerToken(user.token)
       .expectUeCriteria(
-        criteria.map(omit('descriptionTranslationId')).sort((a, b) => (a.name < b.name ? -1 : 1)) as Required<
-          Omit<FakeUeStarCriterion, 'descriptionTranslationId'>
-        >[],
+        criteria
+          .map(omit('descriptionTranslationId'))
+          .sort(
+            (a, b) => Number(a.name > b.name) - Number(a.name < b.name) || Number(a.id > b.id) - Number(a.id < b.id),
+          ) as Required<Omit<FakeUeStarCriterion, 'descriptionTranslationId'>>[],
       );
   });
 });

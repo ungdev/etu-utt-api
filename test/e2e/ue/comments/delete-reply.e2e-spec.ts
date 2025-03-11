@@ -6,6 +6,7 @@ import {
   createBranchOption,
   createSemester,
   createCommentReply,
+  createUeof,
 } from '../../../utils/fakedb';
 import { e2eSuite, Dummies } from '../../../utils/test_utils';
 import * as pactum from 'pactum';
@@ -19,8 +20,9 @@ const DeleteCommentReply = e2eSuite('DELETE /ue/comments/reply/{replyId}', (app)
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
-  const comment1 = createComment(app, { user, ue, semester });
+  const ue = createUe(app);
+  const ueof = createUeof(app, { branchOptions: [branchOption], semesters: [semester], ue });
+  const comment1 = createComment(app, { user, ueof, semester });
   const reply = createCommentReply(app, { user, comment: comment1 });
 
   it('should return a 401 as user is not authenticated', () => {

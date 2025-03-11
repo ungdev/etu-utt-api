@@ -3,25 +3,32 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class UeDetailResDto {
   code: string;
-  inscriptionCode: string;
-  @ApiProperty({ type: String })
-  name: Translation;
-  credits: UeDetailResDto_Credit[];
-  branchOption: UeDetailResDto_BranchOption[];
-  info: UeDetailResDto_Info;
-  openSemester: UeDetailResDto_OpenSemester[];
-  workTime: UeDetailResDto_WorkTime;
+  creationYear: number;
+  updateYear: number;
+  ueofs: UeofDetailResDto[];
   @ApiProperty({
     description: 'Keys are criterionId and values are the marks',
     type: 'object',
     additionalProperties: { type: 'number' },
   })
-  starVotes: { [criterionId: string]: number };
+  starVotes?: { [criterionId: string]: number; voteCount: number };
+}
+
+export class UeofDetailResDto {
+  code: string;
+  @ApiProperty({ type: String })
+  name: Translation;
+
+  credits: UeDetailResDto_Credit[];
+  info: UeDetailResDto_Info;
+  openSemester: UeDetailResDto_OpenSemester[];
+  workTime: UeDetailResDto_WorkTime;
 }
 
 class UeDetailResDto_Credit {
   credits: number;
   category: UeDetailResDto_Credit_Category;
+  branchOptions: UeDetailResDto_BranchOption[];
 }
 
 class UeDetailResDto_Credit_Category {
@@ -42,11 +49,8 @@ class UeDetailResDto_BranchOption_Branch {
 
 class UeDetailResDto_Info {
   requirements: string[];
-  @ApiProperty({ type: String })
-  comment: Translation;
-  degree: string;
-  languages: string;
-  minors: string;
+  language: string;
+  minors: string[];
   @ApiProperty({ type: String })
   objectives: Translation;
   @ApiProperty({ type: String })
@@ -64,6 +68,6 @@ class UeDetailResDto_WorkTime {
   td: number;
   tp: number;
   the: number;
-  project: number;
+  project: boolean;
   internship: number;
 }

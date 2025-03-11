@@ -8,6 +8,7 @@ import {
   createUeSubscription,
   createAnnalType,
   createAnnal,
+  createUeof,
 } from '../../../utils/fakedb';
 import { e2eSuite } from '../../../utils/test_utils';
 import { ERROR_CODE } from '../../../../src/exceptions';
@@ -25,22 +26,23 @@ const GetAnnal = e2eSuite('GET /ue/annals', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
-  createUeSubscription(app, { user: senderUser, ue, semester });
+  const ue = createUe(app);
+  const ueof = createUeof(app, { branchOptions: [branchOption], semesters: [semester], ue });
+  createUeSubscription(app, { user: senderUser, ueof, semester });
   const annal_not_validated = createAnnal(
     app,
-    { semester, sender: senderUser, type: annalType, ue },
+    { semester, sender: senderUser, type: annalType, ueof },
     { status: CommentStatus.UNVERIFIED },
   );
-  const annal_validated = createAnnal(app, { semester, sender: senderUser, type: annalType, ue });
+  const annal_validated = createAnnal(app, { semester, sender: senderUser, type: annalType, ueof });
   const annal_not_uploaded = createAnnal(
     app,
-    { semester, sender: senderUser, type: annalType, ue },
+    { semester, sender: senderUser, type: annalType, ueof },
     { status: CommentStatus.UNVERIFIED | CommentStatus.PROCESSING },
   );
   const annal_deleted = createAnnal(
     app,
-    { semester, sender: senderUser, type: annalType, ue },
+    { semester, sender: senderUser, type: annalType, ueof },
     { status: CommentStatus.DELETED | CommentStatus.VALIDATED },
   );
 
@@ -105,7 +107,7 @@ const GetAnnal = e2eSuite('GET /ue/annals', (app) => {
 
   const formatAnnalFile = (from: Partial<UeAnnalFile>): JsonLikeVariant<UeAnnalFile> => {
     return {
-      ...pick(from, 'id', 'semesterId', 'status', 'sender', 'type', 'ueCode'),
+      ...pick(from, 'id', 'semesterId', 'status', 'sender', 'type', 'ueof'),
       createdAt: from.createdAt?.toISOString(),
       updatedAt: from.updatedAt?.toISOString(),
     };

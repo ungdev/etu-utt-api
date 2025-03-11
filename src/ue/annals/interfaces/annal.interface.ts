@@ -25,14 +25,13 @@ const UE_ANNAL_SELECT_FILTER = {
       },
     },
     validatedAt: true,
-    ue: { select: { code: true } },
+    ueof: { select: { code: true, info: { select: { language: true } }, ue: { select: { code: true } } } },
   },
 } satisfies Prisma.UeAnnalFindManyArgs;
 
 type UnformattedUeAnnal = Prisma.UeAnnalGetPayload<typeof UE_ANNAL_SELECT_FILTER>;
-export type UeAnnalFile = Omit<UnformattedUeAnnal, 'validatedAt' | 'deletedAt' | 'uploadComplete' | 'ue'> & {
+export type UeAnnalFile = Omit<UnformattedUeAnnal, 'validatedAt' | 'deletedAt' | 'uploadComplete'> & {
   status: CommentStatus;
-  ueCode: string;
 };
 
 export function generateCustomUeAnnalModel(prisma: PrismaClient) {
@@ -41,11 +40,10 @@ export function generateCustomUeAnnalModel(prisma: PrismaClient) {
 
 export function formatAnnal(_: PrismaClient, annal: UnformattedUeAnnal): UeAnnalFile {
   return {
-    ...omit(annal, 'deletedAt', 'validatedAt', 'uploadComplete', 'ue'),
+    ...omit(annal, 'deletedAt', 'validatedAt', 'uploadComplete'),
     status:
       (annal.deletedAt && CommentStatus.DELETED) |
       (annal.validatedAt && CommentStatus.VALIDATED) |
       (!annal.uploadComplete && CommentStatus.PROCESSING),
-    ueCode: annal.ue.code,
   };
 }

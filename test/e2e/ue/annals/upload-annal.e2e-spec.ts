@@ -7,6 +7,7 @@ import {
   createUe,
   createUeSubscription,
   createAnnalType,
+  createUeof,
 } from '../../../utils/fakedb';
 import { JsonLike, e2eSuite } from '../../../utils/test_utils';
 import { ERROR_CODE } from '../../../../src/exceptions';
@@ -23,8 +24,9 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
-  createUeSubscription(app, { user: senderUser, ue, semester });
+  const ue = createUe(app);
+  const ueof = createUeof(app, { branchOptions: [branchOption], semesters: [semester], ue });
+  createUeSubscription(app, { user: senderUser, ueof, semester });
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum.spec().post(`/ue/annals`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);

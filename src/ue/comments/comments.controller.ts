@@ -49,9 +49,10 @@ export class CommentsController {
     ERROR_CODE.FORBIDDEN_ALREADY_COMMENTED,
     'Thrown when user has already posted a comment about this UE.',
   )
-  async PostUEComment(@GetUser() user: User, @Body() body: UeCommentPostReqDto): Promise<UeCommentResDto> {
+  async PostUeComment(@GetUser() user: User, @Body() body: UeCommentPostReqDto): Promise<UeCommentResDto> {
+    // FIXME : a user can only post one comment per ue (among all ueofs)
     if (!(await this.ueService.doesUeExist(body.ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, body.ueCode);
-    if (!(await this.ueService.hasAlreadyDoneThisUe(user.id, body.ueCode)))
+    if (!(await this.ueService.hasUserAttended(body.ueCode, user.id)))
       throw new AppException(ERROR_CODE.NOT_ALREADY_DONE_UE);
     if (await this.commentsService.hasAlreadyPostedAComment(user.id, body.ueCode))
       throw new AppException(ERROR_CODE.FORBIDDEN_ALREADY_COMMENTED);
@@ -64,7 +65,7 @@ export class CommentsController {
   @ApiOperation({ description: 'Fetch a specific comment.' })
   @ApiOkResponse({ type: UeCommentResDto })
   @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_COMMENT, 'No comment is associated with the given commentId')
-  async getUECommentFromId(@UUIDParam('commentId') commentId: string, @GetUser() user: User): Promise<UeCommentResDto> {
+  async getUeCommentFromId(@UUIDParam('commentId') commentId: string, @GetUser() user: User): Promise<UeCommentResDto> {
     const comment = await this.commentsService.getCommentFromId(
       commentId,
       user.id,
@@ -83,7 +84,7 @@ export class CommentsController {
     ERROR_CODE.NOT_COMMENT_AUTHOR,
     'The user is not the author of the comment, and does not have the `commentModerator` permission.',
   )
-  async EditUEComment(
+  async editUeComment(
     @UUIDParam('commentId') commentId: string,
     @GetUser() user: User,
     @Body() body: UeCommentUpdateReqDto,
@@ -107,7 +108,7 @@ export class CommentsController {
     ERROR_CODE.NOT_COMMENT_AUTHOR,
     'The user is not the author of the comment and does not have the `commentModerator` permission.',
   )
-  async DiscardUEComment(@UUIDParam('commentId') commentId: string, @GetUser() user: User): Promise<UeCommentResDto> {
+  async discardUeComment(@UUIDParam('commentId') commentId: string, @GetUser() user: User): Promise<UeCommentResDto> {
     const isCommentModerator = user.permissions.includes('commentModerator');
     if (!(await this.commentsService.doesCommentExist(commentId, user.id, isCommentModerator)))
       throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
@@ -129,7 +130,7 @@ export class CommentsController {
     ERROR_CODE.FORBIDDEN_ALREADY_UPVOTED,
     'Thrown when user tries to upvote the comment for a second time.',
   )
-  async UpvoteUEComment(
+  async UpvoteUeComment(
     @UUIDParam('commentId') commentId: string,
     @GetUser() user: User,
   ): Promise<UeCommentUpvoteResDto$True> {
@@ -154,7 +155,7 @@ export class CommentsController {
     ERROR_CODE.FORBIDDEN_NOT_UPVOTED,
     'Thrown when user tries to un-upvote a comment he did not upvote.',
   )
-  async UnUpvoteUEComment(
+  async UnUpvoteUeComment(
     @UUIDParam('commentId') commentId: string,
     @GetUser() user: User,
   ): Promise<UeCommentUpvoteResDto$False> {
@@ -175,7 +176,7 @@ export class CommentsController {
   @ApiOperation({ description: 'Reply to a comment.' })
   @ApiOkResponse({ type: UeCommentReplyResDto })
   @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_COMMENT, 'There is no comment with the provided commentId.')
-  async CreateReplyComment(
+  async createReplyComment(
     @GetUser() user: User,
     @UUIDParam('commentId') commentId: string,
     @Body() body: CommentReplyReqDto,
@@ -195,7 +196,7 @@ export class CommentsController {
   @ApiOkResponse({ type: UeCommentReplyResDto })
   @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_REPLY, 'There is no reply with the provided replyId.')
   @ApiAppErrorResponse(ERROR_CODE.NOT_REPLY_AUTHOR, 'User is neither the author of the reply nor a `commentModerator`.')
-  async EditReplyComment(
+  async editReplyComment(
     @GetUser() user: User,
     @UUIDParam('replyId') replyId: string,
     @Body() body: CommentReplyReqDto,
@@ -218,7 +219,7 @@ export class CommentsController {
   @ApiOkResponse({ type: UeCommentReplyResDto })
   @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_REPLY, 'There is no reply with the provided replyId.')
   @ApiAppErrorResponse(ERROR_CODE.NOT_REPLY_AUTHOR, 'User is neither the author of the reply nor a `commentModerator`.')
-  async DeleteReplyComment(
+  async deleteReplyComment(
     @GetUser() user: User,
     @UUIDParam('replyId') replyId: string,
   ): Promise<UeCommentReplyResDto> {

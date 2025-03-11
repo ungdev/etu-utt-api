@@ -1,8 +1,8 @@
 import { ERROR_CODE, ErrorData, ExtrasTypeBuilder } from '../src/exceptions';
-import { UeComment } from 'src/ue/interfaces/comment.interface';
+import { UeComment } from 'src/ue/comments/interfaces/comment.interface';
 import { UeCommentReply } from 'src/ue/comments/interfaces/comment-reply.interface';
 import { UeRating } from 'src/ue/interfaces/rate.interface';
-import { FakeUeAnnalType } from './utils/fakedb';
+import { FakeUeAnnalType, FakeUeof } from './utils/fakedb';
 import { UeAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { UeRating } from 'src/ue/interfaces/rate.interface';
@@ -17,6 +17,7 @@ type JsonLikeVariant<T> = Partial<{
     ? JsonLikeVariant<R>[]
     : JsonLikeVariant<T[K]>;
 }>;
+type FakeUeWithOfs = FakeUe & { ueofs: FakeUeof[] };
 
 /**
  * Overwrites the declarations in pactum/src/models/Spec
@@ -38,21 +39,21 @@ declare module './declarations' {
     /** expects to return the given {@link page | page of UserOverView} */
     expectUsers(app: AppProvider, users: FakeUser[], count: number): this;
     /** expects to return the given {@link UeDetail} */
-    expectUe(ue: FakeUe, rates?: Array<{ criterionId: string; value: number }>): this;
+    expectUe(ue: FakeUeWithOfs, rates?: Array<{ criterionId: string; value: number }>, rateCount?: number): this;
     /** expects to return the given {@link UeOverView} */
-    expectUes(ues: FakeUe[]): this;
+    expectUes(ues: FakeUeWithOfs[]): this;
     /** expects to return the given {@link page | page of UeOverView} */
-    expectUesWithPagination(app: AppProvider, ues: FakeUe[], count: number): this;
+    expectUesWithPagination(app: AppProvider, ues: FakeUeWithOfs[], count: number): this;
     /**
      * expects to return the given {@link comment}. The HTTP Status code may be 200 or 204,
      * depending on the {@link created} property.
      */
     expectUeComment(
-      comment: JsonLikeVariant<RecursivelySetPartial<UeComment, 'author', 'answers.author'>>,
+      comment: JsonLikeVariant<RecursivelySetPartial<UeComment, 'author' | 'answers.author'>> & { ueof: FakeUeof },
       created = false,
     ): this;
     /** expects to return the given {@link commentPage | page of comments} */
-    expectUeComments(commentPage: JsonLikeVariant<Pagination<UeComment>>): this;
+    expectUeComments(commentPage: Pagination<UeComment & { ue: FakeUe }>): this;
     /**
      * expects to return the given {@link reply}
      * The HTTP Status code may be 200 or 204, depending on the {@link created} property.
@@ -63,7 +64,7 @@ declare module './declarations' {
     /** expects to return the given {@link rate} */
     expectUeRate(rate: JsonLikeVariant<UeRating>): this;
     /** expects to return the given {@link rate} list */
-    expectUeRates(rate: JsonLikeVariant<UeRating[]>): this;
+    expectUeRates(rate: JsonLikeVariant<{ [criterion: string]: UeRating[] }>): this;
     expectUeAnnalMetadata(
       metadata: JsonLikeVariant<{
         types: FakeUeAnnalType[];

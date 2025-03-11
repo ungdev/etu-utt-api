@@ -19,3 +19,6 @@ declare type SetPartial<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
 declare type RecursivelySetPartial<T, K> = K extends `${infer K1}.${infer K2}`
   ? Omit<T, K1> & RecursivelySetPartial<T, K2>
   : SetPartial<T, K>;
+
+/** Retrieves the type of items of an {@link Array} */
+declare type ItemType<T> = T extends Array<infer U> ? U : T;

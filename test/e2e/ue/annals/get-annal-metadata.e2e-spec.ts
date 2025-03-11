@@ -7,6 +7,7 @@ import {
   createUe,
   createUeSubscription,
   createAnnalType,
+  createUeof,
 } from '../../../utils/fakedb';
 import { e2eSuite } from '../../../utils/test_utils';
 import { ERROR_CODE } from '../../../../src/exceptions';
@@ -19,8 +20,9 @@ const GetAnnalMetadata = e2eSuite('GET /ue/annals/metadata', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
-  createUeSubscription(app, { user: ueUser, ue, semester });
+  const ue = createUe(app);
+  const ueof = createUeof(app, { branchOptions: [branchOption], semesters: [semester], ue });
+  createUeSubscription(app, { user: ueUser, ueof, semester });
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum
