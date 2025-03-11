@@ -1,7 +1,7 @@
 import { PrismaClient as _PrismaClient } from '@prisma/client';
 import { createConnection } from 'mysql';
 import { cleanDb } from '../../test/utils/test_utils';
-import { migrateUEs } from './modules/ue';
+import { findLegacyUeofName, migrateUEs } from './modules/ue';
 import { createCreditCategories } from './modules/creditCategory';
 import { createSemesters } from './modules/semester';
 import { migrateUeComments } from './modules/ueComment';
@@ -15,7 +15,7 @@ import {
   RawUeComment,
 } from '../../src/prisma/types';
 import { stringToTranslation } from './utils';
-import { omit, pick } from '../../src/utils';
+import { omit } from '../../src/utils';
 
 type MayBePromise<T> = Promise<T> | T;
 
@@ -33,6 +33,7 @@ export async function getOperationResults<T>(operations: MayBePromise<PrismaOper
   );
 }
 
+let ueId = -1;
 const _prisma = new _PrismaClient();
 const prisma = _prisma.$extends({
   model: {
@@ -63,13 +64,12 @@ const prisma = _prisma.$extends({
       async create(params: {
         code: string;
         name: string;
-        inscriptionCode: string;
         workTime: {
           cm: number;
           td: number;
           tp: number;
           the: number;
-          project: number;
+          project: boolean;
           internship: number;
         };
         info: {
@@ -77,7 +77,6 @@ const prisma = _prisma.$extends({
           objectives: string;
           languages: string;
           minors: string;
-          requirements: string[];
           comment: string;
         };
         credits: {
@@ -85,34 +84,46 @@ const prisma = _prisma.$extends({
           category: string;
         };
       }): Promise<PrismaOperationResult<RawUe>> {
-        const ue = await _prisma.ue.findUnique({ where: { code: params.code } });
+        // Fix credit category types to match new categories
+        if (params.credits.category === 'HP' || params.credits.category === 'OTHER') params.credits.category = 'AC';
+        if (params.credits.category === 'MASTER') params.credits.category = 'MA';
+        const { ue: ueCode, ueof: ueofCode } = findLegacyUeofName(params.code, params.info.comment);
+        const ue = await _prisma.ue.findUnique({ where: { code: ueCode } });
         if (!ue) {
           return {
             data: await _prisma.ue.create({
               data: {
-                ...pick(params, 'code', 'inscriptionCode'),
-                name: stringToTranslation(params.name),
-                workTime: {
-                  create: params.workTime,
-                },
-                info: {
-                  create: {
-                    program: stringToTranslation(params.info.program),
-                    objectives: stringToTranslation(params.info.objectives),
-                    languages: params.info.languages,
-                    minors: params.info.minors,
-                    requirements: {
-                      connect: params.info.requirements.map((value) => ({ id: value })),
+                code: ueCode,
+                ueofs: {
+                  connectOrCreate: {
+                    where: {
+                      code: ueofCode,
                     },
-                    comment: stringToTranslation(params.info.comment),
-                  },
-                },
-                credits: {
-                  create: {
-                    credits: params.credits.credits,
-                    category: {
-                      connect: {
-                        code: params.credits.category,
+                    create: {
+                      code: ueofCode,
+                      siepId: ueId--,
+                      available: false,
+                      workTime: {
+                        create: params.workTime,
+                      },
+                      credits: {
+                        create: {
+                          credits: params.credits.credits,
+                          category: {
+                            connect: {
+                              code: params.credits.category,
+                            },
+                          },
+                        },
+                      },
+                      name: stringToTranslation(params.name),
+                      info: {
+                        create: {
+                          program: stringToTranslation(params.info.program),
+                          objectives: stringToTranslation(params.info.objectives),
+                          language: params.info.languages,
+                          minors: params.info.minors,
+                        },
                       },
                     },
                   },
@@ -125,32 +136,38 @@ const prisma = _prisma.$extends({
         // Ok that would be crazy to check every field, let's not do that
         return {
           data: await _prisma.ue.update({
-            where: { code: params.code },
+            where: { code: ueCode },
             data: {
-              ...pick(params, 'code', 'inscriptionCode'),
-              name: stringToTranslation(params.name),
-              workTime: {
-                update: params.workTime,
-              },
-              info: {
-                update: {
-                  program: stringToTranslation(params.info.program),
-                  objectives: stringToTranslation(params.info.objectives),
-                  languages: params.info.languages,
-                  minors: params.info.minors,
-                  requirements: {
-                    connect: params.info.requirements.map((value) => ({ id: value })),
+              ueofs: {
+                connectOrCreate: {
+                  where: {
+                    code: ueofCode,
                   },
-                  comment: stringToTranslation(params.info.comment),
-                },
-              },
-              credits: {
-                deleteMany: {},
-                create: {
-                  credits: params.credits.credits,
-                  category: {
-                    connect: {
-                      code: params.credits.category,
+                  create: {
+                    code: ueofCode,
+                    siepId: ueId--,
+                    available: false,
+                    workTime: {
+                      create: params.workTime,
+                    },
+                    credits: {
+                      create: {
+                        credits: params.credits.credits,
+                        category: {
+                          connect: {
+                            code: params.credits.category,
+                          },
+                        },
+                      },
+                    },
+                    name: stringToTranslation(params.name),
+                    info: {
+                      create: {
+                        program: stringToTranslation(params.info.program),
+                        objectives: stringToTranslation(params.info.objectives),
+                        language: params.info.languages,
+                        minors: params.info.minors,
+                      },
                     },
                   },
                 },
@@ -186,10 +203,12 @@ const prisma = _prisma.$extends({
       async create({
         code,
         name,
+        isMaster,
         description,
       }: {
         code: string;
         name: string;
+        isMaster: boolean;
         description: string;
       }): Promise<PrismaOperationResult<RawBranch>> {
         const branch = await _prisma.uTTBranch.findUnique({
@@ -199,7 +218,7 @@ const prisma = _prisma.$extends({
         if (!branch) {
           return {
             data: await _prisma.uTTBranch.create({
-              data: { code, name, descriptionTranslation: stringToTranslation(description) },
+              data: { code, name, isMaster, descriptionTranslation: stringToTranslation(description) },
             }),
             operation: 'created',
           };
@@ -208,7 +227,7 @@ const prisma = _prisma.$extends({
           return {
             data: await _prisma.uTTBranch.update({
               where: { code },
-              data: { name, descriptionTranslation: stringToTranslation(description) },
+              data: { name, isMaster, descriptionTranslation: stringToTranslation(description) },
             }),
             operation: 'updated',
           };
@@ -282,7 +301,13 @@ const prisma = _prisma.$extends({
         ue: string;
         semesterCode: string;
       }): Promise<PrismaOperationResult<RawUeComment>> {
-        const comment = await _prisma.ueComment.findFirst({ where: { ue: { code: ue }, createdAt } });
+        const codes = findLegacyUeofName(ue, '');
+        // check this is the correct ueof :
+        let ueof = await _prisma.ueof.findFirst({ where: { code: codes.ueof } });
+        if (!ueof) ueof = await _prisma.ueof.findFirst({ where: { code: codes.ueof.replace('TRO', 'REI') } });
+        if (ueof) codes.ueof = codes.ueof.replace('TRO', 'REI');
+        else console.error(`No such ueof for this code : ${codes.ueof}`);
+        const comment = await _prisma.ueComment.findFirst({ where: { ueof: { ue: { code: codes.ue } }, createdAt } });
         if (!comment) {
           return {
             data: await _prisma.ueComment.create({
@@ -292,7 +317,7 @@ const prisma = _prisma.$extends({
                 createdAt,
                 updatedAt,
                 validatedAt: isValid ? updatedAt : null,
-                ue: { connect: { code: ue } },
+                ueof: { connect: { code: codes.ueof } },
                 semester: { connect: { code: semesterCode } },
               },
             }),

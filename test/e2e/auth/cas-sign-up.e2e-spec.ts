@@ -30,12 +30,13 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
   );
   const branch = fakedb.createBranch(app);
   const branchOption = fakedb.createBranchOption(app, { branch });
-  fakedb.createSemester(app, {
+  const semester = fakedb.createSemester(app, {
     code: `${new Date().getMonth() < 7 && new Date().getMonth() > 0 ? 'P' : 'A'}${new Date().getFullYear() % 100}`,
     start: new Date(),
     end: new Date(),
   });
   const ue = fakedb.createUe(app);
+  fakedb.createUeof(app, { branchOptions: [branchOption], semesters: [semester], ue });
 
   beforeAll(() => ldapServer.start());
   afterAll(() => ldapServer.stop());

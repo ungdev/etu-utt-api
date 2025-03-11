@@ -1,6 +1,10 @@
 declare global {
   interface Array<T> {
     /**
+     * Groups the current array by a key, using a mapper function.
+     */
+    groupyBy<K extends string | number | symbol>(keyMapper: (entity: T) => K): { [key in K]: T[] };
+    /**
      * Sorts the current array and returns it.
      * Array is sorted based on a mapper function, that returns in order the values by which to sort the array.
      * @example
@@ -20,8 +24,22 @@ declare global {
      *               The length of the array should be fixed, not dependent on the value to map.
      */
     mappedSort(mapper: (e: T) => any[] | any): this;
+    /** Retrieves all unique values of this array, skipping all duplicates. Does not alter original array */
+    readonly uniqueValues: this;
   }
 }
+
+Array.prototype.groupyBy = function <T, K extends string | number | symbol>(
+  this: Array<T>,
+  keyMapper: (entity: T) => K,
+) {
+  return this.reduce((acc, entity) => {
+    const key = keyMapper(entity);
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(entity);
+    return acc;
+  }, {} as { [key in K]: T[] });
+};
 
 Array.prototype.mappedSort = function <T>(this: Array<T>, mapper: (e: T) => any[] | any) {
   return this.sort((a, b) => {
@@ -40,5 +58,11 @@ Array.prototype.mappedSort = function <T>(this: Array<T>, mapper: (e: T) => any[
     return 0;
   });
 };
+
+Object.defineProperty(Array.prototype, 'uniqueValues', {
+  get: function <T>(this: Array<T>) {
+    return this.filter((value, index) => this.indexOf(value) === index);
+  },
+});
 
 export {};

@@ -1,13 +1,11 @@
 import { Translation } from '../../../prisma/types';
 import { ApiProperty } from '@nestjs/swagger';
 
-export default class UeOverviewResDto {
+export class UeOverviewResDto {
   code: string;
-  inscriptionCode: string;
   @ApiProperty({ type: String })
   name: Translation;
   credits: UeOverviewResDto_Credit[];
-  branchOption: UeOverviewResDto_BranchOption[];
   info: UeOverviewResDto_Info;
   openSemester: UeOverviewResDto_OpenSemester[];
 }
@@ -15,6 +13,7 @@ export default class UeOverviewResDto {
 class UeOverviewResDto_Credit {
   credits: number;
   category: UeOverviewResDto_Credit_Category;
+  branchOptions: UeOverviewResDto_BranchOption[];
 }
 
 class UeOverviewResDto_Credit_Category {
@@ -35,15 +34,8 @@ class UeOverviewResDto_BranchOption_Branch {
 
 class UeOverviewResDto_Info {
   requirements: string[];
-  @ApiProperty({ type: String })
-  comment: Translation;
-  degree: string;
-  languages: string;
-  minors: string;
-  @ApiProperty({ type: String })
-  objectives: Translation;
-  @ApiProperty({ type: String })
-  program: Translation;
+  languages: string[];
+  minors: string[];
 }
 
 class UeOverviewResDto_OpenSemester {

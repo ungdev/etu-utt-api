@@ -9,12 +9,18 @@ export async function createBranches(prisma: PrismaClient) {
     TC(prisma),
     A2I(prisma),
     GI(prisma),
+    GI_APPR(prisma),
     GM(prisma),
+    GM_APPR(prisma),
     ISI(prisma),
     MTE(prisma),
     MM(prisma),
     RT(prisma),
-    SN(prisma),
+    SN_APPR(prisma),
+    RE(prisma),
+    PAIP(prisma),
+    ISC(prisma),
+    IC(prisma),
   ];
   const operationsAwaited = await Promise.all(operations);
   const branchOptions = await getOperationResults(operationsAwaited.map(({ branchOptions }) => branchOptions).flat(1));
@@ -30,16 +36,17 @@ export async function createBranches(prisma: PrismaClient) {
 function TC(prisma: PrismaClient) {
   return prisma.uTTBranch
     .create({
-      code: 'TCBR',
-      name: 'TCBR',
+      code: 'TC',
+      name: 'Tronc commun',
+      isMaster: false,
       description: '',
     })
     .then((branch) => ({
       branch,
       branchOptions: [
         prisma.uTTBranchOption.create({
-          code: 'TCBR_TC',
-          name: 'TCBR',
+          code: 'TC',
+          name: 'Tronc commun',
           description: '',
           branchCode: branch.data.code,
         }),
@@ -52,20 +59,15 @@ function A2I(prisma: PrismaClient) {
     .create({
       code: 'A2I',
       name: 'Automatique et Informatique Industrielle',
+      isMaster: false,
       description: '',
     })
     .then((branch) => ({
       branch,
       branchOptions: [
         prisma.uTTBranchOption.create({
-          code: 'TCBR',
-          name: 'TCBR',
-          description: '',
-          branchCode: branch.data.code,
-        }),
-        prisma.uTTBranchOption.create({
-          code: 'LIBRE',
-          name: 'Filière LIBRE A2I',
+          code: 'A2I',
+          name: "Tronc commun d'Automatique et informatique industrielle",
           description: '',
           branchCode: branch.data.code,
         }),
@@ -90,14 +92,15 @@ function GI(prisma: PrismaClient) {
     .create({
       code: 'GI',
       name: 'Génie Industriel',
+      isMaster: false,
       description: '',
     })
     .then((branch) => ({
       branch,
       branchOptions: [
         prisma.uTTBranchOption.create({
-          code: 'TCBR',
-          name: 'Tronc commun de branche',
+          code: 'GI',
+          name: 'Tronc commun de Génie Industriel',
           description: '',
           branchCode: branch.data.code,
         }),
@@ -119,6 +122,45 @@ function GI(prisma: PrismaClient) {
           description: '',
           branchCode: branch.data.code,
         }),
+        prisma.uTTBranchOption.create({
+          code: 'LET_APPR',
+          name: 'Logistique Externe et Transport - Apprentissage',
+          description: '',
+          branchCode: branch.data.code,
+        }),
+        prisma.uTTBranchOption.create({
+          code: 'LIP_APPR',
+          name: 'Logistique Interne et Production - Apprentissage',
+          description: '',
+          branchCode: branch.data.code,
+        }),
+        prisma.uTTBranchOption.create({
+          code: 'RAMS_APPR',
+          name: 'Reliability, Availability, Maintenance and Safety - Apprentissage',
+          description: '',
+          branchCode: branch.data.code,
+        }),
+      ],
+    }));
+}
+
+function GI_APPR(prisma: PrismaClient) {
+  return prisma.uTTBranch
+    .create({
+      code: 'GI_APPR',
+      name: 'Génie Industriel - Apprentissage',
+      isMaster: false,
+      description: '',
+    })
+    .then((branch) => ({
+      branch,
+      branchOptions: [
+        prisma.uTTBranchOption.create({
+          code: 'GI_APPR',
+          name: 'Tronc commun de Génie Industriel - Apprentissage',
+          description: '',
+          branchCode: branch.data.code,
+        }),
       ],
     }));
 }
@@ -127,15 +169,16 @@ function GM(prisma: PrismaClient) {
   return prisma.uTTBranch
     .create({
       code: 'GM',
-      name: 'Génie Mécanique',
+      name: 'Génie Mécanique - Apprentissage',
+      isMaster: false,
       description: '',
     })
     .then((branch) => ({
       branch,
       branchOptions: [
         prisma.uTTBranchOption.create({
-          code: 'TCBR',
-          name: 'Tronc commun de branche',
+          code: 'GM',
+          name: 'Tronc commun de Génie Mécanique',
           description: '',
           branchCode: branch.data.code,
         }),
@@ -152,8 +195,35 @@ function GM(prisma: PrismaClient) {
           branchCode: branch.data.code,
         }),
         prisma.uTTBranchOption.create({
+          code: 'MDPI_APPR',
+          name: 'Management Digital des Produits et Infrastructures - Apprentissage',
+          description: '',
+          branchCode: branch.data.code,
+        }),
+        prisma.uTTBranchOption.create({
           code: 'SNM',
           name: 'Simulation Numérique en Mécanique',
+          description: '',
+          branchCode: branch.data.code,
+        }),
+      ],
+    }));
+}
+
+function GM_APPR(prisma: PrismaClient) {
+  return prisma.uTTBranch
+    .create({
+      code: 'GM_APPR',
+      name: 'Génie Mécanique',
+      isMaster: false,
+      description: '',
+    })
+    .then((branch) => ({
+      branch,
+      branchOptions: [
+        prisma.uTTBranchOption.create({
+          code: 'GM_APPR',
+          name: 'Tronc commun de Génie mécanique - Apprentissage',
           description: '',
           branchCode: branch.data.code,
         }),
@@ -166,14 +236,15 @@ function ISI(prisma: PrismaClient) {
     .create({
       code: 'ISI',
       name: "Informatique et Systèmes d'Information",
+      isMaster: false,
       description: '',
     })
     .then((branch) => ({
       branch,
       branchOptions: [
         prisma.uTTBranchOption.create({
-          code: 'TCBR',
-          name: 'Tronc commun de branche',
+          code: 'ISI',
+          name: "Tronc commun d'Informatique et Systèmes d'Information",
           description: '',
           branchCode: branch.data.code,
         }),
@@ -204,14 +275,15 @@ function MTE(prisma: PrismaClient) {
     .create({
       code: 'MTE',
       name: 'Matériaux : Technologie et Economie',
+      isMaster: false,
       description: '',
     })
     .then((branch) => ({
       branch,
       branchOptions: [
         prisma.uTTBranchOption.create({
-          code: 'TCBR',
-          name: 'Tronc commun de branche',
+          code: 'MTE',
+          name: 'Tronc commun de Matériaux: Technologie et Economie',
           description: '',
           branchCode: branch.data.code,
         }),
@@ -222,7 +294,7 @@ function MTE(prisma: PrismaClient) {
           branchCode: branch.data.code,
         }),
         prisma.uTTBranchOption.create({
-          code: 'AUTO',
+          code: 'TCMC',
           name: 'Technologie et Commerce des Matériaux et des Composants',
           description: '',
           branchCode: branch.data.code,
@@ -242,14 +314,15 @@ function MM(prisma: PrismaClient) {
     .create({
       code: 'MM',
       name: 'Matériaux et Mécanique',
+      isMaster: false,
       description: '',
     })
     .then((branch) => ({
       branch,
       branchOptions: [
         prisma.uTTBranchOption.create({
-          code: 'TCBR',
-          name: 'Tronc commun de branche',
+          code: 'MM',
+          name: 'Tronc commun de Matériaux et Mécanique',
           description: '',
           branchCode: branch.data.code,
         }),
@@ -263,13 +336,14 @@ function RT(prisma: PrismaClient) {
       code: 'RT',
       name: 'Réseaux et Télécommunications',
       description: '',
+      isMaster: false,
     })
     .then((branch) => ({
       branch,
       branchOptions: [
         prisma.uTTBranchOption.create({
-          code: 'TCBR',
-          name: 'Tronc commun de branche',
+          code: 'RT',
+          name: 'Tronc commun de Réseaux et télécommunications',
           description: '',
           branchCode: branch.data.code,
         }),
@@ -295,19 +369,146 @@ function RT(prisma: PrismaClient) {
     }));
 }
 
-function SN(prisma: PrismaClient) {
+function SN_APPR(prisma: PrismaClient) {
   return prisma.uTTBranch
     .create({
-      code: 'SN',
-      name: 'Systèmes Numériques',
+      code: 'SN_APPR',
+      name: 'Systèmes Numériques - Apprentissage',
+      isMaster: false,
       description: '',
     })
     .then((branch) => ({
       branch,
       branchOptions: [
         prisma.uTTBranchOption.create({
-          code: 'TCBR',
-          name: 'Tronc commun de branche',
+          code: 'SN_APPR',
+          name: 'Tronc commun de Systèmes Numériques - Apprentissage',
+          description: '',
+          branchCode: branch.data.code,
+        }),
+        prisma.uTTBranchOption.create({
+          code: 'SN',
+          name: 'Tronc commun de Systèmes Numériques',
+          description: '',
+          branchCode: branch.data.code,
+        }),
+      ],
+    }));
+}
+
+function RE(prisma: PrismaClient) {
+  return prisma.uTTBranch
+    .create({
+      code: 'RE',
+      name: 'Risques et Environnement',
+      isMaster: true,
+      description: '',
+    })
+    .then((branch) => ({
+      branch,
+      branchOptions: [
+        prisma.uTTBranchOption.create({
+          code: 'RE',
+          name: 'Mention Risques et Environnement',
+          description: '',
+          branchCode: branch.data.code,
+        }),
+        prisma.uTTBranchOption.create({
+          code: 'IMEDD',
+          name: "Ingénierie et Management de l'Environnement et du Développement Durable",
+          description: '',
+          branchCode: branch.data.code,
+        }),
+        prisma.uTTBranchOption.create({
+          code: 'IMSGA',
+          name: 'Ingénierie et Management en Sécurité Globale Appliquée',
+          description: '',
+          branchCode: branch.data.code,
+        }),
+      ],
+    }));
+}
+
+function PAIP(prisma: PrismaClient) {
+  return prisma.uTTBranch
+    .create({
+      code: 'PAIP',
+      name: 'Physique Appliquée et Ingénierie Physique',
+      isMaster: true,
+      description: '',
+    })
+    .then((branch) => ({
+      branch,
+      branchOptions: [
+        prisma.uTTBranchOption.create({
+          code: 'PAIP',
+          name: 'Mention Physique Appliquée et Ingénierie Physique',
+          description: '',
+          branchCode: branch.data.code,
+        }),
+        prisma.uTTBranchOption.create({
+          code: 'NPHOT',
+          name: 'Nano-optics and Nanophotonics',
+          description: '',
+          branchCode: branch.data.code,
+        }),
+      ],
+    }));
+}
+
+function ISC(prisma: PrismaClient) {
+  return prisma.uTTBranch
+    .create({
+      code: 'ISC',
+      name: 'Ingénierie des Systèmes Complexes',
+      isMaster: true,
+      description: '',
+    })
+    .then((branch) => ({
+      branch,
+      branchOptions: [
+        prisma.uTTBranchOption.create({
+          code: 'ISC',
+          name: 'Mention Ingénierie des Systèmes Complexes',
+          description: '',
+          branchCode: branch.data.code,
+        }),
+        prisma.uTTBranchOption.create({
+          code: 'SSI',
+          name: "Sécurité des Systèmes d'Information",
+          description: '',
+          branchCode: branch.data.code,
+        }),
+        prisma.uTTBranchOption.create({
+          code: 'OSS',
+          name: 'Optimisation et Sûreté des Systèmes',
+          description: '',
+          branchCode: branch.data.code,
+        }),
+      ],
+    }));
+}
+
+function IC(prisma: PrismaClient) {
+  return prisma.uTTBranch
+    .create({
+      code: 'IC',
+      name: 'Ingénierie de Conception',
+      isMaster: true,
+      description: '',
+    })
+    .then((branch) => ({
+      branch,
+      branchOptions: [
+        prisma.uTTBranchOption.create({
+          code: 'IC',
+          name: 'Mention Ingénierie de Conception',
+          description: '',
+          branchCode: branch.data.code,
+        }),
+        prisma.uTTBranchOption.create({
+          code: 'MPSMP',
+          name: 'Mécanique et Performance en Service de Matériaux et Produits',
           description: '',
           branchCode: branch.data.code,
         }),

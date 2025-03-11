@@ -8,6 +8,5 @@ export default class UeAnnalResDto {
   semesterId: string;
   sender: UeCommentAuthorResDto;
   type: UeAnnalTypeResDto;
-  ueCode: string;
   status: number;
 }

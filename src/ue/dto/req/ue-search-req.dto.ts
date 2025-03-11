@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsNumber, IsPositive, IsString, MaxLength, MinLength, IsOptional } from 'class-validator';
+import { IsNumber, IsPositive, IsString, IsOptional, Length } from 'class-validator';
 
 /**
  * Query parameters of the request to search UEs.
@@ -28,8 +28,7 @@ export class UeSearchReqDto {
   creditType?: string;
 
   @IsString()
-  @MaxLength(3)
-  @MinLength(3)
+  @Length(3, 3)
   @IsOptional()
   availableAtSemester?: string;
 
@@ -38,4 +37,9 @@ export class UeSearchReqDto {
   @IsPositive()
   @IsOptional()
   page?: number;
+
+  @IsString()
+  @Length(2)
+  @IsOptional()
+  preferredLang?: string;
 }

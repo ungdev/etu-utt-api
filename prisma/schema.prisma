@@ -21,12 +21,12 @@ model Asso {
   descriptionShortTranslationId String    @unique
   descriptionTranslationId      String    @unique
 
-  descriptionShortTranslation Translation      @relation(name: "descriptionShortTranslation", fields: [descriptionShortTranslationId], references: [id], onDelete: Cascade)
-  descriptionTranslation      Translation      @relation(name: "descriptionTranslation", fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
+  descriptionShortTranslation Translation          @relation(name: "descriptionShortTranslation", fields: [descriptionShortTranslationId], references: [id], onDelete: Cascade)
+  descriptionTranslation      Translation          @relation(name: "descriptionTranslation", fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
   assoMemberships             AssoMembership[]
   assoMessages                AssoMessage[]
   events                      Event[]
-  assoMembershipRoles AssoMembershipRole[]
+  assoMembershipRoles         AssoMembershipRole[]
 }
 
 model AssoMembership {
@@ -55,10 +55,10 @@ model AssoMembershipRole {
   name        String
   position    Int
   isPresident Boolean
-  assoId String
+  assoId      String
 
   assoMembership AssoMembership[]
-  asso Asso @relation(fields: [assoId], references: [id])
+  asso           Asso             @relation(fields: [assoId], references: [id])
 }
 
 model AssoMessage {
@@ -127,14 +127,14 @@ model Semester {
   start DateTime @db.Date
   end   DateTime @db.Date
 
-  openedUes             Ue[]
+  openedUes             Ueof[]
   annals                UeAnnal[]
   comments              UeComment[]
   courses               UeCourse[]
-  BDEContributionsStart UserBDEContribution[]    @relation("startSemester")
-  BDEContributionsEnd   UserBDEContribution[]    @relation("endSemester")
+  bdeContributionsStart UserBDEContribution[]    @relation("startSemester")
+  bdeContributionsEnd   UserBDEContribution[]    @relation("endSemester")
   branchSubscriptions   UserBranchSubscription[]
-  UeSubscriptions       UserUeSubscription[]
+  ueSubscriptions       UserUeSubscription[]
   etuUTTTeams           UserEtuUTTTeam[]
 }
 
@@ -190,49 +190,65 @@ model Translation {
   de String? @db.Text
   zh String? @db.Text
 
-  assoDescriptionShort                 Asso?                        @relation("descriptionShortTranslation")
   assoDescription                      Asso?                        @relation("descriptionTranslation")
+  assoDescriptionShort                 Asso?                        @relation("descriptionShortTranslation")
   assoMessageTitle                     AssoMessage?                 @relation("titleTranslation")
   assoMessageTitleBody                 AssoMessage?                 @relation("bodyTranslation")
   eventDescription                     Event?                       @relation("descriptionTranslation")
   eventTitle                           Event?                       @relation("titleTranslation")
-  userPermissionName                   UserPermission?              @relation("userPermissionName")
+  ueofInfo                             UeofInfo?                    @relation("ueofInfoObjectivesTranslation")
+  ueofInfoPrograms                     UeofInfo?                    @relation("ueofInfoProgramTranslation")
   userPermissionDescription            UserPermission?              @relation("userPermissionDescription")
+  userPermissionName                   UserPermission?              @relation("userPermissionName")
   annalReportReasonDescriptions        UeAnnalReportReason?
-  commentReportReasonDescriptions      UeCommentReportReason?
-  starCriterionDescriptions            UeStarCriterion?
   branchDescriptions                   UTTBranch?
   branchOptionDescriptions             UTTBranchOption?
+  commentReportReasonDescriptions      UeCommentReportReason?
   formationDescriptions                UTTFormation?
   formationFollowingMethodDescriptions UTTFormationFollowingMethod?
-  ueNames                              Ue?
-  ueInfoComments                       UeInfo?                      @relation("ueInfoCommentsTranslation")
-  ueInfo                               UeInfo?                      @relation("ueInfoObjectivesTranslation")
-  ueInfoPrograms                       UeInfo?                      @relation("ueInfoProgramTranslation")
+  starCriterionDescriptions            UeStarCriterion?
+  ueNames                              Ueof?
 }
 
 model Ue {
-  id                String   @id @default(uuid())
-  code              String   @unique @db.VarChar(10)
-  inscriptionCode   String   @unique @db.Char(4)
-  nameTranslationId String   @unique
-  validationRate    Float?
-  ueInfoId          String   @unique
+  code      String   @id @db.VarChar(8)
+  createdAt DateTime @default(now())
+
+  subsequentUes Ueof[]    @relation("ueRequirements")
+  aliases       UeAlias[]
+  ueofs         Ueof[]
+}
+
+model UeAlias {
+  code      String  @id @db.VarChar(8)
+  standsFor String? @db.VarChar(8)
+
+  alias Ue? @relation(fields: [standsFor], references: [code])
+}
+
+model Ueof {
+  code   String @id @db.VarChar(20)
+  siepId Int    @unique
+
+  available         Boolean  @default(false)
   createdAt         DateTime @default(now())
+  nameTranslationId String   @unique
+  ueId              String
+  ueofInfoId        String   @unique
   updatedAt         DateTime @updatedAt
 
+  info               UeofInfo             @relation(fields: [ueofInfoId], references: [id], onDelete: Cascade)
   name               Translation          @relation(fields: [nameTranslationId], references: [id], onDelete: Cascade)
-  usersSubscriptions UserUeSubscription[]
-  credits            UeCredit[]
-  starVotes          UeStarVote[]
-  openSemester       Semester[]
-  workTime           UeWorkTime?
-  info               UeInfo               @relation(fields: [ueInfoId], references: [id], onDelete: Cascade)
-  subsequentUes      UeInfo[]             @relation("ueRequirements")
+  requirements       Ue[]                 @relation(name: "ueRequirements")
+  ue                 Ue                   @relation(fields: [ueId], references: [code])
   annals             UeAnnal[]
   comments           UeComment[]
   courses            UeCourse[]
-  branchOption       UTTBranchOption[]
+  credits            UeCredit[]
+  openSemester       Semester[]
+  starVotes          UeStarVote[]
+  usersSubscriptions UserUeSubscription[]
+  workTime           UeWorkTime?
 }
 
 model UeAnnal {
@@ -242,16 +258,16 @@ model UeAnnal {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
   deletedAt      DateTime?
-  validatedAt    DateTime?
-  ueId           String
-  senderId       String?
   semesterId     String
+  senderId       String?
   typeId         String
+  ueofCode       String
+  validatedAt    DateTime?
 
-  ue       Ue              @relation(fields: [ueId], references: [id], onDelete: Cascade)
+  semester Semester        @relation(fields: [semesterId], references: [code])
   sender   User?           @relation(fields: [senderId], references: [id], onDelete: SetNull)
   type     UeAnnalType     @relation(fields: [typeId], references: [id])
-  semester Semester        @relation(fields: [semesterId], references: [code])
+  ueof     Ueof            @relation(fields: [ueofCode], references: [code], onDelete: Cascade)
   reports  UeAnnalReport[]
 }
 
@@ -264,16 +280,16 @@ model UeAnnalType {
 
 model UeAnnalReport {
   id        String   @id @default(uuid())
+  annalId   String
   body      String?  @db.Text
   createdAt DateTime @default(now())
   mitigated Boolean  @default(false)
-  annalId   String
-  userId    String?
   reasonId  String
+  userId    String?
 
   annal  UeAnnal             @relation(fields: [annalId], references: [id], onDelete: Cascade)
-  user   User?               @relation(fields: [userId], references: [id], onDelete: SetNull)
   reason UeAnnalReportReason @relation(fields: [reasonId], references: [name])
+  user   User?               @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@unique([userId, annalId, reasonId]) // Prevent from spams
 }
@@ -295,14 +311,14 @@ model UeComment {
   // Removed @updatedAt because the property is used to display the last datetime the content of the comment was altered on
   deletedAt         DateTime?
   validatedAt       DateTime?
-  lastValidatedBody String?
-  ueId              String
   authorId          String?
+  lastValidatedBody String?
   semesterId        String
+  ueofCode          String
 
-  ue       Ue                @relation(fields: [ueId], references: [id], onDelete: Cascade)
   author   User?             @relation(fields: [authorId], references: [id], onDelete: SetNull)
   semester Semester          @relation(fields: [semesterId], references: [code])
+  ueof     Ueof              @relation(fields: [ueofCode], references: [code], onDelete: Cascade)
   answers  UeCommentReply[]
   reports  UeCommentReport[]
   upvotes  UeCommentUpvote[]
@@ -318,8 +334,8 @@ model UeCommentReply {
   commentId String
   authorId  String?
 
-  comment UeComment              @relation(fields: [commentId], references: [id], onDelete: Cascade)
   author  User?                  @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  comment UeComment              @relation(fields: [commentId], references: [id], onDelete: Cascade)
   reports UeCommentReplyReport[]
 }
 
@@ -329,12 +345,12 @@ model UeCommentReport {
   createdAt DateTime @default(now())
   mitigated Boolean  @default(false)
   commentId String
-  userId    String
   reasonId  String
+  userId    String
 
   comment UeComment             @relation(fields: [commentId], references: [id], onDelete: Cascade)
-  user    User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
   reason  UeCommentReportReason @relation(fields: [reasonId], references: [name], onDelete: Cascade)
+  user    User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, commentId, reasonId]) // Prevent from spam
 }
@@ -344,13 +360,13 @@ model UeCommentReplyReport {
   body      String   @db.Text
   createdAt DateTime @default(now())
   mitigated Boolean  @default(false)
+  reasonId  String
   replyId   String
   userId    String
-  reasonId  String
 
+  reason UeCommentReportReason @relation(fields: [reasonId], references: [name], onDelete: Cascade)
   reply  UeCommentReply        @relation(fields: [replyId], references: [id], onDelete: Cascade)
   user   User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  reason UeCommentReportReason @relation(fields: [reasonId], references: [name], onDelete: Cascade)
 
   @@unique([userId, replyId, reasonId]) // Prevent from spam
 }
@@ -360,46 +376,46 @@ model UeCommentReportReason {
   descriptionTranslationId String @unique
 
   descriptionTranslation Translation            @relation(fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
-  reports                UeCommentReport[]
   replyReports           UeCommentReplyReport[]
+  reports                UeCommentReport[]
 }
 
 model UeCommentUpvote {
   id        String   @id @default(uuid())
-  userId    String?
   commentId String
   createdAt DateTime @default(now())
+  userId    String?
 
-  user    User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
   comment UeComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
 }
 
 model UeCourse {
   id         String     @id @default(uuid())
-  type       CourseType
-  room       String     @db.VarChar(50)
   createdAt  DateTime   @default(now())
-  ueId       String
+  room       String     @db.VarChar(50)
   semesterId String
+  type       CourseType
+  ueofCode   String
 
-  students            User[]
-  ue                  Ue                 @relation(fields: [ueId], references: [id])
-  semester            Semester           @relation(fields: [semesterId], references: [code])
   courseExchangesFrom UeCourseExchange[] @relation(name: "courseFrom")
   courseExchangesTo   UeCourseExchange[] @relation(name: "courseTo")
+  semester            Semester           @relation(fields: [semesterId], references: [code])
+  ueof                Ueof               @relation(fields: [ueofCode], references: [code])
+  students            User[]
   timetableEntries    TimetableEntry[]
 }
 
 model UeCourseExchange {
   id             String    @id @default(uuid())
-  stillAvailable Boolean
-  body           String?   @db.Text
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  deletedAt      DateTime?
   authorId       String
+  body           String?   @db.Text
   courseFromId   String
   courseToId     String
+  createdAt      DateTime  @default(now())
+  deletedAt      DateTime?
+  stillAvailable Boolean
+  updatedAt      DateTime  @updatedAt
 
   author     User                    @relation(fields: [authorId], references: [id])
   courseFrom UeCourse                @relation(name: "courseFrom", fields: [courseFromId], references: [id])
@@ -409,48 +425,45 @@ model UeCourseExchange {
 
 model UeCourseExchangeReply {
   id         String    @id @default(uuid())
+  authorId   String
   body       String    @db.Text
   createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
   deletedAt  DateTime?
-  authorId   String
   exchangeId String
+  updatedAt  DateTime  @updatedAt
 
   author   User             @relation(fields: [authorId], references: [id])
   exchange UeCourseExchange @relation(fields: [exchangeId], references: [id])
 }
 
 model UeCredit {
-  id         String @id @default(uuid())
-  credits    Int    @db.SmallInt
-  ueId       String
-  categoryId String
+  id         String  @id @default(uuid())
+  categoryId String?
+  credits    Int     @db.SmallInt
+  ueofCode   String
 
-  ue       Ue               @relation(fields: [ueId], references: [id], onDelete: Cascade)
-  category UeCreditCategory @relation(fields: [categoryId], references: [code])
+  category      UeCreditCategory? @relation(fields: [categoryId], references: [code])
+  ueof          Ueof              @relation(fields: [ueofCode], references: [code], onDelete: Cascade)
+  branchOptions UTTBranchOption[]
 }
 
 model UeCreditCategory {
-  code String @id @db.VarChar(10)
+  code String @id @db.Char(2)
   name String @db.VarChar(255)
 
-  credits UeCredit[]
+  ueCredits UeCredit[]
 }
 
-model UeInfo {
+model UeofInfo {
   id                      String  @id @default(uuid())
-  degree                  String? @db.Text
   minors                  String? @db.Text
-  languages               String? @db.Text
-  commentTranslationId    String? @unique
+  language                String? @db.Text
   objectivesTranslationId String? @unique
   programTranslationId    String? @unique
 
-  ue           Ue?
-  comment      Translation? @relation("ueInfoCommentsTranslation", fields: [commentTranslationId], references: [id], onDelete: Cascade)
-  objectives   Translation? @relation("ueInfoObjectivesTranslation", fields: [objectivesTranslationId], references: [id], onDelete: Cascade)
-  program      Translation? @relation("ueInfoProgramTranslation", fields: [programTranslationId], references: [id], onDelete: Cascade)
-  requirements Ue[]         @relation(name: "ueRequirements")
+  objectives Translation? @relation("ueofInfoObjectivesTranslation", fields: [objectivesTranslationId], references: [id], onDelete: Cascade)
+  program    Translation? @relation("ueofInfoProgramTranslation", fields: [programTranslationId], references: [id], onDelete: Cascade)
+  ueof       Ueof?
 }
 
 model UeStarCriterion {
@@ -466,28 +479,28 @@ model UeStarVote {
   id          String   @id @default(uuid())
   value       Int      @db.SmallInt
   createdAt   DateTime @default(now())
-  ueId        String
   criterionId String
+  ueofCode    String
   userId      String?
 
-  ue        Ue              @relation(fields: [ueId], references: [id], onDelete: Cascade)
   criterion UeStarCriterion @relation(fields: [criterionId], references: [id], onDelete: Cascade)
+  ueof      Ueof            @relation(fields: [ueofCode], references: [code], onDelete: Cascade)
   user      User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-  @@unique([ueId, userId, criterionId])
+  @@unique([ueofCode, userId, criterionId])
 }
 
 model UeWorkTime {
-  id         String @id @default(uuid())
+  id         String   @id @default(uuid())
   cm         Int?
   td         Int?
   tp         Int?
   the        Int?
-  project    Int?
+  project    Boolean?
   internship Int?
-  ueId       String @unique
+  ueofCode   String   @unique
 
-  ue Ue @relation(fields: [ueId], references: [id], onDelete: Cascade)
+  ueof Ueof @relation(fields: [ueofCode], references: [code], onDelete: Cascade)
 }
 
 model UserPermission {
@@ -525,24 +538,24 @@ model User {
   infosId         String  @unique
   mailsPhonesId   String  @unique
   socialNetworkId String  @unique
-  privacyId       String @unique
+  privacyId       String  @unique
 
+  socialNetwork         UserSocialNetwork           @relation(fields: [socialNetworkId], references: [id])
+  rgpd                  UserRGPD                    @relation(fields: [rgpdId], references: [id])
+  preference            UserPreference              @relation(fields: [preferenceId], references: [id])
+  infos                 UserInfos                   @relation(fields: [infosId], references: [id])
+  mailsPhones           UserMailsPhones             @relation(fields: [mailsPhonesId], references: [id])
   userType              UserType
   timestamps            UserTimestamps?
-  socialNetwork         UserSocialNetwork           @relation(fields: [socialNetworkId], references: [id])
   bans                  UserBan[]
-  rgpd                  UserRGPD                    @relation(fields: [rgpdId], references: [id])
   bdeContributions      UserBDEContribution[]
   assoMembership        AssoMembership[]
   branchSubscriptions   UserBranchSubscription[]
   formation             UserFormation?
-  preference            UserPreference              @relation(fields: [preferenceId], references: [id])
-  infos                 UserInfos                   @relation(fields: [infosId], references: [id])
   addresses             UserAddress[]
-  mailsPhones           UserMailsPhones             @relation(fields: [mailsPhonesId], references: [id])
   otherAttributes       UserOtherAttributValue[]
-  UesSubscriptions      UserUeSubscription[]
-  UeStarVotes           UeStarVote[]
+  uesSubscriptions      UserUeSubscription[]
+  ueStarVotes           UeStarVote[]
   courses               UeCourse[]
   eventAnswers          EventAnswer[]
   annalsSent            UeAnnal[]
@@ -599,15 +612,15 @@ model UserBDEContribution {
 }
 
 model UserBranchSubscription {
-  id               String   @id @default(uuid())
-  userId           String
-  semesterNumber   Int      @db.SmallInt
-  createdAt        DateTime @default(now())
-  branchOptionId   String
-  semesterCode     String
+  id             String   @id @default(uuid())
+  userId         String
+  semesterNumber Int      @db.SmallInt
+  createdAt      DateTime @default(now())
+  branchOptionId String
+  semesterCode   String
 
   user         User            @relation(fields: [userId], references: [id])
-  branchOption UTTBranchOption @relation(fields: [branchOptionId], references: [id])
+  branchOption UTTBranchOption @relation(fields: [branchOptionId], references: [code])
   semester     Semester        @relation(fields: [semesterCode], references: [code])
 }
 
@@ -701,11 +714,11 @@ model UserHomepageWidget {
 }
 
 model UserPreference {
-  id                     String   @id @default(uuid())
-  language               Language @default(fr)
-  wantDaymail            Boolean  @default(false)
-  wantDayNotif           Boolean  @default(false)
-  wantDiscordUtt         Boolean @default(false)
+  id             String   @id @default(uuid())
+  language       Language @default(fr)
+  wantDaymail    Boolean  @default(false)
+  wantDayNotif   Boolean  @default(false)
+  wantDiscordUtt Boolean  @default(false)
 
   user User?
 }
@@ -719,14 +732,14 @@ model UserRGPD {
 }
 
 model UserSocialNetwork {
-  id             String  @id @default(uuid())
-  facebook       String? @db.VarChar(255)
-  twitter        String? @db.VarChar(255)
-  instagram      String? @db.VarChar(255)
-  linkedin       String? @db.VarChar(255)
-  twitch         String? @db.VarChar(255)
-  spotify        String? @db.VarChar(255)
-  discord        String? @db.VarChar(255)
+  id        String  @id @default(uuid())
+  facebook  String? @db.VarChar(255)
+  twitter   String? @db.VarChar(255)
+  instagram String? @db.VarChar(255)
+  linkedin  String? @db.VarChar(255)
+  twitch    String? @db.VarChar(255)
+  spotify   String? @db.VarChar(255)
+  discord   String? @db.VarChar(255)
 
   user User?
 }
@@ -758,39 +771,39 @@ model UserUeSubscription {
   id         String   @id @default(uuid())
   createdAt  DateTime @default(now())
   userId     String
-  ueId       String
+  ueofCode   String
   semesterId String
 
   user     User     @relation(fields: [userId], references: [id])
-  ue       Ue       @relation(fields: [ueId], references: [id])
+  ueof     Ueof     @relation(fields: [ueofCode], references: [code])
   semester Semester @relation(fields: [semesterId], references: [code])
 
-  @@unique([userId, ueId, semesterId])
+  @@unique([userId, ueofCode, semesterId])
 }
 
 model UTTBranch {
-  code                     String @id @db.VarChar(10)
-  name                     String @db.VarChar(255)
+  code                     String  @id @db.VarChar(10)
+  name                     String  @db.VarChar(255)
+  isMaster                 Boolean @default(false)
   exitSalary               Int?
   employmentRate           Float?
   CDIRate                  Float?
   abroadEmploymentRate     Float?
-  descriptionTranslationId String @unique
+  descriptionTranslationId String  @unique
 
   descriptionTranslation Translation       @relation(fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
   branchOptions          UTTBranchOption[]
 }
 
 model UTTBranchOption {
-  id                       String @id @default(uuid())
-  code                     String @db.VarChar(10)
+  code                     String @id @db.VarChar(10)
   name                     String @db.VarChar(255)
   branchCode               String
   descriptionTranslationId String @unique
 
   branch                 UTTBranch                @relation(fields: [branchCode], references: [code])
   descriptionTranslation Translation              @relation(fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
-  ues                    Ue[]
+  uecredits              UeCredit[]
   branchSubscriptions    UserBranchSubscription[]
 
   @@unique([code, branchCode])

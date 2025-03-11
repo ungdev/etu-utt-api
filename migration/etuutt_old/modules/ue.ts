@@ -2,6 +2,26 @@ import { getOperationResults, PrismaOperationResult, QueryFunction } from '../ma
 import { PrismaClient } from '../make-migration';
 import { RawUe } from '../../../src/prisma/types';
 
+export function findLegacyUeofName(ueCode: string, comment: string) {
+  let LOCATION = 'TRO';
+  if (comment.match(/UE réalisée à Reims/)) LOCATION = 'REI';
+  let UECODE = ueCode;
+  let LANG = 'FR';
+  if (ueCode.length > 4 && ueCode.slice(-1).match(/[APR]/)) {
+    const modifier = ueCode.slice(-1);
+    UECODE = ueCode.slice(0, -1);
+    if (modifier === 'A') LANG = 'EN';
+    if (modifier === 'R') LOCATION = 'REI';
+  }
+  if (ueCode.startsWith('LG')) LANG = 'GE';
+  if (ueCode.startsWith('IT')) LANG = 'IT';
+  if (ueCode.startsWith('KO')) LANG = 'KO';
+  if (ueCode.startsWith('LC')) LANG = 'CH';
+  if (ueCode.startsWith('LP')) LANG = 'PO';
+  if (ueCode.startsWith('LS')) LANG = 'SP';
+  return { ue: UECODE, ueof: `${UECODE}_${LANG}_${LOCATION}_LEG` };
+}
+
 export async function migrateUEs(query: QueryFunction, prisma: PrismaClient) {
   const ues = await query('SELECT * FROM etu_uvs WHERE isOld = 0');
   const operations: PrismaOperationResult<RawUe>[] = [];
@@ -12,34 +32,17 @@ export async function migrateUEs(query: QueryFunction, prisma: PrismaClient) {
       ? -1
       : 0,
   );
-  const inscriptionCodes: string[] = (await prisma.ue.findMany({ select: { inscriptionCode: true } })).map(
-    ({ inscriptionCode }) => inscriptionCode,
-  );
   for (const ue of ues) {
-    let inscriptionCode = ue.code.slice(0, 4);
-    while (inscriptionCodes.includes(inscriptionCode)) {
-      inscriptionCode =
-        inscriptionCode.slice(0, 3) +
-        Math.floor(Math.random() * 36)
-          .toString(36)
-          .toUpperCase();
-    }
-    inscriptionCodes.push(inscriptionCode);
-    const requirements = operations
-      .filter((u) => new RegExp(`(^|\\W)${u.data.code}($|\\W)`).test(ue.antecedents))
-      .map((u) => u.data.id);
-    //console.log(ue.code, inscriptionCode);
     operations.push(
       await prisma.ue.create({
         code: ue.code,
         name: ue.name,
-        inscriptionCode,
         workTime: {
           cm: ue.cm,
           td: ue.td,
           tp: ue.tp,
           the: ue.the,
-          project: ue.projet,
+          project: ue.projet > 0,
           internship: ue.stage,
         },
         info: {
@@ -47,7 +50,6 @@ export async function migrateUEs(query: QueryFunction, prisma: PrismaClient) {
           objectives: ue.objectifs,
           languages: ue.languages,
           minors: ue.mineurs,
-          requirements,
           comment: ue.commentaire,
         },
         credits: {
@@ -59,5 +61,32 @@ export async function migrateUEs(query: QueryFunction, prisma: PrismaClient) {
   }
   const results = await getOperationResults(operations);
   console.log(`UEs : created ${results.created}, updated ${results.updated}, not changed ${results.notChanged}`);
+  let linkingOperations = 0;
+  for (const ue of ues) {
+    const { ue: ueCode, ueof: ueofCode } = findLegacyUeofName(ue.code, ue.commentaire);
+    const requirements = operations
+      .filter((u) => new RegExp(`(^|\\W)${u.data.code}($|\\W)`).test(ue.antecedents))
+      .map((u) => u.data.code);
+    if (requirements.length === 0) continue;
+    linkingOperations++;
+    prisma.ue.update({
+      where: { code: ueCode },
+      data: {
+        ueofs: {
+          update: {
+            where: {
+              code: ueofCode,
+            },
+            data: {
+              requirements: {
+                connect: requirements.map((value) => ({ code: value })),
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+  console.log(`UEs : linked ${linkingOperations}`);
   return results.data;
 }
