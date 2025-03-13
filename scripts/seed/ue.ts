@@ -203,7 +203,7 @@ async function main() {
         info: {
           create: {
             language: ue.lang,
-            minors: ue.minors.join(),
+            minors: ue.minors.length ? ue.minors.join() : null,
             objectives: {
               create: {
                 fr: ue.objectives,
@@ -258,7 +258,7 @@ async function main() {
         info: {
           update: {
             language: ue.lang,
-            minors: ue.minors.join(),
+            minors: ue.minors.length ? ue.minors.join() : null,
             objectives: {
               update: {
                 fr: ue.objectives,
