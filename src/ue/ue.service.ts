@@ -73,61 +73,63 @@ export class UeService {
             ],
           }
         : {}),
-      // Filter per branch option and branch if such a filter is present
-      ...(query.branchOption || query.branch
-        ? {
-            ueofs: {
-              some: {
-                credits: {
-                  some: {
-                    branchOptions: {
-                      some: {
-                        OR: [
-                          { code: query.branchOption },
-                          {
-                            branch: {
-                              code: query.branch,
+      AND: [
+        // Filter per branch option and branch if such a filter is present
+        query.branchOption || query.branch
+          ? {
+              ueofs: {
+                some: {
+                  credits: {
+                    some: {
+                      branchOptions: {
+                        some: {
+                          AND: [
+                            { code: query.branchOption },
+                            {
+                              branch: {
+                                code: query.branch,
+                              },
                             },
-                          },
-                        ],
+                          ],
+                        },
                       },
                     },
                   },
                 },
               },
-            },
-          }
-        : {}),
-      // Filter per credit type
-      ...(query.creditType
-        ? {
-            ueofs: {
-              some: {
-                credits: {
-                  some: {
-                    category: {
-                      code: query.creditType,
+            }
+          : null,
+        query.creditType
+          ? {
+              ueofs: {
+                some: {
+                  credits: {
+                    some: {
+                      category: {
+                        code: query.creditType,
+                      },
                     },
                   },
                 },
               },
-            },
-          }
-        : {}),
-      // Filter per semester
-      ...(query.availableAtSemester
-        ? {
-            ueofs: {
-              some: {
-                openSemester: {
-                  some: {
-                    code: query.availableAtSemester.toUpperCase(),
+            }
+          : null,
+        // Filter per semester
+        query.availableAtSemester
+          ? {
+              ueofs: {
+                some: {
+                  openSemester: {
+                    some: {
+                      code: query.availableAtSemester.toUpperCase(),
+                    },
                   },
                 },
               },
-            },
-          }
-        : {}),
+            }
+          : null,
+      ].filter((query) => query),
+      // Filter per credit type
     } satisfies Prisma.UeWhereInput;
     const items = await this.prisma.ue.findMany({
       where,
