@@ -22,6 +22,22 @@ export default class ApplicationService {
     });
   }
 
+  async exists(applicationId: string): Promise<boolean> {
+    return (await this.prisma.apiApplication.count({ where: { id: applicationId } })) > 0;
+  }
+
+  async get(applicationId: string): Promise<Application> {
+    return this.prisma.apiApplication.findUnique({ where: { id: applicationId } });
+  }
+
+  async regenerateClientSecret(applicationId: string): Promise<string> {
+    const updatedApplication = await this.prisma.apiApplication.update({
+      where: { id: applicationId },
+      data: { clientSecret: AuthService.generateToken() },
+    });
+    return updatedApplication.clientSecret;
+  }
+
   async regenerateApiKeyToken(userId: string, applicationId: string, tokenExpiresIn?: number): Promise<string> {
     const updatedApiKey = await this.prisma.withDefaultBehaviour.apiKey.upsert({
       where: { userId_applicationId: { userId, applicationId } },
@@ -29,9 +45,5 @@ export default class ApplicationService {
       create: { userId, applicationId, token: AuthService.generateToken() },
     });
     return this.authService.signAuthenticationToken(updatedApiKey.token, tokenExpiresIn);
-  }
-
-  async get(applicationId: string): Promise<Application> {
-    return this.prisma.apiApplication.findUnique({ where: { id: applicationId } });
   }
 }

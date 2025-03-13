@@ -368,7 +368,7 @@ export class AuthService {
   }
 
   /**
-   * Creates a token for user with the provided user id and login.
+   * Creates a token for user with the provided api key token.
    * It returns the generated token.
    * @param token The token to sign.
    * @param expiresIn The number of seconds in which the token will expire. If not given, token will never expire.

@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import ApplicationResDto from './dto/res/application-res.dto';
-import { ApiBody, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
+import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import ApplicationService from './application.service';
 import { GetUser, IsPublic } from '../decorator';
 import { Application } from './interfaces/application.interface';
@@ -13,6 +13,7 @@ import { GetPermissions } from '../decorator/get-permissions.decorator';
 import { RequestPermissions } from '../interfaces/request-auth-data.interface';
 import { AppException, ERROR_CODE } from '../../exceptions';
 import { Permission } from '@prisma/client';
+import ApplicationClientSecretResDto from './dto/res/application-client-secret-res.dto';
 
 @Controller('auth/application')
 export default class ApplicationController {
@@ -55,7 +56,21 @@ export default class ApplicationController {
     return this.formatApplicationOverview(application);
   }
 
+  @Patch('/:applicationId/client-secret')
+  @ApiOperation({
+    description:
+      'Generates a new client secret and returns it. The new client secret will never be returned again, it will need to be regenerated.',
+  })
+  @ApiOkResponse({ type: ApplicationClientSecretResDto, isArray: true })
+  async generateClientSecret(@Param('applicationId') applicationId: string): Promise<ApplicationClientSecretResDto> {
+    if (!(await this.applicationService.exists(applicationId)))
+      throw new AppException(ERROR_CODE.NO_SUCH_APPLICATION, applicationId);
+    const clientSecret = await this.applicationService.regenerateClientSecret(applicationId);
+    return { clientSecret };
+  }
+
   @Patch('/:applicationId/token')
+  @ApiOperation({ description: 'Generates a new token that can be used to log in as the owner with the application.' })
   @ApiBody({ type: UpdateTokenReqDto })
   @ApiOkResponse({ type: AuthTokenResDto, isArray: true })
   async generateToken(
@@ -63,6 +78,8 @@ export default class ApplicationController {
     @Param('applicationId') applicationId: string,
     @Body() dto: UpdateTokenReqDto,
   ): Promise<AuthTokenResDto> {
+    if (!(await this.applicationService.exists(applicationId)))
+      throw new AppException(ERROR_CODE.NO_SUCH_APPLICATION, applicationId);
     const token = await this.applicationService.regenerateApiKeyToken(userId, applicationId, dto.expiresIn);
     return { token };
   }
