@@ -36,8 +36,10 @@ export class CommentsService {
           includeDeletedReplied: bypassAnonymousData,
         },
         where: {
-          ue: {
-            code: dto.ueCode,
+          ueof: {
+            ue: {
+              code: dto.ueCode,
+            },
           },
         },
         take: this.config.PAGINATION_PAGE_SIZE,
@@ -46,7 +48,7 @@ export class CommentsService {
       userId,
     );
     const commentCount = await this.prisma.ueComment.count({
-      where: { ue: { code: dto.ueCode } },
+      where: { ueof: { ue: { code: dto.ueCode } } },
     });
     // If the user is neither a moderator or the comment author, and the comment is anonymous,
     // we remove the author from the response
@@ -138,11 +140,11 @@ export class CommentsService {
    * @param ueCode the code of the UE
    * @returns the last semester done by the {@link user} for the {@link ueCode | ue}
    */
-  async getLastSemesterDoneByUser(userId: string, ueCode: string): Promise<RawUserUeSubscription> {
+  private async getLastUserSubscription(userId: string, ueCode: string): Promise<RawUserUeSubscription> {
     return this.prisma.userUeSubscription.findFirst({
       where: {
-        ue: {
-          code: ueCode,
+        ueof: {
+          ueId: ueCode,
         },
         userId,
       },
@@ -177,7 +179,9 @@ export class CommentsService {
       },
       where: {
         authorId: userId,
-        ueId: ue.id,
+        ueof: {
+          ueId: ue.code,
+        },
       },
     });
     return comment.length > 0;
@@ -191,6 +195,8 @@ export class CommentsService {
    * @returns the created {@link UeComment}
    */
   async createComment(body: UeCommentPostReqDto, userId: string): Promise<UeComment> {
+    // Use last semester done when creating the comment
+    const lastSemester = await this.getLastUserSubscription(userId, body.ueCode);
     return this.prisma.ueComment.create(
       {
         args: {
@@ -207,15 +213,14 @@ export class CommentsService {
               id: userId,
             },
           },
-          ue: {
+          ueof: {
             connect: {
-              code: body.ueCode,
+              code: lastSemester.ueofCode,
             },
           },
           semester: {
             connect: {
-              // Use last semester done when creating the comment
-              code: (await this.getLastSemesterDoneByUser(userId, body.ueCode)).semesterId,
+              code: lastSemester.semesterId,
             },
           },
         },

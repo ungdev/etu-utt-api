@@ -6,6 +6,7 @@ import {
   createBranchOption,
   createBranch,
   createSemester,
+  createUeof,
 } from '../../../utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../../src/exceptions';
@@ -19,8 +20,9 @@ const PostUpvote = e2eSuite('POST /ue/comments/{commentId}/upvote', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
-  const comment = createComment(app, { ue, user, semester });
+  const ue = createUe(app);
+  const ueof = createUeof(app, { branchOptions: [branchOption], semesters: [semester], ue });
+  const comment = createComment(app, { ueof, user, semester });
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum.spec().post(`/ue/comments/${comment.id}/upvote`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);

@@ -74,7 +74,7 @@ export class AuthService {
           dto.studentId = Number(ldapUser.supannEtuId);
           type = UserType.STUDENT;
           branch.push(...(Array.isArray(ldapUser.niveau) ? ldapUser.niveau : [ldapUser.niveau]));
-          ues.push(...(Array.isArray(ldapUser.uv) ? ldapUser.uv : [ldapUser.uv]));
+          ues.push(...(Array.isArray(ldapUser.uv) ? ldapUser.uv : [ldapUser.uv])); // TODO : check what is done by the admin : are they UEOF or UE codes ?
           branchOption.push(...(Array.isArray(ldapUser.filiere) ? ldapUser.filiere : [ldapUser.filiere]));
           [formation] = Array.isArray(ldapUser.formation) ? ldapUser.formation : [ldapUser.formation]; // TODO: this is wrong, students can have multiple formations !
         } else if (ldapUser.gidNumber === LdapAccountGroup.EMPLOYEES) {
@@ -139,13 +139,11 @@ export class AuthService {
                 },
               }
             : {}),
-          UesSubscriptions: currentSemester
+          uesSubscriptions: currentSemester
             ? {
                 createMany: {
-                  data: (
-                    await this.ueService.getIdFromCode(ues)
-                  ).map((id) => ({
-                    ueId: id,
+                  data: ues.map((id) => ({
+                    ueofCode: id,
                     semesterId: currentSemester.code,
                   })),
                 },

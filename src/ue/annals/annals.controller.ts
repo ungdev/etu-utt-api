@@ -36,7 +36,7 @@ export class AnnalsController {
     @GetPermissions() permissions: RequestPermissions,
   ): Promise<UeAnnalResDto[]> {
     if (!(await this.ueService.doesUeExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
-    return this.annalsService.getUEAnnalsList(user, ueCode, permissions[Permission.API_MODERATE_ANNAL] === '*');
+    return this.annalsService.getUeAnnalsList(user, ueCode, permissions[Permission.API_MODERATE_ANNAL] === '*');
   }
 
   @Post()
@@ -56,18 +56,21 @@ export class AnnalsController {
     'User has not done the UE and is not an `annalUploader`, and thus cannot upload an annal for this UE.',
   )
   async createUeAnnal(
-    @Body() { ueCode, semester, typeId }: CreateAnnalReqDto,
+    @Body() { ueCode, semester, typeId, ueof }: CreateAnnalReqDto,
     @GetUser() user: User,
     @GetPermissions() permissions: RequestPermissions,
   ): Promise<UeAnnalResDto> {
-    if (!(await this.ueService.doesUeExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
+    if (ueof && permissions[Permission.API_UPLOAD_ANNAL] !== '*')
+      throw new AppException(ERROR_CODE.FORBIDDEN_NOT_ENOUGH_PERMISSIONS, 'annalUploader');
+    if (!ueof && !(await this.ueService.doesUeExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
+    if (ueof && !(await this.ueService.doesUeofExist(ueof))) throw new AppException(ERROR_CODE.NO_SUCH_UEOF, ueof);
     if (!(await this.annalsService.doesAnnalTypeExist(typeId))) throw new AppException(ERROR_CODE.NO_SUCH_ANNAL_TYPE);
     if (
-      !(await this.ueService.hasDoneThisUeInSemester(user.id, ueCode, semester)) &&
+      !(await this.ueService.hasUserAttended(ueCode, user.id, semester)) &&
       permissions[Permission.API_UPLOAD_ANNAL] !== '*'
     )
       throw new AppException(ERROR_CODE.NOT_DONE_UE_IN_SEMESTER, ueCode, semester);
-    return this.annalsService.createAnnalFile(user, { ueCode, semester, typeId });
+    return this.annalsService.createAnnalFile(user, { ueCode, semester, typeId, ueof });
   }
 
   @Get('metadata')
@@ -89,12 +92,9 @@ export class AnnalsController {
     @GetPermissions() permissions: RequestPermissions,
   ): Promise<UeAnnalMetadataResDto> {
     if (!(await this.ueService.doesUeExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
-    if (
-      !(await this.ueService.hasAlreadyDoneThisUe(user.id, ueCode)) &&
-      permissions[Permission.API_UPLOAD_ANNAL] !== '*'
-    )
+    if (!(await this.ueService.hasUserAttended(ueCode, user.id)) && permissions[Permission.API_UPLOAD_ANNAL] !== '*')
       throw new AppException(ERROR_CODE.NOT_ALREADY_DONE_UE);
-    return this.annalsService.getUEAnnalMetadata(user, ueCode, permissions[Permission.API_UPLOAD_ANNAL] === '*');
+    return this.annalsService.getUeAnnalMetadata(user, ueCode, permissions[Permission.API_UPLOAD_ANNAL] === '*');
   }
 
   @Put(':annalId')
@@ -125,7 +125,7 @@ export class AnnalsController {
     if (!(await this.annalsService.isUeAnnalSender(user.id, annalId)))
       throw new AppException(ERROR_CODE.NOT_ANNAL_SENDER);
     if (
-      (await this.annalsService.getUEAnnal(annalId, user.id, permissions[Permission.API_MODERATE_ANNAL] === '*'))
+      (await this.annalsService.getUeAnnal(annalId, user.id, permissions[Permission.API_MODERATE_ANNAL] === '*'))
         .status !== CommentStatus.PROCESSING
     )
       throw new AppException(ERROR_CODE.ANNAL_ALREADY_UPLOADED);
@@ -154,7 +154,7 @@ export class AnnalsController {
       ))
     )
       throw new AppException(ERROR_CODE.NO_SUCH_ANNAL, annalId);
-    const annalFile = await this.annalsService.getUEAnnalFile(
+    const annalFile = await this.annalsService.getUeAnnalFile(
       annalId,
       user.id,
       permissions[Permission.API_MODERATE_ANNAL] === '*',
@@ -163,7 +163,7 @@ export class AnnalsController {
     response.setHeader('Content-Type', 'application/pdf');
     response.setHeader(
       'Content-Disposition',
-      `attachment; filename=${annalFile.metadata.type.name} ${annalFile.metadata.ueCode} - ${annalFile.metadata.semesterId}`,
+      `attachment; filename=${annalFile.metadata.type.name} ${annalFile.metadata.ueof.code} - ${annalFile.metadata.semesterId}`,
     );
     annalFile.stream.pipe(response);
   }

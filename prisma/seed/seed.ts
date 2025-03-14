@@ -31,7 +31,7 @@ async function main() {
   const ues = await ueSeed(prisma, semesters, branchOptions, creditCategories);
   const users = await userSeed(prisma);
   const ueSubscriptions = await ueSubscriptionSeed(prisma, users, ues, semesters);
-  await ueCommentSeed(prisma, users, ues, semesters, ueSubscriptions);
+  await ueCommentSeed(prisma, users, semesters, ueSubscriptions);
   const ueStarCriterions = await ueStarCriterionSeed(prisma);
   await ueStarVotesSeed(prisma, ueStarCriterions, ueSubscriptions);
   const assos = await assoSeed(prisma);
