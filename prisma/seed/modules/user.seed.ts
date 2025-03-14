@@ -29,7 +29,7 @@ export async function userSeed(prisma: PrismaClient): Promise<RawUser[]> {
               token: AuthService.generateToken(),
               application: {
                 connect: {
-                  id: DEFAULT_APPLICATION,
+                  id: DEFAULT_APPLICATION.id,
                 },
               },
             },

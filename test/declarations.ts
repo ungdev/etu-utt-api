@@ -72,7 +72,7 @@ Spec.prototype.withLanguage = function (language: Language) {
   this.language = language;
   return <Spec>this;
 };
-Spec.prototype.application = DEFAULT_APPLICATION;
+Spec.prototype.application = DEFAULT_APPLICATION.id;
 Spec.prototype.withApplication = function (application: string) {
   this.application = application;
   return <Spec>this;

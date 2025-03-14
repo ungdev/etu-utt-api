@@ -6,6 +6,7 @@ import CasSignInE2ESpec from './cas-sign-in.e2e-spec';
 import CasSignUpE2ESpec from './cas-sign-up.e2e-spec';
 import CreateApiKeyE2ESpec from './create-api-key.e2e-spec';
 import ApplicationE2ESpec from './application';
+import ValidateLoginE2ESpec from "./validate-login.e2e-spec";
 
 export default function AuthE2ESpec(app: E2EAppProvider) {
   describe('Auth', () => {
@@ -15,6 +16,7 @@ export default function AuthE2ESpec(app: E2EAppProvider) {
     CasSignInE2ESpec(app);
     CasSignUpE2ESpec(app);
     CreateApiKeyE2ESpec(app);
+    ValidateLoginE2ESpec(app);
     ApplicationE2ESpec(app);
   });
 }

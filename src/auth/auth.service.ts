@@ -26,7 +26,6 @@ export type RegisterUserData = {
 };
 export type RegisterApiKeyData = { userId: string; applicationId: string; tokenExpiresIn: number };
 export type ValidationTokenData = {
-  clientSecret: string;
   apiKeyId: string;
   applicationId: string;
   tokenExpiresIn: number;
@@ -352,13 +351,7 @@ export class AuthService {
    */
   decodeValidationToken(token: string): ValidationTokenData | null {
     const data = this.jwt.decode(token);
-    if (
-      !data ||
-      !('clientSecret' in data) ||
-      !('apiKeyId' in data) ||
-      !('tokenExpiresIn' in data) ||
-      !('applicationId' in data)
-    ) {
+    if (!data || !('apiKeyId' in data) || !('tokenExpiresIn' in data) || !('applicationId' in data)) {
       return null;
     }
     return omit(data, 'iat', 'exp') as ValidationTokenData;
@@ -411,8 +404,8 @@ export class AuthService {
   /**
    *
    */
-  signValidationToken(clientSecret: string, apiKeyId: string, applicationId: string, tokenExpiresIn: number) {
-    return this.jwt.signAsync({ clientSecret, apiKeyId, applicationId, tokenExpiresIn } satisfies ValidationTokenData, {
+  signValidationToken(apiKeyId: string, applicationId: string, tokenExpiresIn: number) {
+    return this.jwt.signAsync({ apiKeyId, applicationId, tokenExpiresIn } satisfies ValidationTokenData, {
       secret: this.config.JWT_SECRET,
     });
   }

@@ -56,7 +56,7 @@ const CasSignInE2ESpec = e2eSuite('POST /auth/signin/cas', (app) => {
       .expect((res) => {
         const jwt = app().get(JwtService);
         const data = jwt.decode((res.res.json as { token: string }).token);
-        expect(data).toMatchObject({ userId: user.id, applicationId: DEFAULT_APPLICATION });
+        expect(data).toMatchObject({ userId: user.id, applicationId: DEFAULT_APPLICATION.id });
       });
     await app()
       .get(PrismaService)

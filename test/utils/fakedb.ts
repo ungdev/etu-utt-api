@@ -337,7 +337,7 @@ export const createUser = entityFaker(
         data: {
           token: faker.random.alpha({ count: 30 }),
           user: { connect: { id: user.id } },
-          application: { connect: { id: DEFAULT_APPLICATION } },
+          application: { connect: { id: DEFAULT_APPLICATION.id } },
           apiKeyPermissions: {
             create: [
               ...(params.permissions.includes(Permission.USER_SEE_DETAILS)

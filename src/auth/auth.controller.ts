@@ -77,7 +77,6 @@ export class AuthController {
         redirectUrl: null,
       };
     const token = await this.authService.signValidationToken(
-      application.clientSecret,
       res.apiKey.id,
       application.id,
       dto.tokenExpiresIn,
@@ -126,18 +125,21 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
-      'Signs in the user using CAS, and returns an authentication token. This token should be used as a Bearer token.',
+      'Signs in the user using CAS, and returns an token. This token should be used as a Bearer token (if application is the EtuUTT website) or should be passed to `POST /auth/validate`.',
   })
   @ApiCreatedResponse({
     description:
-      'The CAS ticket was successfully validated. If signedIn is true, the user is authenticated and can use the token to authenticate his requests. If signedIn is false, the user should use the token to sign up with "POST /auth/signup/cas".',
+      'The CAS ticket was successfully validated.\n' +
+      "If status is 'ok', the user is authenticated. Either use the token to authenticate his requests (if application is the EtuUTT website) or pass it to `POST /auth/validate` (if application is not the EtuUTT website).\n" +
+      "If the status is 'no_api_key', the user should use the token to register an api key for the application. See `POST /auth/api-key\n" +
+      "If status is 'no_account', the user should use the token to sign up with `POST /auth/signup/cas`.",
     type: AuthSigninResDto,
   })
   async casSignIn(
     @Body() dto: AuthCasSignInReqDto,
-    @GetApplication('id') applicationId: string,
+    @GetApplication() application: Application,
   ): Promise<CasLoginResDto> {
-    const res = await this.authService.casSignIn(dto.service, dto.ticket, applicationId);
+    const res = await this.authService.casSignIn(dto.service, dto.ticket, application.id);
     if (!res) throw new AppException(ERROR_CODE.INVALID_CAS_TICKET);
     if (!res.userId)
       return {
@@ -149,13 +151,30 @@ export class AuthController {
           res.basicUserData.lastName,
           dto.tokenExpiresIn,
         ),
+        redirectUrl: null,
       };
     if (!res.apiKeyId)
       return {
         status: 'no_api_key',
-        token: await this.authService.signRegisterApiKeyToken(res.userId, applicationId, dto.tokenExpiresIn),
+        token: await this.authService.signRegisterApiKeyToken(res.userId, application.id, dto.tokenExpiresIn),
+        redirectUrl: null,
       };
-    return { status: 'ok', token: await this.authService.signApiKey(res.apiKeyId, dto.tokenExpiresIn) };
+    if (application.id === this.config.ETUUTT_WEBSITE_APPLICATION_ID)
+      return {
+        status: 'ok',
+        token: await this.authService.signApiKey(res.apiKeyId, dto.tokenExpiresIn),
+        redirectUrl: null,
+      };
+    const token = await this.authService.signValidationToken(
+      res.apiKeyId,
+      application.id,
+      dto.tokenExpiresIn,
+    );
+    return {
+      status: 'ok',
+      token: null,
+      redirectUrl: this.formatRedirectUrl(application.redirectUrl, token),
+    };
   }
 
   @IsPublic()
@@ -209,7 +228,6 @@ export class AuthController {
     if (!application) throw new AppException(ERROR_CODE.NO_SUCH_APPLICATION, data.applicationId); // Can only happen if application has been deleted
     const apiKey = await this.authService.createApiKey(data.userId, data.applicationId);
     const token = await this.authService.signValidationToken(
-      application.clientSecret,
       apiKey.id,
       application.id,
       data.tokenExpiresIn,
@@ -220,6 +238,10 @@ export class AuthController {
 
   @IsPublic()
   @Post('/login/validate')
+  @ApiOperation({
+    description:
+      'Returns a bearer token from a validation token. Validation token is what is returned after the signing in. Most probably, you will get this token when user is redirected to your website after you asked them to sign in',
+  })
   @HttpCode(HttpStatus.OK)
   async validate(
     @Body() dto: AuthValidateReqDto,
@@ -228,7 +250,7 @@ export class AuthController {
     const data = this.authService.decodeValidationToken(dto.token);
     if (!data) throw new AppException(ERROR_CODE.INVALID_TOKEN_FORMAT);
     if (data.applicationId !== application.id) throw new AppException(ERROR_CODE.INCONSISTENT_APPLICATION);
-    if (data.clientSecret !== application.clientSecret) throw new AppException(ERROR_CODE.INVALID_TOKEN_FORMAT);
+    if (dto.clientSecret !== application.clientSecret) throw new AppException(ERROR_CODE.INVALID_TOKEN_FORMAT); // Should we return a specific error for this ? That would also give some info about what the problem is to a malicious person.
     const token = await this.authService.signApiKey(data.apiKeyId, data.tokenExpiresIn);
     if (!token) throw new AppException(ERROR_CODE.INVALID_TOKEN_FORMAT);
     return { token };

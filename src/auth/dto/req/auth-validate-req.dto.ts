@@ -8,4 +8,8 @@ export default class AuthValidateReqDto {
     description: 'Token that has been returned by the EtuUTT website',
   })
   token: string;
+
+  @IsString()
+  @IsNotEmpty()
+  clientSecret: string;
 }

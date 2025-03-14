@@ -47,9 +47,9 @@ const CreateApiKeyE2ESpec = e2eSuite('POST /auth/api-key', (app) => {
         expect(body.redirectUrl.startsWith(application.redirectUrl)).toBeTruthy();
         const registerData = authService().decodeValidationToken(body.redirectUrl.match(/token=([^&]+)/)[1]);
         expect(registerData).toBeTruthy();
-        expect(pick(registerData, 'clientSecret', 'applicationId')).toEqual({
-          clientSecret: application.clientSecret,
+        expect(pick(registerData, 'applicationId', 'tokenExpiresIn')).toEqual({
           applicationId: application.id,
+          tokenExpiresIn: 99999,
         });
       });
     await app()

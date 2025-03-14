@@ -209,12 +209,7 @@ export async function generateDefaultApplication(prisma: PrismaService | PrismaC
       lastName: 'UTT',
       userType: UserType.STUDENT,
       apiApplications: {
-        create: {
-          id: DEFAULT_APPLICATION,
-          name: 'EtuUTT Website',
-          redirectUrl: 'http://localhost:8080/',
-          clientSecret: 'theetuuttwebsite',
-        },
+        create: DEFAULT_APPLICATION,
       },
       socialNetwork: { create: {} },
       rgpd: { create: {} },
@@ -226,4 +221,9 @@ export async function generateDefaultApplication(prisma: PrismaService | PrismaC
   });
 }
 
-export const DEFAULT_APPLICATION = '52ce644d-183f-49e9-bd21-d2d4f37e2196';
+export const DEFAULT_APPLICATION = {
+  id: '52ce644d-183f-49e9-bd21-d2d4f37e2196',
+  name: 'EtuUTT Website',
+  redirectUrl: 'http://localhost:8080/',
+  clientSecret: 'theetuuttwebsite',
+};
