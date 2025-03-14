@@ -21,7 +21,6 @@ import { getTranslation, omit, pick } from '../src/utils';
 import { isArray } from 'class-validator';
 import { Language } from '@prisma/client';
 import { DEFAULT_APPLICATION } from '../prisma/seed/utils';
-import { Pagination, SetPartial } from '../src/types';
 import ApplicationResDto from '../src/auth/application/dto/res/application-res.dto';
 
 /** Shortcut function for `this.expectStatus(200).expectJsonLike` */

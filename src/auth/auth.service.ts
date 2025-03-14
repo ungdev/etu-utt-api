@@ -14,7 +14,6 @@ import { LdapAccountGroup } from '../ldap/ldap.interface';
 import { UeService } from '../ue/ue.service';
 import { SemesterService } from '../semester/semester.service';
 import AuthSignUpReqDto from './dto/req/auth-sign-up-req.dto';
-import { SetPartial } from '../types';
 import { RawApiKey } from '../prisma/types';
 import crypto from 'crypto';
 

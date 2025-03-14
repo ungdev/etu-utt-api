@@ -12,7 +12,6 @@ import { ApiAppErrorResponse, paginatedResponseDto } from '../app.dto';
 import UserDetailResDto from './dto/res/user-detail-res.dto';
 import UserBirthdayResDto from './dto/res/user-birthday-res.dto';
 import UserAssoMembershipResDto from './dto/res/user-asso-membership-res.dto';
-import { Pagination } from '../types';
 
 @Controller('users')
 @ApiTags('User')

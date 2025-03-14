@@ -61,7 +61,7 @@ export class AnnalsController {
     @GetPermissions() permissions: RequestPermissions,
   ): Promise<UeAnnalResDto> {
     if (ueof && permissions[Permission.API_UPLOAD_ANNAL] !== '*')
-      throw new AppException(ERROR_CODE.FORBIDDEN_NOT_ENOUGH_PERMISSIONS, 'annalUploader');
+      throw new AppException(ERROR_CODE.FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS, 'annalUploader');
     if (!ueof && !(await this.ueService.doesUeExist(ueCode))) throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
     if (ueof && !(await this.ueService.doesUeofExist(ueof))) throw new AppException(ERROR_CODE.NO_SUCH_UEOF, ueof);
     if (!(await this.annalsService.doesAnnalTypeExist(typeId))) throw new AppException(ERROR_CODE.NO_SUCH_ANNAL_TYPE);
