@@ -27,6 +27,7 @@ export class ConfigModule {
   public readonly LDAP_USER: string;
   public readonly LDAP_PWD: string;
   public readonly ANNAL_UPLOAD_DIR: string;
+  public readonly ETUUTT_WEBSITE_APPLICATION_ID: string;
 
   // DEV ENVIRONMENT ONLY
 
@@ -45,6 +46,7 @@ export class ConfigModule {
     this.LDAP_PWD = config.get('LDAP_PWD');
     this.ANNAL_UPLOAD_DIR = config.get<string>('ANNAL_UPLOAD_DIR');
     if (this.ANNAL_UPLOAD_DIR.endsWith('/')) this.ANNAL_UPLOAD_DIR = this.ANNAL_UPLOAD_DIR.slice(0, -1);
+    this.ETUUTT_WEBSITE_APPLICATION_ID = config.get('ETUUTT_WEBSITE_APPLICATION_ID');
 
     this._FAKER_SEED = isTestEnv ? Number(config.get('FAKER_SEED')) : undefined;
   }

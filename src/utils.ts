@@ -1,5 +1,6 @@
-import { Language } from '@prisma/client';
+import { Language, Permission } from '@prisma/client';
 import { Translation } from './prisma/types';
+import { RequestPermissions } from './auth/interfaces/request-auth-data.interface';
 
 /**
  * Returns a new object built from the given object with only the specified keys.
@@ -55,3 +56,7 @@ export const translationSelect = {
     zh: true,
   },
 };
+
+export function hasPermissionOnUser(permission: Permission, userId: string, permissions: RequestPermissions) {
+  return permissions[permission] && (permissions[permission] === '*' || permissions[permission].includes(userId));
+}
