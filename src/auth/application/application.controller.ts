@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import ApplicationResDto from './dto/res/application-res.dto';
-import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
+import { ApiOperation } from '@nestjs/swagger';
 import ApplicationService from './application.service';
 import { GetUser, IsPublic } from '../decorator';
 import { Application } from './interfaces/application.interface';
@@ -14,19 +14,24 @@ import { RequestPermissions } from '../interfaces/request-auth-data.interface';
 import { AppException, ERROR_CODE } from '../../exceptions';
 import { Permission } from '@prisma/client';
 import ApplicationClientSecretResDto from './dto/res/application-client-secret-res.dto';
+import { ApiAppErrorResponse } from '../../app.dto';
 
 @Controller('auth/application')
 export default class ApplicationController {
   constructor(private applicationService: ApplicationService, private authService: AuthService) {}
 
   @Get('/of/me')
-  @ApiOkResponse({ type: ApplicationResDto, isArray: true })
+  @ApiOperation({ description: 'Get the applications of the user issuing the request.' })
   async getMyApplications(@GetUser('id') userId: string): Promise<ApplicationResDto[]> {
     return this.getApplicationsOf(userId, { [Permission.USER_SEE_DETAILS]: '*' });
   }
 
   @Get('/of/:userId')
-  @ApiOkResponse({ type: ApplicationResDto, isArray: true })
+  @ApiOperation({ description: 'Get the applications of specified user.' })
+  @ApiAppErrorResponse(
+    ERROR_CODE.FORBIDDEN_NOT_ENOUGH_USER_PERMISSIONS,
+    'User issuing the request does not have the USER_SEE_DETAILS for the specified user.',
+  )
   async getApplicationsOf(
     @Param('userId') userId: string,
     @GetPermissions() permissions: RequestPermissions,
@@ -37,9 +42,10 @@ export default class ApplicationController {
     return applications.map(this.formatApplicationOverview);
   }
 
-  @Get('/:applicationId')
-  @ApiOkResponse({ type: ApplicationResDto })
   @IsPublic()
+  @Get('/:applicationId')
+  @ApiOperation({ description: 'Get the application with the given id.' })
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_APPLICATION, 'Application does not exist.')
   async getApplication(@Param('applicationId') applicationId: string): Promise<ApplicationResDto> {
     const application = await this.applicationService.get(applicationId);
     if (!application) throw new AppException(ERROR_CODE.NO_SUCH_APPLICATION, applicationId);
@@ -47,7 +53,7 @@ export default class ApplicationController {
   }
 
   @Post()
-  @ApiCreatedResponse({ type: ApplicationResDto })
+  @ApiOperation({ description: 'Creates a new application for the user issuing the request.' })
   async createApplication(
     @GetUser('id') userId: string,
     @Body() dto: CreateApplicationReqDto,
@@ -61,7 +67,7 @@ export default class ApplicationController {
     description:
       'Generates a new client secret and returns it. The new client secret will never be returned again, it will need to be regenerated.',
   })
-  @ApiOkResponse({ type: ApplicationClientSecretResDto, isArray: true })
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_APPLICATION, 'The application does not exist.')
   async generateClientSecret(@Param('applicationId') applicationId: string): Promise<ApplicationClientSecretResDto> {
     if (!(await this.applicationService.exists(applicationId)))
       throw new AppException(ERROR_CODE.NO_SUCH_APPLICATION, applicationId);
@@ -71,8 +77,7 @@ export default class ApplicationController {
 
   @Patch('/:applicationId/token')
   @ApiOperation({ description: 'Generates a new token that can be used to log in as the owner with the application.' })
-  @ApiBody({ type: UpdateTokenReqDto })
-  @ApiOkResponse({ type: AuthTokenResDto, isArray: true })
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_APPLICATION, 'The application does not exist.')
   async generateToken(
     @GetUser('id') userId: string,
     @Param('applicationId') applicationId: string,

@@ -1,3 +1,6 @@
+// For some reason, eslint does not find any usage (even for used types)
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 /**
  * Represents pagination data.
  * @template T The type of the items of the paginated list.

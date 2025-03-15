@@ -11,7 +11,7 @@ import { generateCustomUeAnnalModel } from '../ue/annals/interfaces/annal.interf
 import { generateCustomUeCommentReplyModel } from '../ue/comments/interfaces/comment-reply.interface';
 import { generateCustomAssoModel } from '../assos/interfaces/asso.interface';
 import { generateCustomCreditCategoryModel } from '../ue/credit/interfaces/credit-category.interface';
-import {generateCustomApplicationModel} from "../auth/application/interfaces/application.interface";
+import { generateCustomApplicationModel } from '../auth/application/interfaces/application.interface';
 
 // This interface is used to tell typescript that, even tho it does not understand it, PrismaService IS actually a ReturnType<typeof createPrismaClientExtension>
 // TS cannot infer it alone as the construction of the class is made using reflection.

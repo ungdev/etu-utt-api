@@ -1,5 +1,5 @@
-import {IsInt, IsOptional, IsPositive} from "class-validator";
-import { ApiProperty } from "@nestjs/swagger";
+import { IsInt, IsOptional, IsPositive } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export default class UpdateTokenReqDto {
   @IsInt()

@@ -76,11 +76,7 @@ export class AuthController {
         token: await this.authService.signApiKey(res.apiKey.id, dto.tokenExpiresIn),
         redirectUrl: null,
       };
-    const token = await this.authService.signValidationToken(
-      res.apiKey.id,
-      application.id,
-      dto.tokenExpiresIn,
-    );
+    const token = await this.authService.signValidationToken(res.apiKey.id, application.id, dto.tokenExpiresIn);
     return {
       signedIn: true,
       token: null,
@@ -165,11 +161,7 @@ export class AuthController {
         token: await this.authService.signApiKey(res.apiKeyId, dto.tokenExpiresIn),
         redirectUrl: null,
       };
-    const token = await this.authService.signValidationToken(
-      res.apiKeyId,
-      application.id,
-      dto.tokenExpiresIn,
-    );
+    const token = await this.authService.signValidationToken(res.apiKeyId, application.id, dto.tokenExpiresIn);
     return {
       status: 'ok',
       token: null,
@@ -219,6 +211,9 @@ export class AuthController {
     description:
       'Create an API access for user to the application that made the request. Returns an authentication token. A route to sign-in should be called before, to get the required token in body.',
   })
+  @ApiAppErrorResponse(ERROR_CODE.INVALID_TOKEN_FORMAT, 'Token could not be decoded.')
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_USER, 'User has been deleted since the token was generated.')
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_APPLICATION, 'Application has been deleted since the token was generated.')
   async createApiKey(@Body() dto: CreateApiKeyReqDto): Promise<AuthRedirectionResDto> {
     const data = this.authService.decodeRegisterApiKeyToken(dto.token);
     if (!data) throw new AppException(ERROR_CODE.INVALID_TOKEN_FORMAT);
@@ -227,22 +222,26 @@ export class AuthController {
     const application = await this.applicationService.get(data.applicationId);
     if (!application) throw new AppException(ERROR_CODE.NO_SUCH_APPLICATION, data.applicationId); // Can only happen if application has been deleted
     const apiKey = await this.authService.createApiKey(data.userId, data.applicationId);
-    const token = await this.authService.signValidationToken(
-      apiKey.id,
-      application.id,
-      data.tokenExpiresIn,
-    );
+    const token = await this.authService.signValidationToken(apiKey.id, application.id, data.tokenExpiresIn);
     const redirectUrl = this.formatRedirectUrl(application.redirectUrl, token);
     return { redirectUrl };
   }
 
   @IsPublic()
   @Post('/login/validate')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
       'Returns a bearer token from a validation token. Validation token is what is returned after the signing in. Most probably, you will get this token when user is redirected to your website after you asked them to sign in',
   })
-  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({
+    description: 'Token is correct, another token is returned, that can be used to authenticate requests.',
+  })
+  @ApiAppErrorResponse(ERROR_CODE.INVALID_TOKEN_FORMAT, 'Token could not be decoded, or clientSecret is wrong.')
+  @ApiAppErrorResponse(
+    ERROR_CODE.INCONSISTENT_APPLICATION,
+    'Request was made from a different application than the one for the ticket was emitted.',
+  )
   async validate(
     @Body() dto: AuthValidateReqDto,
     @GetApplication() application: Application,
