@@ -90,16 +90,13 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
       });
     const extendedComments = await app()
       .get(PrismaService)
-      .ueComment.findMany(
-        {
-          args: {
-            userId: user.id,
-            includeDeletedReplied: false,
-            includeLastValidatedBody: false,
-          },
+      .normalize.ueComment.findMany({
+        args: {
+          userId: user.id,
+          includeDeletedReplied: false,
+          includeLastValidatedBody: false,
         },
-        user.id,
-      );
+      });
     const commentsFiltered = {
       items: extendedComments
         .sort((a, b) =>
@@ -128,16 +125,13 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
   it('should return the second page of comments', async () => {
     const extendedComments = await app()
       .get(PrismaService)
-      .ueComment.findMany(
-        {
-          args: {
-            userId: user.id,
-            includeDeletedReplied: false,
-            includeLastValidatedBody: false,
-          },
+      .normalize.ueComment.findMany({
+        args: {
+          userId: user.id,
+          includeDeletedReplied: false,
+          includeLastValidatedBody: false,
         },
-        user.id,
-      );
+      });
     return pactum
       .spec()
       .withBearerToken(user.token)
@@ -173,16 +167,13 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
       });
     const extendedComments = await app()
       .get(PrismaService)
-      .ueComment.findMany(
-        {
-          args: {
-            userId: user.id,
-            includeDeletedReplied: false,
-            includeLastValidatedBody: true,
-          },
+      .normalize.ueComment.findMany({
+        args: {
+          userId: user.id,
+          includeDeletedReplied: false,
+          includeLastValidatedBody: true,
         },
-        user.id,
-      );
+      });
     const commentsFiltered = {
       items: extendedComments
         .sort((a, b) =>

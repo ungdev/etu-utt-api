@@ -289,7 +289,7 @@ export const createUser = entityFaker(
     );
     const user = await app()
       .get(PrismaService)
-      .withDefaultBehaviour.user.create({
+      .user.create({
         data: {
           hash: params.hash ?? (await app().get(AuthService).getHash(params.password)),
           ...pick(params, 'id', 'login', 'studentId', 'firstName', 'lastName', 'userType'),
@@ -473,7 +473,7 @@ export const createAsso = entityFaker(
   async (app, params) => {
     const asso = await app()
       .get(PrismaService)
-      .asso.create({
+      .normalize.asso.create({
         data: {
           ...omit(params, 'login', 'name', 'descriptionShortTranslationId', 'descriptionTranslationId'),
           login: params.login,
@@ -661,7 +661,7 @@ export const createAnnal = entityFaker(
   async (app, { semester, sender, type, ueof }, { status }) =>
     app()
       .get(PrismaService)
-      .ueAnnal.create({
+      .normalize.ueAnnal.create({
         data: {
           uploadComplete: !(status & CommentStatus.PROCESSING),
           deletedAt: status & CommentStatus.DELETED ? faker.date.recent() : null,
@@ -817,8 +817,7 @@ export const createUe = entityFaker(
           code: params.code,
           createdAt: params.createdAt,
         },
-      })
-      .then(omit('ueofs')),
+      }),
 );
 
 export type CreateUserSubscriptionParameters = Omit<FakeUserUeSubscription, 'ueofCode' | 'semesterId' | 'userId'>;
@@ -879,7 +878,7 @@ export const createUeRating = entityFaker(
   async (app, dependencies, params) => {
     return app()
       .get(PrismaService)
-      .withDefaultBehaviour.ueStarVote.create({
+      .ueStarVote.create({
         data: {
           ...params,
           criterion: {
@@ -914,7 +913,7 @@ export const createComment = entityFaker(
   async (app, dependencies, params) => {
     const rawFakeData = await app()
       .get(PrismaService)
-      .withDefaultBehaviour.ueComment.create({
+      .ueComment.create({
         data: {
           ...omit(params, 'status'),
           validatedAt: params.status & CommentStatus.VALIDATED ? new Date() : undefined,
@@ -971,7 +970,7 @@ export const createCommentReply = entityFaker(
   async (app, dependencies, params) => {
     const rawFakeReply = await app()
       .get(PrismaService)
-      .withDefaultBehaviour.ueCommentReply.create({
+      .ueCommentReply.create({
         data: {
           ...omit(params, 'commentId', 'authorId', 'status'),
           deletedAt: params.status & CommentStatus.DELETED ? new Date() : undefined,
