@@ -16,7 +16,7 @@ const GetCurrentUserE2ESpec = e2eSuite('GET /users/current', (app) => {
   it('should successfully find the user', async () => {
     const userFromDb = await app()
       .get(PrismaService)
-      .user.findUnique({
+      .normalize.user.findUnique({
         where: { login: user.login },
       });
     const branch = userFromDb.branchSubscriptions.find(
