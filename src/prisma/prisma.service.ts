@@ -22,16 +22,6 @@ export class PrismaService extends PrismaClient<ReturnType<typeof prismaOptions>
   }
 }
 
-function createPrismaClient(config: ConfigModule) {
-  return new PrismaClient({
-    datasources: {
-      db: {
-        url: config.DATABASE_URL,
-      },
-    },
-  });
-}
-
 const prismaOptions = (config: ConfigModule) => ({
   datasources: {
     db: {
@@ -78,7 +68,7 @@ export type UserFriendlyRequestType<
 > = Omit<RequestType<ModelName, FunctionName>, 'select' | 'include' | 'orderBy'> &
   (Record<string, never> extends CustomArgs ? { args?: never } : { args: CustomArgs });
 export type Formatter<RawEntity, FormattedEntity, QueryArgs extends object> = (
-  prisma: ReturnType<typeof createPrismaClient>,
+  prisma: PrismaClient,
   raw: RawEntity,
   args: QueryArgs,
 ) => MayBePromise<FormattedEntity>;
