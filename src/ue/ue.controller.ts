@@ -190,6 +190,8 @@ export class UeController {
       ueofs: ue.ueofs.map((ueof) => ({
         code: ueof.code,
         name: ueof.name,
+        siepId: ueof.siepId,
+        inscriptionCode: ueof.inscriptionCode,
         credits: ueof.credits.map((c) => ({
           credits: c.credits,
           category: {
@@ -265,7 +267,7 @@ export class UeController {
       return Math.round((ponderation / coefficients) * 10) / 10;
     }
     // Ponderate the rates of each ueof
-    const ueofRates = Object.entries(rates.groupyBy((rate) => rate.ueofCode)).map(
+    const ueofRates = Object.entries(rates.groupBy((rate) => rate.ueofCode)).map(
       ([ueofCode, rates]) =>
         [
           ueofCode,
