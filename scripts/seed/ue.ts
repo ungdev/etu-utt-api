@@ -2,7 +2,7 @@ import { createReadStream } from 'fs';
 import { createInterface } from 'readline/promises';
 import { parse } from '@fast-csv/parse';
 import { PrismaClient } from '@prisma/client';
-import '../../src/array';
+import type { TextItem } from 'pdfjs-dist/types/src/display/api';
 
 const prisma = new PrismaClient();
 
@@ -49,6 +49,29 @@ async function findPadding(document: string) {
       })
       .on('close', () => reject());
   });
+}
+
+function sanitize<T>(obj: T): T {
+  if (typeof obj === 'string') {
+    const output = obj
+      .replaceAll(/(?![\n\r])\s/g, ' ')
+      .replaceAll(/½(?=uvre)/g, 'œ')
+      .replaceAll(/(?<=c)½(?=ur)/g, 'œ')
+      .replaceAll(/(?:Þ|(?<=\n|\r|^)[?\-\u00ad])\s?/g, '• ')
+      .replaceAll(/\u00ad|–/g, '-')
+      .replaceAll(/a`/g, 'à')
+      .replaceAll(/é´/g, 'é')
+      .replaceAll('’', "'")
+      .replaceAll(/(?<=[dls])¿/g, "'")
+      .trim() as T & string;
+    const match = output.match(/[^a-zA-Z0-9 éèàâ'ôîïêù\-\n\r?(),;":/_.û•ÉÊœ…«»ç&+]/g);
+    if (match?.length)
+      console.warn(`\x1b[45;30m[UNEXPECTED_GLYPH] ${match.map((c) => `"${c}"`).join(', ')}\x1b[0m. Check "${output}"`);
+    return output;
+  } else if (obj instanceof Array) return obj.map(sanitize) as T;
+  else if (typeof obj === 'object')
+    return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, sanitize(v)])) as T;
+  return obj;
 }
 
 async function parseDocument(document: string) {
@@ -122,17 +145,50 @@ async function parseDocument(document: string) {
         resolve(
           // A single UEOF can appear multiple times in the CSV with a different requirement
           // We group the UEOFs by their code and merge the requirements
-          Object.values(ueofs.groupyBy((ueof) => ueof.ueof_code)).map((duplicates) => ({
-            ...duplicates[0],
-            requirements: duplicates.flatMap((ueof) => ueof.requirements),
-          })),
+          sanitize(
+            Object.values(
+              ueofs.reduce((acc, ueof) => {
+                const key = ueof.ueof_code;
+                if (!acc[key]) acc[key] = [];
+                acc[key].push(ueof);
+                return acc;
+              }, {} as { [key: string]: UEOF[] }),
+            ).map((duplicates) => ({
+              ...duplicates[0],
+              requirements: duplicates.flatMap((ueof) => ueof.requirements),
+            })),
+          ),
         ),
       );
   });
 }
 
+async function fetchINSUE() {
+  const pdfjs = (await new Function(
+    "return import('pdfjs-dist/legacy/build/pdf.mjs')",
+  )()) as typeof import('pdfjs-dist');
+  const variants = ['TC', 'RT', 'ISI', 'SN', 'GI', 'GM', 'MTE', 'A2I', 'MASTER', 'EC', 'HUMANITE', 'MANAGEMENT'];
+  const entries: [string, string][] = [];
+  for (const variant of variants) {
+    const doc = await pdfjs.getDocument(
+      `https://gestion.utt.fr/applis/service2/insuv/sql/fichiers/EdT_previsionnel_${variant}.pdf`,
+    ).promise;
+    for (let i = 0; i < doc.numPages; i++) {
+      const page = await doc.getPage(i + 1);
+      const textContent = await page.getTextContent();
+      entries.push(
+        ...textContent.items
+          .map((value: TextItem, i) => [value.str, i] as [string | null, number])
+          .filter(([item]) => item?.match(/^[AP]\d{2}_[^_]+_[^_]+_[^_]+/))
+          .map<[string, string]>(([item, i]) => [item, (<TextItem>textContent.items[i + 2]).str]), // + 2 because there is an extra space
+      );
+    }
+  }
+  return entries;
+}
+
 async function main() {
-  const importYear = new Date().getFullYear() - 1; // Can be changed to the year of the import if done with web interface
+  const importYear = Number(process.argv[2]) || new Date().getFullYear(); // Can be changed to the year of the import if done with web interface
 
   console.info('\x1b[42;30mFetching UE list\x1b[0m');
   const ues = await parseDocument('scripts/seed/dfp_data.csv');
@@ -329,12 +385,36 @@ async function main() {
         }),
       ),
     );
-    console.info('\x1b[42;30m✅ Import complete\x1b[0m');
   } catch (error) {
     console.error(
       '\x1b[41;30mAn error occurred while importing UE requirements. Try `$ pnpm seed:ue:aliases` first.\x1b[0m',
     );
+    return;
   }
+  console.info('\x1b[42;30mFetching current INSUEs\x1b[0m');
+  try {
+    const insues = await fetchINSUE();
+    await Promise.all(
+      insues.map(([ueof, insue]) =>
+        prisma.ueof.updateMany({
+          where: {
+            code: {
+              startsWith: ueof.slice(4),
+            },
+          },
+          data: {
+            inscriptionCode: insue,
+          },
+        }),
+      ),
+    );
+  } catch (error) {
+    console.error(
+      '\x1b[41;30mAn error occurred while importing INSUEs. Check the network connection or DFP pdf structure.\x1b[0m',
+    );
+    return;
+  }
+  console.info('\x1b[42;30m✅ Import complete\x1b[0m');
 }
 
 main();

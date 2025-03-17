@@ -263,8 +263,9 @@ model UeAlias {
 }
 
 model Ueof {
-  code   String @id @db.VarChar(20)
-  siepId Int    @unique
+  code            String  @id @db.VarChar(20)
+  siepId          Int     @unique
+  inscriptionCode String?
 
   available         Boolean  @default(false)
   createdAt         DateTime @default(now())
