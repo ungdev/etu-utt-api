@@ -205,8 +205,9 @@ export default class TimetableService {
           : {
               start: occurrenceStart,
               end: new Date(
-                override.occurrenceDuration !== null ? occurrenceStart.getTime() + override.occurrenceDuration :
-                  (occurrences[occurrencePosition] ?? occurrencesNoOverride[occurrencePosition]).end.getTime() -
+                override.occurrenceDuration !== null
+                  ? occurrenceStart.getTime() + override.occurrenceDuration
+                  : (occurrences[occurrencePosition] ?? occurrencesNoOverride[occurrencePosition]).end.getTime() -
                     (occurrences[occurrencePosition] ?? occurrencesNoOverride[occurrencePosition]).start.getTime(),
               ),
               entryId: override.id,

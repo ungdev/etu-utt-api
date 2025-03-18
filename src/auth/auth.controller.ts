@@ -16,7 +16,10 @@ import { ApiAppErrorResponse } from '../app.dto';
 @Controller('auth')
 @ApiTags('Authentication')
 export class AuthController {
-  constructor(private authService: AuthService, private usersService: UsersService) {}
+  constructor(
+    private authService: AuthService,
+    private usersService: UsersService,
+  ) {}
 
   @IsPublic()
   @Post('signup')

@@ -13,7 +13,10 @@ import { Semester } from '@prisma/client';
 
 @Injectable()
 export class AnnalsService {
-  constructor(readonly prisma: PrismaService, readonly config: ConfigModule) {}
+  constructor(
+    readonly prisma: PrismaService,
+    readonly config: ConfigModule,
+  ) {}
 
   async getUeAnnalMetadata(user: User, ueCode: string, isModerator: boolean) {
     const ueof = await this.prisma.ueof.findMany({

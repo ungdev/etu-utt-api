@@ -20,12 +20,12 @@ export default function ueCommentSeed(
     const answers: Prisma.UeCommentReplyCreateWithoutCommentInput[] = new Array(faker.number.int(4))
       .fill(undefined)
       .map(() => {
-        const answerDate = faker.date.soon({days: 10, refDate: date});
+        const answerDate = faker.date.soon({ days: 10, refDate: date });
         return {
           body: faker.lorem.paragraph(),
           authorId: faker.helpers.arrayElement(users).id,
           createdAt: answerDate,
-          updatedAt: faker.date.soon({days: 10, refDate: answerDate}),
+          updatedAt: faker.date.soon({ days: 10, refDate: answerDate }),
         };
       });
     comments.push(
@@ -49,7 +49,7 @@ export default function ueCommentSeed(
           },
           body: faker.lorem.paragraph(),
           createdAt: date,
-          updatedAt: faker.datatype.boolean() ? faker.date.soon({days: 10, refDate: date}) : undefined,
+          updatedAt: faker.datatype.boolean() ? faker.date.soon({ days: 10, refDate: date }) : undefined,
           answers: {
             createMany: {
               data: answers,

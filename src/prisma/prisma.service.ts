@@ -15,11 +15,13 @@ import { generateCustomCreditCategoryModel } from '../ue/credit/interfaces/credi
 // This interface is used to tell typescript that, even tho it does not understand it, PrismaService IS actually a ReturnType<typeof createPrismaClientExtension>
 // TS cannot infer it alone as the construction of the class is made using reflection.
 // We can't use a type there, or else typescript will complain about the fact that PrismaService is defined twice.
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface PrismaService extends ReturnType<typeof createPrismaClientExtension> {}
+
+export interface IPrismaService extends ReturnType<typeof createPrismaClientExtension> {
+  readonly withDefaultBehaviour: PrismaClient;
+}
 
 @Injectable()
-export class PrismaService implements ReturnType<typeof createPrismaClientExtension> {
+export class PrismaService implements IPrismaService {
   readonly withDefaultBehaviour: PrismaClient;
   constructor(config: ConfigModule) {
     this.withDefaultBehaviour = createPrismaClient(config);

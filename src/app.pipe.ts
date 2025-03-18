@@ -47,13 +47,15 @@ export const UUIDParam = (property: string, ...pipes: (Type<PipeTransform> | Pip
     ...pipes,
   );
 
-export interface ArrayDto<T> extends Array<T> {
+export interface IArrayDto<T> extends Array<T> {
   items: T[];
 }
 
 // Don't make it extend Array<T>, it would break the validation as a field called 0 would be needed.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export class ArrayDto<T> {}
+
+export class ArrayDto<T> extends Array<T> implements IArrayDto<T> {
+  items: T[];
+}
 
 export class AppValidationPipe extends ValidationPipe {
   constructor() {

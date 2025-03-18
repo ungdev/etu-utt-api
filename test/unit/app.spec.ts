@@ -7,7 +7,6 @@ import '../../src/array';
  * Unit testing is currently DISABLED. Remove the .skip in the line below
  */
 describe.skip('EtuUTT API unit testing', () => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let app: TestingModule;
   beforeAll(async () => {
     app = await Test.createTestingModule({ imports: [AppModule] }).compile();

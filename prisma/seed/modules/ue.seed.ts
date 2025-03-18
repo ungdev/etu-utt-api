@@ -19,7 +19,7 @@ export default function ueSeed(
     const date: Date = faker.date.past();
     const code =
       faker.string.alpha({ casing: 'upper' }) +
-      faker.string.alphanumeric({length: { min: 2, max: 5 }, casing: 'upper'});
+      faker.string.alphanumeric({ length: { min: 2, max: 5 }, casing: 'upper' });
     ues.push(
       prisma.ue.create({
         data: {

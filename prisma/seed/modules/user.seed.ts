@@ -18,7 +18,7 @@ export async function userSeed(prisma: PrismaClient): Promise<RawUser[]> {
         data: {
           firstName,
           lastName,
-          studentId: faker.number.int({max: 99999}),
+          studentId: faker.number.int({ max: 99999 }),
           login: i === 0 ? 'student' : faker.internet.username(),
           userType: 'STUDENT',
           hash,
@@ -27,12 +27,12 @@ export async function userSeed(prisma: PrismaClient): Promise<RawUser[]> {
             create: {
               sex: faker.helpers.arrayElement(['MALE', 'FEMALE', 'OTHER'] as Sex[]),
               nickname: faker.internet.username(),
-              birthday: faker.date.past({years: 7, refDate: new Date(Date.now()).getTime() - 18 * 365 * 24 * 3600}),
+              birthday: faker.date.past({ years: 7, refDate: new Date(Date.now()).getTime() - 18 * 365 * 24 * 3600 }),
             },
           },
           mailsPhones: {
             create: {
-              mailUTT: faker.internet.email({firstName, lastName, provider: 'utt.fr'}),
+              mailUTT: faker.internet.email({ firstName, lastName, provider: 'utt.fr' }),
             },
           },
           preference: { create: {} },

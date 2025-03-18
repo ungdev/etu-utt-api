@@ -152,8 +152,7 @@ Faker.prototype.db = {
       fakeSafeUniqueData(
         'ue',
         'code',
-        () =>
-          faker.helpers.arrayElement(baseUesCode) + `${faker.number.int({ min: 1, max: 13 })}`.padStart(2, '0'),
+        () => faker.helpers.arrayElement(baseUesCode) + `${faker.number.int({ min: 1, max: 13 })}`.padStart(2, '0'),
       ),
   },
   ueCreditCategory: {

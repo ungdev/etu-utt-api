@@ -15,7 +15,7 @@ export default function assoSeed(prisma: PrismaClient) {
           mail: faker.internet.email(),
           phoneNumber: faker.phone.number(),
           website: faker.internet.domainName(),
-          logo: faker.image.urlLoremFlickr({category: 'business'}),
+          logo: faker.image.urlLoremFlickr({ category: 'business' }),
           createdAt: date,
           updatedAt: date,
           descriptionShortTranslation: {
