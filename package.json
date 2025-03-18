@@ -61,7 +61,6 @@
     "sharp": "^0.33.5"
   },
   "devDependencies": {
-    "@eslint/js": "^9.22.0",
     "@faker-js/faker": "^9.6.0",
     "@nestjs/cli": "^11.0.5",
     "@nestjs/schematics": "^11.0.2",
