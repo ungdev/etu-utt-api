@@ -18,8 +18,8 @@ export default function ueSeed(
   for (let i = 0; i < FAKER_ROUNDS; i++) {
     const date: Date = faker.date.past();
     const code =
-      faker.random.alpha({ casing: 'upper' }) +
-      faker.random.alphaNumeric(faker.datatype.number({ min: 2, max: 5 }), { casing: 'upper' });
+      faker.string.alpha({ casing: 'upper' }) +
+      faker.string.alphanumeric({length: { min: 2, max: 5 }, casing: 'upper'});
     ues.push(
       prisma.ue.create({
         data: {
@@ -27,15 +27,15 @@ export default function ueSeed(
           ueofs: {
             create: {
               code: `${code}${OF_SUFFIX}`,
-              siepId: faker.datatype.number({ min: 100000, max: 999999 }),
-              name: generateTranslation(faker.name.jobTitle),
+              siepId: faker.number.int({ min: 100000, max: 999999 }),
+              name: generateTranslation(faker.person.jobTitle),
               createdAt: date,
               updatedAt: date,
               info: {
                 create: {
                   program: generateTranslation(),
                   objectives: generateTranslation(),
-                  language: faker.random.word(),
+                  language: faker.word.sample(),
                 },
               },
               credits: {
@@ -46,10 +46,10 @@ export default function ueSeed(
                         code: faker.helpers.arrayElement(creditCategory).code,
                       },
                     },
-                    credits: faker.datatype.number({ min: 1, max: 6 }),
+                    credits: faker.number.int({ min: 1, max: 6 }),
                     branchOptions: {
                       connect: faker.helpers
-                        .arrayElements(branchOptions, faker.datatype.number({ min: 1, max: 3 }))
+                        .arrayElements(branchOptions, faker.number.int({ min: 1, max: 3 }))
                         .map((branchOption) => ({ code: branchOption.code })),
                     },
                   },
@@ -57,15 +57,15 @@ export default function ueSeed(
               },
               openSemester: {
                 connect: faker.helpers
-                  .arrayElements(semesters, faker.datatype.number({ min: 1, max: 50 }))
+                  .arrayElements(semesters, faker.number.int({ min: 1, max: 50 }))
                   .map((semester) => ({ code: semester.code })),
               },
               workTime: {
                 create: {
-                  cm: faker.datatype.number({ min: 6, max: 32 }),
-                  td: faker.datatype.number({ min: 6, max: 32 }),
-                  tp: faker.datatype.number({ min: 6, max: 16 }),
-                  the: faker.datatype.number({ min: 32, max: 64 }),
+                  cm: faker.number.int({ min: 6, max: 32 }),
+                  td: faker.number.int({ min: 6, max: 32 }),
+                  tp: faker.number.int({ min: 6, max: 16 }),
+                  the: faker.number.int({ min: 32, max: 64 }),
                   project: faker.datatype.boolean(),
                   internship: 0,
                 },

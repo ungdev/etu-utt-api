@@ -11,28 +11,28 @@ export async function userSeed(prisma: PrismaClient): Promise<RawUser[]> {
   const saltRounds = Number.parseInt(process.env.SALT_ROUNDS);
   const hash = await bcrypt.hash('etuutt', saltRounds);
   for (let i = 0; i < FAKER_ROUNDS; i++) {
-    const firstName = faker.name.firstName();
-    const lastName = faker.name.lastName();
+    const firstName = faker.person.firstName();
+    const lastName = faker.person.lastName();
     users.push(
       prisma.user.create({
         data: {
           firstName,
           lastName,
-          studentId: faker.datatype.number(),
-          login: i === 0 ? 'student' : faker.internet.userName(),
+          studentId: faker.number.int({max: 99999}),
+          login: i === 0 ? 'student' : faker.internet.username(),
           userType: 'STUDENT',
           hash,
           rgpd: { create: {} },
           infos: {
             create: {
               sex: faker.helpers.arrayElement(['MALE', 'FEMALE', 'OTHER'] as Sex[]),
-              nickname: faker.internet.userName(),
-              birthday: faker.date.past(7, new Date(Date.now()).getTime() - 18 * 365 * 24 * 3600),
+              nickname: faker.internet.username(),
+              birthday: faker.date.past({years: 7, refDate: new Date(Date.now()).getTime() - 18 * 365 * 24 * 3600}),
             },
           },
           mailsPhones: {
             create: {
-              mailUTT: faker.internet.email(firstName, lastName, 'utt.fr'),
+              mailUTT: faker.internet.email({firstName, lastName, provider: 'utt.fr'}),
             },
           },
           preference: { create: {} },

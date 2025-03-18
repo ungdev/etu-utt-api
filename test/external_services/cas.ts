@@ -5,12 +5,12 @@ import { faker } from '@faker-js/faker';
 import { RegisterData } from '../../src/auth/auth.service';
 
 export const validService = faker.internet.url();
-export const validTicket = faker.datatype.uuid();
+export const validTicket = faker.string.uuid();
 export const user: RegisterData = {
-  login: faker.datatype.uuid(),
+  login: faker.string.uuid(),
   mail: faker.internet.email(),
-  lastName: faker.name.lastName(),
-  firstName: faker.name.firstName(),
+  lastName: faker.person.lastName(),
+  firstName: faker.person.firstName(),
 };
 
 export function enable(casUrl: string) {

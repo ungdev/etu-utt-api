@@ -23,18 +23,18 @@ export default function branchOptionSeed(prisma: PrismaClient, branches: RawBran
         },
       }),
     );
-    const branchOptionsCount = faker.datatype.number({ min: 0, max: MAX_FAKER_ROUNDS });
+    const branchOptionsCount = faker.number.int({ min: 0, max: MAX_FAKER_ROUNDS });
     for (let i = 0; i < branchOptionsCount; i++) {
       branchOptions.push(
         prisma.uTTBranchOption.create({
           data: {
             branch: { connect: { code: branch.code } },
-            code: faker.random.alpha({ casing: 'upper', count: faker.datatype.number({ min: 3, max: 6 }) }),
-            name: faker.name.jobTitle(),
+            code: faker.string.alpha({ casing: 'upper', length: { min: 3, max: 6 } }),
+            name: faker.person.jobTitle(),
             descriptionTranslation: {
               create: {
-                fr: faker.random.words(10),
-                en: faker.random.words(10),
+                fr: faker.word.words(10),
+                en: faker.word.words(10),
               },
             },
           },
