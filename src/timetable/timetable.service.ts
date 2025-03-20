@@ -563,8 +563,7 @@ export default class TimetableService {
    * @returns the file content as a string
    */
   async downloadTimetable(url: string): Promise<string> {
-    const TIMETABLE_URL = 'monedt.utt.fr';
-    if (new URL(url).hostname != TIMETABLE_URL || (this.config.IS_PROD_ENV && new URL(url).hostname == 'localhost')) {
+    if (new URL(url).hostname != this.config.TIMETABLE_URL) {
       throw new AppException(ERROR_CODE.PARAM_MALFORMED, 'url');
     }
     try {
