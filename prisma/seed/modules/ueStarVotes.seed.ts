@@ -19,7 +19,7 @@ export default function ueStarVotesSeed(
             user: { connect: { id: subscription.userId } },
             ueof: { connect: { code: subscription.ueofCode } },
             criterion: { connect: { id: criterion.id } },
-            value: faker.datatype.number({ min: 1, max: 5 }),
+            value: faker.number.int({ min: 1, max: 5 }),
           },
         }),
       );

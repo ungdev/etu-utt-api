@@ -9,7 +9,10 @@ import { Prisma } from '@prisma/client';
 
 @Injectable()
 export default class UsersService {
-  constructor(private prisma: PrismaService, readonly config: ConfigModule) {}
+  constructor(
+    private prisma: PrismaService,
+    readonly config: ConfigModule,
+  ) {}
 
   async searchUsers(dto: UsersSearchReqDto) {
     const where = {

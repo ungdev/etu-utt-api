@@ -18,7 +18,10 @@ import UeCommentReplyResDto from './dto/res/ue-comment-reply-res.dto';
 @Controller('ue/comments')
 @ApiTags('UE Comment')
 export class CommentsController {
-  constructor(readonly commentsService: CommentsService, readonly ueService: UeService) {}
+  constructor(
+    readonly commentsService: CommentsService,
+    readonly ueService: UeService,
+  ) {}
 
   @Get()
   @RequireUserType('STUDENT', 'FORMER_STUDENT')

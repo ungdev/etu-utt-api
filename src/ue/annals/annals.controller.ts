@@ -20,7 +20,10 @@ import UeAnnalMetadataResDto from './dto/res/ue-annal-metadata-res.dto';
 @Controller('ue/annals')
 @ApiTags('Annal')
 export class AnnalsController {
-  constructor(readonly annalsService: AnnalsService, readonly ueService: UeService) {}
+  constructor(
+    readonly annalsService: AnnalsService,
+    readonly ueService: UeService,
+  ) {}
 
   @Get()
   @RequireUserType('STUDENT', 'FORMER_STUDENT')

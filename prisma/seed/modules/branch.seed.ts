@@ -26,15 +26,15 @@ export default function branchSeed(prisma: PrismaClient): Promise<RawBranch[]> {
       prisma.uTTBranch.create({
         data: {
           code: faker.db.branch.code(),
-          name: faker.name.jobTitle(),
-          exitSalary: faker.datatype.number({ min: 1000, max: 10000 }),
-          employmentRate: faker.datatype.float({ min: 0, max: 100 }),
-          CDIRate: faker.datatype.float({ min: 0, max: 100 }),
-          abroadEmploymentRate: faker.datatype.float({ min: 0, max: 100 }),
+          name: faker.person.jobTitle(),
+          exitSalary: faker.number.int({ min: 1000, max: 10000 }),
+          employmentRate: faker.number.float({ min: 0, max: 100 }),
+          CDIRate: faker.number.float({ min: 0, max: 100 }),
+          abroadEmploymentRate: faker.number.float({ min: 0, max: 100 }),
           descriptionTranslation: {
             create: {
-              fr: faker.random.words(10),
-              en: faker.random.words(10),
+              fr: faker.word.words(10),
+              en: faker.word.words(10),
             },
           },
         },

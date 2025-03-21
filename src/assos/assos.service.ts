@@ -6,7 +6,10 @@ import { Asso } from './interfaces/asso.interface';
 
 @Injectable()
 export class AssosService {
-  constructor(readonly prisma: PrismaService, readonly config: ConfigModule) {}
+  constructor(
+    readonly prisma: PrismaService,
+    readonly config: ConfigModule,
+  ) {}
 
   /**
    * Retrieves a page of {@link assosFormatted} matching the user query. This query searchs for a text in

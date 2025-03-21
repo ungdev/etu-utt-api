@@ -29,8 +29,8 @@ export async function migrateUEs(query: QueryFunction, prisma: PrismaClient) {
     new RegExp(`(^|\\W)${a.code}($|\\W)`).test(b.antecedents)
       ? 1
       : new RegExp(`(^|\\W)${b.code}($|\\W)`).test(a.antecedents)
-      ? -1
-      : 0,
+        ? -1
+        : 0,
   );
   for (const ue of ues) {
     operations.push(

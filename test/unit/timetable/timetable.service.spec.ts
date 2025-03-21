@@ -31,7 +31,7 @@ const TimetableServiceUnitSpec = unitSuite('Timetable.service', (app) => {
       groups: [user1Group],
       applyFrom: 0,
       applyUntil: 0,
-      location: faker.address.cityName(),
+      location: faker.location.city(),
     },
   ); // for user 1
 
@@ -103,7 +103,7 @@ const TimetableServiceUnitSpec = unitSuite('Timetable.service', (app) => {
     const newerOverride = await fakedb.createTimetableEntryOverride(
       app,
       { entry },
-      { groups: [user1Group], applyFrom: 0, applyUntil: 0, location: faker.address.cityName() },
+      { groups: [user1Group], applyFrom: 0, applyUntil: 0, location: faker.location.city() },
       true,
     );
     const timetable = await timetableService.getTimetableOfUserInNextXMs(user1.id, new Date(0), 1);

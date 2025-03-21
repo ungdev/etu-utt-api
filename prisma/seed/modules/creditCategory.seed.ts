@@ -11,8 +11,8 @@ export default function creditCategorySeed(prisma: PrismaClient): Promise<RawCre
     creditCategories.push(
       prisma.ueCreditCategory.create({
         data: {
-          code: faker.random.alpha({ casing: 'upper', count: 2 }),
-          name: faker.random.word(),
+          code: faker.string.alpha({ casing: 'upper', length: 2 }),
+          name: faker.word.sample(),
         },
       }),
     );

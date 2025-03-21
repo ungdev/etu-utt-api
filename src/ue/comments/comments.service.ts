@@ -11,7 +11,10 @@ import { ConfigModule } from '../../config/config.module';
 
 @Injectable()
 export class CommentsService {
-  constructor(readonly prisma: PrismaService, readonly config: ConfigModule) {}
+  constructor(
+    readonly prisma: PrismaService,
+    readonly config: ConfigModule,
+  ) {}
 
   /**
    * Retrieves a page of {@link UeComment} matching the user query

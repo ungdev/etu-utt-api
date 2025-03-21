@@ -87,7 +87,7 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
       .expectAppError(ERROR_CODE.GROUP_NOT_PART_OF_ENTRY, userThirdGroup.id, entry.id));
 
   it('should update the whole entry', async () => {
-    const newLocation = faker.address.cityName();
+    const newLocation = faker.location.city();
     await pactum
       .spec()
       .patch(`/timetable/current/${entry.id}`)
@@ -187,7 +187,7 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
   });
 
   it('should update the override', async () => {
-    const newLocation = faker.address.cityName();
+    const newLocation = faker.location.city();
     await pactum
       .spec()
       .patch(`/timetable/current/${entry.id}`)
@@ -227,7 +227,7 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
   });
 
   it('should create a new override as they are not for the same groups', async () => {
-    const newLocation = faker.address.cityName();
+    const newLocation = faker.location.city();
     await pactum
       .spec()
       .patch(`/timetable/current/${entry.id}`)
