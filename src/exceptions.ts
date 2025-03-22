@@ -23,16 +23,17 @@ export const enum ERROR_CODE {
   PARAM_NOT_ENUM = 2007,
   PARAM_NOT_DATE = 2008,
   PARAM_NOT_UUID = 2009,
-  PARAM_TOO_LONG = 20010,
-  PARAM_TOO_SHORT = 2011,
-  PARAM_SIZE_TOO_SMALL = 2012,
-  PARAM_SIZE_TOO_BIG = 2013,
-  PARAM_IS_EMPTY = 2014,
-  PARAM_NOT_POSITIVE = 2015,
-  PARAM_TOO_LOW = 2016,
-  PARAM_TOO_HIGH = 2017,
-  PARAM_NOT_INT = 2018,
-  NO_FILE_PROVIDED = 2019,
+  PARAM_INVALID_SIZE = 2010,
+  PARAM_TOO_LONG = 2011,
+  PARAM_TOO_SHORT = 2012,
+  PARAM_SIZE_TOO_SMALL = 2013,
+  PARAM_SIZE_TOO_BIG = 2014,
+  PARAM_IS_EMPTY = 2015,
+  PARAM_NOT_POSITIVE = 2016,
+  PARAM_TOO_LOW = 2017,
+  PARAM_TOO_HIGH = 2018,
+  PARAM_NOT_INT = 2019,
+  NO_FILE_PROVIDED = 2020,
   PARAM_DOES_NOT_MATCH_REGEX = 2102,
   NO_FIELD_PROVIDED = 2201,
   WIDGET_OVERLAPPING = 2301,
@@ -46,15 +47,16 @@ export const enum ERROR_CODE {
   INVALID_CAS_TICKET = 3006,
   FORBIDDEN_ALREADY_COMMENTED = 3101,
   FORBIDDEN_ALREADY_UPVOTED = 3102,
-  FORBIDDEN_ALREADY_UNUPVOTED = 3103,
+  FORBIDDEN_NOT_UPVOTED = 3103,
   NOT_COMMENT_AUTHOR = 4221,
   NOT_ALREADY_DONE_UE = 4222,
   NOT_REPLY_AUTHOR = 4223,
   IS_COMMENT_AUTHOR = 4224,
   GROUP_NOT_PART_OF_ENTRY = 4225,
-  NOT_ALREADY_RATED_UE = 4226,
+  NOT_ALREADY_RATED_UEOF = 4226,
   NOT_DONE_UE_IN_SEMESTER = 4227,
   NOT_ANNAL_SENDER = 4228,
+  NOT_ALREADY_DONE_UEOF = 4229,
   NO_SUCH_UE = 4401,
   NO_SUCH_COMMENT = 4402,
   NO_SUCH_REPLY = 4403,
@@ -65,10 +67,12 @@ export const enum ERROR_CODE {
   NO_SUCH_ANNAL = 4408,
   NO_SUCH_ANNAL_TYPE = 4409,
   NO_SUCH_ASSO = 4410,
+  NO_SUCH_UEOF = 4411,
   ANNAL_ALREADY_UPLOADED = 4901,
   RESOURCE_UNAVAILABLE = 4902,
   RESOURCE_INVALID_TYPE = 4903,
   CREDENTIALS_ALREADY_TAKEN = 5001,
+  HIDDEN_DUCK = 9999,
 }
 
 /**
@@ -115,6 +119,10 @@ export const ErrorData = Object.freeze({
   },
   [ERROR_CODE.PARAM_NOT_UUID]: {
     message: 'The following parameters must be a valid UUID: %',
+    httpCode: HttpStatus.BAD_REQUEST,
+  },
+  [ERROR_CODE.PARAM_INVALID_SIZE]: {
+    message: 'The following parameters do not match required size: %',
     httpCode: HttpStatus.BAD_REQUEST,
   },
   [ERROR_CODE.PARAM_TOO_LONG]: {
@@ -209,7 +217,7 @@ export const ErrorData = Object.freeze({
     message: 'You must un-upvote this comment before upvoting it again',
     httpCode: HttpStatus.FORBIDDEN,
   },
-  [ERROR_CODE.FORBIDDEN_ALREADY_UNUPVOTED]: {
+  [ERROR_CODE.FORBIDDEN_NOT_UPVOTED]: {
     message: 'You must upvote this comment before un-upvoting it',
     httpCode: HttpStatus.FORBIDDEN,
   },
@@ -233,7 +241,7 @@ export const ErrorData = Object.freeze({
     message: 'The group % is not part of the timetable entry %',
     httpCode: HttpStatus.FORBIDDEN,
   },
-  [ERROR_CODE.NOT_ALREADY_RATED_UE]: {
+  [ERROR_CODE.NOT_ALREADY_RATED_UEOF]: {
     message: 'You must have rated the UE % (on criterion %) before deleting your rating',
     httpCode: HttpStatus.FORBIDDEN,
   },
@@ -243,6 +251,10 @@ export const ErrorData = Object.freeze({
   },
   [ERROR_CODE.NOT_ANNAL_SENDER]: {
     message: 'You are not the sender of this annal',
+    httpCode: HttpStatus.FORBIDDEN,
+  },
+  [ERROR_CODE.NOT_ALREADY_DONE_UEOF]: {
+    message: 'You must have done this UEOF before to perform this action',
     httpCode: HttpStatus.FORBIDDEN,
   },
   [ERROR_CODE.NO_SUCH_UE]: {
@@ -285,6 +297,10 @@ export const ErrorData = Object.freeze({
     message: 'The asso % does no exist',
     httpCode: HttpStatus.NOT_FOUND,
   },
+  [ERROR_CODE.NO_SUCH_UEOF]: {
+    message: 'UEOF % does no exist',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
   [ERROR_CODE.ANNAL_ALREADY_UPLOADED]: {
     message: 'A file has alreay been uploaded for this annal',
     httpCode: HttpStatus.CONFLICT,
@@ -301,6 +317,10 @@ export const ErrorData = Object.freeze({
     message: 'The given credentials are already taken',
     httpCode: HttpStatus.CONFLICT,
   },
+  [ERROR_CODE.HIDDEN_DUCK]: {
+    message: 'Hey, you found the hidden duck ! Error : %',
+    httpCode: HttpStatus.I_AM_A_TEAPOT,
+  },
 } as const) satisfies Readonly<{
   [error in ERROR_CODE]: {
     message: string;
@@ -311,8 +331,8 @@ export const ErrorData = Object.freeze({
 /**
  * Counts the number of occurrences of a string in another string. It the returns a string array type with that number of elements.
  * @example
- * type A = ExtrasTypeBuilder<'hello', '%'>; // []
- * type B = ExtrasTypeBuilder<'%hel%lo%', '%'>; // [string, string, string]
+ * type A = ExtrasTypeBuilder<'hello'>; // []
+ * type B = ExtrasTypeBuilder<'%hel%lo%'>; // [string, string, string]
  */
 export type ExtrasTypeBuilder<S extends string> = S extends `${infer Part1}%${infer Part2}`
   ? [...ExtrasTypeBuilder<Part1>, ...ExtrasTypeBuilder<Part2>, string]

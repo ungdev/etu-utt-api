@@ -7,7 +7,7 @@ import { generateCustomCommentModel } from '../ue/comments/interfaces/comment.in
 import { generateCustomCriterionModel } from '../ue/interfaces/criterion.interface';
 import { generateCustomRateModel } from '../ue/interfaces/rate.interface';
 import { generateCustomUeModel } from '../ue/interfaces/ue.interface';
-import { generateCustomUEAnnalModel } from '../ue/annals/interfaces/annal.interface';
+import { generateCustomUeAnnalModel } from '../ue/annals/interfaces/annal.interface';
 import { generateCustomUeCommentReplyModel } from '../ue/comments/interfaces/comment-reply.interface';
 import { generateCustomAssoModel } from '../assos/interfaces/asso.interface';
 import { generateCustomCreditCategoryModel } from '../ue/credit/interfaces/credit-category.interface';
@@ -62,7 +62,7 @@ function createPrismaClientExtension(prisma: ReturnType<typeof createPrismaClien
       ueCommentReply: generateCustomUeCommentReplyModel(prisma),
       ueStarVote: generateCustomRateModel(prisma),
       ue: generateCustomUeModel(prisma),
-      ueAnnal: generateCustomUEAnnalModel(prisma),
+      ueAnnal: generateCustomUeAnnalModel(prisma),
       asso: generateCustomAssoModel(prisma),
       ueCreditCategory: generateCustomCreditCategoryModel(prisma),
     },

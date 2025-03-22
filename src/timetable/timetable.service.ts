@@ -8,9 +8,9 @@ import {
 import { CourseEvent } from './interfaces/ical.interface';
 import { RawTimetableEntry, RawTimetableEntryOverride, RawTimetableGroup } from '../prisma/types';
 import { omit } from '../utils';
-import TimetableCreateEntryDto from './dto/timetable-create-entry.dto';
-import TimetableUpdateEntryDto from './dto/timetable-update-entry.dto';
-import TimetableDeleteOccurrencesDto from './dto/timetable-delete-occurrences.dto';
+import TimetableCreateEntryReqDto from './dto/req/timetable-create-entry-req.dto';
+import TimetableUpdateEntryReqDto from './dto/req/timetable-update-entry-req.dto';
+import TimetableDeleteOccurrencesReqDto from './dto/req/timetable-delete-occurrences-req.dto';
 import { AppException, ERROR_CODE } from '../exceptions';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
@@ -285,7 +285,7 @@ export default class TimetableService {
    * @param data The data of the entry to create.
    * @return {Promise<DetailedTimetableEntry>}
    */
-  async createTimetableEntry(data: TimetableCreateEntryDto): Promise<DetailedTimetableEntry> {
+  async createTimetableEntry(data: TimetableCreateEntryReqDto): Promise<DetailedTimetableEntry> {
     const timetableEntry = {
       ...(await this.prisma.timetableEntry.create({
         data: {
@@ -316,7 +316,7 @@ export default class TimetableService {
    */
   async updateTimetableEntry(
     entryId: string,
-    data: TimetableUpdateEntryDto,
+    data: TimetableUpdateEntryReqDto,
     userId: string,
   ): Promise<DetailedTimetableEntry> {
     // Find the entry.
@@ -500,7 +500,7 @@ export default class TimetableService {
    */
   async deleteOccurrences(
     entryId: string,
-    data: TimetableDeleteOccurrencesDto,
+    data: TimetableDeleteOccurrencesReqDto,
     userId: string,
   ): Promise<DetailedTimetableEntry> {
     // First, fetch the entry.

@@ -5,19 +5,24 @@ import sharp from 'sharp';
 import PDFDocument from 'pdfkit';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MulterWithMime } from '../../upload.interceptor';
-import { CreateAnnal } from './dto/create-annal.dto';
-import { UpdateAnnalDto } from './dto/update-annal.dto';
+import { CreateAnnalReqDto } from './dto/req/create-annal-req.dto';
+import { UpdateAnnalReqDto } from './dto/req/update-annal-req.dto';
 import { ConfigModule } from '../../config/config.module';
 import { User } from '../../users/interfaces/user.interface';
+import { Semester } from '@prisma/client';
 
 @Injectable()
 export class AnnalsService {
   constructor(readonly prisma: PrismaService, readonly config: ConfigModule) {}
 
-  async getUEAnnalMetadata(user: User, ueCode: string, isModerator: boolean) {
-    const ue = await this.prisma.ue.findUnique({
+  async getUeAnnalMetadata(user: User, ueCode: string, isModerator: boolean) {
+    const ueof = await this.prisma.ueof.findMany({
       where: {
-        code: ueCode,
+        ueId: ueCode,
+        available: true,
+      },
+      include: {
+        openSemester: true,
       },
     });
     const semesters = !isModerator
@@ -25,11 +30,15 @@ export class AnnalsService {
           await this.prisma.userUeSubscription.findMany({
             where: {
               userId: user.id,
-              ueId: ue.id,
+              ueof: {
+                ueId: ueCode,
+              },
             },
           })
         ).map((subscription) => subscription.semesterId)
-      : ue.openSemester.map((semester) => semester.code);
+      : [...ueof.reduce((prev, nxt) => new Set([...prev, ...nxt.openSemester]), new Set<Semester>())].map(
+          (semester) => semester.code,
+        );
     const annalType = await this.prisma.ueAnnalType.findMany();
     return {
       types: annalType,
@@ -47,7 +56,16 @@ export class AnnalsService {
     );
   }
 
-  async createAnnalFile(user: User, params: CreateAnnal) {
+  async createAnnalFile(user: User, params: CreateAnnalReqDto) {
+    const subscription = await this.prisma.userUeSubscription.findFirst({
+      where: {
+        semesterId: params.semester,
+        userId: user.id,
+        ueof: {
+          ueId: params.ueCode,
+        },
+      },
+    });
     // Create upload/file entry
     return this.prisma.ueAnnal.create({
       data: {
@@ -66,9 +84,9 @@ export class AnnalsService {
             id: user.id,
           },
         },
-        ue: {
+        ueof: {
           connect: {
-            code: params.ueCode,
+            code: subscription.ueofCode ?? params.ueof,
           },
         },
       },
@@ -128,7 +146,7 @@ export class AnnalsService {
           size,
           compress: true,
           info: {
-            Title: `${fileEntry.type.name} ${fileEntry.ue.code} - ${fileEntry.semesterId}`,
+            Title: `${fileEntry.type.name} ${fileEntry.ueof.code} - ${fileEntry.semesterId}`,
             Creator: 'EtuUTT',
             Producer: 'EtuUTT',
           },
@@ -160,12 +178,14 @@ export class AnnalsService {
     return fileEntry;
   }
 
-  async getUEAnnalsList(user: User, ueCode: string, includeAll: boolean) {
+  async getUeAnnalsList(user: User, ueCode: string, includeAll: boolean) {
     return (
       await this.prisma.ueAnnal.findMany({
         where: {
-          ue: {
-            code: ueCode,
+          ueof: {
+            ue: {
+              code: ueCode,
+            },
           },
           deletedAt: includeAll ? undefined : null,
           ...(includeAll
@@ -233,7 +253,7 @@ export class AnnalsService {
     );
   }
 
-  async getUEAnnal(annalId: string, userId: string, includeAll: boolean) {
+  async getUeAnnal(annalId: string, userId: string, includeAll: boolean) {
     return this.prisma.ueAnnal.findUnique({
       where: {
         id: annalId,
@@ -264,7 +284,7 @@ export class AnnalsService {
     });
   }
 
-  async getUEAnnalFile(annalId: string, userId: string, includeAll: boolean) {
+  async getUeAnnalFile(annalId: string, userId: string, includeAll: boolean) {
     const metadata = await this.prisma.ueAnnal.findUnique({
       where: {
         id: annalId,
@@ -300,7 +320,7 @@ export class AnnalsService {
     };
   }
 
-  async isUEAnnalSender(userId: string, annalId: string) {
+  async isUeAnnalSender(userId: string, annalId: string) {
     return (
       (await this.prisma.ueAnnal.count({
         where: {
@@ -311,7 +331,7 @@ export class AnnalsService {
     );
   }
 
-  async updateAnnalMetadata(annalId: string, metadata: UpdateAnnalDto) {
+  async updateAnnalMetadata(annalId: string, metadata: UpdateAnnalReqDto) {
     return this.prisma.ueAnnal.update({
       where: {
         id: annalId,

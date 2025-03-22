@@ -1,5 +1,6 @@
 import { Prisma, PrismaClient } from '@prisma/client';
 import { generateCustomModel, RequestType } from '../../prisma/prisma.service';
+import { Translation } from '../../prisma/types';
 
 const USER_SELECT_FILTER = {
   select: {
@@ -125,6 +126,6 @@ export type UserAssoMembership = {
 export type AssoResume = {
   name: string;
   logo: string;
-  descriptionShortTranslationId: string;
+  descriptionShortTranslation: Translation;
   mail: string;
 };

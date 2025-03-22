@@ -13,9 +13,9 @@ const UE_ANNAL_SELECT_FILTER = {
     semesterId: true,
     sender: {
       select: {
+        id: true,
         firstName: true,
         lastName: true,
-        id: true,
       },
     },
     type: {
@@ -25,7 +25,7 @@ const UE_ANNAL_SELECT_FILTER = {
       },
     },
     validatedAt: true,
-    ue: { select: { code: true } },
+    ueof: { select: { code: true, info: { select: { language: true } }, ue: { select: { code: true } } } },
   },
 } satisfies Prisma.UeAnnalFindManyArgs;
 
@@ -34,7 +34,7 @@ export type UeAnnalFile = Omit<UnformattedUeAnnal, 'validatedAt' | 'deletedAt' |
   status: CommentStatus;
 };
 
-export function generateCustomUEAnnalModel(prisma: PrismaClient) {
+export function generateCustomUeAnnalModel(prisma: PrismaClient) {
   return generateCustomModel(prisma, 'ueAnnal', UE_ANNAL_SELECT_FILTER, formatAnnal);
 }
 

@@ -1,4 +1,4 @@
-import { RawSemester, RawUe, RawUeComment, RawUser, RawUserUeSubscription } from '../../../src/prisma/types';
+import { RawSemester, RawUeComment, RawUser, RawUserUeSubscription } from '../../../src/prisma/types';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { faker } from '@faker-js/faker';
 
@@ -7,7 +7,6 @@ const FAKER_ROUNDS = 100;
 export default function ueCommentSeed(
   prisma: PrismaClient,
   users: RawUser[],
-  ues: RawUe[],
   semester: RawSemester[],
   ueSubscriptions: RawUserUeSubscription[],
 ): Promise<RawUeComment[]> {
@@ -38,9 +37,9 @@ export default function ueCommentSeed(
               id: subscription.userId,
             },
           },
-          ue: {
+          ueof: {
             connect: {
-              id: subscription.ueId,
+              code: subscription.ueofCode,
             },
           },
           semester: {

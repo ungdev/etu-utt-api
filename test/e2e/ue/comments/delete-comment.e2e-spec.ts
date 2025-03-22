@@ -6,6 +6,7 @@ import {
   createBranchOption,
   createBranch,
   createCommentUpvote,
+  createUeof,
 } from '../../../utils/fakedb';
 import { Dummies, e2eSuite } from '../../../utils/test_utils';
 import * as pactum from 'pactum';
@@ -13,14 +14,15 @@ import { ERROR_CODE } from '../../../../src/exceptions';
 import { CommentStatus } from 'src/ue/comments/interfaces/comment.interface';
 import { PrismaService } from '../../../../src/prisma/prisma.service';
 
-const DeleteComment = e2eSuite('DELETE /ue/comments/{commentId}', (app) => {
+const DeleteComment = e2eSuite('DELETE /ue/comments/:commentId', (app) => {
   const user = createUser(app);
   const user2 = createUser(app, { login: 'user2' });
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
-  const comment1 = createComment(app, { user, ue, semester });
+  const ue = createUe(app);
+  const ueof = createUeof(app, { branchOptions: [branchOption], semesters: [semester], ue });
+  const comment1 = createComment(app, { user, ueof, semester });
   createCommentUpvote(app, { user, comment: comment1 });
 
   it('should return a 401 as user is not authenticated', () => {
@@ -57,18 +59,16 @@ const DeleteComment = e2eSuite('DELETE /ue/comments/{commentId}', (app) => {
       .withBearerToken(user.token)
       .delete(`/ue/comments/${comment1.id}`)
       .expectUeComment({
+        ueof,
         id: comment1.id,
         author: {
-          id: comment1.authorId,
+          id: user.id,
           firstName: user.firstName,
           lastName: user.lastName,
-          studentId: user.studentId,
         },
         createdAt: comment1.createdAt.toISOString(),
         updatedAt: comment1.updatedAt.toISOString(),
-        semester: {
-          code: semester.code,
-        },
+        semester: semester.code,
         isAnonymous: comment1.isAnonymous,
         body: comment1.body,
         answers: [],
@@ -86,7 +86,7 @@ const DeleteComment = e2eSuite('DELETE /ue/comments/{commentId}', (app) => {
         },
         where: { id: comment1.id },
       });
-    return createComment(app, { user, ue, semester }, comment1, true);
+    return createComment(app, { user, ueof, semester }, comment1, true);
   });
 });
 

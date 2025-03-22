@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { AuthSignInDto, AuthSignUpDto } from './dto';
 import * as bcrypt from 'bcryptjs';
 import { Prisma, UserType } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
@@ -14,6 +13,8 @@ import { LdapModule } from '../ldap/ldap.module';
 import { LdapAccountGroup } from '../ldap/ldap.interface';
 import { UeService } from '../ue/ue.service';
 import { SemesterService } from '../semester/semester.service';
+import AuthSignUpReqDto from './dto/req/auth-sign-up-req.dto';
+import AuthSignInReqDto from './dto/req/auth-sign-in-req.dto';
 
 export type RegisterData = { login: string; mail: string; lastName: string; firstName: string };
 export type ExtendedRegisterData = RegisterData & { studentId: string; type: UserType };
@@ -35,7 +36,7 @@ export class AuthService {
    * It returns an access token that the user can then use to authenticate their requests.
    * @param dto Data about the user to create.
    */
-  async signup(dto: SetPartial<AuthSignUpDto, 'password'>, fetchLdap = false): Promise<string> {
+  async signup(dto: SetPartial<AuthSignUpReqDto, 'password'>, fetchLdap = false): Promise<string> {
     let phoneNumber: string = undefined;
     let formation: string = undefined;
     const branch: string[] = [];
@@ -51,7 +52,7 @@ export class AuthService {
           dto.studentId = Number(ldapUser.supannEtuId);
           type = UserType.STUDENT;
           branch.push(...(Array.isArray(ldapUser.niveau) ? ldapUser.niveau : [ldapUser.niveau]));
-          ues.push(...(Array.isArray(ldapUser.uv) ? ldapUser.uv : [ldapUser.uv]));
+          ues.push(...(Array.isArray(ldapUser.uv) ? ldapUser.uv : [ldapUser.uv])); // TODO : check what is done by the admin : are they UEOF or UE codes ?
           branchOption.push(...(Array.isArray(ldapUser.filiere) ? ldapUser.filiere : [ldapUser.filiere]));
           [formation] = Array.isArray(ldapUser.formation) ? ldapUser.formation : [ldapUser.formation]; // TODO: this is wrong, students can have multiple formations !
         } else if (ldapUser.gidNumber === LdapAccountGroup.EMPLOYEES) {
@@ -110,13 +111,11 @@ export class AuthService {
                 },
               }
             : {}),
-          UesSubscriptions: currentSemester
+          uesSubscriptions: currentSemester
             ? {
                 createMany: {
-                  data: (
-                    await this.ueService.getIdFromCode(ues)
-                  ).map((id) => ({
-                    ueId: id,
+                  data: ues.map((id) => ({
+                    ueofCode: id,
                     semesterId: currentSemester.code,
                   })),
                 },
@@ -189,7 +188,7 @@ export class AuthService {
    * It then returns an access_token the user can use to authenticate their requests.
    * @param dto Data needed to sign in the user (login & password).
    */
-  async signin(dto: AuthSignInDto): Promise<string> {
+  async signin(dto: AuthSignInReqDto): Promise<string | null> {
     // find the user by login, if it does not exist, throw exception
     const user = await this.prisma.withDefaultBehaviour.user.findUnique({
       where: {
@@ -197,14 +196,14 @@ export class AuthService {
       },
     });
     if (!user) {
-      throw new AppException(ERROR_CODE.INVALID_CREDENTIALS);
+      return null;
     }
 
     // compare password, if incorrect, throw exception
     const pwMatches = await bcrypt.compare(dto.password, user.hash);
 
     if (!pwMatches) {
-      throw new AppException(ERROR_CODE.INVALID_CREDENTIALS);
+      return null;
     }
 
     return this.signToken(user.id, user.login);

@@ -6,6 +6,7 @@ import {
   createBranchOption,
   createSemester,
   createCommentUpvote,
+  createUeof,
 } from '../../../utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../../src/exceptions';
@@ -19,8 +20,9 @@ const DeleteUpvote = e2eSuite('DELETE /ue/comments/{commentId}/upvote', (app) =>
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
-  const comment1 = createComment(app, { user, ue, semester });
+  const ue = createUe(app);
+  const ueof = createUeof(app, { branchOptions: [branchOption], semesters: [semester], ue });
+  const comment1 = createComment(app, { user, ueof, semester });
   const upvote = createCommentUpvote(app, { user: user2, comment: comment1 });
 
   it('should return a 401 as user is not authenticated', () => {
@@ -69,7 +71,7 @@ const DeleteUpvote = e2eSuite('DELETE /ue/comments/{commentId}/upvote', (app) =>
       .spec()
       .withBearerToken(user2.token)
       .delete(`/ue/comments/${comment1.id}/upvote`)
-      .expectAppError(ERROR_CODE.FORBIDDEN_ALREADY_UNUPVOTED);
+      .expectAppError(ERROR_CODE.FORBIDDEN_NOT_UPVOTED);
     return createCommentUpvote(app, { user: user2, comment: comment1 }, upvote, true);
   });
 });

@@ -8,6 +8,7 @@ import {
   createCommentUpvote,
   createSemester,
   createUe,
+  createUeof,
   createUser,
 } from '../../../utils/fakedb';
 import { e2eSuite } from '../../../utils/test_utils';
@@ -22,12 +23,13 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
+  const ue = createUe(app);
+  const ueof = createUeof(app, { branchOptions: [branchOption], semesters: [semester], ue });
   const comments: FakeComment[] = [];
   comments.push(
     createComment(
       app,
-      { ue, user, semester },
+      { ueof, user, semester },
       {
         isAnonymous: true,
       },
@@ -43,7 +45,7 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
     comments.push(
       createComment(
         app,
-        { ue, user: commentAuthor, semester },
+        { ueof, user: commentAuthor, semester },
         {
           isAnonymous: i % 2 === 0,
         },
@@ -108,7 +110,7 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
         .slice(0, app().get(ConfigModule).PAGINATION_PAGE_SIZE)
         .map((comment) => {
           if (comment.isAnonymous && comment.author.id !== user.id) delete comment.author;
-          return comment;
+          return { ...comment, ue };
         }),
       itemCount: comments.length,
       itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
@@ -154,7 +156,7 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
           .slice(app().get(ConfigModule).PAGINATION_PAGE_SIZE, app().get(ConfigModule).PAGINATION_PAGE_SIZE * 2)
           .map((comment) => {
             if (comment.isAnonymous && comment.author.id !== user.id) delete comment.author;
-            return comment;
+            return { ...comment, ue };
           }),
         itemCount: comments.length,
         itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
@@ -188,6 +190,7 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
             ? (<Date>b.createdAt).getTime() - (<Date>a.createdAt).getTime()
             : b.upvotes - a.upvotes,
         )
+        .map((comment) => ({ ...comment, ue }))
         .slice(0, app().get(ConfigModule).PAGINATION_PAGE_SIZE),
       itemCount: comments.length,
       itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,

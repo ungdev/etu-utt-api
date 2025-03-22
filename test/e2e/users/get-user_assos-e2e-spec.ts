@@ -41,17 +41,25 @@ const GetUserAssociationE2ESpec = e2eSuite('GET /users/:userId/associations', (a
               select: {
                 name: true,
                 logo: true,
-                descriptionShortTranslationId: true,
+                descriptionShortTranslation: {
+                  select: {
+                    fr: true,
+                  },
+                },
                 mail: true,
               },
             },
           },
         })
     ).map((membership) => ({
-      ...omit(membership, 'role', 'endAt', 'startAt'),
+      ...omit(membership, 'role', 'endAt', 'startAt', 'asso'),
       role: membership.role.name,
       endAt: membership.endAt.toISOString(),
       startAt: membership.startAt.toISOString(),
+      asso: {
+        ...omit(membership.asso, 'descriptionShortTranslation'),
+        shortDescription: membership.asso.descriptionShortTranslation.fr,
+      },
     }));
 
     return pactum

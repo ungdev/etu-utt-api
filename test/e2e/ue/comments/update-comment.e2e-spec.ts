@@ -6,6 +6,7 @@ import {
   createBranchOption,
   createSemester,
   createCommentUpvote,
+  createUeof,
 } from '../../../utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../../src/exceptions';
@@ -13,14 +14,15 @@ import { Dummies, e2eSuite, JsonLike } from '../../../utils/test_utils';
 import { PrismaService } from '../../../../src/prisma/prisma.service';
 import { CommentStatus } from 'src/ue/comments/interfaces/comment.interface';
 
-const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
+const UpdateComment = e2eSuite('PATCH /ue/comments/:commentId', (app) => {
   const user = createUser(app);
   const user2 = createUser(app, { login: 'user2' });
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
-  const ue = createUe(app, { openSemesters: [semester], branchOption: [branchOption] });
-  const comment = createComment(app, { ue, user, semester });
+  const ue = createUe(app);
+  const ueof = createUeof(app, { branchOptions: [branchOption], semesters: [semester], ue });
+  const comment = createComment(app, { ueof, user, semester });
   createCommentUpvote(app, { user: user2, comment });
 
   it('should return a 401 as user is not authenticated', () => {
@@ -100,18 +102,16 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
         isAnonymous: true,
       })
       .expectUeComment({
+        ueof,
         id: JsonLike.ANY_UUID,
         author: {
           id: user.id,
           firstName: user.firstName,
           lastName: user.lastName,
-          studentId: user.studentId,
         },
         createdAt: JsonLike.ANY_DATE,
         updatedAt: JsonLike.ANY_DATE,
-        semester: {
-          code: semester.code,
-        },
+        semester: semester.code,
         isAnonymous: true,
         body: 'Cette  UE est troooop bien',
         answers: [],
@@ -120,7 +120,7 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
         status: CommentStatus.UNVERIFIED,
       });
     await app().get(PrismaService).ueComment.deleteMany();
-    await createComment(app, { ue, user, semester }, comment, true);
+    await createComment(app, { ueof, user, semester }, comment, true);
     return createCommentUpvote(app, { user: user2, comment }, {}, true);
   });
 
@@ -133,18 +133,16 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
         isAnonymous: false,
       })
       .expectUeComment({
+        ueof,
         id: JsonLike.ANY_UUID,
         author: {
           id: user.id,
           firstName: user.firstName,
           lastName: user.lastName,
-          studentId: user.studentId,
         },
         createdAt: JsonLike.ANY_DATE,
         updatedAt: JsonLike.ANY_DATE,
-        semester: {
-          code: semester.code,
-        },
+        semester: semester.code,
         isAnonymous: false,
         body: comment.body,
         answers: [],
@@ -153,7 +151,7 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/{commentId}', (app) => {
         status: CommentStatus.VALIDATED,
       });
     await app().get(PrismaService).ueComment.deleteMany();
-    await createComment(app, { ue, user, semester }, comment, true);
+    await createComment(app, { ueof, user, semester }, comment, true);
     return createCommentUpvote(app, { user: user2, comment }, {}, true);
   });
 });

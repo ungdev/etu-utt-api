@@ -139,7 +139,7 @@ Dans cette section, ce que l’on nomme une “entité” est une entrée d’un
 exemple, l’utilisateur qui me représente est une entrée, le semestre A24 est une entrée, etc.
 
 À toute entité que l’on pourrait vouloir générer de façon aléatoire, on définit un type qui représente une version
-“fake” de cette entité (*fake entity*). Ces versions fake sont `Partial`, ce qui signifie qu’aucun de leur champ n’est
+“fake” de cette entité (_fake entity_). Ces versions fake sont `Partial`, ce qui signifie qu’aucun de leur champ n’est
 obligatoire : on peut toutes leur assigner la valeur `{}`. La plupart du temps, ces versions fake sont exactement les
 versions raw (celles qui sont directement données par prisma, telles qu’elles sont définies dans la base de données,
 sans relations), passées dans le type `Partial` évidemment. Cependant, certaines entités générées aléatoirement peuvent
@@ -154,7 +154,7 @@ export type FakeUser = Partial<RawUser & RawUserInfos & { permissions: string[];
 **Création de fake entities**
 
 Ensuite, pour générer une fake entity, vous pouvez appeler la fonction
-correspondante : `createUser`, `createSemester`, … (*fake functions*)
+correspondante : `createUser`, `createSemester`, … (_fake functions_)
 
 Les fake functions sont toutes définies de la même façon :
 
@@ -164,7 +164,7 @@ Les fake functions sont toutes définies de la même façon :
   préalablement, et créer la filière pour cette branche. On passera donc le paramètre `branch` dans cet objet.
 
   Ce deuxième argument n’est pas toujours existant, si l’entité ne contient pas de dépendances. Les arguments suivants
-  seront donc *techniquement* mal numérotés dans la documentation, mais pour un souci de clarté, nous allons quand
+  seront donc _techniquement_ mal numérotés dans la documentation, mais pour un souci de clarté, nous allons quand
   même appeler l’argument suivant le “troisième”, même si pour certaines fonctions, ça sera le deuxième.
 
 - Le troisième argument (`rawParams`) est un objet permettant de passer les autres paramètres, tous optionnels. Cela
@@ -172,53 +172,53 @@ Les fake functions sont toutes définies de la même façon :
   valeurs sont définies plus tard). Ce paramètre est optionnel, si vous n’avez pas besoin de passer d’argument,
   omettez-le.
 - Le quatrième argument (`onTheFly`) permet de définir le comportement de la fonction :
-    - S’il vaut `true`, on crée l’entité directement.
-    - S’il vaut `false`, l’entité sera créée dans un bloc `beforeAll`.
+
+  - S’il vaut `true`, on crée l’entité directement.
+  - S’il vaut `false`, l’entité sera créée dans un bloc `beforeAll`.
 
   L’argument est optionnel, et vaut par défaut `false`. Donc :
 
-    - Si vous appelez la fonction dans un `describe` (ou équivalent), ne passez pas cet argument.
-    - Si vous appelez la fonction dans un `it`, donnez la valeur `true` au paramètre.
+  - Si vous appelez la fonction dans un `describe` (ou équivalent), ne passez pas cet argument.
+  - Si vous appelez la fonction dans un `it`, donnez la valeur `true` au paramètre.
 
 Voici plusieurs exemples d’utilisation de ces fonctions :
 
 ```ts
 import * as fakedb from '../../utils/fakedb';
 
-e2eSuite("Foo", (app) => { // Vous pouvez aussi utiliser unitSuite, ou n'importe quoi d'autre, tant que c'est équivalent à un describe() et que vous pouvez avoir l'app.
+e2eSuite('Foo', (app) => {
+  // Vous pouvez aussi utiliser unitSuite, ou n'importe quoi d'autre, tant que c'est équivalent à un describe() et que vous pouvez avoir l'app.
   beforeAll(() => fonctionTest());
   const branche: FakeBranch = fakedb.createBranch(app); // Branch n'a pas de dépendance
   const semestre: FakeSemester = fakedb.createSemester(app, { code: registerUniqueValue('semester', 'code', 'A24') }); // Semester n'a pas de dépendance
   const branchOption: FakeBranchOption = createBranchOption(app, { branch }); // BranchOption a 1 dépendance: Branch
   const ue: FakeUe = createUe(
-      app,
-      { semesters: [semestre], branchOption }, // UE a 2 dépendances : une liste de Semester, et une BranchOption
-      {
-        code: registerUniqueValue('XX03'),
-        credits: [
-          {
-            category: {
-              code: 'CS',
-              name: 'CS',
-            },
-            credits: 6,
+    app,
+    { semesters: [semestre], branchOption }, // UE a 2 dépendances : une liste de Semester, et une BranchOption
+    {
+      code: registerUniqueValue('XX03'),
+      credits: [
+        {
+          category: {
+            code: 'CS',
+            name: 'CS',
           },
-        ],
-      }, // On a passé beaucoup de paramètres, ils sont tous optionnels, on peut enlever n'importe lequel
-    )
-  ;
-
+          credits: 6,
+        },
+      ],
+    }, // On a passé beaucoup de paramètres, ils sont tous optionnels, on peut enlever n'importe lequel
+  );
   const fonctionTest = () => {
     // Les objets que nous avons créés sont toujours vides
     // (le beforeAll qui appelle cette fonction a été défini au tout début, il sera donc appelé avant tous les autres beforeAll.
     // Les objets ont quand même été créés, ils n'ont juste pas été remplis)
     expect(semestre).not.toBeUndefined();
     expect(semestre.code).toBeUndefined();
-  }
+  };
 
-  it("bar", () => {
+  it('bar', () => {
     const user: FakeUser = fakedb.createUser(app, {}, true); // User n'a pas de dépendance. On le crée à la volée :
-                                                             // à la fin de l'appel à la fonction, user sera rempli et aura été sauvegardé dans la base de données
+    // à la fin de l'appel à la fonction, user sera rempli et aura été sauvegardé dans la base de données
     // Ici, la base de donnée a été seed, les objets ne sont plus vides.
     expect(semestre.code).toBeEqual('A24');
     expect(user.id).not.toBeUndefined();
@@ -272,38 +272,41 @@ Une fonction pour générer une entité fake ressemble à ça :
 
 ```ts
 const createBranchOption = <OnTheFly extends boolean = false>(
-    app: AppProvider,
-    dependencies: FakeEntityMap.branchOption.deps,
-    rawParams: FakeEntityMap.branchOption.params = {},
-    onTheFly: OnTheFly = false as OnTheFly,
-  ): OnTheFly extends true ? Promise<Entity<'branchOption'>> : Entity<'branchOption'> => {
-    // L'entité qui sera retournée, pleine ou vide en fonction de la variable de onTheFly
-    const lazyEntity: Entity<'branchOption'> = {};
-    // La fonction qui sera appelée pour créer la fake entity
-    const factory = async () => {
-      // Paramètres par défaut
-      const params = {
-        code: faker.db.branch.code(),
-        name: faker.name.jobTitle(),
-        ...rawParams,
-      } as Params<'branchOption'>;
-      // Création de l'entité
-      const entity = await app().get(PrismaService).uTTBranchOption.create({ data: { /* Paramètres de création */ } });
-      // On injecte la valeur en entity dans lazyEntity, de manière à modifier la valeur de la référence
-      // Si on avait directement fait lazyEntity = entity, on aurait modifié la valeur pointée par la variable
-      // et donc la variable détenant la valeur retournée par createBranchOption resterait inchangée
-      return Object.assign(lazyEntity, entity);
-    };
-    if (onTheFly === true) {
-      // On retourne directement le retour de la factory.
-      return factory() as OnTheFly extends true ? Promise<Entity<'branchOption'>> : never;
-    }
-    // On ajoute un beforeAll, qui appelera la factory.
-    beforeAll(factory);
-    // Et on retourne la référence du lazyEntity. Quand le beforeAll sera appelé, lazyEntity sera rempli
-    return lazyEntity as OnTheFly extends true ? never : Entity<'branchOption'>;
+  app: AppProvider,
+  dependencies: FakeEntityMap.branchOption.deps,
+  rawParams: FakeEntityMap.branchOption.params = {},
+  onTheFly: OnTheFly = false as OnTheFly,
+): OnTheFly extends true ? Promise<Entity<'branchOption'>> : Entity<'branchOption'> => {
+  // L'entité qui sera retournée, pleine ou vide en fonction de la variable de onTheFly
+  const lazyEntity: Entity<'branchOption'> = {};
+  // La fonction qui sera appelée pour créer la fake entity
+  const factory = async () => {
+    // Paramètres par défaut
+    const params = {
+      code: faker.db.branch.code(),
+      name: faker.name.jobTitle(),
+      ...rawParams,
+    } as Params<'branchOption'>;
+    // Création de l'entité
+    const entity = await app().get(PrismaService).uTTBranchOption.create({
+      data: {
+        /* Paramètres de création */
+      },
+    });
+    // On injecte la valeur en entity dans lazyEntity, de manière à modifier la valeur de la référence
+    // Si on avait directement fait lazyEntity = entity, on aurait modifié la valeur pointée par la variable
+    // et donc la variable détenant la valeur retournée par createBranchOption resterait inchangée
+    return Object.assign(lazyEntity, entity);
+  };
+  if (onTheFly === true) {
+    // On retourne directement le retour de la factory.
+    return factory() as OnTheFly extends true ? Promise<Entity<'branchOption'>> : never;
   }
-;
+  // On ajoute un beforeAll, qui appelera la factory.
+  beforeAll(factory);
+  // Et on retourne la référence du lazyEntity. Quand le beforeAll sera appelé, lazyEntity sera rempli
+  return lazyEntity as OnTheFly extends true ? never : Entity<'branchOption'>;
+};
 ```
 
 Ne cherchez pas ce code, il n’existe pas, ou du moins pas sous cette forme. On vous l’a mis là pour que vous puissiez
@@ -319,10 +322,10 @@ export const createBranchOption = entityFaker(
     name: faker.name.jobTitle,
   },
   async (app, dependencies, params) =>
-    app()
-      .get(PrismaService)
-      .uTTBranchOption.create({
-      data: { /* Paramètres de création */ }
+    app().get(PrismaService).uTTBranchOption.create({
+      data: {
+        /* Paramètres de création */
+      },
     }),
 );
 ```

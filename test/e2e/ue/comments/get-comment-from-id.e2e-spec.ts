@@ -8,10 +8,13 @@ import { FakeComment } from '../../../utils/fakedb';
 
 const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) => {
   const user = fakedb.createUser(app);
-  const user2 = fakedb.createUser(app, { login: 'user2', studentId: 3 });
+  const user2 = fakedb.createUser(app, { login: 'user2' });
   const semester = fakedb.createSemester(app);
-  const ue = fakedb.createUe(app, { code: `XX01`, openSemesters: [semester] });
-  const comment = fakedb.createComment(app, { user, ue, semester });
+  const branch = fakedb.createBranch(app);
+  const branchOption = fakedb.createBranchOption(app, { branch });
+  const ue = fakedb.createUe(app);
+  const ueof = fakedb.createUeof(app, { branchOptions: [branchOption], semesters: [semester], ue });
+  const comment = fakedb.createComment(app, { user, ueof, semester });
   fakedb.createCommentUpvote(app, { user: user2, comment });
   const reply = fakedb.createCommentReply(app, { user, comment }, { body: 'HelloWorld' });
 
@@ -41,13 +44,13 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
       .withBearerToken(user.token)
       .get(`/ue/comments/${comment.id}`)
       .expectUeComment({
+        ueof,
         ...(omit(
           comment,
           'semesterId',
           'authorId',
           'deletedAt',
           'validatedAt',
-          'ueId',
           'lastValidatedBody',
         ) as Required<FakeComment>),
         answers: [
@@ -57,7 +60,6 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
               id: user.id,
               firstName: user.firstName,
               lastName: user.lastName,
-              studentId: user.studentId,
             },
             createdAt: reply.createdAt.toISOString(),
             updatedAt: reply.updatedAt.toISOString(),
@@ -65,7 +67,7 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
         ],
         updatedAt: comment.updatedAt.toISOString(),
         createdAt: comment.createdAt.toISOString(),
-        semester: { code: semester.code },
+        semester: semester.code,
         upvotes: 1,
         upvoted: false,
       }));
@@ -76,13 +78,13 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
       .withBearerToken(user2.token)
       .get(`/ue/comments/${comment.id}`)
       .expectUeComment({
+        ueof,
         ...(omit(
           comment,
           'semesterId',
           'authorId',
           'deletedAt',
           'validatedAt',
-          'ueId',
           'lastValidatedBody',
         ) as Required<FakeComment>),
         answers: [
@@ -94,7 +96,7 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
         ],
         updatedAt: comment.updatedAt.toISOString(),
         createdAt: comment.createdAt.toISOString(),
-        semester: { code: semester.code },
+        semester: semester.code,
         upvotes: 1,
         upvoted: true,
       });

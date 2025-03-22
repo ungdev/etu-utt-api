@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RawUserUeSubscription } from 'src/prisma/types';
-import { UeCommentPostDto } from './dto/ue-comment-post.dto';
-import { CommentReplyDto } from './dto/ue-comment-reply.dto';
-import { UeCommentUpdateDto } from './dto/ue-comment-update.dto';
-import { GetUeCommentsDto } from './dto/ue-get-comments.dto';
+import UeCommentPostReqDto from './dto/req/ue-comment-post-req.dto';
+import CommentReplyReqDto from './dto/req/ue-comment-reply-req.dto';
+import UeCommentUpdateReqDto from './dto/req/ue-comment-update-req.dto';
+import GetUeCommentsReqDto from './dto/req/ue-get-comments-req.dto';
 import { UeCommentReply } from './interfaces/comment-reply.interface';
 import { CommentStatus, UeComment } from './interfaces/comment.interface';
 import { ConfigModule } from '../../config/config.module';
@@ -22,7 +22,7 @@ export class CommentsService {
    */
   async getComments(
     userId: string,
-    dto: GetUeCommentsDto,
+    dto: GetUeCommentsReqDto,
     bypassAnonymousData: boolean,
   ): Promise<Pagination<UeComment>> {
     // Use a prisma transaction to execute two requests at once:
@@ -35,8 +35,10 @@ export class CommentsService {
           includeDeletedReplied: bypassAnonymousData,
         },
         where: {
-          ue: {
-            code: dto.ueCode,
+          ueof: {
+            ue: {
+              code: dto.ueCode,
+            },
           },
         },
         take: this.config.PAGINATION_PAGE_SIZE,
@@ -45,7 +47,7 @@ export class CommentsService {
       userId,
     );
     const commentCount = await this.prisma.ueComment.count({
-      where: { ue: { code: dto.ueCode } },
+      where: { ueof: { ue: { code: dto.ueCode } } },
     });
     // If the user is neither a moderator or the comment author, and the comment is anonymous,
     // we remove the author from the response
@@ -89,18 +91,12 @@ export class CommentsService {
    * @param commentId the comment to check
    * @returns whether the user is the author of the {@link commentId | comment}
    */
-  async isUserCommentAuthor(userId: string, commentId: string, isModerator: boolean): Promise<boolean> {
-    const comment = await this.prisma.ueComment.findUnique({
-      args: {
-        includeDeletedReplied: isModerator,
-        includeLastValidatedBody: isModerator,
-        userId,
-      },
-      where: {
-        id: commentId,
-      },
+  async isUserCommentAuthor(userId: string, commentId: string): Promise<boolean> {
+    const comment = await this.prisma.withDefaultBehaviour.ueComment.findUnique({
+      where: { id: commentId },
+      select: { authorId: true },
     });
-    return comment.author.id == userId;
+    return comment.authorId == userId;
   }
 
   /**
@@ -143,11 +139,11 @@ export class CommentsService {
    * @param ueCode the code of the UE
    * @returns the last semester done by the {@link user} for the {@link ueCode | ue}
    */
-  async getLastSemesterDoneByUser(userId: string, ueCode: string): Promise<RawUserUeSubscription> {
+  private async getLastUserSubscription(userId: string, ueCode: string): Promise<RawUserUeSubscription> {
     return this.prisma.userUeSubscription.findFirst({
       where: {
-        ue: {
-          code: ueCode,
+        ueof: {
+          ueId: ueCode,
         },
         userId,
       },
@@ -182,7 +178,9 @@ export class CommentsService {
       },
       where: {
         authorId: userId,
-        ueId: ue.id,
+        ueof: {
+          ueId: ue.code,
+        },
       },
     });
     return comment.length > 0;
@@ -195,7 +193,9 @@ export class CommentsService {
    * @param userId the user posting the comment
    * @returns the created {@link UeComment}
    */
-  async createComment(body: UeCommentPostDto, userId: string): Promise<UeComment> {
+  async createComment(body: UeCommentPostReqDto, userId: string): Promise<UeComment> {
+    // Use last semester done when creating the comment
+    const lastSemester = await this.getLastUserSubscription(userId, body.ueCode);
     return this.prisma.ueComment.create(
       {
         args: {
@@ -212,15 +212,14 @@ export class CommentsService {
               id: userId,
             },
           },
-          ue: {
+          ueof: {
             connect: {
-              code: body.ueCode,
+              code: lastSemester.ueofCode,
             },
           },
           semester: {
             connect: {
-              // Use last semester done when creating the comment
-              code: (await this.getLastSemesterDoneByUser(userId, body.ueCode)).semesterId,
+              code: lastSemester.semesterId,
             },
           },
         },
@@ -238,7 +237,7 @@ export class CommentsService {
    * @returns the updated comment
    */
   async updateComment(
-    body: UeCommentUpdateDto,
+    body: UeCommentUpdateReqDto,
     commentId: string,
     userId: string,
     isModerator: boolean,
@@ -306,7 +305,7 @@ export class CommentsService {
    * @param reply the reply to post
    * @returns the created {@link UeCommentReply}
    */
-  async replyComment(userId: string, commentId: string, reply: CommentReplyDto): Promise<UeCommentReply> {
+  async replyComment(userId: string, commentId: string, reply: CommentReplyReqDto): Promise<UeCommentReply> {
     return this.prisma.ueCommentReply.create({
       data: {
         body: reply.body,
@@ -323,7 +322,7 @@ export class CommentsService {
    * @param reply the modifications to apply to the reply
    * @returns the updated {@link UeCommentReply}
    */
-  async editReply(replyId: string, reply: CommentReplyDto): Promise<UeCommentReply> {
+  async editReply(replyId: string, reply: CommentReplyReqDto): Promise<UeCommentReply> {
     return this.prisma.ueCommentReply.update({
       data: {
         body: reply.body,

@@ -11,8 +11,9 @@ import { string } from 'pactum-matchers';
 import { ERROR_CODE } from '../../../src/exceptions';
 import { ConfigModule } from '../../../src/config/config.module';
 import { LdapServerMock, LdapUser } from 'ldap-server-mock';
+import { HttpStatus } from '@nestjs/common';
 
-const CasSignUpE2ESpec = e2eSuite('/auth/signup/cas', (app) => {
+const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
   const list: LdapUser[] = [];
   const ldapServer = new LdapServerMock(
     list,
@@ -29,12 +30,13 @@ const CasSignUpE2ESpec = e2eSuite('/auth/signup/cas', (app) => {
   );
   const branch = fakedb.createBranch(app);
   const branchOption = fakedb.createBranchOption(app, { branch });
-  fakedb.createSemester(app, {
+  const semester = fakedb.createSemester(app, {
     code: `${new Date().getMonth() < 7 && new Date().getMonth() > 0 ? 'P' : 'A'}${new Date().getFullYear() % 100}`,
     start: new Date(),
     end: new Date(),
   });
   const ue = fakedb.createUe(app);
+  fakedb.createUeof(app, { branchOptions: [branchOption], semesters: [semester], ue });
 
   beforeAll(() => ldapServer.start());
   afterAll(() => ldapServer.stop());
@@ -111,6 +113,7 @@ const CasSignUpE2ESpec = e2eSuite('/auth/signup/cas', (app) => {
       .spec()
       .post('/auth/signup/cas')
       .withJson({ registerToken: app().get(AuthService).signRegisterToken(userData) })
+      .expectStatus(HttpStatus.CREATED)
       .expectJsonMatch({ access_token: string() });
     // TODO : test that the user has been created, along with all its data
   };

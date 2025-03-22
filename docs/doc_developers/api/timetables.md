@@ -1,3 +1,5 @@
+# Les emplois du temps
+
 Les emplois du temps sont une fonctionnalité puissante sur le site étu, ils permettent de simuler le fonctionnement d’un
 fichier .ical. Voici les grandes fonctionnalité des emplois du temps :
 
@@ -5,7 +7,7 @@ fichier .ical. Voici les grandes fonctionnalité des emplois du temps :
 - Suppression ou modification récurrente d’occurrences d’un événement
 - Groupes d’utilisateurs entre qui un événement (ou une mise à jour d’événement) est partagé(e)
 
-# Entry
+## Entry
 
 Contient les données nécessaires à la génération des occurrences liées à un événement en particulier.
 
@@ -14,7 +16,7 @@ répétant toutes les semaines, ayant lieu 16 fois, et durant à chaque fois 2h,
 vacances, jours fériés et journées banalisées, on utilisera des overrides. Cet événement ne changera pas, pas même son
 nombre de répétitions.
 
-# Occurrence
+## Occurrence
 
 Une case dans le calendrier. Une occurrence a une date de début et une date de fin.
 
@@ -24,7 +26,7 @@ occurrences, qui sont créées à la volée pendant le traitement de la requête
 **Exemple :** Mon TD de NF16 de la semaine prochaine est une occurrence, il commencera mardi 19 décembre 2023 14h et se
 terminera mardi 19 décembre 2023 16h, et aura lieu en B202. Mon TD de la semaine dernière en est une autre.
 
-# Override
+## Override
 
 Permet de mettre à jour une entry. Le fonctionnement est très similaire à l’entry.
 
@@ -40,7 +42,7 @@ Pour supprimer un événement, on peut créer un Override avec le flag `delete`.
 inclus), on pourrait créer un override avec le flag `delete` commençant à la 7è occurrence et se terminant à la 11è
 occurrence, se répétant toutes les 2 occurrences.
 
-# Groupe d’événements
+## Groupe d’événements
 
 Les groupes d’événements permettent de regrouper les personnes qui sont concernées par un ou plusieurs même événements.
 
@@ -50,7 +52,7 @@ mardi à 14h en B202 (pour le semestre A23).
 Chaque utilisateur peut aussi avoir son groupe personnel, dans lequel il sera seul, pour faire des modifications qui
 n’affecteront que son emploi du temps.
 
-# Priorité
+## Priorité
 
 Définit l’ordre d’importance des groupes d’événements pour un utilisateur.
 
