@@ -115,3 +115,6 @@ docs/build/
 migration/etuutt_old/etuutt_old.sql
 # UE Data
 scripts/**/*.csv
+
+# Dev files
+dev
