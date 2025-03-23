@@ -8,9 +8,16 @@ import { PrismaService } from '../../../src/prisma/prisma.service';
 
 const ImportTimetableE2ESpec = e2eSuite('POST /timetable/import', (app) => {
   const users = Array.from({ length: 10 }, () => fakedb.createUser(app));
-  const semester = fakedb.createSemester(app);
+  const branch = fakedb.createBranch(app);
+  const branchOption = fakedb.createBranchOption(app, { branch });
+  const semester = fakedb.createSemester(app, {
+    start: new Date(Date.now() - 30 * 24 * 3_600_000),
+    end: new Date(Date.now() + 30 * 24 * 3_600_000),
+  });
   const ue = fakedb.createUe(app);
+  const ueof = fakedb.createUeof(app, { branchOptions: [branchOption], semesters: [semester], ue });
   const ue2 = fakedb.createUe(app);
+  const ueof2 = fakedb.createUeof(app, { branchOptions: [branchOption], semesters: [semester], ue: ue2 });
   const defaultUrl = encodeURIComponent(`https://monedt.utt.fr/calendrier/test.ics`);
 
   it('should fail as user is not authenticated', async () =>
@@ -90,16 +97,18 @@ const ImportTimetableE2ESpec = e2eSuite('POST /timetable/import', (app) => {
       END:VEVENT`.replace(/^\s+/gm, ''),
     );
 
-    await pactum.spec().post(`/timetable/import/${defaultUrl}`).withBearerToken(users[0].token);
+    await pactum.spec().post(`/timetable/import/${defaultUrl}`).withBearerToken(users[0].token).expectStatus(201);
 
     const prisma = app().get(PrismaService);
 
     expect(
       (await prisma.ueCourse.count({
         where: {
-          ue: {
-            code: ue.code,
-            id: ue.id,
+          ueof: {
+            siepId: ueof.siepId,
+            ue: {
+              code: ue.code,
+            },
           },
           semester: semester,
           students: {
@@ -135,16 +144,18 @@ const ImportTimetableE2ESpec = e2eSuite('POST /timetable/import', (app) => {
       END:VEVENT`.replace(/^\s+/gm, ''),
     );
 
-    await pactum.spec().post(`/timetable/import/${defaultUrl}`).withBearerToken(users[0].token);
+    await pactum.spec().post(`/timetable/import/${defaultUrl}`).withBearerToken(users[0].token).expectStatus(201);
 
     const prisma = app().get(PrismaService);
 
     expect(
       (await prisma.ueCourse.count({
         where: {
-          ue: {
-            code: ue.code,
-            id: ue.id,
+          ueof: {
+            siepId: ueof.siepId,
+            ue: {
+              code: ue.code,
+            },
           },
           semester: semester,
           students: {
@@ -159,9 +170,11 @@ const ImportTimetableE2ESpec = e2eSuite('POST /timetable/import', (app) => {
     expect(
       (await prisma.ueCourse.count({
         where: {
-          ue: {
-            code: ue2.code,
-            id: ue2.id,
+          ueof: {
+            siepId: ueof2.siepId,
+            ue: {
+              code: ue2.code,
+            },
           },
           semester: semester,
           students: {
@@ -188,7 +201,7 @@ const ImportTimetableE2ESpec = e2eSuite('POST /timetable/import', (app) => {
     );
     // 10 differents users imports the same course
     for (let i = 0; i < users.length; i++) {
-      await pactum.spec().post(`/timetable/import/${defaultUrl}`).withBearerToken(users[i].token);
+      await pactum.spec().post(`/timetable/import/${defaultUrl}`).withBearerToken(users[i].token).expectStatus(201);
     }
 
     const prisma = app().get(PrismaService);
@@ -198,9 +211,11 @@ const ImportTimetableE2ESpec = e2eSuite('POST /timetable/import', (app) => {
       (
         await prisma.ueCourse.findFirst({
           where: {
-            ue: {
-              code: ue.code,
-              id: ue.id,
+            ueof: {
+              siepId: ueof.siepId,
+              ue: {
+                code: ue.code,
+              },
             },
             semester: semester,
           },
@@ -235,12 +250,17 @@ const ImportTimetableE2ESpec = e2eSuite('POST /timetable/import', (app) => {
     );
     const prisma = app().get(PrismaService);
 
-    await pactum.spec().post(`/timetable/import/${defaultUrl}`).withBearerToken(users[0].token);
+    await pactum.spec().post(`/timetable/import/${defaultUrl}`).withBearerToken(users[0].token).expectStatus(201);
     expect(
       (
         await prisma.ueCourse.findMany({
           where: {
-            ueId: ue.id,
+            ueof: {
+              siepId: ueof.siepId,
+              ue: {
+                code: ue.code,
+              },
+            },
             semester: {
               code: semester.code,
             },

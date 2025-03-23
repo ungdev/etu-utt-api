@@ -3,9 +3,9 @@ import { CourseEvent } from 'src/timetable/interfaces/ical.interface';
 export interface UeCourse {
   /**
    * The code of the ue
-   * e.g. MT01
+   * e.g. MT01_FR_TRO_U23
    */
-  ueCode: string;
+  ueofCode: string;
 
   /**
    * The semester id of the course

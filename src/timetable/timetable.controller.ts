@@ -181,11 +181,41 @@ export class TimetableController {
       if (!(await this.ueService.doesUeExist(ueCode))) {
         throw new AppException(ERROR_CODE.NO_SUCH_UE, ueCode);
       }
+      // Get ueof code from ue code
+      const ue = await this.ueService.getUe(ueCode);
+      let ueofCode = null;
+      const eventNameParts = event.name.split('_');
+      const semester = eventNameParts.shift();
+      const ueName = eventNameParts.join('_');
+
+      for (const ueof of ue.ueofs) {
+        const ueofNameParts = ueof.code.split('_');
+        const ueofSemester = ueofNameParts.pop();
+        const ueofName = ueofNameParts.join('_');
+        if (ueofName !== ueName) continue;
+
+        // We don't need to worry about inter-semesters
+        // because they do not appead in the timetable (yet)
+        if (!ueofSemester.startsWith('U')) continue;
+
+        // the ueof semester have UXX instead of AXX or P(XX+1)
+        if (semester.startsWith('A') && parseInt(semester.slice(1)) === parseInt(ueofSemester.slice(1))) {
+          ueofCode = ueof.code;
+          break;
+        } else if (semester.startsWith('P') && parseInt(semester.slice(1)) === parseInt(ueofSemester.slice(1)) + 1) {
+          ueofCode = ueof.code;
+          break;
+        }
+      }
+      if (ueofCode == null) {
+        throw new AppException(ERROR_CODE.NO_SUCH_UEOF, ueName);
+      }
+
       const course: UeCourse = {
         semesterId: semesterId,
         timetableEntry: event,
         type: event.courseType,
-        ueCode: ueCode,
+        ueofCode: ueofCode,
       };
 
       let courseId = await this.courseService.findCourse(course);

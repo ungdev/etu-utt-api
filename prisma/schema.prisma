@@ -393,7 +393,6 @@ model UeCourse {
   id          String     @id @default(uuid())
   type        CourseType
   createdAt   DateTime   @default(now())
-  ueId        String
   semesterId  String
   timetableId String     @unique()
   ueofCode   String

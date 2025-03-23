@@ -709,7 +709,10 @@ export const createUeof = entityFaker(
       .get(PrismaService)
       .ueof.create({
         data: {
-          code: `${ue.code}_FR_TRO_U${semesters[0]?.code?.slice(-2)}`,
+          // If semester is PXX, year should be U(XX-1)
+          code: `${ue.code}_FR_TRO_U${semesters[0]?.code
+            ?.slice(-2)
+            .replace(/\d+/, (n) => String(+n - (semesters[0]?.code.startsWith('P') ? 1 : 0)))}`,
           ue: {
             connect: {
               code: ue.code,

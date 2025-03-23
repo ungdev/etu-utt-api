@@ -21,8 +21,8 @@ export class CourseService {
       where: {
         semesterId: course.semesterId,
         type: course.type,
-        ue: {
-          code: course.ueCode,
+        ueof: {
+          code: course.ueofCode,
         },
         timetableEntry: {
           eventStart: course.timetableEntry.startDate,
@@ -39,9 +39,9 @@ export class CourseService {
     return await this.prisma.ueCourse.create({
       data: {
         type: course.type,
-        ue: {
+        ueof: {
           connect: {
-            code: course.ueCode,
+            code: course.ueofCode,
           },
         },
         semester: {
