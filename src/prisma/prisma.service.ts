@@ -12,61 +12,43 @@ import { generateCustomUeCommentReplyModel } from '../ue/comments/interfaces/com
 import { generateCustomAssoModel } from '../assos/interfaces/asso.interface';
 import { generateCustomCreditCategoryModel } from '../ue/credit/interfaces/credit-category.interface';
 
-// This interface is used to tell typescript that, even tho it does not understand it, PrismaService IS actually a ReturnType<typeof createPrismaClientExtension>
-// TS cannot infer it alone as the construction of the class is made using reflection.
-// We can't use a type there, or else typescript will complain about the fact that PrismaService is defined twice.
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface PrismaService extends ReturnType<typeof createPrismaClientExtension> {}
-
 @Injectable()
-export class PrismaService implements ReturnType<typeof createPrismaClientExtension> {
-  readonly withDefaultBehaviour: PrismaClient;
+export class PrismaService extends PrismaClient<ReturnType<typeof prismaOptions>> {
+  readonly normalize: ReturnType<typeof createNormalizedEntitiesUtility>;
+
   constructor(config: ConfigModule) {
-    this.withDefaultBehaviour = createPrismaClient(config);
-    const prisma = createPrismaClientExtension(this.withDefaultBehaviour);
-    return new Proxy(this, {
-      // So, basically, every time a property will be accessed, this function will be called :
-      // - target is equivalent to this
-      // - prop is the name of the property
-      // - receiver is something else, we don't need it here and I don't want to search the internet
-      // What we do here is :
-      // - try to return the property as normal. For example, if we do prismaService.withDefaultBehaviour, this will act as normal
-      // - if we can't find a value for it, return the same value but for the prisma client.
-      // That way, we are simulating an inheritance, but without actually doing one : the class that needs to be extended is generated in the constructor
-      get(target, prop, receiver) {
-        if (prop in target) {
-          return Reflect.get(target, prop, receiver);
-        }
-        return Reflect.get(prisma, prop, receiver);
-      },
-    });
+    super(prismaOptions(config));
+    this.normalize = createNormalizedEntitiesUtility(this);
   }
 }
 
-function createPrismaClient(config: ConfigModule) {
-  return new PrismaClient({
-    datasources: {
-      db: {
-        url: config.DATABASE_URL,
-      },
+const prismaOptions = (config: ConfigModule) => ({
+  datasources: {
+    db: {
+      url: config.DATABASE_URL,
     },
-  });
-}
+  },
+});
 
-function createPrismaClientExtension(prisma: ReturnType<typeof createPrismaClient>) {
-  return prisma.$extends({
-    model: {
-      user: generateCustomUserModel(prisma),
-      ueComment: generateCustomCommentModel(prisma),
-      ueStarCriterion: generateCustomCriterionModel(prisma),
-      ueCommentReply: generateCustomUeCommentReplyModel(prisma),
-      ueStarVote: generateCustomRateModel(prisma),
-      ue: generateCustomUeModel(prisma),
-      ueAnnal: generateCustomUeAnnalModel(prisma),
-      asso: generateCustomAssoModel(prisma),
-      ueCreditCategory: generateCustomCreditCategoryModel(prisma),
-    },
-  });
+/**
+ * @typedef {import('@prisma/client').Prisma.UserDelegate} UserDelegate
+ */
+
+function createNormalizedEntitiesUtility(prisma: PrismaClient) {
+  return {
+    /**
+     * @type {UserDelegate['findMany']}
+     */
+    user: generateCustomUserModel(prisma),
+    ueComment: generateCustomCommentModel(prisma),
+    ueStarCriterion: generateCustomCriterionModel(prisma),
+    ueCommentReply: generateCustomUeCommentReplyModel(prisma),
+    ueStarVote: generateCustomRateModel(prisma),
+    ue: generateCustomUeModel(prisma),
+    ueAnnal: generateCustomUeAnnalModel(prisma),
+    asso: generateCustomAssoModel(prisma),
+    ueCreditCategory: generateCustomCreditCategoryModel(prisma),
+  };
 }
 
 // UTILITIES TO GENERATE CUSTOM MODEL FUNCTIONS
@@ -85,10 +67,10 @@ export type UserFriendlyRequestType<
   CustomArgs extends object,
 > = Omit<RequestType<ModelName, FunctionName>, 'select' | 'include' | 'orderBy'> &
   (Record<string, never> extends CustomArgs ? { args?: never } : { args: CustomArgs });
-export type Formatter<RawEntity, FormattedEntity, FormatterArgs extends any[]> = (
-  prisma: ReturnType<typeof createPrismaClient>,
+export type Formatter<RawEntity, FormattedEntity, QueryArgs extends object> = (
+  prisma: PrismaClient,
   raw: RawEntity,
-  ...args: FormatterArgs
+  args: QueryArgs,
 ) => MayBePromise<FormattedEntity>;
 
 function generateCustomModelFunction<
@@ -96,20 +78,19 @@ function generateCustomModelFunction<
   FunctionName extends FunctionNameType<ModelName>,
   Raw,
   Formatted extends Awaited<any>,
-  FormatterArgs extends any[],
   QueryArgs extends object,
 >(
   prisma: PrismaClient,
   modelName: ModelName,
   functionName: FunctionName,
   selectFilter: Partial<RequestType<ModelName, FunctionName>>,
-  format: Formatter<Raw, Formatted, FormatterArgs>,
+  format: Formatter<Raw, Formatted, QueryArgs>,
   queryUpdater: (
     query: RequestType<ModelName, FunctionName>,
     args: QueryArgs,
   ) => MayBePromise<RequestType<ModelName, FunctionName>>,
-): (params: UserFriendlyRequestType<ModelName, FunctionName, QueryArgs>, ...args: FormatterArgs) => Promise<Formatted> {
-  return async (args, ...formatterArgs) => {
+): (params: UserFriendlyRequestType<ModelName, FunctionName, QueryArgs>) => Promise<Formatted> {
+  return async (args) => {
     const res = await (prisma[modelName][functionName] as (arg: RequestType<ModelName, FunctionName>) => Raw)(
       await queryUpdater(
         {
@@ -119,7 +100,7 @@ function generateCustomModelFunction<
         args.args,
       ),
     );
-    return res ? format(prisma, res, ...formatterArgs) : (res as null);
+    return res ? format(prisma, res, args.args) : (res as null);
   };
 }
 
@@ -130,13 +111,12 @@ export function generateCustomModel<
   ModelName extends ModelNameType,
   Raw,
   Formatted,
-  FormatterArgs extends any[],
-  QueryArgs extends object,
+  QueryArgs extends Record<string, any>,
 >(
   prisma: PrismaClient,
   modelName: ModelName,
   selectFilter: Partial<RequestType<ModelName, FunctionNameType<ModelName>>>,
-  format: Formatter<Raw, Formatted, FormatterArgs>,
+  format: Formatter<Raw, Formatted, QueryArgs>,
   queryUpdater: (
     query: RequestType<ModelName, FunctionNameType<ModelName>>,
     args: QueryArgs,
@@ -145,12 +125,10 @@ export function generateCustomModel<
   const customModel: {
     [K in (typeof singleValueMethods)[number]]?: (
       arg: UserFriendlyRequestType<ModelName, FunctionNameType<ModelName> & K, QueryArgs>,
-      ...formatterArgs: FormatterArgs
     ) => Promise<Formatted>;
   } & {
     [K in (typeof multiValueMethods)[number]]?: (
       arg: UserFriendlyRequestType<ModelName, FunctionNameType<ModelName> & K, QueryArgs>,
-      ...formatterArgs: FormatterArgs
     ) => Promise<Formatted[]>;
   } = {};
   for (const functionName of singleValueMethods) {
@@ -171,8 +149,7 @@ export function generateCustomModel<
       modelName,
       functionName as FunctionNameType<ModelName>,
       selectFilter,
-      (prisma, values: Raw[], ...args: FormatterArgs) =>
-        Promise.all(values.map((value) => format(prisma, value, ...args))),
+      (prisma, values: Raw[], args: QueryArgs) => Promise.all(values.map((value) => format(prisma, value, args))),
       queryUpdater,
     );
   }

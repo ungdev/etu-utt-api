@@ -118,13 +118,13 @@ export function generateCustomCommentModel(prisma: PrismaClient) {
   );
 }
 
-export function formatComment(prisma: PrismaClient, comment: UnformattedUEComment, userId?: string): UeComment {
+export function formatComment(prisma: PrismaClient, comment: UnformattedUEComment, args: UEExtraArgs): UeComment {
   return {
     ...omit(comment, 'deletedAt', 'validatedAt'),
     answers: comment.answers.map((answer) => formatReply(prisma, answer)),
     status: (comment.deletedAt && CommentStatus.DELETED) | (comment.validatedAt && CommentStatus.VALIDATED),
     upvotes: comment.upvotes.length,
-    upvoted: comment.upvotes.some((upvote) => upvote.userId == userId),
+    upvoted: comment.upvotes.some((upvote) => upvote.userId == args.userId),
     semester: comment.semester.code,
   };
 }

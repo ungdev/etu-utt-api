@@ -93,7 +93,7 @@ const SignupE2ESpec = e2eSuite('POST /auth/signup', (app) => {
     await pactum.spec().post('/auth/signup').withBody(dto).expectBodyContains('access_token').expectStatus(201);
     const user = await app()
       .get(PrismaService)
-      .user.findUnique({ where: { login: dto.login } });
+      .normalize.user.findUnique({ where: { login: dto.login } });
     expect(user).not.toBeNull();
     expect(user.login).toEqual(dto.login);
     expect(user.firstName).toEqual(dto.firstName);

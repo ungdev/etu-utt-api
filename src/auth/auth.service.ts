@@ -63,7 +63,7 @@ export class AuthService {
     }
     try {
       const isUTTMail = dto.mail?.endsWith('@utt.fr');
-      const user = await this.prisma.withDefaultBehaviour.user.create({
+      const user = await this.prisma.user.create({
         data: {
           login: dto.login,
           hash: dto.password ? await this.getHash(dto.password) : undefined,
@@ -190,7 +190,7 @@ export class AuthService {
    */
   async signin(dto: AuthSignInReqDto): Promise<string | null> {
     // find the user by login, if it does not exist, throw exception
-    const user = await this.prisma.withDefaultBehaviour.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: {
         login: dto.login,
       },
