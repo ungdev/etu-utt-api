@@ -57,7 +57,7 @@ const ValidateLoginE2ESpec = e2eSuite('POST /auth/login/validate', (app) => {
         const registerData = app().get(JwtService).decode(body.token);
         const { token: expectedToken } = await app()
           .get(PrismaService)
-          .withDefaultBehaviour.apiKey.findUnique({ where: { id: user.apiKey.id } });
+          .apiKey.findUnique({ where: { id: user.apiKey.id } });
         expect(registerData).toBeTruthy();
         expect(registerData.token).toEqual(expectedToken);
         expect(expectedToken).not.toEqual(user.apiKey.token);

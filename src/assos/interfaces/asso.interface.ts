@@ -21,7 +21,7 @@ const ASSO_SELECT_FILTER = {
 
 type UnformattedAsso = Prisma.AssoGetPayload<typeof ASSO_SELECT_FILTER>;
 export type Asso = UnformattedAsso & {
-  president: { role: { id: string; name: string }; user: { id: string; firstName: string; lastName: string } };
+  president: { role: { id: string; name: string }; user?: { id: string; firstName: string; lastName: string } };
 };
 
 export const generateCustomAssoModel = (prisma: PrismaClient) =>

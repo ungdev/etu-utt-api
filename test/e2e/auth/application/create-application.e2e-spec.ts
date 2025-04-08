@@ -26,7 +26,11 @@ const CreateApplicationE2ESpec = e2eSuite('POST /auth/application', (app) => {
       .expectJsonMatch({
         id: string(),
         name: body.name,
-        ownerId: user.id,
+        owner: {
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+        },
         redirectUrl: body.redirectUrl,
         clientSecret: string(),
       }));

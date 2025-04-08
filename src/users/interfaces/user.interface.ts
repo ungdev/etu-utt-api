@@ -127,7 +127,7 @@ function formatUser(_, user: UnformattedUser) {
         permissions[apiKey.id][permission.permission] = '*';
       } else {
         // Soft grant
-        if (!permission[apiKey.id][permission.permission]) {
+        if (!permissions[apiKey.id][permission.permission]) {
           permissions[apiKey.id][permission.permission] = [];
         }
         (permissions[apiKey.id][permission.permission] as string[]).push(permission.userId);

@@ -98,7 +98,7 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
       })
       .expectStatus(HttpStatus.CREATED)
       .expectJsonMatch({ token: string() });
-    expect(await app().get(PrismaService).withDefaultBehaviour.user.count({ where: { login } })).toEqual(1);
+    expect(await app().get(PrismaService).user.count({ where: { login } })).toEqual(1);
   };
 
   it('should successfully create the user and return a token', () => executeValidSignupRequest('student'));

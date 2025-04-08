@@ -15,7 +15,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   async validate(payload: { token: string }): Promise<RequestAuthData> {
-    const apiKey = await this.prisma.withDefaultBehaviour.apiKey.findUnique({
+    const apiKey = await this.prisma.apiKey.findUnique({
       where: {
         token: payload.token,
       },
@@ -25,7 +25,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       },
     });
     if (!apiKey) return null;
-    const user = await this.prisma.user.findUnique({
+    const user = await this.prisma.normalize.user.findUnique({
       where: {
         id: apiKey.userId,
       },

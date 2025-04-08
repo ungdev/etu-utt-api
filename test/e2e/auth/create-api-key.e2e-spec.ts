@@ -54,7 +54,7 @@ const CreateApiKeyE2ESpec = e2eSuite('POST /auth/api-key', (app) => {
       });
     await app()
       .get(PrismaService)
-      .withDefaultBehaviour.apiKey.delete({
+      .apiKey.delete({
         where: { userId_applicationId: { userId: otherUser.id, applicationId: application.id } },
       });
   });

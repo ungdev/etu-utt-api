@@ -108,7 +108,7 @@ const SignupE2ESpec = e2eSuite('POST /auth/signup', (app) => {
       });
     const user = await app()
       .get(PrismaService)
-      .user.findUnique({ where: { login: dto.login } });
+      .normalize.user.findUnique({ where: { login: dto.login } });
     expect(user).not.toBeNull();
     expect(user.login).toEqual(dto.login);
     expect(user.firstName).toEqual(dto.firstName);

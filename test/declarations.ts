@@ -235,8 +235,8 @@ Spec.prototype.expectAssos = function (app: AppProvider, assos: FakeAsso[], coun
       ...pick(asso, 'id', 'name', 'logo'),
       shortDescription: getTranslation(asso.descriptionShortTranslation, (<Spec>this).language),
       president: {
-        role: asso.presidentRole,
-        user: asso.president,
+        role: !!asso.presidentRole ? pick(asso.presidentRole, 'id', 'name') : null,
+        user: !!asso.president ? pick(asso.president, 'id', 'firstName', 'lastName') : null,
       },
     })),
     itemCount: count,
@@ -248,8 +248,8 @@ Spec.prototype.expectAsso = function (asso: FakeAsso) {
     ...pick(asso, 'id', 'login', 'name', 'mail', 'phoneNumber', 'website', 'logo'),
     description: getTranslation(asso.descriptionTranslation, (<Spec>this).language),
     president: {
-      role: asso.presidentRole,
-      user: asso.president,
+      role: !!asso.presidentRole ? pick(asso.presidentRole, 'id', 'name') : null,
+      user: !!asso.president ? pick(asso.president, 'id', 'firstName', 'lastName') : null,
     },
   });
 };

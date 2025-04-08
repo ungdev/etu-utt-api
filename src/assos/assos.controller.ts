@@ -52,7 +52,7 @@ export class AssosController {
       shortDescription: asso.descriptionShortTranslation,
       president: {
         role: pick(asso.president.role, 'id', 'name'),
-        user: pick(asso.president.user, 'id', 'firstName', 'lastName'),
+        user: !!asso.president.user ? pick(asso.president.user, 'id', 'firstName', 'lastName') : null,
       },
     };
   }
@@ -63,7 +63,7 @@ export class AssosController {
       description: asso.descriptionTranslation,
       president: {
         role: pick(asso.president.role, 'id', 'name'),
-        user: pick(asso.president.user, 'id', 'firstName', 'lastName'),
+        user: !!asso.president.user ? pick(asso.president.user, 'id', 'firstName', 'lastName') : null,
       },
     };
   }

@@ -5,11 +5,16 @@ import {
   TimetableEntryGroupForUser,
   TimetableEntryOccurrence,
 } from './interfaces/timetable.interface';
+import { CourseEvent } from './interfaces/ical.interface';
 import { RawTimetableEntry, RawTimetableEntryOverride, RawTimetableGroup } from '../prisma/types';
 import { omit } from '../utils';
 import TimetableCreateEntryReqDto from './dto/req/timetable-create-entry-req.dto';
 import TimetableUpdateEntryReqDto from './dto/req/timetable-update-entry-req.dto';
 import TimetableDeleteOccurrencesReqDto from './dto/req/timetable-delete-occurrences-req.dto';
+import { AppException, ERROR_CODE } from '../exceptions';
+import { HttpService } from '@nestjs/axios';
+import { lastValueFrom } from 'rxjs';
+import { ConfigModule } from '../config/config.module';
 
 /**
  * The inclusions to use when fetching a {@link DetailedTimetableEntry}.
@@ -30,7 +35,7 @@ const detailedEntryInclusions = (userId: string) => ({
  */
 @Injectable()
 export default class TimetableService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private http: HttpService, readonly config: ConfigModule) {}
 
   /**
    * Returns the {@link TimetableEntryOccurrence}s for the user for the next 24 hours.
@@ -549,5 +554,129 @@ export default class TimetableService {
       },
     });
     return this.getEntryDetails(entryId, userId);
+  }
+
+  /**
+   * Check if the url domain is part of the authorised list,
+   * then download the timetable from this url
+   * @param param Where to download the file from
+   * @returns the file content as a string
+   */
+  async downloadTimetable(url: string): Promise<string> {
+    if (new URL(url).hostname != this.config.TIMETABLE_URL) {
+      throw new AppException(ERROR_CODE.PARAM_MALFORMED, 'url');
+    }
+    try {
+      const response = await lastValueFrom(this.http.get(url));
+      return response.data;
+    } catch (error) {
+      throw new AppException(ERROR_CODE.RESOURCE_UNAVAILABLE, url);
+    }
+  }
+
+  /**
+   * Parse a raw string into a list of CourseEvent
+   * @param raw_timetable the string must be the content of an Ical file
+   * @returns {CourseEvent[]}
+   */
+  parseTimetable(raw_timetable: string): CourseEvent[] {
+    const event_separator = /(BEGIN:VEVENT\r?\n(?:.|\r?\n)*?END:VEVENT\r?\n?)/gm;
+
+    // Slice timetable into events
+    const raw_events = raw_timetable.match(event_separator);
+    if (raw_events === null) {
+      throw new AppException(ERROR_CODE.RESOURCE_INVALID_TYPE, 'ical');
+    }
+
+    // Keep only unique values
+    const event_map: { [key: string]: CourseEvent } = {};
+
+    for (const data of raw_events.values()) {
+      const event = this.parseCourseFromEvent(data);
+
+      if (event_map[event.sharedId] == null) {
+        event_map[event.sharedId] = event;
+      } else {
+        event_map[event.sharedId].count += 1;
+        if (event_map[event.sharedId].startDate > event.startDate) {
+          event_map[event.sharedId].startDate = event.startDate;
+        }
+      }
+    }
+
+    return Object.values(event_map);
+  }
+
+  /**
+   * Parse an ical DATETIME into a javascript Date object.
+   * Assumes the server is using local time and DATETIME is expressed in UTC
+   * @param icalDateTime the DATETIME
+   * @returns
+   */
+  private parseIcalDateTime(icalDateTime: string): Date {
+    const year = parseInt(icalDateTime.slice(0, 4));
+    const month = parseInt(icalDateTime.slice(4, 6)) - 1;
+    const day = parseInt(icalDateTime.slice(6, 8));
+    const hour = parseInt(icalDateTime.slice(9, 11));
+    const minute = parseInt(icalDateTime.slice(11, 13));
+    // Hope the server have the correct timezone
+    // This is the only way I found to convert a date with an unknown timezone (UTC+1 or +2) to UTC
+    const offset = new Date().getTimezoneOffset();
+    return new Date(Date.UTC(year, month, day, hour, minute) + offset * 60 * 1000);
+  }
+
+  /**
+   * Retrieve from an ical event a value from the provided key
+   * @param raw_event the ical event, if many given, return the first occurence of the key
+   * @param key
+   * @returns {string}
+   */
+  private parseIcalField(raw_event: string, key: string): string {
+    return raw_event
+      .match(new RegExp(`${key}:.*`))[0]
+      .replace(`${key}:`, '')
+      .trim();
+  }
+
+  /**
+   * Convert an ical event into a CourseEvent
+   * @param raw_event
+   * @returns
+   */
+  private parseCourseFromEvent(raw_event: string): CourseEvent {
+    let courseType: 'CM' | 'TD' | 'TP';
+    switch (this.parseIcalField(raw_event, 'DESCRIPTION').split(' - ')[0]) {
+      case 'CM':
+        courseType = 'CM';
+        break;
+      case 'TD':
+        courseType = 'TD';
+        break;
+      case 'TP':
+        courseType = 'TD';
+        break;
+      default:
+        throw new AppException(ERROR_CODE.PARAM_MALFORMED, 'DESCRIPTION');
+    }
+    const name = this.parseIcalField(raw_event, 'SUMMARY').split(' - ')[0];
+    const date = this.parseIcalDateTime(this.parseIcalField(raw_event, 'DTSTART'));
+    const end_date = this.parseIcalDateTime(this.parseIcalField(raw_event, 'DTEND'));
+    const diff = end_date.valueOf() - date.valueOf();
+    const event: CourseEvent = {
+      sharedId: `${name}-${date.getDay()}/${date.getHours()}/${date.getMinutes()}`,
+      count: 1,
+      location: this.parseIcalField(raw_event, 'LOCATION'),
+      name: name,
+      courseType: courseType,
+      weekDate: {
+        day: date.getDay(),
+        hour: date.getHours(),
+        minutes: date.getMinutes(),
+      },
+      startDate: date,
+      duration: diff,
+    };
+
+    return event;
   }
 }

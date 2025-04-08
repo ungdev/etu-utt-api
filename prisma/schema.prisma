@@ -36,12 +36,12 @@ model ApiKeyPermission {
   permission Permission
   apiKeyId   String
   userId     String? // The user targetted by the permission. If null, this is a hard grant. It must thus be null if this is an api permission.
-  granterId  String
+  granterId  String? // Null if granter was deleted
   createdAt  DateTime @default(now())
 
   apiKey  ApiKey @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
   user    User?  @relation(name: "target", fields: [userId], references: [id], onDelete: Cascade)
-  granter User   @relation(name: "granter", fields: [granterId], references: [id])
+  granter User?   @relation(name: "granter", fields: [granterId], references: [id], onDelete: SetNull)
 
   @@unique([apiKeyId, userId, permission])
 }
@@ -196,10 +196,9 @@ model TimetableEntry {
   type               TimetableEntryType
   location           String
   eventId            String?
-  ueCourseId         String?
   createdAt          DateTime           @default(now())
 
-  ueCourse        UeCourse?                @relation(fields: [ueCourseId], references: [id])
+  ueCourse        UeCourse?
   event           Event?                   @relation(fields: [eventId], references: [id])
   overwrittenBy   TimetableEntryOverride[] @relation(name: "overrideTimetableEntry")
   timetableGroups TimetableGroup[]
@@ -428,11 +427,11 @@ model UeCommentUpvote {
 }
 
 model UeCourse {
-  id         String     @id @default(uuid())
-  createdAt  DateTime   @default(now())
-  room       String     @db.VarChar(50)
-  semesterId String
-  type       CourseType
+  id          String     @id @default(uuid())
+  type        CourseType
+  createdAt   DateTime   @default(now())
+  semesterId  String
+  timetableId String     @unique()
   ueofCode   String
 
   courseExchangesFrom UeCourseExchange[] @relation(name: "courseFrom")
@@ -440,7 +439,7 @@ model UeCourse {
   semester            Semester           @relation(fields: [semesterId], references: [code])
   ueof                Ueof               @relation(fields: [ueofCode], references: [code])
   students            User[]
-  timetableEntries    TimetableEntry[]
+  timetableEntry      TimetableEntry     @relation(fields: [timetableId], references: [id])
 }
 
 model UeCourseExchange {

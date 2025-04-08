@@ -17,7 +17,7 @@ export class ProfileService {
 
   async setHomepageWidgets(userId: string, widgets: HomepageWidgetsUpdateElement[]): Promise<RawHomepageWidget[]> {
     return (
-      await this.prisma.withDefaultBehaviour.user.update({
+      await this.prisma.user.update({
         where: { id: userId },
         data: { homepageWidgets: { deleteMany: {}, createMany: { data: widgets } } },
         select: { homepageWidgets: true },
