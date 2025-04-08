@@ -181,7 +181,7 @@ export class AnnalsController {
   @ApiOkResponse({ type: UeAnnalResDto })
   @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_ANNAL)
   @ApiAppErrorResponse(ERROR_CODE.NOT_ANNAL_SENDER)
-  async deleteUeAnnal(@UUIDParam('annalId') annalId: string, @GetUser() user: User) {
+  async deleteUeAnnal(@UUIDParam('annalId') annalId: string, @GetUser() user: User): Promise<UeAnnalResDto> {
     if (!(await this.annalsService.isAnnalAccessible(user.id, annalId, user.permissions.includes('annalModerator'))))
       throw new AppException(ERROR_CODE.NO_SUCH_ANNAL, annalId);
     if (!(await this.annalsService.isUeAnnalSender(user.id, annalId)) && !user.permissions.includes('annalModerator'))
