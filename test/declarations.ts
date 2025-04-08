@@ -77,6 +77,8 @@ Spec.prototype.withApplication = function (application: string) {
   this.application = application;
   return <Spec>this;
 };
+// Spec.prototype.toss is the function called to execute the request.
+// Here, we modify it to include the special headers just before sending the request.
 Spec.prototype.toss = function () {
   (<Spec>this).withHeaders('X-Language', (<Spec>this).language).withHeaders('X-Application', (<Spec>this).application);
   return baseToss.call(<Spec>this);
@@ -261,20 +263,16 @@ Spec.prototype.expectApplications = function (applications: FakeApiApplication[]
       .map(
         (application) =>
           ({
-            id: application.id,
-            name: application.name,
-            userId: application.userId,
-            redirectUrl: application.redirectUrl,
+            ...pick(application as Required<FakeApiApplication>, 'id', 'name', 'redirectUrl'),
+            owner: pick(application.owner, 'id', 'firstName', 'lastName'),
           } satisfies ApplicationResDto),
       ),
   );
 };
 Spec.prototype.expectApplication = function (application: FakeApiApplication) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJson({
-    id: application.id,
-    name: application.name,
-    userId: application.userId,
-    redirectUrl: application.redirectUrl,
+    ...pick(application as Required<FakeApiApplication>, 'id', 'name', 'redirectUrl'),
+    owner: pick(application.owner, 'id', 'firstName', 'lastName'),
   } satisfies ApplicationResDto);
 };
 

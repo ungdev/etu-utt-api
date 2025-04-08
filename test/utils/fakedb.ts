@@ -113,7 +113,9 @@ export type FakeUeCreditCategory = Partial<RawCreditCategory>;
 export type FakeUeAnnalType = Partial<RawAnnalType>;
 export type FakeUeAnnal = Partial<UeAnnalFile>;
 export type FakeHomepageWidget = Partial<RawHomepageWidget>;
-export type FakeApiApplication = Partial<RawApiApplication>;
+export type FakeApiApplication = Partial<Omit<RawApiApplication, 'ownerId'>> & {
+  owner: { id: string; firstName: string; lastName: string };
+};
 
 export interface FakeEntityMap {
   assoMembership: {
@@ -230,7 +232,7 @@ export interface FakeEntityMap {
   application: {
     entity: FakeApiApplication;
     params: CreateApiApplicationParameter;
-    deps: { user: FakeUser };
+    deps: { owner: FakeUser };
   };
 }
 
@@ -345,12 +347,8 @@ export const createUser = entityFaker(
                 : [
                     {
                       permission: Permission.USER_SEE_DETAILS,
-                      soft: true,
-                      grants: {
-                        create: {
-                          user: { connect: { id: user.id } },
-                        },
-                      },
+                      user: { connect: { id: user.id } },
+                      granter: { connect: { id: user.id } },
                     },
                   ]),
               ...(params.permissions.includes(Permission.USER_UPDATE_DETAILS)
@@ -358,17 +356,14 @@ export const createUser = entityFaker(
                 : [
                     {
                       permission: Permission.USER_UPDATE_DETAILS,
-                      soft: true,
-                      grants: {
-                        create: {
-                          user: { connect: { id: user.id } },
-                        },
-                      },
+                      user: { connect: { id: user.id } },
+                      granter: { connect: { id: user.id } },
                     },
                   ]),
               ...params.permissions.map((permission) => ({
                 permission,
-                soft: false,
+                user: null,
+                granter: { connect: { id: user.id } },
               })),
             ],
           },
@@ -467,9 +462,9 @@ export const createAsso = entityFaker(
   'association',
   {
     login: faker.internet.userName,
-    name: faker.name.firstName,
+    name: faker.db.association.name,
     mail: faker.datatype.string,
-    deletedAt: new Date(0),
+    deletedAt: null,
     descriptionShortTranslation: {
       fr: faker.company.catchPhrase(),
       en: faker.company.catchPhrase(),
@@ -490,10 +485,7 @@ export const createAsso = entityFaker(
       .get(PrismaService)
       .asso.create({
         data: {
-          ...omit(params, 'login', 'name', 'descriptionShortTranslationId', 'descriptionTranslationId'),
-          login: params.login,
-          name: params.name,
-          mail: params.mail,
+          ...pick(params, 'login', 'name', 'mail', 'deletedAt'),
           descriptionTranslation: {
             create: {
               fr: 'TODO : implement this value',
@@ -1032,7 +1024,7 @@ export const createHomepageWidget = entityFaker(
       .userHomepageWidget.create({ data: { ...omit(params, 'userId'), user: { connect: { id: deps.user.id } } } }),
 );
 
-export type CreateApiApplicationParameter = FakeApiApplication;
+export type CreateApiApplicationParameter = Omit<FakeApiApplication, 'owner'>;
 export const createApplication = entityFaker(
   'application',
   {
@@ -1046,10 +1038,10 @@ export const createApplication = entityFaker(
       .apiApplication.create({
         data: {
           ...pick(params, 'id', 'name', 'redirectUrl', 'clientSecret'),
-          user: { connect: { id: dependencies.user.id } },
+          owner: { connect: { id: dependencies.owner.id } },
           apiKeys: {
             create: {
-              userId: dependencies.user.id,
+              userId: dependencies.owner.id,
               token: faker.random.alphaNumeric(10),
             },
           },

@@ -215,9 +215,9 @@ export class AuthService {
   /**
    * Verifies the credentials are right.
    * It then returns a token the user can use to authenticate their requests.
-   * @param dto Data needed to sign in the user (login & password).
+   * @param login The login used to sign in.
+   * @param password The password used to sign in.
    * @param applicationId The id of the application to which the user should be signed in.
-   * @param tokenExpiresIn The time the return token will be valid, in seconds. If not given, token will not expire.
    * @returns signedIn If false, the user has no apiKeys linked to that application. {@link token} is therefore used to authorize login with the app.
    * @returns token The bearer token to use if connection was successful, or the token that should be sent through route "POST /auth/api-key" to create an api key for the app.
    */
@@ -268,22 +268,19 @@ export class AuthService {
    *   - { status: 'invalid', token: '' } : when the CAS returns that the provided values do not correspond to a known non-expired ticket.
    *   - { status: 'no_account', token: '<register_token>' } : when the validation was successful, but the user does not exist in our database. They need to create an account. The token provided is not a token to make requests, but contains information that will then be used to register the user.
    *   - { status: 'ok', token: '<token>' } : the user was successfully authenticated, the token is a normal access token that allows requests to be authenticated.
-   * @param service The service parameter for the CAS API.
    * @param ticket The ticket that was assigned for this particular connection by the CAS API.
    * @param applicationId The application the user is trying to log with.
-   * @param tokenExpiresIn The time the return token will be valid, in seconds. If not given, token will not expire.
    */
   async casSignIn(
-    service: string,
     ticket: string,
     applicationId: string,
   ): Promise<{
     userId: string;
     apiKeyId: string;
     basicUserData: { login: string; mail: string; lastName: string; firstName: string };
-  }> {
+  } | null> {
     const res = await lastValueFrom(
-      this.httpService.get(`${this.config.CAS_URL}/serviceValidate`, { params: { service, ticket } }),
+      this.httpService.get(`${this.config.CAS_URL}/serviceValidate`, { params: { service: this.config.CAS_SERVICE, ticket } }),
     );
     const resData: {
       ['cas:serviceResponse']:
@@ -406,6 +403,7 @@ export class AuthService {
    */
   signValidationToken(apiKeyId: string, applicationId: string, tokenExpiresIn: number) {
     return this.jwt.signAsync({ apiKeyId, applicationId, tokenExpiresIn } satisfies ValidationTokenData, {
+      expiresIn: 10,
       secret: this.config.JWT_SECRET,
     });
   }
@@ -420,10 +418,10 @@ export class AuthService {
   }
 
   /**
-   * Creates an API Key, and returns the signed token.
+   * Creates an API Key, and returns it (with its token).
    */
   async createApiKey(userId: string, applicationId: string): Promise<RawApiKey> {
-    return this.prisma.withDefaultBehaviour.apiKey.create({
+    return this.prisma.apiKey.create({
       data: {
         user: {
           connect: {
@@ -441,7 +439,7 @@ export class AuthService {
   }
 
   /**
-   * Generates a completely random string composed of
+   * Generates a completely random string composed of 128 characters (in base64)
    * @private
    */
   static generateToken(): string {

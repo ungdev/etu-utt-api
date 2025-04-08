@@ -61,6 +61,7 @@ export const enum ERROR_CODE {
   NOT_DONE_UE_IN_SEMESTER = 4227,
   NOT_ANNAL_SENDER = 4228,
   NOT_ALREADY_DONE_UEOF = 4229,
+  APPLICATION_NOT_OWNED = 4230,
   NO_SUCH_UE = 4401,
   NO_SUCH_COMMENT = 4402,
   NO_SUCH_REPLY = 4403,
@@ -275,6 +276,10 @@ export const ErrorData = Object.freeze({
   [ERROR_CODE.NOT_ALREADY_DONE_UEOF]: {
     message: 'You must have done this UEOF before to perform this action',
     httpCode: HttpStatus.FORBIDDEN,
+  },
+  [ERROR_CODE.APPLICATION_NOT_OWNED]: {
+    message: 'Application % is not owned by you',
+    httpCode: HttpStatus.UNAUTHORIZED,
   },
   [ERROR_CODE.NO_SUCH_UE]: {
     message: 'The UE % does not exist',

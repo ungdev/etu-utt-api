@@ -31,7 +31,8 @@
     "seed:ue:aliases": "env-cmd -f .env.dev -- ts-node scripts/seed/aliases.ts",
     "seed:base:prod": "node scripts/seed/base.js",
     "seed:ue:prod": "node scripts/seed/ue.js",
-    "seed:ue:aliases:prod": "node scripts/seed/aliases.js"
+    "seed:ue:aliases:prod": "node scripts/seed/aliases.js",
+    "script:deps:graph": "ts-node scripts/dependency_graph.ts"
   },
   "dependencies": {
     "@fast-csv/parse": "^5.0.0",

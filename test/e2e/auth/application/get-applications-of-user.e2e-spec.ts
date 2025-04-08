@@ -8,7 +8,7 @@ const GetApplicationsOfUserE2ESpec = e2eSuite('GET /auth/application/of/:userId'
   const user = fakedb.createUser(app);
   const unauthorizedUser = fakedb.createUser(app);
   const adminUser = fakedb.createUser(app, { permissions: [Permission.USER_SEE_DETAILS] });
-  const applications = [fakedb.createApplication(app, { user }), fakedb.createApplication(app, { user })];
+  const applications = [fakedb.createApplication(app, { owner: user }), fakedb.createApplication(app, { owner: user })];
 
   it('should return an Unauthorized as user is not logged in', () =>
     pactum.spec().get(`/auth/application/of/${user.id}`).expectAppError(ERROR_CODE.NOT_LOGGED_IN));

@@ -7,10 +7,6 @@ export default class AuthCasSignInReqDto {
   @IsNotEmpty()
   ticket: string;
 
-  @IsString()
-  @IsNotEmpty()
-  service: string;
-
   @IsInt()
   @Type(() => Number)
   @ApiProperty({ description: 'How much time the generated token should be valid' })

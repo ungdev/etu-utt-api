@@ -5,7 +5,7 @@ import * as fakedb from '../../../utils/fakedb';
 
 const GetMyApplicationsE2ESpec = e2eSuite('GET /auth/application/of/me', (app) => {
   const user = fakedb.createUser(app);
-  const applications = [fakedb.createApplication(app, { user }), fakedb.createApplication(app, { user })];
+  const applications = [fakedb.createApplication(app, { owner: user }), fakedb.createApplication(app, { owner: user })];
 
   it('should return an Unauthorized as user is not logged in', () =>
     pactum.spec().get('/auth/application/of/me').expectAppError(ERROR_CODE.NOT_LOGGED_IN));

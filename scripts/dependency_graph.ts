@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { AppModule } from '../src/app.module';
 import { INestApplication } from '@nestjs/common';
 import { SpelunkerModule } from 'nestjs-spelunker';
 import * as fs from 'fs';

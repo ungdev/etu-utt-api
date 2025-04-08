@@ -8,25 +8,24 @@ datasource db {
 }
 
 model ApiApplication {
-  id     String @id @default(uuid())
-  name   String
-  userId String
-  redirectUrl String
+  id           String @id @default(uuid())
+  name         String
+  ownerId      String
+  redirectUrl  String
   clientSecret String
 
-  user   User     @relation(fields: [userId], references: [id])
+  owner   User     @relation(fields: [ownerId], references: [id])
   apiKeys ApiKey[]
 }
 
 model ApiKey {
-  id             String   @id @default(uuid())
-  token          String   @unique
-  userId         String
-  applicationId  String
-  validationToken String?
+  id            String @id @default(uuid())
+  token         String @unique
+  userId        String
+  applicationId String
 
-  user                      User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  application               ApiApplication         @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  application       ApiApplication     @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   apiKeyPermissions ApiKeyPermission[]
 
   @@unique([userId, applicationId])
@@ -36,23 +35,15 @@ model ApiKeyPermission {
   id         String     @id @default(uuid())
   permission Permission
   apiKeyId   String
-  soft       Boolean
+  userId     String? // The user targetted by the permission. If null, this is a hard grant. It must thus be null if this is an api permission.
+  granterId  String
+  createdAt  DateTime @default(now())
 
-  apiKey ApiKey                 @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
-  grants ApiGrantedPermission[]
+  apiKey  ApiKey @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  user    User?  @relation(name: "target", fields: [userId], references: [id], onDelete: Cascade)
+  granter User   @relation(name: "granter", fields: [granterId], references: [id])
 
-  @@unique([apiKeyId, permission])
-}
-
-model ApiGrantedPermission {
-  apiKeyPermissionId String
-  userId                     String
-  createdAt                  DateTime @default(now())
-
-  apiKeyPermission ApiKeyPermission @relation(fields: [apiKeyPermissionId], references: [id], onDelete: Cascade)
-  user                     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@id([userId, apiKeyPermissionId])
+  @@unique([apiKeyId, userId, permission])
 }
 
 model Asso {
@@ -514,7 +505,7 @@ model UeofInfo {
 
 model UeStarCriterion {
   id                       String @id @default(uuid())
-  name                     String @db.VarChar(255) @unique
+  name                     String @unique @db.VarChar(255)
   descriptionTranslationId String @unique
 
   descriptionTranslation Translation  @relation(fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
@@ -564,11 +555,11 @@ model User {
   socialNetworkId String  @unique
   privacyId       String  @unique
 
-  socialNetwork         UserSocialNetwork           @relation(fields: [socialNetworkId], references: [id])
-  rgpd                  UserRGPD                    @relation(fields: [rgpdId], references: [id])
-  preference            UserPreference              @relation(fields: [preferenceId], references: [id])
-  infos                 UserInfos                   @relation(fields: [infosId], references: [id])
-  mailsPhones           UserMailsPhones             @relation(fields: [mailsPhonesId], references: [id])
+  socialNetwork         UserSocialNetwork        @relation(fields: [socialNetworkId], references: [id])
+  rgpd                  UserRGPD                 @relation(fields: [rgpdId], references: [id])
+  preference            UserPreference           @relation(fields: [preferenceId], references: [id])
+  infos                 UserInfos                @relation(fields: [infosId], references: [id])
+  mailsPhones           UserMailsPhones          @relation(fields: [mailsPhonesId], references: [id])
   userType              UserType
   timestamps            UserTimestamps?
   bans                  UserBan[]
@@ -598,7 +589,8 @@ model User {
   privacy               UserPrivacy              @relation(fields: [privacyId], references: [id])
   apiApplications       ApiApplication[]
   apiKeys               ApiKey[]
-  apiGrants             ApiGrantedPermission[]
+  apiPermissionsTarget  ApiKeyPermission[] @relation(name: "target")
+  apiPermissionsGrants  ApiKeyPermission[] @relation(name: "granter")
 }
 
 model UserAddress {

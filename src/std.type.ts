@@ -7,6 +7,7 @@ declare global {
     /**
      * Sorts the current array (in place) and returns it.
      * Array is sorted based on a mapper function, that returns in order the values by which to sort the array.
+     * Sorting based on a string IS NOT case-sensitive, meaning 'A' and 'a' have the same value.
      * @example
      * const array = [
      *   { a: 3, b: 'early into the alphabet' },
@@ -24,8 +25,6 @@ declare global {
      *               The length of the array should be fixed, not dependent on the value to map.
      */
     mappedSort(mapper: (e: T) => any[] | any): this;
-    /** Retrieves all unique values of this array, skipping all duplicates. Does not alter original array */
-    readonly uniqueValues: this;
 
     /**
      * Creates a new array containing the same values as the original array, but removing duplicates.
@@ -77,14 +76,8 @@ Array.prototype.mappedSort = function <T>(this: Array<T>, mapper: (e: T) => any[
   });
 };
 
-Object.defineProperty(Array.prototype, 'uniqueValues', {
-  get: function <T>(this: Array<T>) {
-    return this.filter((value, index) => this.indexOf(value) === index);
-  },
-});
-
 Array.prototype.unique = function <T>(this: Array<T>) {
-  return this.reduce((acc, curr) => (acc.includes(curr) ? acc : [...acc, curr]), [] as T[]);
+  return this.filter((value, index) => this.indexOf(value) === index);
 };
 
 export {};

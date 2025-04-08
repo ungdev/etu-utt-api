@@ -98,13 +98,9 @@ const USER_SELECT_FILTER = {
         id: true,
         apiKeyPermissions: {
           select: {
+            id: true,
             permission: true,
-            soft: true,
-            grants: {
-              select: {
-                userId: true,
-              },
-            },
+            userId: true,
           },
         },
       },
@@ -126,10 +122,15 @@ function formatUser(_, user: UnformattedUser) {
   for (const apiKey of user.apiKeys) {
     permissions[apiKey.id] = {};
     for (const permission of apiKey.apiKeyPermissions) {
-      if (!permission.soft) {
+      if (!permission.userId) {
+        // Hard grant
         permissions[apiKey.id][permission.permission] = '*';
       } else {
-        permissions[apiKey.id][permission.permission] = permission.grants.map((p) => p.userId);
+        // Soft grant
+        if (!permission[apiKey.id][permission.permission]) {
+          permissions[apiKey.id][permission.permission] = [];
+        }
+        (permissions[apiKey.id][permission.permission] as string[]).push(permission.userId);
       }
     }
   }

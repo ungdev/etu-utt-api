@@ -5,7 +5,7 @@ import * as fakedb from '../../../utils/fakedb';
 
 const GetApplicationE2ESpec = e2eSuite('GET /auth/application/:applicationId', (app) => {
   const user = fakedb.createUser(app);
-  const application = fakedb.createApplication(app, { user });
+  const application = fakedb.createApplication(app, { owner: user });
 
   it('should fail as application does not exist', () =>
     pactum.spec().get(`/auth/application/ABCDEF`).expectAppError(ERROR_CODE.NO_SUCH_APPLICATION, 'ABCDEF'));

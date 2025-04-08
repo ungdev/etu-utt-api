@@ -11,7 +11,7 @@ import { PrismaService } from '../../../src/prisma/prisma.service';
 const CreateApiKeyE2ESpec = e2eSuite('POST /auth/api-key', (app) => {
   const authService = () => app().get(AuthService);
   const user = fakedb.createUser(app);
-  const application = fakedb.createApplication(app, { user });
+  const application = fakedb.createApplication(app, { owner: user });
   const otherUser = fakedb.createUser(app);
 
   it('should return a 400 as the token is not valid', async () =>

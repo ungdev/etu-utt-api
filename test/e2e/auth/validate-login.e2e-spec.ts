@@ -12,7 +12,7 @@ import { JwtService } from '@nestjs/jwt';
 const ValidateLoginE2ESpec = e2eSuite('POST /auth/login/validate', (app) => {
   const authService = () => app().get(AuthService);
   const user = fakedb.createUser(app);
-  const application = fakedb.createApplication(app, { user });
+  const application = fakedb.createApplication(app, { owner: user });
 
   it('should return a 400 as the token is not valid', async () =>
     pactum

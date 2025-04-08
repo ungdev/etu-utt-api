@@ -8,15 +8,15 @@ export default class ApplicationService {
   constructor(private prisma: PrismaService, private authService: AuthService) {}
 
   getFromUserId(userId: string): Promise<Application[]> {
-    return this.prisma.apiApplication.findMany({ where: { userId } });
+    return this.prisma.apiApplication.findMany({ where: { ownerId: userId } });
   }
 
   async createApplication(userId: string, applicationName: string, redirectUrl: string): Promise<Application> {
-    return this.prisma.withDefaultBehaviour.apiApplication.create({
+    return this.prisma.apiApplication.create({
       data: {
         name: applicationName,
         redirectUrl,
-        user: { connect: { id: userId } },
+        owner: { connect: { id: userId } },
         clientSecret: AuthService.generateToken(),
       },
     });

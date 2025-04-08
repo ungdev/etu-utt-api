@@ -5,9 +5,15 @@ const APPLICATION_SELECT_FILTER = {
   select: {
     id: true,
     name: true,
-    userId: true,
     redirectUrl: true,
     clientSecret: true,
+    owner: {
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+      },
+    },
   },
   orderBy: {
     name: 'asc',

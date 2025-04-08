@@ -8,7 +8,8 @@ import { PrismaService } from '../../../../src/prisma/prisma.service';
 
 const UpdateApplicationTokenE2ESpec = e2eSuite('PATCH /auth/application/:applicationId/token', (app) => {
   const user = fakedb.createUser(app);
-  const application = fakedb.createApplication(app, { user });
+  const otherUser = fakedb.createUser(app);
+  const application = fakedb.createApplication(app, { owner: user });
 
   it('should fail as user is not authenticated', () =>
     pactum.spec().patch(`/auth/application/${application.id}/token`).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
@@ -19,6 +20,9 @@ const UpdateApplicationTokenE2ESpec = e2eSuite('PATCH /auth/application/:applica
       .patch(`/auth/application/ABCDEF/token`)
       .withBearerToken(user.token)
       .expectAppError(ERROR_CODE.NO_SUCH_APPLICATION, 'ABCDEF'));
+
+  it('should fail as user is not the owner of the application', () =>
+    pactum.spec().patch(`/auth/application/${application.id}/token`).withBearerToken(otherUser.token).expectAppError(ERROR_CODE.APPLICATION_NOT_OWNED, application.id));
 
   it('should return a new client secret', () =>
     pactum

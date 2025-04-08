@@ -15,16 +15,12 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   async validate(payload: { token: string }): Promise<RequestAuthData> {
-    const apiKey = await this.prisma.apiKey.findUnique({
+    const apiKey = await this.prisma.withDefaultBehaviour.apiKey.findUnique({
       where: {
         token: payload.token,
       },
       include: {
-        apiKeyPermissions: {
-          include: {
-            grants: true,
-          },
-        },
+        apiKeyPermissions: true,
         application: true,
       },
     });
@@ -39,13 +35,13 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       if (permissions[permission.permission] === '*') {
         continue;
       }
-      if (!permission.soft) {
+      if (!permission.userId) {
         permissions[permission.permission] = '*';
       } else {
         if (!permissions[permission.permission]) {
           permissions[permission.permission] = [];
         }
-        (permissions[permission.permission] as string[]).push(...permission.grants.map((grant) => grant.userId));
+        (permissions[permission.permission] as string[]).push(permission.userId);
       }
     }
     return {

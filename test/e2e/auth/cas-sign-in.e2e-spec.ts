@@ -12,7 +12,6 @@ import { HttpStatus } from '@nestjs/common';
 
 const CasSignInE2ESpec = e2eSuite('POST /auth/signin/cas', (app) => {
   const body: AuthCasSignInReqDto = {
-    service: cas.validService,
     ticket: cas.validTicket,
     tokenExpiresIn: cas.user.tokenExpiresIn,
   };

@@ -121,7 +121,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
-      'Signs in the user using CAS, and returns an token. This token should be used as a Bearer token (if application is the EtuUTT website) or should be passed to `POST /auth/validate`.',
+      'Signs in the user using CAS, and returns a token. This token should be used as a Bearer token (if application is the EtuUTT website) or should be passed to `POST /auth/validate`.',
   })
   @ApiCreatedResponse({
     description:
@@ -135,7 +135,7 @@ export class AuthController {
     @Body() dto: AuthCasSignInReqDto,
     @GetApplication() application: Application,
   ): Promise<CasLoginResDto> {
-    const res = await this.authService.casSignIn(dto.service, dto.ticket, application.id);
+    const res = await this.authService.casSignIn(dto.ticket, application.id);
     if (!res) throw new AppException(ERROR_CODE.INVALID_CAS_TICKET);
     if (!res.userId)
       return {
@@ -249,7 +249,7 @@ export class AuthController {
     const data = this.authService.decodeValidationToken(dto.token);
     if (!data) throw new AppException(ERROR_CODE.INVALID_TOKEN_FORMAT);
     if (data.applicationId !== application.id) throw new AppException(ERROR_CODE.INCONSISTENT_APPLICATION);
-    if (dto.clientSecret !== application.clientSecret) throw new AppException(ERROR_CODE.INVALID_TOKEN_FORMAT); // Should we return a specific error for this ? That would also give some info about what the problem is to a malicious person.
+    if (dto.clientSecret !== application.clientSecret) throw new AppException(ERROR_CODE.INVALID_TOKEN_FORMAT);
     const token = await this.authService.signApiKey(data.apiKeyId, data.tokenExpiresIn);
     if (!token) throw new AppException(ERROR_CODE.INVALID_TOKEN_FORMAT);
     return { token };

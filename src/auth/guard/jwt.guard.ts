@@ -16,7 +16,9 @@ export class JwtGuard extends AuthGuard('jwt') {
     const request = context.switchToHttp().getRequest() as { user: RequestAuthData };
     const applicationId = context.switchToHttp().getRequest().headers['x-application'];
     if (!applicationId) throw new AppException(ERROR_CODE.APPLICATION_HEADER_MISSING);
-    const application = await this.prisma.apiApplication.findUnique({ where: { id: applicationId } });
+    const application = await this.prisma.withDefaultBehaviour.apiApplication.findUnique({
+      where: { id: applicationId },
+    });
     if (!application) {
       throw new AppException(ERROR_CODE.NO_SUCH_APPLICATION, applicationId);
     }

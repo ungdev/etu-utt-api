@@ -125,6 +125,9 @@ declare module '@faker-js/faker' {
       ueStarCriterion: {
         name: () => string;
       };
+      association: {
+        name: () => string;
+      };
     };
   }
 }
@@ -185,6 +188,9 @@ Faker.prototype.db = {
   },
   ueStarCriterion: {
     name: () => fakeSafeUniqueData('ueStarCriterion', 'name', faker.word.adjective),
+  },
+  association: {
+    name: () => fakeSafeUniqueData('association', 'name', faker.name.firstName),
   },
 };
 
