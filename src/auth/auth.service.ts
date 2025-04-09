@@ -280,7 +280,9 @@ export class AuthService {
     basicUserData: { login: string; mail: string; lastName: string; firstName: string };
   } | null> {
     const res = await lastValueFrom(
-      this.httpService.get(`${this.config.CAS_URL}/serviceValidate`, { params: { service: this.config.CAS_SERVICE, ticket } }),
+      this.httpService.get(`${this.config.CAS_URL}/serviceValidate`, {
+        params: { service: this.config.CAS_SERVICE, ticket },
+      }),
     );
     const resData: {
       ['cas:serviceResponse']:

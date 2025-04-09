@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Permission, Sex, UserType } from '@prisma/client';
+import { Sex, UserType } from '@prisma/client';
 
 export default class UserOverviewResDto {
   id: string;

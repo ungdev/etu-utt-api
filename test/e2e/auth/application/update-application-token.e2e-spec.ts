@@ -22,7 +22,11 @@ const UpdateApplicationTokenE2ESpec = e2eSuite('PATCH /auth/application/:applica
       .expectAppError(ERROR_CODE.NO_SUCH_APPLICATION, 'ABCDEF'));
 
   it('should fail as user is not the owner of the application', () =>
-    pactum.spec().patch(`/auth/application/${application.id}/token`).withBearerToken(otherUser.token).expectAppError(ERROR_CODE.APPLICATION_NOT_OWNED, application.id));
+    pactum
+      .spec()
+      .patch(`/auth/application/${application.id}/token`)
+      .withBearerToken(otherUser.token)
+      .expectAppError(ERROR_CODE.APPLICATION_NOT_OWNED, application.id));
 
   it('should return a new client secret', () =>
     pactum

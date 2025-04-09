@@ -1,7 +1,6 @@
-import { Permission, Prisma, PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { generateCustomModel, RequestType } from '../../prisma/prisma.service';
 import { Translation } from '../../prisma/types';
-import { omit } from '../../utils';
 
 const USER_SELECT_FILTER = {
   select: {
