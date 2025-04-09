@@ -140,12 +140,6 @@ export default class UsersController {
               country: address.country,
             }))
           : [],
-      permissions: Object.values(user.permissions)
-        .map((apiKeyPermissions) =>
-          Object.keys(apiKeyPermissions).filter((permission) => apiKeyPermissions[permission] === '*'),
-        )
-        .flat()
-        .unique(),
     };
   }
 

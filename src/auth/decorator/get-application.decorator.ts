@@ -7,8 +7,13 @@ import { Application } from '../application/interfaces/application.interface';
  * @returns The application property or the whole application.
  *
  * @example
- * ```
- * // INSERT EXAMPLE HERE
+ * ```typescript
+ * async casSignUp(
+ *   @Body() dto: AuthCasSignUpReqDto,
+ *   @GetApplication('id') application: string,
+ * ) {
+ *   ...
+ * }
  * ```
  */
 export const GetApplication = createParamDecorator((data: keyof Application, ctx: ExecutionContext) => {

@@ -7,8 +7,6 @@ export default class UserOverviewResDto {
   lastName: string;
   login: string;
   studentId: number;
-  @ApiProperty({ enum: Permission })
-  permissions: Permission[];
   @ApiProperty({ enum: UserType })
   userType: UserType;
   infos: UserOverviewResDto_Infos;

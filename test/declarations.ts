@@ -142,7 +142,7 @@ Spec.prototype.expectUsers = function (app: AppProvider, users: FakeUser[], coun
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonMatchStrict(
     deepDateToString({
       items: users.map((user) => ({
-        ...pick(user, 'id', 'firstName', 'lastName', 'login', 'studentId', 'permissions', 'userType'),
+        ...pick(user, 'id', 'firstName', 'lastName', 'login', 'studentId', 'userType'),
         infos: pick(user.infos, 'nickname', 'avatar', 'nationality', 'passions', 'website'),
         branchSubscriptions: user.branchSubscriptions.map((branch) => pick(branch, 'id')),
         mailsPhones: pick(user.mailsPhones, 'mailUTT'),

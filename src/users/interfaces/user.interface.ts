@@ -93,49 +93,14 @@ const USER_SELECT_FILTER = {
         timetable: true,
       },
     },
-    apiKeys: {
-      select: {
-        id: true,
-        apiKeyPermissions: {
-          select: {
-            id: true,
-            permission: true,
-            userId: true,
-          },
-        },
-      },
-    },
   },
   orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
 } satisfies Partial<RequestType<'user'>>;
 
-type UnformattedUser = Prisma.UserGetPayload<typeof USER_SELECT_FILTER>;
-export type User = Omit<UnformattedUser, 'apiKeys'> & {
-  permissions: { [k: string]: { [p in Permission]?: '*' | string[] } };
-};
+export type User = Prisma.UserGetPayload<typeof USER_SELECT_FILTER>;
 
 export const generateCustomUserModel = (prisma: PrismaClient) =>
-  generateCustomModel(prisma, 'user', USER_SELECT_FILTER, formatUser);
-
-function formatUser(_, user: UnformattedUser) {
-  const permissions: User['permissions'] = {};
-  for (const apiKey of user.apiKeys) {
-    permissions[apiKey.id] = {};
-    for (const permission of apiKey.apiKeyPermissions) {
-      if (!permission.userId) {
-        // Hard grant
-        permissions[apiKey.id][permission.permission] = '*';
-      } else {
-        // Soft grant
-        if (!permissions[apiKey.id][permission.permission]) {
-          permissions[apiKey.id][permission.permission] = [];
-        }
-        (permissions[apiKey.id][permission.permission] as string[]).push(permission.userId);
-      }
-    }
-  }
-  return { ...omit(user, 'apiKeys'), permissions };
-}
+  generateCustomModel(prisma, 'user', USER_SELECT_FILTER, (_, user: User) => user);
 
 export type UserAssoMembership = {
   startAt: Date;
