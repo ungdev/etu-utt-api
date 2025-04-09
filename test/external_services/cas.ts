@@ -2,20 +2,23 @@ import axios from 'axios';
 import nock from 'nock';
 import { HttpStatus } from '@nestjs/common';
 import { faker } from '@faker-js/faker';
-import { RegisterData } from '../../src/auth/auth.service';
+import { RegisterUserData } from '../../src/auth/auth.service';
+import { ConfigModule } from '../../src/config/config.module';
 
-export const validService = faker.internet.url();
+export let validService = '';
 export const validTicket = faker.datatype.uuid();
-export const user: RegisterData = {
+export const user: RegisterUserData = {
   login: faker.datatype.uuid(),
   mail: faker.internet.email(),
   lastName: faker.name.lastName(),
   firstName: faker.name.firstName(),
+  tokenExpiresIn: 999999,
 };
 
-export function enable(casUrl: string) {
+export function enable(config: ConfigModule) {
+  validService = config.CAS_SERVICE;
   axios.defaults.adapter = 'http';
-  nock(casUrl)
+  nock(config.CAS_URL)
     .persist()
     .get(`/serviceValidate`)
     .query({ service: validService, ticket: validTicket })

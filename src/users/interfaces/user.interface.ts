@@ -21,11 +21,6 @@ const USER_SELECT_FILTER = {
         nationality: true,
       },
     },
-    permissions: {
-      select: {
-        userPermissionId: true,
-      },
-    },
     branchSubscriptions: {
       select: {
         semesterNumber: true,
@@ -101,20 +96,10 @@ const USER_SELECT_FILTER = {
   orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
 } satisfies Partial<RequestType<'user'>>;
 
-type UnformattedUser = Prisma.UserGetPayload<typeof USER_SELECT_FILTER>;
-export type User = Omit<UnformattedUser, 'permissions'> & {
-  permissions: string[];
-};
+export type User = Prisma.UserGetPayload<typeof USER_SELECT_FILTER>;
 
 export const generateCustomUserModel = (prisma: PrismaClient) =>
-  generateCustomModel(prisma, 'user', USER_SELECT_FILTER, formatUser);
-
-export function formatUser(_: PrismaClient, user: UnformattedUser): User {
-  return {
-    ...user,
-    permissions: user.permissions.map((permission) => permission.userPermissionId),
-  };
-}
+  generateCustomModel(prisma, 'user', USER_SELECT_FILTER, (_, user: User) => user);
 
 export type UserAssoMembership = {
   startAt: Date;

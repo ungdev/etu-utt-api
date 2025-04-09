@@ -42,4 +42,8 @@ export default class AuthSignUpReqDto {
   @Type(() => Date)
   @IsOptional()
   birthday?: Date;
+
+  @IsPositive()
+  @Type(() => Number)
+  tokenExpiresIn?: number;
 }

@@ -110,7 +110,6 @@ export default class UsersController {
       lastName: user.lastName,
       login: user.login,
       studentId: user.studentId,
-      permissions: user.permissions,
       userType: user.userType,
       infos: {
         ...pick(user.infos, 'nickname', 'avatar', 'nationality', 'passions', 'website'),

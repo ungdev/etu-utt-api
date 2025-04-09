@@ -1,4 +1,5 @@
 export default class CasLoginResDto {
-  signedIn: boolean;
-  access_token: string;
+  status: 'no_account' | 'no_api_key' | 'ok';
+  token: string | null;
+  redirectUrl: string | null;
 }

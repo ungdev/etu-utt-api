@@ -7,7 +7,7 @@ import { ConfigModule } from '../../../src/config/config.module';
 const SearchE2ESpec = e2eSuite('GET /users', (app) => {
   const user = fakedb.createUser(app, {
     lastName: 'zis is sad, i am last in the alphabet :(',
-    firstName: 'thi missing l3ttr',
+    firstName: 'thi mizing lettr',
   });
 
   const randomUsers = [];
@@ -38,7 +38,7 @@ const SearchE2ESpec = e2eSuite('GET /users', (app) => {
   it('should return both users by searching by their firstName', async () => {
     return pactum
       .spec()
-      .get('/users?firstName=e')
+      .get('/users?firstName=s')
       .withBearerToken(user.token)
       .expectUsers(app, randomUsers.slice(0, app().get(ConfigModule).PAGINATION_PAGE_SIZE), randomUsers.length);
   });
