@@ -74,8 +74,7 @@ Une _API permissions_ est nécessairement _hard granted_ (aucun sens de les _sof
 **Exemple :** Guillaume rêve de pouvoir. Et finalement, il a amélioré son application (Teddy est revenu sur son choix). Son code est devenu propriété de l'UNG (merci Guillaume). Nous pouvons donc donner la _permission_ pour voir les informations personnelles des utilisateurs à l'_application_. Un administrateur va alors _hard grant_ la _permission_ à l'_application_ de Guillaume. Les utilisateurs n'ont pas besoin de donner leur consentement, Guillaume aspire toutes leurs données 😈.
 
 ```{warning}
-Attenation cependant à bien respecter le RGPD en faisant un _hard grant_ d'une _user permission_ ! \
-À ce jour, nous ne pensons qu'à 2 _applications_ qui devraient en avoir besoin : le site de EtuUTT, et son application.
+Attention cependant à bien respecter le RGPD en faisant un _hard grant_ d'une _user permission_ ! \
 ```
 
 ## Tables
