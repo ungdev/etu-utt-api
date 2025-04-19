@@ -1,6 +1,8 @@
 import { Faker, faker } from '@faker-js/faker';
 import { Entity, FakeEntityMap } from '../../test/utils/fakedb';
 import { Translation } from 'src/prisma/types';
+import { PrismaClient, UserType } from '@prisma/client';
+import { PrismaService } from '../../src/prisma/prisma.service';
 
 // While waiting to be able to recover the real data
 export const branchesCode = ['ISI', 'GM', 'RT', 'MTE', 'GI', 'SN', 'A2I', 'MM'];
@@ -93,7 +95,7 @@ function fakeSafeUniqueData<T extends keyof FakeEntityMap, K extends keyof Entit
  * Extends the faker module with custom functions.
  * These functions are used to generate values for the database.
  * This is the schema of the extension:
- * {@code {db: { [tableName]: { [columnName]: () => value } } } }
+ * {@code { db: { [tableName]: { [columnName]: () => value } } } }
  */
 declare module '@faker-js/faker' {
   export interface Faker {
@@ -119,6 +121,12 @@ declare module '@faker-js/faker' {
       translation: (rng?: () => string) => Omit<Translation, 'id'>;
       assoMembershipRole: {
         position: () => number;
+      };
+      ueStarCriterion: {
+        name: () => string;
+      };
+      association: {
+        name: () => string;
       };
     };
   }
@@ -178,7 +186,15 @@ Faker.prototype.db = {
         () => Math.max(...(registeredUniqueValues.assoMembershipRole?.position ?? [0])) + 1,
       ),
   },
+  ueStarCriterion: {
+    name: () => fakeSafeUniqueData('ueStarCriterion', 'name', faker.word.adjective),
+  },
+  association: {
+    name: () => fakeSafeUniqueData('association', 'name', faker.name.firstName),
+  },
 };
+
+export { Faker };
 
 export function generateTranslation(rng: () => string = faker.random.words) {
   return {
@@ -190,4 +206,30 @@ export function generateTranslation(rng: () => string = faker.random.words) {
   };
 }
 
-export { Faker };
+export async function generateDefaultApplication(prisma: PrismaService | PrismaClient): Promise<void> {
+  // Ok typing is broken there
+  await (prisma.user.create as any)({
+    data: {
+      login: 'etuutt',
+      firstName: 'Etu',
+      lastName: 'UTT',
+      userType: UserType.STUDENT,
+      apiApplications: {
+        create: DEFAULT_APPLICATION,
+      },
+      socialNetwork: { create: {} },
+      rgpd: { create: {} },
+      preference: { create: {} },
+      infos: { create: {} },
+      mailsPhones: { create: {} },
+      privacy: { create: {} },
+    },
+  });
+}
+
+export const DEFAULT_APPLICATION = {
+  id: process.env.ETUUTT_WEBSITE_APPLICATION_ID ?? '52ce644d-183f-49e9-bd21-d2d4f37e2196',
+  name: 'EtuUTT Website',
+  redirectUrl: 'http://localhost:8080/',
+  clientSecret: 'theetuuttwebsite',
+};

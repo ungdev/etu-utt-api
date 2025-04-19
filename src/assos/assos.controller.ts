@@ -50,13 +50,21 @@ export class AssosController {
     return {
       ...pick(asso, 'id', 'name', 'logo', 'president'),
       shortDescription: asso.descriptionShortTranslation,
+      president: {
+        role: pick(asso.president.role, 'id', 'name'),
+        user: !!asso.president.user ? pick(asso.president.user, 'id', 'firstName', 'lastName') : null,
+      },
     };
   }
 
   formatAssoDetail(asso: Asso): AssoDetailResDto {
     return {
-      ...pick(asso, 'id', 'login', 'name', 'mail', 'phoneNumber', 'website', 'logo', 'president'),
+      ...pick(asso, 'id', 'login', 'name', 'mail', 'phoneNumber', 'website', 'logo'),
       description: asso.descriptionTranslation,
+      president: {
+        role: pick(asso.president.role, 'id', 'name'),
+        user: !!asso.president.user ? pick(asso.president.user, 'id', 'firstName', 'lastName') : null,
+      },
     };
   }
 }

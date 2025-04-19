@@ -14,6 +14,8 @@ import { HttpException, HttpStatus } from '@nestjs/common';
  */
 export const enum ERROR_CODE {
   NOT_LOGGED_IN = 1001,
+  APPLICATION_HEADER_MISSING = 1002,
+  INCONSISTENT_APPLICATION = 1003,
   PARAM_DOES_NOT_EXIST = 2001,
   PARAM_MALFORMED = 2002,
   PARAM_MISSING = 2003,
@@ -34,17 +36,19 @@ export const enum ERROR_CODE {
   PARAM_TOO_HIGH = 2018,
   PARAM_NOT_INT = 2019,
   NO_FILE_PROVIDED = 2020,
+  PARAM_NOT_URL = 2021,
   PARAM_DOES_NOT_MATCH_REGEX = 2102,
   NO_FIELD_PROVIDED = 2201,
   WIDGET_OVERLAPPING = 2301,
   FILE_INVALID_TYPE = 2901,
   FILE_TOO_HEAVY = 2902,
-  FORBIDDEN_NOT_ENOUGH_PERMISSIONS = 3001,
-  NO_TOKEN = 3002,
-  INVALID_TOKEN_FORMAT = 3003,
-  INVALID_CREDENTIALS = 3004,
-  FORBIDDEN_INVALID_ROLE = 3005,
-  INVALID_CAS_TICKET = 3006,
+  FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS = 3001,
+  FORBIDDEN_NOT_ENOUGH_USER_PERMISSIONS = 3002,
+  NO_TOKEN = 3003,
+  INVALID_TOKEN_FORMAT = 3004,
+  INVALID_CREDENTIALS = 3005,
+  FORBIDDEN_INVALID_ROLE = 3006,
+  INVALID_CAS_TICKET = 3007,
   FORBIDDEN_ALREADY_COMMENTED = 3101,
   FORBIDDEN_ALREADY_UPVOTED = 3102,
   FORBIDDEN_NOT_UPVOTED = 3103,
@@ -57,6 +61,7 @@ export const enum ERROR_CODE {
   NOT_DONE_UE_IN_SEMESTER = 4227,
   NOT_ANNAL_SENDER = 4228,
   NOT_ALREADY_DONE_UEOF = 4229,
+  APPLICATION_NOT_OWNED = 4230,
   NO_SUCH_UE = 4401,
   NO_SUCH_COMMENT = 4402,
   NO_SUCH_REPLY = 4403,
@@ -68,6 +73,7 @@ export const enum ERROR_CODE {
   NO_SUCH_ANNAL_TYPE = 4409,
   NO_SUCH_ASSO = 4410,
   NO_SUCH_UEOF = 4411,
+  NO_SUCH_APPLICATION = 4412,
   ANNAL_ALREADY_UPLOADED = 4901,
   RESOURCE_UNAVAILABLE = 4902,
   RESOURCE_INVALID_TYPE = 4903,
@@ -84,6 +90,14 @@ export const ErrorData = Object.freeze({
   [ERROR_CODE.NOT_LOGGED_IN]: {
     message: 'You must be logged in to access this resource',
     httpCode: HttpStatus.UNAUTHORIZED,
+  },
+  [ERROR_CODE.APPLICATION_HEADER_MISSING]: {
+    message: 'You should specify your application ID in the X-Application header',
+    httpCode: HttpStatus.BAD_REQUEST,
+  },
+  [ERROR_CODE.INCONSISTENT_APPLICATION]: {
+    message: 'The application used to log in is different from the application given in the X-Application header',
+    httpCode: HttpStatus.CONFLICT,
   },
   [ERROR_CODE.PARAM_DOES_NOT_EXIST]: {
     message: 'The parameter % does not exist',
@@ -165,6 +179,10 @@ export const ErrorData = Object.freeze({
     message: 'No file provided',
     httpCode: HttpStatus.BAD_REQUEST,
   },
+  [ERROR_CODE.PARAM_NOT_URL]: {
+    message: 'The following parameters must be URL: %',
+    httpCode: HttpStatus.BAD_REQUEST,
+  },
   [ERROR_CODE.PARAM_DOES_NOT_MATCH_REGEX]: {
     message: 'The following parameters must match the regex "%": %',
     httpCode: HttpStatus.BAD_REQUEST,
@@ -185,8 +203,12 @@ export const ErrorData = Object.freeze({
     message: 'Widgets at index % and % are overlapping',
     httpCode: HttpStatus.BAD_REQUEST,
   },
-  [ERROR_CODE.FORBIDDEN_NOT_ENOUGH_PERMISSIONS]: {
+  [ERROR_CODE.FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS]: {
     message: 'Missing permission %',
+    httpCode: HttpStatus.FORBIDDEN,
+  },
+  [ERROR_CODE.FORBIDDEN_NOT_ENOUGH_USER_PERMISSIONS]: {
+    message: 'Missing permission % on user %',
     httpCode: HttpStatus.FORBIDDEN,
   },
   [ERROR_CODE.NO_TOKEN]: {
@@ -206,7 +228,7 @@ export const ErrorData = Object.freeze({
     httpCode: HttpStatus.UNAUTHORIZED,
   },
   [ERROR_CODE.INVALID_CAS_TICKET]: {
-    message: 'The ticket or the service is invalid',
+    message: 'The ticket is invalid',
     httpCode: HttpStatus.UNAUTHORIZED,
   },
   [ERROR_CODE.FORBIDDEN_ALREADY_COMMENTED]: {
@@ -257,6 +279,10 @@ export const ErrorData = Object.freeze({
     message: 'You must have done this UEOF before to perform this action',
     httpCode: HttpStatus.FORBIDDEN,
   },
+  [ERROR_CODE.APPLICATION_NOT_OWNED]: {
+    message: 'Application % is not owned by you',
+    httpCode: HttpStatus.UNAUTHORIZED,
+  },
   [ERROR_CODE.NO_SUCH_UE]: {
     message: 'The UE % does not exist',
     httpCode: HttpStatus.NOT_FOUND,
@@ -294,11 +320,15 @@ export const ErrorData = Object.freeze({
     httpCode: HttpStatus.NOT_FOUND,
   },
   [ERROR_CODE.NO_SUCH_ASSO]: {
-    message: 'The asso % does no exist',
+    message: 'The asso % does not exist',
     httpCode: HttpStatus.NOT_FOUND,
   },
   [ERROR_CODE.NO_SUCH_UEOF]: {
     message: 'UEOF % does no exist',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
+  [ERROR_CODE.NO_SUCH_APPLICATION]: {
+    message: 'The application % does not exist',
     httpCode: HttpStatus.NOT_FOUND,
   },
   [ERROR_CODE.ANNAL_ALREADY_UPLOADED]: {
