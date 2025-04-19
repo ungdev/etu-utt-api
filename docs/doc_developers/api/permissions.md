@@ -75,6 +75,7 @@ Une _API permissions_ est nécessairement _hard granted_ (aucun sens de les _sof
 
 ```{warning}
 Attention cependant à bien respecter le RGPD en faisant un _hard grant_ d'une _user permission_ ! \
+À ce jour, nous ne pensons qu'à 2 _applications_ qui devraient en avoir besoin : le site de EtuUTT, et son application.
 ```
 
 ## Tables

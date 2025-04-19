@@ -5,6 +5,7 @@ import { IsPublic } from '../decorator';
 import { AppException, ERROR_CODE } from '../../exceptions';
 import { RequestAuthData } from '../interfaces/request-auth-data.interface';
 import { PrismaService } from '../../prisma/prisma.service';
+import { PermissionManager } from '../../utils';
 
 @Injectable()
 export class JwtGuard extends AuthGuard('jwt') {
@@ -25,6 +26,13 @@ export class JwtGuard extends AuthGuard('jwt') {
     // Check whether the user is logged in
     let loggedIn = true;
     try {
+      // Ok, that was there at some point, but not documented, so we didn't remember why it was there, but Alban said it was probably useful.
+      // If at any point you find a bug around there, look at the following lines:
+      // if (!result || (result instanceof Observable && !(await firstValueFrom(result)))) throw new Error();
+      // // The user is logged in, we can serve the request
+      // return true;
+      // Also, there would be this import which you will need:
+      // import { firstValueFrom } from 'rxjs';
       await super.canActivate(context);
     } catch {
       loggedIn = false;
@@ -37,7 +45,7 @@ export class JwtGuard extends AuthGuard('jwt') {
       throw new AppException(ERROR_CODE.INCONSISTENT_APPLICATION);
     }
     if (!loggedIn) {
-      request.user = { application, permissions: {} } satisfies RequestAuthData;
+      request.user = { application, permissions: new PermissionManager({}) } satisfies RequestAuthData;
     }
     // We can serve the request
     return true;

@@ -6,10 +6,9 @@ import { GetUser, IsPublic } from '../decorator';
 import { Application } from './interfaces/application.interface';
 import CreateApplicationReqDto from './dto/req/create-application-req.dto';
 import UpdateTokenReqDto from './dto/req/update-token-req.dto';
-import { hasPermissionOnUser, pick } from '../../utils';
+import { PermissionManager, pick } from '../../utils';
 import AuthTokenResDto from '../dto/res/auth-token-res.dto';
 import { GetPermissions } from '../decorator/get-permissions.decorator';
-import { RequestPermissions } from '../interfaces/request-auth-data.interface';
 import { AppException, ERROR_CODE } from '../../exceptions';
 import { Permission } from '@prisma/client';
 import ApplicationClientSecretResDto from './dto/res/application-client-secret-res.dto';
@@ -23,7 +22,7 @@ export default class ApplicationController {
   @Get('/of/me')
   @ApiOperation({ description: 'Get the applications of the user issuing the request.' })
   async getMyApplications(@GetUser('id') userId: string): Promise<ApplicationResDto[]> {
-    return this.getApplicationsOf(userId, { [Permission.USER_SEE_DETAILS]: '*' });
+    return this.getApplicationsOf(userId, new PermissionManager({ [Permission.USER_SEE_DETAILS]: [userId] }));
   }
 
   @Get('/of/:userId')
@@ -34,9 +33,9 @@ export default class ApplicationController {
   )
   async getApplicationsOf(
     @Param('userId') userId: string,
-    @GetPermissions() permissions: RequestPermissions,
+    @GetPermissions() permissions: PermissionManager,
   ): Promise<ApplicationResDto[]> {
-    if (!hasPermissionOnUser(Permission.USER_SEE_DETAILS, userId, permissions))
+    if (!permissions.can(Permission.USER_SEE_DETAILS, userId))
       throw new AppException(ERROR_CODE.FORBIDDEN_NOT_ENOUGH_USER_PERMISSIONS, 'USER_SEE_DETAILS', userId);
     const applications = await this.applicationService.getFromUserId(userId);
     return applications.map(this.formatApplicationOverview);

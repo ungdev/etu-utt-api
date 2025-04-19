@@ -1,6 +1,11 @@
 import { Language, Permission } from '@prisma/client';
 import { Translation } from './prisma/types';
-import { RequestPermissions } from './auth/interfaces/request-auth-data.interface';
+import {
+  ALL_PERMISSIONS,
+  ApiPermission,
+  UserPermission,
+  PermissionsDescriptor,
+} from './auth/interfaces/permissions.interface';
 
 /**
  * Returns a new object built from the given object with only the specified keys.
@@ -57,6 +62,19 @@ export const translationSelect = {
   },
 };
 
-export function hasPermissionOnUser(permission: Permission, userId: string, permissions: RequestPermissions) {
-  return permissions[permission] && (permissions[permission] === '*' || permissions[permission].includes(userId));
+export class PermissionManager {
+  private readonly permissions: PermissionsDescriptor;
+
+  constructor(permissions: PermissionsDescriptor) {
+    this.permissions = permissions;
+  }
+
+  can(permission: ApiPermission): boolean;
+  can(permission: UserPermission, userId: string): boolean;
+  can(permission: Permission, userId?: string) {
+    return (
+      this.permissions[permission] &&
+      (this.permissions[permission] === ALL_PERMISSIONS || this.permissions[permission].includes(userId))
+    );
+  }
 }

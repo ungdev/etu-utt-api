@@ -228,7 +228,7 @@ export const ErrorData = Object.freeze({
     httpCode: HttpStatus.UNAUTHORIZED,
   },
   [ERROR_CODE.INVALID_CAS_TICKET]: {
-    message: 'The ticket or the service is invalid',
+    message: 'The ticket is invalid',
     httpCode: HttpStatus.UNAUTHORIZED,
   },
   [ERROR_CODE.FORBIDDEN_ALREADY_COMMENTED]: {

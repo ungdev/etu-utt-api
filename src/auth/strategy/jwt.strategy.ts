@@ -4,6 +4,8 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ConfigModule } from '../../config/config.module';
 import { RequestAuthData } from '../interfaces/request-auth-data.interface';
+import { PermissionManager } from '../../utils';
+import { ALL_PERMISSIONS, PermissionsDescriptor } from '../interfaces/permissions.interface';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -30,13 +32,13 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
         id: apiKey.userId,
       },
     });
-    const permissions: RequestAuthData['permissions'] = {};
+    const permissions: PermissionsDescriptor = {};
     for (const permission of apiKey.apiKeyPermissions) {
-      if (permissions[permission.permission] === '*') {
+      if (permissions[permission.permission] === ALL_PERMISSIONS) {
         continue;
       }
       if (!permission.userId) {
-        permissions[permission.permission] = '*';
+        permissions[permission.permission] = ALL_PERMISSIONS;
       } else {
         if (!permissions[permission.permission]) {
           permissions[permission.permission] = [];
@@ -47,7 +49,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     return {
       application: apiKey.application,
       user,
-      permissions,
+      permissions: new PermissionManager(permissions),
     };
   }
 }

@@ -1,13 +1,9 @@
 import { User } from '../../users/interfaces/user.interface';
-import { Permission } from '@prisma/client';
 import { RawApiApplication } from '../../prisma/types';
+import { PermissionManager } from '../../utils';
 
 export interface RequestAuthData {
   application: RawApiApplication;
   user?: User;
-  permissions: RequestPermissions;
+  permissions: PermissionManager;
 }
-
-export type RequestPermissions = {
-  [k in Permission]?: '*' | string[];
-};
