@@ -17,7 +17,7 @@ export class PermissionGuard implements CanActivate {
     if (!permissions) throw new AppException(ERROR_CODE.NOT_LOGGED_IN);
     // If the user doesn't have all the needed permissions, throw an error ; else, serve the request
     for (const requiredPermission of requiredPermissions)
-      if (permissions.can(requiredPermission))
+      if (!permissions.can(requiredPermission))
         throw new AppException(ERROR_CODE.FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS, requiredPermission);
     return true;
   }

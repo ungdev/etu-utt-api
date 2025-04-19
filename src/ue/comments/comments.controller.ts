@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Patch, Post, Query } from '@nestjs/common';
 import { UUIDParam } from '../../app.pipe';
-import { GetUser, RequireUserType } from '../../auth/decorator';
+import { GetUser, RequireApiPermission, RequireUserType } from '../../auth/decorator';
 import { AppException, ERROR_CODE } from '../../exceptions';
 import UeCommentPostReqDto from './dto/req/ue-comment-post-req.dto';
 import CommentReplyReqDto from './dto/req/ue-comment-reply-req.dto';
@@ -25,6 +25,7 @@ export class CommentsController {
 
   @Get()
   @RequireUserType('STUDENT', 'FORMER_STUDENT')
+  @RequireApiPermission(Permission.API_SEE_OPINIONS_UE)
   @ApiOperation({ description: 'Get the comments of a UE. This route is paginated.' })
   @ApiOkResponse({ type: paginatedResponseDto(UeCommentResDto) })
   @ApiAppErrorResponse(
