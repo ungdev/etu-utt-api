@@ -634,7 +634,7 @@ model UserBranchSubscription {
   semesterCode   String
 
   user         User            @relation(fields: [userId], references: [id])
-  branchOption UTTBranchOption @relation(fields: [branchOptionId], references: [code])
+  branchOption UTTBranchOption @relation(fields: [branchOptionId], references: [id])
   semester     Semester        @relation(fields: [semesterCode], references: [code])
 }
 
@@ -810,7 +810,8 @@ model UTTBranch {
 }
 
 model UTTBranchOption {
-  code                     String @id @db.VarChar(10)
+  id                       String @id @default(uuid())
+  code                     String @db.VarChar(10)
   name                     String @db.VarChar(255)
   branchCode               String
   descriptionTranslationId String @unique

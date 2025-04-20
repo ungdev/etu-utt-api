@@ -1,12 +1,12 @@
 import { faker } from '@faker-js/faker';
 import { RawBranch, RawBranchOption } from '../../../src/prisma/types';
-import { PrismaClient } from '@prisma/client';
+import {Prisma, PrismaClient, PrismaPromise } from '@prisma/client';
 
 const MAX_FAKER_ROUNDS = 4;
 
-export default function branchOptionSeed(prisma: PrismaClient, branches: RawBranch[]): Promise<RawBranchOption[]> {
+export default async function branchOptionSeed(prisma: PrismaClient, branches: RawBranch[]): Promise<RawBranchOption[]> {
   console.log('Seeding branch options...');
-  const branchOptions: Promise<RawBranchOption>[] = [];
+  const branchOptions: PrismaPromise<RawBranchOption>[] = [];
   for (const branch of branches) {
     branchOptions.push(
       prisma.uTTBranchOption.create({
@@ -42,5 +42,5 @@ export default function branchOptionSeed(prisma: PrismaClient, branches: RawBran
       );
     }
   }
-  return Promise.all(branchOptions);
+  return prisma.$transaction(branchOptions);
 }

@@ -19,5 +19,12 @@
     "noFallthroughCasesInSwitch": false,
     "esModuleInterop": true,
     "resolveJsonModule": true,
-  }
+  },
+  /*"ts-node": {
+    "files": true
+  },
+  "files": [
+    "src/types.d.ts",
+    "test/declarations.d.ts"
+  ],*/
 }

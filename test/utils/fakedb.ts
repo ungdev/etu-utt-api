@@ -753,7 +753,7 @@ export const createUeof = entityFaker(
               credits: credit.credits,
               branchOptions: {
                 connect: branchOptions.map((branchOption) => ({
-                  code: branchOption.code,
+                  id: branchOption.id,
                 })),
               },
             })),
