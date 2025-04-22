@@ -74,7 +74,7 @@ jobs:
       - run: pnpm test:db:reset
       - run: pnpm test:instantfail
 
-cov:
+  cov:
     runs-on: ubuntu-latest
     env:
       DATABASE_URL: mysql://dev:dev@localhost:3306/etuutt_test
