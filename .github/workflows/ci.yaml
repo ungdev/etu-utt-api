@@ -45,6 +45,9 @@ jobs:
 
   test:
     runs-on: self-hosted
+    strategy:
+      matrix:
+        node-version: [18]
     env:
       DATABASE_URL: mysql://dev:dev@localhost:3306/etuutt_test
     services:
@@ -57,6 +60,7 @@ jobs:
           MYSQL_RANDOM_ROOT_PASSWORD: yes
         ports:
           - 3306:3306
+        options: --name mariadb --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=30s --health-retries=5
 
     steps:
       - uses: actions/checkout@v4
@@ -76,6 +80,9 @@ jobs:
 
   cov:
     runs-on: self-hosted
+    strategy:
+      matrix:
+        node-version: [18]
     env:
       DATABASE_URL: mysql://dev:dev@localhost:3306/etuutt_test
     services:
@@ -88,6 +95,7 @@ jobs:
           MYSQL_RANDOM_ROOT_PASSWORD: yes
         ports:
           - 3306:3306
+        options: --name mariadb --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=30s --health-retries=5
 
     steps: 
       - uses: actions/checkout@v4
