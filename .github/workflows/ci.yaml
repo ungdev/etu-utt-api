@@ -58,9 +58,6 @@ jobs:
         ports:
           - 3306:3306
 
-        ports:
-          - 3306:3306
-
     steps:
       - uses: actions/checkout@v4
       - name: Install pnpm
