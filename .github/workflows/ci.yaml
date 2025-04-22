@@ -75,7 +75,7 @@ jobs:
       - run: pnpm test:instantfail
 
   cov:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     env:
       DATABASE_URL: mysql://dev:dev@localhost:3306/etuutt_test
     services:
