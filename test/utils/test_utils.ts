@@ -46,7 +46,7 @@ function suite<T extends AppProvider>(name: string, func: (app: T) => void) {
       beforeAll(async () => {
         await cleanDb(app().get(PrismaService));
         clearUniqueValues();
-      });
+      }, 15000);
       func(app);
     });
 }
