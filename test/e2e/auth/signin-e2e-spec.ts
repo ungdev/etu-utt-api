@@ -5,10 +5,8 @@ import * as fakedb from '../../utils/fakedb';
 import { ERROR_CODE } from '../../../src/exceptions';
 import { string } from 'pactum-matchers';
 import { JwtService } from '@nestjs/jwt';
-import * as cas from '../../external_services/cas';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { DEFAULT_APPLICATION } from '../../../prisma/seed/utils';
-import { pick } from '../../../src/utils';
 import { AuthService } from '../../../src/auth/auth.service';
 
 const SignInE2ESpec = e2eSuite('POST /auth/signin', (app) => {
