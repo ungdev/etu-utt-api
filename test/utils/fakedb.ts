@@ -1178,7 +1178,7 @@ function entityFaker<
     if (onTheFly === true) {
       return factory() as OnTheFly extends true ? Promise<Entity<T>> : never;
     }
-    beforeAll(factory);
+    beforeAll(factory, 15000);
     return lazyEntity as OnTheFly extends true ? never : Entity<T>;
   };
   if (entityFactory.length === 2) {
