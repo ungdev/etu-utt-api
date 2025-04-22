@@ -99,5 +99,10 @@
     "commitizen": {
       "path": "cz-emoji"
     }
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "sharp"
+    ]
   }
 }
