@@ -165,10 +165,11 @@ export class UeController {
       })),
       info: {
         requirements: chosenOf.requirements.map((r) => r.code),
-        languages: ue.ueofs.map((ueof) => ueof.info.language).uniqueValues,
+        languages: ue.ueofs.map((ueof) => ueof.info.language).unique(),
         minors: ue.ueofs
           .map((ueof) => ueof.info.minors?.split(',') ?? [])
-          .reduce((acc, minors) => [...acc, ...minors], []).uniqueValues,
+          .reduce((acc, minors) => [...acc, ...minors], [])
+          .unique(),
       },
       openSemester: ue.ueofs
         .map((ueof) => ueof.openSemester)

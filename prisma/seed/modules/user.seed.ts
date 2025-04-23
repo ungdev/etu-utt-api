@@ -2,6 +2,8 @@ import { PrismaClient, Sex } from '@prisma/client';
 import { RawUser } from '../../../src/prisma/types';
 import { faker } from '@faker-js/faker';
 import * as bcrypt from 'bcryptjs';
+import { DEFAULT_APPLICATION } from '../utils';
+import { AuthService } from '../../../src/auth/auth.service';
 
 const FAKER_ROUNDS = 100;
 
@@ -22,6 +24,16 @@ export async function userSeed(prisma: PrismaClient): Promise<RawUser[]> {
           login: i === 0 ? 'student' : faker.internet.userName(),
           userType: 'STUDENT',
           hash,
+          apiKeys: {
+            create: {
+              token: AuthService.generateToken(),
+              application: {
+                connect: {
+                  id: DEFAULT_APPLICATION.id,
+                },
+              },
+            },
+          },
           rgpd: { create: {} },
           infos: {
             create: {

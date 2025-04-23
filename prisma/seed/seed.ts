@@ -14,11 +14,13 @@ import ueSubscriptionSeed from './modules/ueSubscription.seed';
 import assoSeed from './modules/asso.seed';
 import assoMembershipRoleSeed from './modules/assoMembershipRole.seed';
 import assoMembershipSeed from './modules/assoMembership.seed';
+import { generateDefaultApplication } from './utils';
 
 const prisma = new PrismaClient();
 async function main() {
   console.log('Flushing database...');
   await cleanDb(prisma);
+  await generateDefaultApplication(prisma);
   //Set custom seed
   faker.seed(parseInt(process.env.FAKER_SEED));
 

@@ -1,5 +1,6 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { User } from 'src/users/interfaces/user.interface';
+import { RequestAuthData } from '../interfaces/request-auth-data.interface';
 
 /**
  * Get the user from the request.
@@ -27,5 +28,5 @@ import { User } from 'src/users/interfaces/user.interface';
  */
 export const GetUser = createParamDecorator((data: keyof User, ctx: ExecutionContext) => {
   const request = ctx.switchToHttp().getRequest();
-  return data ? request.user[data] : request.user;
+  return data ? (request.user as RequestAuthData).user[data] : (request.user as RequestAuthData).user;
 });

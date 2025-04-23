@@ -235,9 +235,7 @@ async function main() {
               },
             },
             branchOptions: {
-              connect: credit.branchOptions.map((code) => ({
-                code: code,
-              })),
+              connect: credit.branchOptions.map((id) => ({ id })),
             },
           })),
         },
@@ -291,9 +289,7 @@ async function main() {
               },
             },
             branchOptions: {
-              connect: credit.branchOptions.map((code) => ({
-                code: code,
-              })),
+              connect: credit.branchOptions.map((id) => ({ id })),
             },
           })),
         },

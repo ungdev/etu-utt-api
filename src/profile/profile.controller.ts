@@ -22,7 +22,7 @@ export class ProfileController {
   }
 
   @Put('/homepage')
-  @ApiOperation({ description: 'Get the homepage disposition of logged in user.' })
+  @ApiOperation({ description: 'Set the homepage disposition of logged in user.' })
   @ApiBody({ type: HomepageWidgetsUpdateReqDto })
   @ApiOkResponse({ type: HomepageWidgetResDto, isArray: true })
   @ApiAppErrorResponse(ERROR_CODE.WIDGET_OVERLAPPING, 'Some widgets are overlapping.')

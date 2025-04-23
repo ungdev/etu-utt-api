@@ -17,9 +17,13 @@ import { ERROR_CODE } from 'src/exceptions';
 import { PrismaService } from '../../../../src/prisma/prisma.service';
 
 const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
-  const user = createUser(app);
-  const user2 = createUser(app, { login: 'user2', studentId: 3 });
-  const moderator = createUser(app, { login: 'user3', studentId: 3, permissions: ['commentModerator'] });
+  const user = createUser(app, { permissions: ['API_SEE_OPINIONS_UE'] });
+  const userNoPermission = createUser(app, { login: 'user2', studentId: 2 });
+  const moderator = createUser(app, {
+    login: 'user3',
+    studentId: 3,
+    permissions: ['API_MODERATE_COMMENTS', 'API_SEE_OPINIONS_UE'],
+  });
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
@@ -35,7 +39,7 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
       },
     ),
   );
-  createCommentUpvote(app, { user: user2, comment: comments[0] });
+  createCommentUpvote(app, { user: userNoPermission, comment: comments[0] });
   createCommentReply(app, { user, comment: comments[0] });
   for (let i = 1; i < 30; i++) {
     const commentAuthor = createUser(app, {
@@ -67,6 +71,14 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
         ueCode: ue.code,
       })
       .expectAppError(ERROR_CODE.PARAM_NOT_POSITIVE, 'page');
+  });
+
+  it('should return a 403 as user does not have the permissions to see the comments', () => {
+    return pactum
+      .spec()
+      .withBearerToken(userNoPermission.token)
+      .get('/ue/comments')
+      .withQueryParams({ ueCode: ue.code });
   });
 
   it('should return a 404 because UE does not exist', () => {
