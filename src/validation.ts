@@ -28,6 +28,7 @@ const mappedErrors = {
   isPositive: ERROR_CODE.PARAM_NOT_POSITIVE,
   min: ERROR_CODE.PARAM_TOO_LOW,
   max: ERROR_CODE.PARAM_TOO_HIGH,
+  isUrl: ERROR_CODE.PARAM_NOT_URL,
 } satisfies {
   [constraint: string]: ERROR_CODE;
 };
@@ -48,7 +49,7 @@ export const validationExceptionFactory = (errors: ValidationError[]) => {
   for (const [constraint, error] of Object.entries(mappedErrors)) {
     if (constraint in errorsByType) return new AppException(error, errorsByType[constraint].sort().join(', '));
   }
-  console.log(errors); // TODO : send to sentry. soon™
+  console.error(errors); // TODO : send to sentry. soon™
   // If errors are not registered in the mappedErrors object, throw a generic error
   return new AppException(
     ERROR_CODE.PARAM_MALFORMED,

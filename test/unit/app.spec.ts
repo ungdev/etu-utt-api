@@ -1,7 +1,7 @@
 import TimetableServiceUnitSpec from './timetable/timetable.service.spec';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '../../src/app.module';
-import '../../src/array';
+import '../../src/std.type';
 
 /*
  * Unit testing is currently DISABLED. Remove the .skip in the line below

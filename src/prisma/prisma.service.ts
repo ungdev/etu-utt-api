@@ -11,6 +11,7 @@ import { generateCustomUeAnnalModel } from '../ue/annals/interfaces/annal.interf
 import { generateCustomUeCommentReplyModel } from '../ue/comments/interfaces/comment-reply.interface';
 import { generateCustomAssoModel } from '../assos/interfaces/asso.interface';
 import { generateCustomCreditCategoryModel } from '../ue/credit/interfaces/credit-category.interface';
+import { generateCustomApplicationModel } from '../auth/application/interfaces/application.interface';
 
 @Injectable()
 export class PrismaService extends PrismaClient<ReturnType<typeof prismaOptions>> {
@@ -48,6 +49,7 @@ function createNormalizedEntitiesUtility(prisma: PrismaClient) {
     ueAnnal: generateCustomUeAnnalModel(prisma),
     asso: generateCustomAssoModel(prisma),
     ueCreditCategory: generateCustomCreditCategoryModel(prisma),
+    apiApplication: generateCustomApplicationModel(prisma),
   };
 }
 

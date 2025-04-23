@@ -4,6 +4,8 @@ import { PrismaService } from '../../../src/prisma/prisma.service';
 import { e2eSuite } from '../../utils/test_utils';
 import { ERROR_CODE } from '../../../src/exceptions';
 import { UserType } from '@prisma/client';
+import { createUser } from '../../utils/fakedb';
+import { JwtService } from '@nestjs/jwt';
 
 const SignupE2ESpec = e2eSuite('POST /auth/signup', (app) => {
   const dto = {
@@ -14,6 +16,7 @@ const SignupE2ESpec = e2eSuite('POST /auth/signup', (app) => {
     studentId: 44250,
     sex: 'OTHER',
     birthday: new Date('1999-01-01'),
+    tokenExpiresIn: 1000,
   } as AuthSignUpReqDto;
 
   it('should return a 400 if login is missing', async () => {
@@ -90,7 +93,19 @@ const SignupE2ESpec = e2eSuite('POST /auth/signup', (app) => {
       .expectAppError(ERROR_CODE.PARAM_MISSING, 'firstName, lastName, login, password');
   });
   it('should create a new user', async () => {
-    await pactum.spec().post('/auth/signup').withBody(dto).expectBodyContains('access_token').expectStatus(201);
+    await pactum
+      .spec()
+      .post('/auth/signup')
+      .withBody(dto)
+      .expectStatus(201)
+      .expect(async (ctx) => {
+        expect(ctx.res.json['token']).toBeDefined();
+        const token = app().get(JwtService).decode(ctx.res.json['token']).token;
+        const apiKey = await app()
+          .get(PrismaService)
+          .apiKey.findFirst({ where: { user: { login: dto.login } } });
+        expect(token).toEqual(apiKey.token);
+      });
     const user = await app()
       .get(PrismaService)
       .normalize.user.findUnique({ where: { login: dto.login } });
@@ -103,10 +118,17 @@ const SignupE2ESpec = e2eSuite('POST /auth/signup', (app) => {
     expect(user.infos.birthday).toEqual(dto.birthday);
     expect(user.userType).toEqual(UserType.OTHER);
     expect(user.id).toMatch(/[a-z0-9-]{36}/);
+    await app()
+      .get(PrismaService)
+      .user.delete({ where: { id: user.id } });
   });
 
   it('should fail as the credentials are already used', async () => {
+    const user = await createUser(app, { login: dto.login }, true);
     await pactum.spec().post('/auth/signup').withBody(dto).expectAppError(ERROR_CODE.CREDENTIALS_ALREADY_TAKEN);
+    await app()
+      .get(PrismaService)
+      .user.delete({ where: { id: user.id } });
   });
 });
 

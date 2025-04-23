@@ -14,10 +14,22 @@ import { LdapAccountGroup } from '../ldap/ldap.interface';
 import { UeService } from '../ue/ue.service';
 import { SemesterService } from '../semester/semester.service';
 import AuthSignUpReqDto from './dto/req/auth-sign-up-req.dto';
-import AuthSignInReqDto from './dto/req/auth-sign-in-req.dto';
+import { RawApiKey } from '../prisma/types';
+import crypto from 'crypto';
 
-export type RegisterData = { login: string; mail: string; lastName: string; firstName: string };
-export type ExtendedRegisterData = RegisterData & { studentId: string; type: UserType };
+export type RegisterUserData = {
+  login: string;
+  mail: string;
+  lastName: string;
+  firstName: string;
+  tokenExpiresIn: number;
+};
+export type RegisterApiKeyData = { userId: string; applicationId: string; tokenExpiresIn: number };
+export type ValidationTokenData = {
+  apiKeyId: string;
+  applicationId: string;
+  tokenExpiresIn: number;
+};
 
 @Injectable()
 export class AuthService {
@@ -35,8 +47,16 @@ export class AuthService {
    * Creates a new user from the data that is provided to this function.
    * It returns an access token that the user can then use to authenticate their requests.
    * @param dto Data about the user to create.
+   * @param applicationId The id of the application we are connecting with.
+   * @param fetchLdap Whether user information should be imported from the UTT LDAP.
+   * @param tokenExpiresIn The time the return token will be valid, in seconds. If not given, token will not expire.
    */
-  async signup(dto: SetPartial<AuthSignUpReqDto, 'password'>, fetchLdap = false): Promise<string> {
+  async signup(
+    dto: SetPartial<AuthSignUpReqDto, 'password'>,
+    applicationId: string,
+    fetchLdap = false,
+    tokenExpiresIn?: number,
+  ): Promise<string> {
     let phoneNumber: string = undefined;
     let formation: string = undefined;
     const branch: string[] = [];
@@ -72,6 +92,12 @@ export class AuthService {
           studentId: dto.studentId,
           infos: {
             create: { sex: dto.sex, birthday: dto.birthday },
+          },
+          apiKeys: {
+            create: {
+              token: AuthService.generateToken(),
+              application: { connect: { id: applicationId } },
+            },
           },
           ...(branch.length && branchOption.length && currentSemester
             ? {
@@ -170,9 +196,12 @@ export class AuthService {
           userType: type,
           privacy: { create: {} },
         },
+        include: {
+          apiKeys: true,
+        },
       });
 
-      return this.signToken(user.id, user.login);
+      return this.signAuthenticationToken(user.apiKeys[0].token, tokenExpiresIn);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
@@ -185,28 +214,38 @@ export class AuthService {
 
   /**
    * Verifies the credentials are right.
-   * It then returns an access_token the user can use to authenticate their requests.
-   * @param dto Data needed to sign in the user (login & password).
+   * It then returns a token the user can use to authenticate their requests.
+   * @param login The login used to sign in.
+   * @param password The password used to sign in.
+   * @param applicationId The id of the application to which the user should be signed in.
+   * @returns signedIn If false, the user has no apiKeys linked to that application. {@link token} is therefore used to authorize login with the app.
+   * @returns token The bearer token to use if connection was successful, or the token that should be sent through route "POST /auth/api-key" to create an api key for the app.
    */
-  async signin(dto: AuthSignInReqDto): Promise<string | null> {
+  async signin(
+    login: string,
+    password: string,
+    applicationId: string,
+  ): Promise<{ userId: string; apiKey: RawApiKey } | null> {
     // find the user by login, if it does not exist, throw exception
     const user = await this.prisma.user.findUnique({
-      where: {
-        login: dto.login,
-      },
+      where: { login },
     });
     if (!user) {
       return null;
     }
 
     // compare password, if incorrect, throw exception
-    const pwMatches = await bcrypt.compare(dto.password, user.hash);
+    const pwMatches = await bcrypt.compare(password, user.hash);
 
     if (!pwMatches) {
       return null;
     }
 
-    return this.signToken(user.id, user.login);
+    const apiKey = await this.prisma.apiKey.findUnique({
+      where: { userId_applicationId: { userId: user.id, applicationId } },
+    });
+
+    return { userId: user.id, apiKey };
   }
 
   /**
@@ -229,15 +268,21 @@ export class AuthService {
    *   - { status: 'invalid', token: '' } : when the CAS returns that the provided values do not correspond to a known non-expired ticket.
    *   - { status: 'no_account', token: '<register_token>' } : when the validation was successful, but the user does not exist in our database. They need to create an account. The token provided is not a token to make requests, but contains information that will then be used to register the user.
    *   - { status: 'ok', token: '<token>' } : the user was successfully authenticated, the token is a normal access token that allows requests to be authenticated.
-   * @param service The service parameter for the CAS API.
    * @param ticket The ticket that was assigned for this particular connection by the CAS API.
+   * @param applicationId The application the user is trying to log with.
    */
   async casSignIn(
-    service: string,
     ticket: string,
-  ): Promise<{ status: 'invalid' | 'no_account' | 'ok'; token: string }> {
+    applicationId: string,
+  ): Promise<{
+    userId: string;
+    apiKeyId: string;
+    basicUserData: { login: string; mail: string; lastName: string; firstName: string };
+  } | null> {
     const res = await lastValueFrom(
-      this.httpService.get(`${this.config.CAS_URL}/serviceValidate`, { params: { service, ticket } }),
+      this.httpService.get(`${this.config.CAS_URL}/serviceValidate`, {
+        params: { service: this.config.CAS_SERVICE, ticket },
+      }),
     );
     const resData: {
       ['cas:serviceResponse']:
@@ -254,60 +299,115 @@ export class AuthService {
         | { 'cas:authenticationFailure': unknown };
     } = new XMLParser().parse(res.data);
     if ('cas:authenticationFailure' in resData['cas:serviceResponse']) {
-      return { status: 'invalid', token: '' };
+      return null;
     }
-    const data: RegisterData = {
+    const data = {
       login: resData['cas:serviceResponse']['cas:authenticationSuccess']['cas:attributes']['cas:uid'],
       mail: resData['cas:serviceResponse']['cas:authenticationSuccess']['cas:attributes']['cas:mail'],
       lastName: resData['cas:serviceResponse']['cas:authenticationSuccess']['cas:attributes']['cas:sn'],
       firstName: resData['cas:serviceResponse']['cas:authenticationSuccess']['cas:attributes']['cas:givenName'],
     };
-    const user = await this.prisma.user.findUnique({ where: { login: data.login } });
-    if (!user) {
-      const token = this.signRegisterToken(data);
-      return { status: 'no_account', token };
-    }
-    return { status: 'ok', token: await this.signToken(user.id, data.login) };
+    const user = await this.prisma.user.findUnique({
+      where: { login: data.login },
+      include: { apiKeys: { where: { application: { id: applicationId } } } },
+    });
+    return { userId: user?.id, apiKeyId: user?.apiKeys?.[0]?.id, basicUserData: data };
   }
 
   /**
    * Decodes a register token to access the data it contains.
-   * @param registerToken {@link RegisterData} that permits creating a user account, or null if the token format is invalid in any way.
+   * @param registerToken {@link RegisterUserData} that permits creating a user account, or null if the token format is invalid in any way.
    */
-  decodeRegisterToken(registerToken: string): RegisterData | null {
+  decodeRegisterUserToken(registerToken: string): RegisterUserData | null {
     const data = this.jwt.decode(registerToken);
-    if (!data || !('login' in data) || !('mail' in data) || !('firstName' in data) || !('lastName' in data)) {
+    if (
+      !data ||
+      !('login' in data) ||
+      !('mail' in data) ||
+      !('firstName' in data) ||
+      !('lastName' in data) ||
+      !('tokenExpiresIn' in data)
+    ) {
       return null;
     }
-    return omit(data, 'iat', 'exp') as RegisterData;
+    return omit(data, 'iat', 'exp') as RegisterUserData;
   }
 
   /**
-   * Creates a token for user with the provided user id and login.
-   * It returns the generated token.
-   * @param userId The id of the user for who we are creating the token.
-   * @param login The login of the user for who we are creating the token.
+   * Decodes a register api key token to access the data it contains.
+   * @param registerToken {@link RegisterApiKeyData} that permits creating the Api Key linking the user and the given application.
    */
-  signToken(userId: string, login: string): Promise<string> {
-    const payload = {
-      sub: userId,
-      login,
-    };
+  decodeRegisterApiKeyToken(registerToken: string): RegisterApiKeyData | null {
+    const data = this.jwt.decode(registerToken);
+    if (!data || !('userId' in data) || !('applicationId' in data) || !('tokenExpiresIn' in data)) {
+      return null;
+    }
+    return omit(data, 'iat', 'exp') as RegisterApiKeyData;
+  }
+
+  /**
+   *
+   */
+  decodeValidationToken(token: string): ValidationTokenData | null {
+    const data = this.jwt.decode(token);
+    if (!data || !('apiKeyId' in data) || !('tokenExpiresIn' in data) || !('applicationId' in data)) {
+      return null;
+    }
+    return omit(data, 'iat', 'exp') as ValidationTokenData;
+  }
+
+  /**
+   * Creates a token for user with the provided api key token.
+   * It returns the generated token.
+   * @param token The token to sign.
+   * @param expiresIn The number of seconds in which the token will expire. If not given, token will never expire.
+   */
+  signAuthenticationToken(token: string, expiresIn?: number): Promise<string> {
+    const payload = { token };
     const secret = this.config.JWT_SECRET;
 
     return this.jwt.signAsync(payload, {
-      expiresIn: this.config.JWT_EXPIRES_IN,
-      secret: secret,
+      secret,
+      ...(expiresIn !== undefined ? { expiresIn } : {}),
     });
   }
 
   /**
    * Creates a register token for the provided data. Returns that token.
    * When decoded, the returned token contains all the necessary information to register a new user.
-   * @param data {@link RegisterData} that should be contained in the token.
    */
-  signRegisterToken(data: RegisterData): string {
-    return this.jwt.sign(data, { expiresIn: 60, secret: this.config.JWT_SECRET });
+  signRegisterUserToken(
+    login: string,
+    mail: string,
+    firstName: string,
+    lastName: string,
+    tokenExpiresIn: number,
+  ): Promise<string> {
+    return this.jwt.signAsync({ login, mail, firstName, lastName, tokenExpiresIn } satisfies RegisterUserData, {
+      expiresIn: 60,
+      secret: this.config.JWT_SECRET,
+    });
+  }
+
+  /**
+   * Creates a register token for the provided data. Returns that token.
+   * When decoded, the returned token contains all the necessary information to register a new api key.
+   */
+  signRegisterApiKeyToken(userId: string, applicationId: string, tokenExpiresIn: number): Promise<string> {
+    return this.jwt.signAsync({ userId, applicationId, tokenExpiresIn } satisfies RegisterApiKeyData, {
+      expiresIn: 60,
+      secret: this.config.JWT_SECRET,
+    });
+  }
+
+  /**
+   *
+   */
+  signValidationToken(apiKeyId: string, applicationId: string, tokenExpiresIn: number) {
+    return this.jwt.signAsync({ apiKeyId, applicationId, tokenExpiresIn } satisfies ValidationTokenData, {
+      expiresIn: 10,
+      secret: this.config.JWT_SECRET,
+    });
   }
 
   /**
@@ -317,5 +417,47 @@ export class AuthService {
   getHash(password: string): Promise<string> {
     const saltRounds = this.config.SALT_ROUNDS;
     return bcrypt.hash(password, saltRounds);
+  }
+
+  /**
+   * Creates an API Key, and returns it (with its token).
+   */
+  async createApiKey(userId: string, applicationId: string): Promise<RawApiKey> {
+    return this.prisma.apiKey.create({
+      data: {
+        user: {
+          connect: {
+            id: userId,
+          },
+        },
+        application: {
+          connect: {
+            id: applicationId,
+          },
+        },
+        token: AuthService.generateToken(),
+      },
+    });
+  }
+
+  /**
+   * Generates a completely random string composed of 128 characters (in base64)
+   * @private
+   */
+  static generateToken(): string {
+    const tokenLength = 128;
+    const token = crypto.randomBytes(tokenLength).toString('base64');
+    return token.slice(0, tokenLength);
+  }
+
+  async signApiKey(apiKeyId: string, tokenExpiresIn: number, renewToken = true): Promise<string | null> {
+    const apiKey = renewToken
+      ? await this.prisma.apiKey.update({
+          where: { id: apiKeyId },
+          data: { token: AuthService.generateToken() },
+        })
+      : await this.prisma.apiKey.findUnique({ where: { id: apiKeyId } });
+    if (!apiKey) return null;
+    return this.signAuthenticationToken(apiKey.token, tokenExpiresIn);
   }
 }
