@@ -310,7 +310,7 @@ model UeAnnal {
 
 model UeAnnalType {
   id   String @id @default(uuid())
-  name String @db.VarChar(255)
+  name String @unique @db.VarChar(255)
 
   annals UeAnnal[]
 }
@@ -812,7 +812,7 @@ model UTTBranch {
 
 model UTTBranchOption {
   id                       String @id @default(uuid())
-  code                     String @db.VarChar(10)
+  code                     String @db.VarChar(10) @unique
   name                     String @db.VarChar(255)
   branchCode               String
   descriptionTranslationId String @unique

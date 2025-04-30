@@ -6,6 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "postinstall": "rm -rf qpdf && wget -q \"https://github.com/qpdf/qpdf/releases/download/v12.1.0/qpdf-12.1.0-bin-linux-x86_64.zip\" -O qpdf.zip && unzip qpdf.zip -d qpdf && rm qpdf.zip",
     "build": "npx nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "NODE_ENV=development npx nest start",
@@ -29,10 +30,10 @@
     "test:db:editor": "env-cmd -f .env.test -- pnpm prisma studio",
     "seed:base": "env-cmd -f .env.dev -- ts-node scripts/seed/base.ts",
     "seed:ue": "env-cmd -f .env.dev -- ts-node scripts/seed/ue.ts",
-    "seed:ue:aliases": "env-cmd -f .env.dev -- ts-node scripts/seed/aliases.ts",
+    "seed:ue:annals": "env-cmd -f .env.dev -- ts-node scripts/seed/ue-annals.ts",
     "seed:base:prod": "node scripts/seed/base.js",
     "seed:ue:prod": "node scripts/seed/ue.js",
-    "seed:ue:aliases:prod": "node scripts/seed/aliases.js",
+    "seed:ue:annals:prod": "node scripts/seed/ue-annals.js",
     "script:deps:graph": "ts-node scripts/dependency_graph.ts"
   },
   "dependencies": {
@@ -56,6 +57,7 @@
     "multer": "1.4.5-lts.1",
     "pactum-matchers": "^1.1.7",
     "passport-jwt": "^4.0.1",
+    "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^5.0.375",
     "pdfkit": "^0.14.0",
     "prisma": "^5.17.0",

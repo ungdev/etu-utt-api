@@ -3,6 +3,7 @@ import { createInterface } from 'readline/promises';
 import { parse } from '@fast-csv/parse';
 import { PrismaClient } from '@prisma/client';
 import type { TextItem } from 'pdfjs-dist/types/src/display/api';
+import { seedUeAliases } from './aliases';
 
 const prisma = new PrismaClient();
 
@@ -291,7 +292,7 @@ async function main() {
               },
             },
             branchOptions: {
-              connect: credit.branchOptions.map((id) => ({ id })),
+              connect: credit.branchOptions.map((id) => ({ code: id })),
             },
           })),
         },
@@ -358,39 +359,45 @@ async function main() {
     });
   }
 
+  console.info('\x1b[42;30mImporting UE aliases\x1b[0m');
+  await seedUeAliases();
+
   const aliases = await prisma.ueAlias.findMany();
 
   console.info('\x1b[42;30mImporting UE requirements...\x1b[0m');
+  const results = await Promise.allSettled(
+    ues.map((ueof) =>
+      prisma.ueof.update({
+        where: {
+          code: ueof.ueof_code,
+        },
+        data: {
+          requirements: {
+            connect: ueof.requirements
+              .map((code) => {
+                const result = aliases.find((alias) => alias.code === code);
+                return result ? result.standsFor : code;
+              })
+              .filter((code) => code)
+              .map((code) => ({
+                code: code,
+              })),
+          },
+        },
+      }),
+    ),
+  );
+  const fails = [];
+  for (let i = 0; i < results.length; i++) if (results[i].status === 'rejected') fails.push(ues[i]);
+  if (fails.length)
+    return console.warn(
+      `\x1b[41;30m[UNKNOWN_UE_REFERENCE] Unknown UE reference${fails.length ? 's' : ''}: ${[
+        ...new Set(fails.map((ueof) => ueof.requirements).flat()),
+      ]
+        .filter((mUe) => ues.every((ue) => ue.code !== mUe))
+        .join(', ')}. Consider adding UE aliases\x1b[0m`,
+    );
 
-  try {
-    await Promise.all(
-      ues.map((ueof) =>
-        prisma.ueof.update({
-          where: {
-            code: ueof.ueof_code,
-          },
-          data: {
-            requirements: {
-              connect: ueof.requirements
-                .map((code) => {
-                  const result = aliases.find((alias) => alias.code === code);
-                  return result ? result.standsFor : code;
-                })
-                .filter((code) => code)
-                .map((code) => ({
-                  code: code,
-                })),
-            },
-          },
-        }),
-      ),
-    );
-  } catch (error) {
-    console.error(
-      '\x1b[41;30mAn error occurred while importing UE requirements. Try `$ pnpm seed:ue:aliases` first.\x1b[0m',
-    );
-    return;
-  }
   console.info('\x1b[42;30mFetching current INSUEs\x1b[0m');
   try {
     const insues = await fetchINSUE();
