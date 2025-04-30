@@ -104,6 +104,8 @@ Spec.prototype.expectUe = function (
       updateYear: 2000 + Number(ue.ueofs[0].code.match(/\d+$/)?.[0] ?? 23),
       ueofs: ue.ueofs.map((ueof) => ({
         name: getTranslation(ueof.name, this.language),
+        siepId: ueof.siepId,
+        inscriptionCode: ueof.inscriptionCode,
         code: ueof.code,
         credits: ueof.credits.map((credit) => ({
           ...omit(credit, 'id', 'ueofCode', 'categoryId', 'branchOptions'),

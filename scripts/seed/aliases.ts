@@ -32,4 +32,4 @@ async function main() {
   console.info('\x1b[42;30m✅ Aliases have been created/updated\x1b[0m');
 }
 
-main();
+export { main as seedUeAliases };

@@ -3,7 +3,7 @@ declare global {
     /**
      * Groups the current array by a key, using a mapper function.
      */
-    groupyBy<K extends string | number | symbol>(keyMapper: (entity: T) => K): { [key in K]: T[] };
+    groupBy<K extends string | number | symbol>(keyMapper: (entity: T) => K): { [key in K]: T[] };
     /**
      * Sorts the current array (in place) and returns it.
      * Array is sorted based on a mapper function, that returns in order the values by which to sort the array.
@@ -44,7 +44,7 @@ declare global {
   }
 }
 
-Array.prototype.groupyBy = function <T, K extends string | number | symbol>(
+Array.prototype.groupBy = function <T, K extends string | number | symbol>(
   this: Array<T>,
   keyMapper: (entity: T) => K,
 ) {

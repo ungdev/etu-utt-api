@@ -180,6 +180,22 @@ async function main() {
       }),
     ),
   );
+
+  console.log('Updating Annal Types');
+  const annalTypes = ['Final', 'Médian', 'Partiel', 'Examen de TP', 'Projet', 'Devoir Maison'];
+  await Promise.all(
+    annalTypes.map((type) =>
+      prisma.ueAnnalType.upsert({
+        where: {
+          name: type,
+        },
+        update: {},
+        create: {
+          name: type,
+        },
+      }),
+    ),
+  );
 }
 
 main();

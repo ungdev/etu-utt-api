@@ -18,6 +18,8 @@ export class UeofDetailResDto {
   code: string;
   @ApiProperty({ type: String })
   name: Translation;
+  siepId: number;
+  inscriptionCode: string;
 
   credits: UeDetailResDto_Credit[];
   info: UeDetailResDto_Info;

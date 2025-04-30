@@ -12,6 +12,7 @@ const UE_SELECT_FILTER = {
         name: translationSelect,
         available: true,
         siepId: true,
+        inscriptionCode: true,
         requirements: {
           select: {
             code: true,

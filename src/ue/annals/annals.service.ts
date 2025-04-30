@@ -1,15 +1,17 @@
 import { Injectable } from '@nestjs/common';
+import { Semester } from '@prisma/client';
 import { createWriteStream, createReadStream } from 'fs';
-import { writeFile } from 'fs/promises';
+import { rm, writeFile } from 'fs/promises';
+import { execFileSync } from 'child_process';
 import sharp from 'sharp';
-import PDFDocument from 'pdfkit';
+import PDFKitDocument from 'pdfkit';
+import { PDFDocument, degrees } from 'pdf-lib';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MulterWithMime } from '../../upload.interceptor';
 import { CreateAnnalReqDto } from './dto/req/create-annal-req.dto';
 import { UpdateAnnalReqDto } from './dto/req/update-annal-req.dto';
 import { ConfigModule } from '../../config/config.module';
 import { User } from '../../users/interfaces/user.interface';
-import { Semester } from '@prisma/client';
 
 @Injectable()
 export class AnnalsService {
@@ -141,7 +143,7 @@ export class AnnalsService {
         }
 
         // Create the PDF document
-        const pdf = new PDFDocument({
+        const pdf = new PDFKitDocument({
           margin: 0,
           size,
           compress: true,
@@ -159,8 +161,26 @@ export class AnnalsService {
         await registerUploadComplete();
       }
       if (file.mime === 'application/pdf') {
+        const pdfDoc = await PDFDocument.load(file.multer.buffer as Uint8Array);
+
+        if (rotation) for (const page of pdfDoc.getPages()) page.setRotation(degrees(rotation * 90));
+        const pdfBytes = await pdfDoc.save();
+
+        const path = `${this.config.ANNAL_UPLOAD_DIR}/${fileEntry.id}.pdf`;
         // Write document
-        await writeFile(`${this.config.ANNAL_UPLOAD_DIR}/${fileEntry.id}.pdf`, file.multer.buffer);
+        await writeFile(path, pdfBytes);
+
+        try {
+          // Sanitize pdf using qpdf
+          execFileSync('qpdf/qpdf', [path, '--pdfa', '--pdfa-1b', path]);
+        } catch (e) {
+          console.error('Error while sanitizing the file', e);
+          // Cannot sanitize the file, process deletion
+          await rm(path);
+          // throw back the exception to delete the database entry
+          throw e;
+        }
+
         // Register processing as complete
         await registerUploadComplete();
       }
