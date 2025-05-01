@@ -15,8 +15,9 @@ import { PrismaService } from '../../../src/prisma/prisma.service';
 import { faker } from '@faker-js/faker';
 
 const PutRate = e2eSuite('PUT /ue/ueof/{ueofCode}/rate', (app) => {
-  const user = createUser(app);
-  const user2 = createUser(app, { login: 'user2' });
+  const user = createUser(app, { permissions: ['API_GIVE_OPINIONS_UE'] });
+  const userNoUe = createUser(app, { login: 'user2', permissions: ['API_GIVE_OPINIONS_UE'] });
+  const userNoPermission = createUser(app);
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
@@ -29,10 +30,21 @@ const PutRate = e2eSuite('PUT /ue/ueof/{ueofCode}/rate', (app) => {
     return pactum.spec().put(`/ue/ueof/${ueof.code}/rate`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
+  it('should fail as the user does not have the permissions required', () =>
+    pactum
+      .spec()
+      .withBearerToken(userNoPermission.token)
+      .put(`/ue/ueof/${ueof.code}/rate`)
+      .withBody({
+        criterion: criterion.id,
+        value: 1,
+      })
+      .expectAppError(ERROR_CODE.FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS, 'API_GIVE_OPINIONS_UE'));
+
   it('should return a 403 as user has not done the UE', () => {
     return pactum
       .spec()
-      .withBearerToken(user2.token)
+      .withBearerToken(userNoUe.token)
       .put(`/ue/ueof/${ueof.code}/rate`)
       .withBody({
         criterion: criterion.id,
@@ -44,7 +56,7 @@ const PutRate = e2eSuite('PUT /ue/ueof/{ueofCode}/rate', (app) => {
   it('should return a 400 as value is not a number', () => {
     return pactum
       .spec()
-      .withBearerToken(user2.token)
+      .withBearerToken(userNoUe.token)
       .put(`/ue/ueof/${ueof.code}/rate`)
       .withBody({
         criterion: criterion.id,
@@ -56,7 +68,7 @@ const PutRate = e2eSuite('PUT /ue/ueof/{ueofCode}/rate', (app) => {
   it('should return a 400 as value is not an int', () => {
     return pactum
       .spec()
-      .withBearerToken(user2.token)
+      .withBearerToken(userNoUe.token)
       .put(`/ue/ueof/${ueof.code}/rate`)
       .withBody({
         criterion: criterion.id,
@@ -68,7 +80,7 @@ const PutRate = e2eSuite('PUT /ue/ueof/{ueofCode}/rate', (app) => {
   it('should return a 400 as value is too high', () => {
     return pactum
       .spec()
-      .withBearerToken(user2.token)
+      .withBearerToken(userNoUe.token)
       .put(`/ue/ueof/${ueof.code}/rate`)
       .withBody({
         criterion: criterion.id,
@@ -80,7 +92,7 @@ const PutRate = e2eSuite('PUT /ue/ueof/{ueofCode}/rate', (app) => {
   it('should return a 400 as value is too low', () => {
     return pactum
       .spec()
-      .withBearerToken(user2.token)
+      .withBearerToken(userNoUe.token)
       .put(`/ue/ueof/${ueof.code}/rate`)
       .withBody({
         criterion: criterion.id,
@@ -92,7 +104,7 @@ const PutRate = e2eSuite('PUT /ue/ueof/{ueofCode}/rate', (app) => {
   it('should return a 400 as the criterion is not a string', () => {
     return pactum
       .spec()
-      .withBearerToken(user2.token)
+      .withBearerToken(userNoUe.token)
       .put(`/ue/ueof/${ueof.code}/rate`)
       .withBody({
         criterion: true,
@@ -104,7 +116,7 @@ const PutRate = e2eSuite('PUT /ue/ueof/{ueofCode}/rate', (app) => {
   it('should return a 404 as the criterion does not exist', () => {
     return pactum
       .spec()
-      .withBearerToken(user2.token)
+      .withBearerToken(userNoUe.token)
       .put(`/ue/ueof/${ueof.code}/rate`)
       .withBody({
         criterion: criterion.id.slice(0, 10),
@@ -117,7 +129,7 @@ const PutRate = e2eSuite('PUT /ue/ueof/{ueofCode}/rate', (app) => {
     const nonExistentCode = faker.db.ue.code();
     await pactum
       .spec()
-      .withBearerToken(user2.token)
+      .withBearerToken(userNoUe.token)
       .put(`/ue/ueof/${nonExistentCode}/rate`)
       .withBody({
         criterion: criterion.id,

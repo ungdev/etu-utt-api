@@ -15,10 +15,10 @@ import { ERROR_CODE } from '../../../../src/exceptions';
 import { CommentStatus } from '../../../../src/ue/comments/interfaces/comment.interface';
 
 const GetAnnalFile = e2eSuite('GET /ue/annals/{annalId}', (app) => {
-  const senderUser = createUser(app);
-  const nonUeUser = createUser(app, { login: 'user2', studentId: 2 });
+  const senderUser = createUser(app, { permissions: ['API_SEE_ANNALS'] });
+  const nonUeUser = createUser(app, { login: 'user2', studentId: 2, permissions: ['API_SEE_ANNALS'] });
   // const moderator = createUser(app, { login: 'user3', studentId: 3, permissions: ['annalModerator'] });
-  const nonStudentUser = createUser(app, { login: 'nonStudent', studentId: 4, userType: 'TEACHER' });
+  const userNoPermission = createUser(app);
   const annalType = createAnnalType(app);
   const semester = createSemester(app);
   const branch = createBranch(app);
@@ -47,20 +47,25 @@ const GetAnnalFile = e2eSuite('GET /ue/annals/{annalId}', (app) => {
     return pactum.spec().get(`/ue/annals/${annal_validated.id}`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
+  it('should fail as the user does not have the required permissions', () =>
+    pactum
+      .spec()
+      .withBearerToken(userNoPermission.token)
+      .get(`/ue/annals/${annal_validated.id}`)
+      .withQueryParams({
+        ueCode: ue.code,
+      })
+      .expectAppError(ERROR_CODE.FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS, 'API_SEE_ANNALS'));
+
   it('should return a 404 because annal does not exist', () => {
     return pactum
       .spec()
       .withBearerToken(senderUser.token)
       .get(`/ue/annals/${Dummies.UUID}`)
+      .withQueryParams({
+        ueCode: ue.code,
+      })
       .expectAppError(ERROR_CODE.NO_SUCH_ANNAL, Dummies.UUID);
-  });
-
-  it('should return a 403 because user is not a student', () => {
-    return pactum
-      .spec()
-      .withBearerToken(nonStudentUser.token)
-      .get(`/ue/annals/${annal_validated.id}`)
-      .expectAppError(ERROR_CODE.FORBIDDEN_INVALID_ROLE, 'STUDENT');
   });
 
   it('should return a 404 because annal is not validated', () => {

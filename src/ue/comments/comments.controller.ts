@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Patch, Post, Query } from '@nestjs/common';
 import { UUIDParam } from '../../app.pipe';
-import { GetUser, RequireApiPermission, RequireUserType } from '../../auth/decorator';
+import { GetUser, RequireApiPermission } from '../../auth/decorator';
 import { AppException, ERROR_CODE } from '../../exceptions';
 import UeCommentPostReqDto from './dto/req/ue-comment-post-req.dto';
 import CommentReplyReqDto from './dto/req/ue-comment-reply-req.dto';
@@ -24,7 +24,6 @@ export class CommentsController {
   constructor(readonly commentsService: CommentsService, readonly ueService: UeService) {}
 
   @Get()
-  @RequireUserType('STUDENT', 'FORMER_STUDENT')
   @RequireApiPermission(Permission.API_SEE_OPINIONS_UE)
   @ApiOperation({ description: 'Get the comments of a UE. This route is paginated.' })
   @ApiOkResponse({ type: paginatedResponseDto(UeCommentResDto) })
@@ -32,7 +31,7 @@ export class CommentsController {
     ERROR_CODE.NO_SUCH_UE,
     'This error is sent back when there is no UE associated with the code provided.',
   )
-  async getUEComments(
+  async getUeComments(
     @GetUser() user: User,
     @Query() dto: GetUeCommentsReqDto,
     @GetPermissions() permissions: PermissionManager,
@@ -42,7 +41,7 @@ export class CommentsController {
   }
 
   @Post()
-  @RequireUserType('STUDENT')
+  @RequireApiPermission('API_GIVE_OPINIONS_UE')
   @ApiOperation({ description: 'Send a comment for a UE.' })
   @ApiOkResponse({ type: UeCommentResDto })
   @ApiAppErrorResponse(
@@ -69,7 +68,7 @@ export class CommentsController {
 
   // TODO : en vrai la route GET /ue/comments renvoie les mêmes infos nan ? :sweat_smile:
   @Get(':commentId')
-  @RequireUserType('STUDENT', 'FORMER_STUDENT')
+  @RequireApiPermission('API_SEE_OPINIONS_UE')
   @ApiOperation({ description: 'Fetch a specific comment.' })
   @ApiOkResponse({ type: UeCommentResDto })
   @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_COMMENT, 'No comment is associated with the given commentId')
@@ -88,7 +87,7 @@ export class CommentsController {
   }
 
   @Patch(':commentId')
-  @RequireUserType('STUDENT', 'FORMER_STUDENT')
+  @RequireApiPermission('API_GIVE_OPINIONS_UE')
   @ApiOperation({ description: 'Edit a comment.' })
   @ApiOkResponse({ type: UeCommentResDto })
   @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_COMMENT, 'No comment has the given commentId.')
@@ -111,7 +110,7 @@ export class CommentsController {
   }
 
   @Delete(':commentId')
-  @RequireUserType('STUDENT', 'FORMER_STUDENT')
+  @RequireApiPermission('API_GIVE_OPINIONS_UE')
   @ApiOperation({
     description: 'Delete a comment. The user must be the author or have the `commentModerator` permission.',
   })
@@ -135,7 +134,7 @@ export class CommentsController {
   }
 
   @Post(':commentId/upvote')
-  @RequireUserType('STUDENT')
+  @RequireApiPermission('API_GIVE_OPINIONS_UE')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description: 'Give an upvote for a comment. User cannot be the author. Each user can only upvote a comment once.',
@@ -164,7 +163,7 @@ export class CommentsController {
   }
 
   @Delete(':commentId/upvote')
-  @RequireUserType('STUDENT', 'FORMER_STUDENT')
+  @RequireApiPermission('API_GIVE_OPINIONS_UE')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ description: 'Remove an upvote for a comment. User' })
   @ApiOkResponse({ type: UeCommentUpvoteResDto$False })
@@ -191,7 +190,7 @@ export class CommentsController {
   }
 
   @Post(':commentId/reply')
-  @RequireUserType('STUDENT')
+  @RequireApiPermission('API_GIVE_OPINIONS_UE')
   @ApiOperation({ description: 'Reply to a comment.' })
   @ApiOkResponse({ type: UeCommentReplyResDto })
   @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_COMMENT, 'There is no comment with the provided commentId.')
@@ -208,7 +207,7 @@ export class CommentsController {
   }
 
   @Patch('reply/:replyId')
-  @RequireUserType('STUDENT', 'FORMER_STUDENT')
+  @RequireApiPermission('API_GIVE_OPINIONS_UE')
   @ApiOperation({
     description:
       'Edit a reply to a comment. The user must be the author of the reply or have the `commentModerator` permission.',
@@ -232,7 +231,7 @@ export class CommentsController {
   }
 
   @Delete('reply/:replyId')
-  @RequireUserType('STUDENT', 'FORMER_STUDENT')
+  @RequireApiPermission('API_GIVE_OPINIONS_UE')
   @ApiOperation({
     description:
       'Delete a reply to a comment. The user must be the author of the reply or have the `commentModerator` permission.',
