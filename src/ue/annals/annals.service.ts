@@ -86,7 +86,7 @@ export class AnnalsService {
         },
         ueof: {
           connect: {
-            code: subscription.ueofCode ?? params.ueof,
+            code: subscription?.ueofCode ?? params.ueof,
           },
         },
       },

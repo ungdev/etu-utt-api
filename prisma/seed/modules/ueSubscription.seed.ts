@@ -11,7 +11,7 @@ export default function ueSubscriptionSeed(
 ): Promise<RawUserUeSubscription[]> {
   console.log('Seeding UE subscriptions...');
   const subscriptions: Promise<RawUserUeSubscription>[] = [];
-  /*for (const user of users) {
+  for (const user of users) {
     const subscribedToUes = faker.helpers.arrayElements(ues, faker.datatype.number({ min: 1, max: 10 }));
     for (const ue of subscribedToUes) {
       subscriptions.push(
@@ -24,7 +24,7 @@ export default function ueSubscriptionSeed(
         }),
       );
     }
-  }*/
+  }
   console.log('WARNING: no ue subscriptions seeded !!');
   return Promise.all(subscriptions);
 }

@@ -898,11 +898,13 @@ enum AddressPrivacy {
 }
 
 enum Permission {
-  API_SEE_OPINIONS_UE
-  API_UPLOAD_ANNAL
-  API_MODERATE_ANNAL
-  API_MODERATE_COMMENTS
+  API_SEE_OPINIONS_UE // See the rates of an UE
+  API_GIVE_OPINIONS_UE // Rate an UE you have done or are doing
+  API_SEE_ANNALS // See and download annals
+  API_UPLOAD_ANNALS // Upload an annal
+  API_MODERATE_ANNALS // Moderate annals
+  API_MODERATE_COMMENTS // Moderate comments
 
-  USER_SEE_DETAILS
-  USER_UPDATE_DETAILS
+  USER_SEE_DETAILS // See personal details about someone, even the ones the user decided to hide
+  USER_UPDATE_DETAILS // Update personal details about someone
 }

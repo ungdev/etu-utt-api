@@ -15,14 +15,15 @@ import { PrismaService } from '../../../../src/prisma/prisma.service';
 import { CommentStatus } from 'src/ue/comments/interfaces/comment.interface';
 
 const PostCommment = e2eSuite('POST /ue/comments', (app) => {
-  const user = createUser(app);
-  const user2 = createUser(app, { login: 'user2' });
+  const userNotDoneUe = createUser(app, { permissions: ['API_GIVE_OPINIONS_UE'] });
+  const userDidUe = createUser(app, { login: 'user2', permissions: ['API_GIVE_OPINIONS_UE'] });
+  const userNoPermission = createUser(app);
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
   const ue = createUe(app);
   const ueof = createUeof(app, { branchOptions: [branchOption], semesters: [semester], ue });
-  createUeSubscription(app, { user: user2, ueof, semester });
+  createUeSubscription(app, { user: userDidUe, ueof, semester });
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum
@@ -35,10 +36,22 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
       .expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
+  it('should fail as the user does not have the required permissions', () =>
+    pactum
+      .spec()
+      .withBearerToken(userNoPermission.token)
+      .post(`/ue/comments`)
+      .withBody({
+        ueCode: ue.code,
+        body: false,
+        isAnonymous: true,
+      })
+      .expectAppError(ERROR_CODE.FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS, 'API_GIVE_OPINIONS_UE'));
+
   it('should return a 400 because body is a not string', () => {
     return pactum
       .spec()
-      .withBearerToken(user.token)
+      .withBearerToken(userNotDoneUe.token)
       .post(`/ue/comments`)
       .withBody({
         ueCode: ue.code,
@@ -51,7 +64,7 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
   it('should return a 400 because body is too short', () => {
     return pactum
       .spec()
-      .withBearerToken(user.token)
+      .withBearerToken(userNotDoneUe.token)
       .post(`/ue/comments`)
       .withBody({
         ueCode: ue.code,
@@ -63,7 +76,7 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
   it('should return a 404 because UE does not exist', () => {
     return pactum
       .spec()
-      .withBearerToken(user.token)
+      .withBearerToken(userNotDoneUe.token)
       .post(`/ue/comments`)
       .withBody({
         ueCode: ue.code.slice(0, ue.code.length - 1),
@@ -75,7 +88,7 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
   it('should return a 403 because user has not done the UE yet', () => {
     return pactum
       .spec()
-      .withBearerToken(user.token)
+      .withBearerToken(userNotDoneUe.token)
       .post(`/ue/comments`)
       .withBody({
         ueCode: ue.code,
@@ -88,7 +101,7 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
   it('should return a comment as anonymous user', async () => {
     await pactum
       .spec()
-      .withBearerToken(user2.token)
+      .withBearerToken(userDidUe.token)
       .post(`/ue/comments`)
       .withBody({
         ueCode: ue.code,
@@ -100,9 +113,9 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
           id: JsonLike.ANY_UUID,
           ueof,
           author: {
-            id: user2.id,
-            firstName: user2.firstName,
-            lastName: user2.lastName,
+            id: userDidUe.id,
+            firstName: userDidUe.firstName,
+            lastName: userDidUe.lastName,
           },
           createdAt: JsonLike.ANY_DATE,
           updatedAt: JsonLike.ANY_DATE,
@@ -120,10 +133,10 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
   });
 
   it('should return a 403 while trying to post another comment', async () => {
-    await createComment(app, { ueof, user: user2, semester }, { isAnonymous: true }, true);
+    await createComment(app, { ueof, user: userDidUe, semester }, { isAnonymous: true }, true);
     await pactum
       .spec()
-      .withBearerToken(user2.token)
+      .withBearerToken(userDidUe.token)
       .post(`/ue/comments`)
       .withBody({
         ueCode: ue.code,
@@ -136,7 +149,7 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
   it('should return a comment as a logged in user', async () => {
     await pactum
       .spec()
-      .withBearerToken(user2.token)
+      .withBearerToken(userDidUe.token)
       .post(`/ue/comments`)
       .withBody({
         ueCode: ue.code,
@@ -147,9 +160,9 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
           ueof,
           id: JsonLike.ANY_UUID,
           author: {
-            id: user2.id,
-            firstName: user2.firstName,
-            lastName: user2.lastName,
+            id: userDidUe.id,
+            firstName: userDidUe.firstName,
+            lastName: userDidUe.lastName,
           },
           createdAt: JsonLike.ANY_DATE,
           updatedAt: JsonLike.ANY_DATE,
