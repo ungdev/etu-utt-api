@@ -206,11 +206,11 @@ export const ErrorData = Object.freeze({
   },
   [ERROR_CODE.FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS]: {
     message: 'Missing permission %',
-    httpCode: HttpStatus.UNAUTHORIZED,
+    httpCode: HttpStatus.FORBIDDEN,
   },
   [ERROR_CODE.FORBIDDEN_NOT_ENOUGH_USER_PERMISSIONS]: {
     message: 'Missing permission % on user %',
-    httpCode: HttpStatus.UNAUTHORIZED,
+    httpCode: HttpStatus.FORBIDDEN,
   },
   [ERROR_CODE.NO_TOKEN]: {
     message: 'No token provided',
