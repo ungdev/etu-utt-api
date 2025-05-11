@@ -61,6 +61,15 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
     return pactum.spec().get(`/ue/comments`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
+  it('should return a 403 as user does not have the permissions to see the comments', () => {
+    return pactum
+      .spec()
+      .withBearerToken(userNoPermission.token)
+      .get('/ue/comments')
+      .withQueryParams({ ueCode: ue.code })
+      .expectAppError(ERROR_CODE.FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS, 'API_SEE_OPINIONS_UE');
+  });
+
   it('should return a 400 as user uses a wrong page', () => {
     return pactum
       .spec()
@@ -71,14 +80,6 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
         ueCode: ue.code,
       })
       .expectAppError(ERROR_CODE.PARAM_NOT_POSITIVE, 'page');
-  });
-
-  it('should return a 403 as user does not have the permissions to see the comments', () => {
-    return pactum
-      .spec()
-      .withBearerToken(userNoPermission.token)
-      .get('/ue/comments')
-      .withQueryParams({ ueCode: ue.code });
   });
 
   it('should return a 404 because UE does not exist', () => {

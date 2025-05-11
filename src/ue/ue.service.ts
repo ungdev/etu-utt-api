@@ -360,4 +360,24 @@ export class UeService {
       },
     });
   }
+
+  /**
+   * Returns if the UE was taught at some specific semester.
+   * @param ueCode Code of the UE to check.
+   * @param semesterCode Code of the semester to check.
+   */
+  async didUeHappenAtSemester(ueCode: string, semesterCode: string): Promise<boolean> {
+    return (
+      (await this.prisma.ueof.count({
+        where: {
+          ueId: ueCode,
+          openSemester: {
+            some: {
+              code: semesterCode,
+            },
+          },
+        },
+      })) > 0
+    );
+  }
 }
