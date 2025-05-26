@@ -337,7 +337,7 @@ export const createUser = entityFaker(
       .get(PrismaService)
       .apiKey.create({
         data: {
-          token: faker.random.alpha({ count: 30 }),
+          token: faker.string.alphanumeric(30),
           user: { connect: { id: user.id } },
           application: { connect: { id: DEFAULT_APPLICATION.id } },
           apiKeyPermissions: {
@@ -1041,7 +1041,7 @@ export const createApplication = entityFaker(
   {
     name: faker.company.name,
     redirectUrl: faker.internet.url,
-    clientSecret: () => faker.random.alphaNumeric(10),
+    clientSecret: () => faker.string.alphanumeric(10),
   },
   async (app, dependencies, params) =>
     app()
@@ -1053,7 +1053,7 @@ export const createApplication = entityFaker(
           apiKeys: {
             create: {
               userId: dependencies.owner.id,
-              token: faker.random.alphaNumeric(10),
+              token: faker.string.alphanumeric(10),
             },
           },
         },
