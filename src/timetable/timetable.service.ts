@@ -560,7 +560,7 @@ export default class TimetableService {
   /**
    * Check if the url domain is part of the authorised list,
    * then download the timetable from this url
-   * @param param Where to download the file from
+   * @param url Where to download the file from
    * @returns the file content as a string
    */
   async downloadTimetable(url: string): Promise<string> {
@@ -570,7 +570,7 @@ export default class TimetableService {
     try {
       const response = await lastValueFrom(this.http.get(url));
       return response.data;
-    } catch (error) {
+    } catch {
       throw new AppException(ERROR_CODE.RESOURCE_UNAVAILABLE, url);
     }
   }
