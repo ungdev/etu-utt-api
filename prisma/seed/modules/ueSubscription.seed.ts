@@ -11,8 +11,8 @@ export default function ueSubscriptionSeed(
 ): Promise<RawUserUeSubscription[]> {
   console.log('Seeding UE subscriptions...');
   const subscriptions: Promise<RawUserUeSubscription>[] = [];
-  /*for (const user of users) {
-    const subscribedToUes = faker.helpers.arrayElements(ues, faker.datatype.number({ min: 1, max: 10 }));
+  for (const user of users) {
+    const subscribedToUes = faker.helpers.arrayElements(ues, faker.number.int({ min: 1, max: 10 }));
     for (const ue of subscribedToUes) {
       subscriptions.push(
         prisma.userUeSubscription.create({
@@ -24,7 +24,7 @@ export default function ueSubscriptionSeed(
         }),
       );
     }
-  }*/
+  }
   console.log('WARNING: no ue subscriptions seeded !!');
   return Promise.all(subscriptions);
 }

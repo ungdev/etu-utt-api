@@ -7,26 +7,39 @@ import { omit } from '../../../../src/utils';
 import { FakeComment } from '../../../utils/fakedb';
 
 const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) => {
-  const user = fakedb.createUser(app);
-  const user2 = fakedb.createUser(app, { login: 'user2' });
+  const user = fakedb.createUser(app, { permissions: ['API_SEE_OPINIONS_UE'] });
+  const userNotAuthor = fakedb.createUser(app, { login: 'user2', permissions: ['API_SEE_OPINIONS_UE'] });
+  const userNoPermission = fakedb.createUser(app);
   const semester = fakedb.createSemester(app);
   const branch = fakedb.createBranch(app);
   const branchOption = fakedb.createBranchOption(app, { branch });
   const ue = fakedb.createUe(app);
   const ueof = fakedb.createUeof(app, { branchOptions: [branchOption], semesters: [semester], ue });
   const comment = fakedb.createComment(app, { user, ueof, semester });
-  fakedb.createCommentUpvote(app, { user: user2, comment });
+  fakedb.createCommentUpvote(app, { user: userNotAuthor, comment });
   const reply = fakedb.createCommentReply(app, { user, comment }, { body: 'HelloWorld' });
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum.spec().get(`/ue/comments/${comment.id}`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
+  it('should fail as the user does not have the required permissions', () =>
+    pactum
+      .spec()
+      .withBearerToken(userNoPermission.token)
+      .get(`/ue/comments/${comment.id}`)
+      .withBody({
+        ueCode: ue.code,
+        body: false,
+        isAnonymous: true,
+      })
+      .expectAppError(ERROR_CODE.FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS, 'API_SEE_OPINIONS_UE'));
+
   it('should return a 400 because comment id is not a valid uuid', () => {
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .get(`/ue/comments/${faker.datatype.uuid().slice(0, -1)}`)
+      .get(`/ue/comments/${faker.string.uuid().slice(0, -1)}`)
       .expectAppError(ERROR_CODE.PARAM_NOT_UUID, 'commentId');
   });
 
@@ -34,7 +47,7 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .get(`/ue/comments/${faker.datatype.uuid()}`)
+      .get(`/ue/comments/${faker.string.uuid()}`)
       .expectAppError(ERROR_CODE.NO_SUCH_COMMENT);
   });
 
@@ -75,7 +88,7 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
   it('should return the comment without the author field as the user is not the author', () => {
     return pactum
       .spec()
-      .withBearerToken(user2.token)
+      .withBearerToken(userNotAuthor.token)
       .get(`/ue/comments/${comment.id}`)
       .expectUeComment({
         ueof,

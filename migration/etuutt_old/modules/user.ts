@@ -58,10 +58,10 @@ export async function migrateUsers(
               address: !user.countryPrivacy
                 ? 'ALL_PRIVATE'
                 : !user.cityPrivacy
-                ? 'CITY_PRIVATE'
-                : !user.addressPrivacy
-                ? 'ADDRESS_PRIVATE'
-                : 'ALL_PUBLIC',
+                  ? 'CITY_PRIVATE'
+                  : !user.addressPrivacy
+                    ? 'ADDRESS_PRIVATE'
+                    : 'ALL_PUBLIC',
             },
           },
           rgpd: {

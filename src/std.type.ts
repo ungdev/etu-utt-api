@@ -48,12 +48,15 @@ Array.prototype.groupyBy = function <T, K extends string | number | symbol>(
   this: Array<T>,
   keyMapper: (entity: T) => K,
 ) {
-  return this.reduce((acc, entity) => {
-    const key = keyMapper(entity);
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(entity);
-    return acc;
-  }, {} as { [key in K]: T[] });
+  return this.reduce(
+    (acc, entity) => {
+      const key = keyMapper(entity);
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(entity);
+      return acc;
+    },
+    {} as { [key in K]: T[] },
+  );
 };
 
 Array.prototype.mappedSort = function <T>(this: Array<T>, mapper: (e: T) => any[] | any) {

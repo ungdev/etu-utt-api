@@ -151,7 +151,7 @@ Faker.prototype.db = {
       fakeSafeUniqueData(
         'semester',
         'code',
-        () => `${faker.helpers.arrayElement(['P', 'A'])}${faker.datatype.number({ min: 10, max: 24 })}`,
+        () => `${faker.helpers.arrayElement(['P', 'A'])}${faker.number.int({ min: 10, max: 24 })}`,
         30,
       ),
   },
@@ -160,8 +160,7 @@ Faker.prototype.db = {
       fakeSafeUniqueData(
         'ue',
         'code',
-        () =>
-          faker.helpers.arrayElement(baseUesCode) + `${faker.datatype.number({ min: 1, max: 13 })}`.padStart(2, '0'),
+        () => faker.helpers.arrayElement(baseUesCode) + `${faker.number.int({ min: 1, max: 13 })}`.padStart(2, '0'),
       ),
   },
   ueCreditCategory: {
@@ -169,9 +168,9 @@ Faker.prototype.db = {
       fakeSafeUniqueData('ueCreditCategory', 'code', () => faker.helpers.arrayElement(creditType), creditType.length),
   },
   ueStarVote: {
-    value: () => faker.datatype.number({ min: 1, max: 5 }),
+    value: () => faker.number.int({ min: 1, max: 5 }),
   },
-  translation: (rng = faker.random.words) => ({
+  translation: (rng = faker.word.words) => ({
     fr: rng(),
     en: rng(),
     de: rng(),
@@ -196,7 +195,7 @@ Faker.prototype.db = {
 
 export { Faker };
 
-export function generateTranslation(rng: () => string = faker.random.words) {
+export function generateTranslation(rng: () => string = faker.word.words) {
   return {
     create: {
       fr: rng(),

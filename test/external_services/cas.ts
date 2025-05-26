@@ -6,12 +6,12 @@ import { RegisterUserData } from '../../src/auth/auth.service';
 import { ConfigModule } from '../../src/config/config.module';
 
 export let validService = '';
-export const validTicket = faker.datatype.uuid();
+export const validTicket = faker.string.uuid();
 export const user: RegisterUserData = {
-  login: faker.datatype.uuid(),
+  login: faker.string.uuid(),
   mail: faker.internet.email(),
-  lastName: faker.name.lastName(),
-  firstName: faker.name.firstName(),
+  lastName: faker.person.lastName(),
+  firstName: faker.person.firstName(),
   tokenExpiresIn: 999999,
 };
 

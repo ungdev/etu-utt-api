@@ -30,7 +30,7 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
     pactum
       .spec()
       .post('/auth/signup/cas')
-      .withJson({ registerToken: faker.random.alpha() })
+      .withJson({ registerToken: faker.string.alpha() })
       .expectAppError(ERROR_CODE.INVALID_TOKEN_FORMAT));
 
   it('should fail as the provided token does not contains an object in the right form', async () => {
@@ -61,8 +61,8 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
   });
 
   const executeValidSignupRequest = async (type: string) => {
-    const firstName = faker.name.firstName();
-    const lastName = faker.name.lastName();
+    const firstName = faker.person.firstName();
+    const lastName = faker.person.lastName();
     const login = `${lastName.toLowerCase().slice(0, 7)}${firstName.toLowerCase()}`.slice(0, 8);
     const mail = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@utt.fr`;
     const tokenExpiresIn = 9999;
@@ -79,7 +79,7 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
         eduPersonAffiliation: [type, 'member'],
         employeeType: type,
         formation: 'Ingénieur',
-        telephonenumber: faker.phone.number('+33 # ## ## ## ##'),
+        telephonenumber: faker.helpers.fromRegExp(/\+33 \d \d\d \d\d \d\d \d\d/),
         niveau: `${branch.code}2`,
         filiere: branchOption.code,
         datefin: 20240930,
