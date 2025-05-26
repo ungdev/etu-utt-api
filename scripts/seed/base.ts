@@ -156,7 +156,10 @@ async function main() {
     branch_options.map((option) =>
       prisma.uTTBranchOption.upsert({
         where: {
-          code: option.code,
+          code_branchCode: {
+            code: option.code,
+            branchCode: option.branch,
+          },
         },
         update: {
           branchCode: option.branch,

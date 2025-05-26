@@ -1,61 +1,16 @@
 name: CI
-on: 
+on:
   push:
-    branches:
-      - '*'
+    branches: [main, dev]
   pull_request:
-    branches:
-      - '*'
-  
-jobs: 
-  lint:
-    runs-on: ubuntu-latest
-    steps: 
-      - uses: actions/checkout@v4
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20.x'
-          cache: 'pnpm'        
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm lint
-  
-  build:
-    runs-on: ubuntu-latest
-    steps: 
-      - uses: actions/checkout@v4
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20.x'
-          cache: 'pnpm'        
-      - run: pnpm install --frozen-lockfile
-      - run: pnpx prisma generate
-      - run: pnpm build
-  
-  test:
-    runs-on: ubuntu-latest
-    env:
-      DATABASE_URL: mysql://dev:dev@localhost:3306/etuutt_test
-    services:
-      mariadb:
-        image: mariadb:10
-        env:
-          MYSQL_USER: 'dev'
-          MYSQL_PASSWORD: 'dev'
-          MYSQL_DATABASE: etuutt_test
-          MYSQL_RANDOM_ROOT_PASSWORD: yes
-        ports:
-          - 3306:3306
+    branches: [main, dev]
 
+jobs:
+  lint:
+    runs-on: self-hosted
+    strategy:
+      matrix:
+        node-version: [18]
     steps: 
       - uses: actions/checkout@v4
       - name: Install pnpm
@@ -68,12 +23,31 @@ jobs:
           node-version: '20.x'
           cache: 'pnpm'        
       - run: pnpm install --frozen-lockfile
-      - run: cp .env.test.dist .env.test
-      - run: pnpm test:db:reset
-      - run: pnpm test:instantfail
-  
-  cov:
-    runs-on: ubuntu-latest
+      - run: pnpm pnpx prisma generate
+      - run: pnpm lint
+
+  build:
+    runs-on: self-hosted
+    steps: 
+      - uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'pnpm'        
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm pnpx prisma generate
+      - run: pnpm build
+
+  test:
+    runs-on: self-hosted
+    strategy:
+      matrix:
+        node-version: [18]
     env:
       DATABASE_URL: mysql://dev:dev@localhost:3306/etuutt_test
     services:
@@ -86,6 +60,7 @@ jobs:
           MYSQL_RANDOM_ROOT_PASSWORD: yes
         ports:
           - 3306:3306
+        options: --name mariadb --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=30s --health-retries=5
 
     steps: 
       - uses: actions/checkout@v4
@@ -105,4 +80,27 @@ jobs:
       - uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-      
+
+  deploy:
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
+    runs-on: self-hosted
+    needs:
+      - lint
+      - build
+      - test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install docker
+        uses: docker/setup-buildx-action@v3
+      - name: Login to registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.REGISTRY_URL }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with: 
+          push: true
+          tags: |
+            ${{ secrets.REGISTRY_URL }}/etuutt/api:${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}

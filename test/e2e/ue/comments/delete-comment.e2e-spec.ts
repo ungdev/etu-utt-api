@@ -15,8 +15,9 @@ import { CommentStatus } from 'src/ue/comments/interfaces/comment.interface';
 import { PrismaService } from '../../../../src/prisma/prisma.service';
 
 const DeleteComment = e2eSuite('DELETE /ue/comments/:commentId', (app) => {
-  const user = createUser(app);
-  const user2 = createUser(app, { login: 'user2' });
+  const user = createUser(app, { permissions: ['API_GIVE_OPINIONS_UE'] });
+  const userNotAuthor = createUser(app, { login: 'user2', permissions: ['API_GIVE_OPINIONS_UE'] });
+  const userNoPermission = createUser(app);
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
@@ -29,10 +30,17 @@ const DeleteComment = e2eSuite('DELETE /ue/comments/:commentId', (app) => {
     return pactum.spec().delete(`/ue/comments/${comment1.id}`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
+  it('should fail as the user does not have the required permissions', () =>
+    pactum
+      .spec()
+      .withBearerToken(userNoPermission.token)
+      .delete(`/ue/comments/${comment1.id}`)
+      .expectAppError(ERROR_CODE.FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS, 'API_GIVE_OPINIONS_UE'));
+
   it('should return a 403 because user is not the author', () => {
     return pactum
       .spec()
-      .withBearerToken(user2.token)
+      .withBearerToken(userNotAuthor.token)
       .delete(`/ue/comments/${comment1.id}`)
       .expectAppError(ERROR_CODE.NOT_COMMENT_AUTHOR);
   });
@@ -78,7 +86,7 @@ const DeleteComment = e2eSuite('DELETE /ue/comments/:commentId', (app) => {
       });
     await app()
       .get(PrismaService)
-      .ueComment.delete({
+      .normalize.ueComment.delete({
         args: {
           includeDeletedReplied: false,
           includeLastValidatedBody: false,

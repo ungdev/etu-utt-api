@@ -69,7 +69,7 @@ export default class UsersService {
           }
         : {}),
     } satisfies Prisma.UserWhereInput;
-    const items = await this.prisma.user.findMany({
+    const items = await this.prisma.normalize.user.findMany({
       where,
       take: this.config.PAGINATION_PAGE_SIZE,
       skip: ((dto.page ?? 1) - 1) * this.config.PAGINATION_PAGE_SIZE,
@@ -83,7 +83,7 @@ export default class UsersService {
   }
 
   fetchUser(userId: string): Promise<User> {
-    return this.prisma.user.findUnique({
+    return this.prisma.normalize.user.findUnique({
       where: { id: userId },
     });
   }
@@ -99,7 +99,7 @@ export default class UsersService {
         FROM UserInfos
         WHERE EXTRACT(DAY FROM birthday) = ${date.getUTCDate()}
           AND EXTRACT(MONTH FROM birthday) = ${date.getUTCMonth() + 1}`) as Array<{ id: string }>;
-    return this.prisma.user.findMany({ where: { infosId: { in: userIds.map((u) => u.id) } } });
+    return this.prisma.normalize.user.findMany({ where: { infosId: { in: userIds.map((u) => u.id) } } });
   }
 
   async fetchUserAssoMemberships(userId: string): Promise<UserAssoMembership[]> {
@@ -129,7 +129,7 @@ export default class UsersService {
   }
 
   async updateUserProfil(userId: string, dto: UserUpdateReqDto): Promise<User> {
-    return this.prisma.user.update({
+    return this.prisma.normalize.user.update({
       where: { id: userId },
       data: {
         infos: {

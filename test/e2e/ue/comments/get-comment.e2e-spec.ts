@@ -17,9 +17,13 @@ import { ERROR_CODE } from 'src/exceptions';
 import { PrismaService } from '../../../../src/prisma/prisma.service';
 
 const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
-  const user = createUser(app);
-  const user2 = createUser(app, { login: 'user2', studentId: 3 });
-  const moderator = createUser(app, { login: 'user3', studentId: 3, permissions: ['commentModerator'] });
+  const user = createUser(app, { permissions: ['API_SEE_OPINIONS_UE'] });
+  const userNoPermission = createUser(app, { login: 'user2', studentId: 2 });
+  const moderator = createUser(app, {
+    login: 'user3',
+    studentId: 3,
+    permissions: ['API_MODERATE_COMMENTS', 'API_SEE_OPINIONS_UE'],
+  });
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
@@ -35,7 +39,7 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
       },
     ),
   );
-  createCommentUpvote(app, { user: user2, comment: comments[0] });
+  createCommentUpvote(app, { user: userNoPermission, comment: comments[0] });
   createCommentReply(app, { user, comment: comments[0] });
   for (let i = 1; i < 30; i++) {
     const commentAuthor = createUser(app, {
@@ -55,6 +59,15 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
 
   it('should return a 401 as user is not authenticated', () => {
     return pactum.spec().get(`/ue/comments`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
+  });
+
+  it('should return a 403 as user does not have the permissions to see the comments', () => {
+    return pactum
+      .spec()
+      .withBearerToken(userNoPermission.token)
+      .get('/ue/comments')
+      .withQueryParams({ ueCode: ue.code })
+      .expectAppError(ERROR_CODE.FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS, 'API_SEE_OPINIONS_UE');
   });
 
   it('should return a 400 as user uses a wrong page', () => {
@@ -90,16 +103,13 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
       });
     const extendedComments = await app()
       .get(PrismaService)
-      .ueComment.findMany(
-        {
-          args: {
-            userId: user.id,
-            includeDeletedReplied: false,
-            includeLastValidatedBody: false,
-          },
+      .normalize.ueComment.findMany({
+        args: {
+          userId: user.id,
+          includeDeletedReplied: false,
+          includeLastValidatedBody: false,
         },
-        user.id,
-      );
+      });
     const commentsFiltered = {
       items: extendedComments
         .sort((a, b) =>
@@ -128,16 +138,13 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
   it('should return the second page of comments', async () => {
     const extendedComments = await app()
       .get(PrismaService)
-      .ueComment.findMany(
-        {
-          args: {
-            userId: user.id,
-            includeDeletedReplied: false,
-            includeLastValidatedBody: false,
-          },
+      .normalize.ueComment.findMany({
+        args: {
+          userId: user.id,
+          includeDeletedReplied: false,
+          includeLastValidatedBody: false,
         },
-        user.id,
-      );
+      });
     return pactum
       .spec()
       .withBearerToken(user.token)
@@ -173,16 +180,13 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
       });
     const extendedComments = await app()
       .get(PrismaService)
-      .ueComment.findMany(
-        {
-          args: {
-            userId: user.id,
-            includeDeletedReplied: false,
-            includeLastValidatedBody: true,
-          },
+      .normalize.ueComment.findMany({
+        args: {
+          userId: user.id,
+          includeDeletedReplied: false,
+          includeLastValidatedBody: true,
         },
-        user.id,
-      );
+      });
     const commentsFiltered = {
       items: extendedComments
         .sort((a, b) =>

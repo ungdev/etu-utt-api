@@ -2,6 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { ConfigModule as NestConfigModule, ConfigService as NestConfigService } from '@nestjs/config';
 
 const isTestEnv = process.env.NODE_ENV === 'test';
+const isProdEnv = process.env.NODE_ENV === 'production';
 
 @Global()
 @Module({
@@ -23,11 +24,14 @@ export class ConfigModule {
   public readonly JWT_EXPIRES_IN: string;
   public readonly SALT_ROUNDS: number;
   public readonly CAS_URL: string;
+  public readonly CAS_SERVICE: string;
   public readonly LDAP_URL: string;
   public readonly LDAP_USER: string;
   public readonly LDAP_PWD: string;
+  public readonly IS_PROD_ENV: boolean;
+  public readonly TIMETABLE_URL: string;
   public readonly ANNAL_UPLOAD_DIR: string;
-
+  public readonly ETUUTT_WEBSITE_APPLICATION_ID: string;
   // DEV ENVIRONMENT ONLY
 
   // TEST ENVIRONMENT ONLY
@@ -40,11 +44,16 @@ export class ConfigModule {
     this.JWT_EXPIRES_IN = config.get('JWT_EXPIRES_IN');
     this.SALT_ROUNDS = Number(config.get('SALT_ROUNDS'));
     this.CAS_URL = config.get('CAS_URL');
+    this.CAS_SERVICE = config.get('CAS_SERVICE');
     this.LDAP_URL = config.get('LDAP_URL');
     this.LDAP_USER = config.get('LDAP_USER');
     this.LDAP_PWD = config.get('LDAP_PWD');
     this.ANNAL_UPLOAD_DIR = config.get<string>('ANNAL_UPLOAD_DIR');
+    this.IS_PROD_ENV = isProdEnv;
+    this.TIMETABLE_URL = config.get<string>('TIMETABLE_URL');
+
     if (this.ANNAL_UPLOAD_DIR.endsWith('/')) this.ANNAL_UPLOAD_DIR = this.ANNAL_UPLOAD_DIR.slice(0, -1);
+    this.ETUUTT_WEBSITE_APPLICATION_ID = config.get('ETUUTT_WEBSITE_APPLICATION_ID');
 
     this._FAKER_SEED = isTestEnv ? Number(config.get('FAKER_SEED')) : undefined;
   }

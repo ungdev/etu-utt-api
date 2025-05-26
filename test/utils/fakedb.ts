@@ -31,15 +31,18 @@ import {
   RawUserUeSubscription,
   Translation,
   RawUserPrivacy,
+  RawApiKey,
+  RawApiApplication,
 } from '../../src/prisma/types';
 import { faker } from '@faker-js/faker';
 import { AuthService } from '../../src/auth/auth.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { AppProvider } from './test_utils';
-import { Sex, TimetableEntryType, UserType } from '@prisma/client';
+import { Permission, Sex, TimetableEntryType, UserType } from '@prisma/client';
 import { CommentStatus } from '../../src/ue/comments/interfaces/comment.interface';
 import { UeAnnalFile } from '../../src/ue/annals/interfaces/annal.interface';
 import { omit, pick, translationSelect } from '../../src/utils';
+import { DEFAULT_APPLICATION } from '../../prisma/seed/utils';
 
 /**
  * The fake entities can be used like normal entities in the <code>it(string, () => void)</code> functions.
@@ -47,8 +50,7 @@ import { omit, pick, translationSelect } from '../../src/utils';
  */
 export type FakeUser = Partial<RawUser> & {
   infos?: Partial<RawUserInfos>;
-  permissions?: string[];
-  token?: string;
+  permissions?: Permission[];
   mailsPhones?: Partial<RawUserMailsPhones>;
   addresses?: Array<Partial<RawUserAddress>>;
   socialNetwork?: Partial<RawUserSocialNetwork>;
@@ -60,7 +62,9 @@ export type FakeUser = Partial<RawUser> & {
       semester?: Partial<RawSemester>;
     }
   >;
-  privacy: Partial<RawUserPrivacy>;
+  privacy?: Partial<RawUserPrivacy>;
+  token?: string;
+  apiKey?: Partial<RawApiKey>;
 };
 export type FakeTimetableGroup = Partial<RawTimetableGroup>;
 export type FakeTimetableEntry = Partial<RawTimetableEntry>;
@@ -109,6 +113,9 @@ export type FakeUeCreditCategory = Partial<RawCreditCategory>;
 export type FakeUeAnnalType = Partial<RawAnnalType>;
 export type FakeUeAnnal = Partial<UeAnnalFile>;
 export type FakeHomepageWidget = Partial<RawHomepageWidget>;
+export type FakeApiApplication = Partial<Omit<RawApiApplication, 'ownerId'>> & {
+  owner: { id: string; firstName: string; lastName: string };
+};
 
 export interface FakeEntityMap {
   assoMembership: {
@@ -169,7 +176,7 @@ export interface FakeEntityMap {
     params: CreateUserSubscriptionParameters;
     deps: { user: FakeUser; ueof: FakeUeof; semester: FakeSemester };
   };
-  ueCriterion: {
+  ueStarCriterion: {
     entity: FakeUeStarCriterion;
     params: CreateCriterionParameters;
   };
@@ -222,6 +229,11 @@ export interface FakeEntityMap {
     params: CreateHomepageWidgetParameters;
     deps: { user: FakeUser };
   };
+  application: {
+    entity: FakeApiApplication;
+    params: CreateApiApplicationParameter;
+    deps: { owner: FakeUser };
+  };
 }
 
 export type CreateUserParameters = FakeUser & { password: string };
@@ -258,38 +270,9 @@ export const createUser = entityFaker(
     privacy: {},
   },
   async (app, params) => {
-    const permissions = await app()
-      .get(PrismaService)
-      .userPermission.findMany({
-        where: {
-          id: {
-            in: params.permissions,
-          },
-        },
-      });
-    permissions.push(
-      ...(await Promise.all(
-        (params.permissions ?? [])
-          .filter((perm) => !permissions.some((p) => p.id === perm))
-          .map((perm) =>
-            app()
-              .get(PrismaService)
-              .userPermission.create({
-                data: {
-                  id: perm,
-                  name: {
-                    create: {
-                      fr: 'TODO : implement this value',
-                    },
-                  },
-                },
-              }),
-          ),
-      )),
-    );
     const user = await app()
       .get(PrismaService)
-      .withDefaultBehaviour.user.create({
+      .user.create({
         data: {
           hash: params.hash ?? (await app().get(AuthService).getHash(params.password)),
           ...pick(params, 'id', 'login', 'studentId', 'firstName', 'lastName', 'userType'),
@@ -299,11 +282,6 @@ export const createUser = entityFaker(
               birthday: params.infos.birthday
                 ? new Date(params.infos.birthday.getTime() - params.infos.birthday.getTimezoneOffset() * 60000)
                 : null, // Add the 1h timezone offset (in you are in France ^^) to make the time the same as the one expected if you don't look at the timezone offset
-            },
-          },
-          permissions: {
-            createMany: {
-              data: permissions.map((perm) => ({ userPermissionId: perm.id })),
             },
           },
           rgpd: { create: {} },
@@ -334,11 +312,6 @@ export const createUser = entityFaker(
         },
         include: {
           infos: true,
-          permissions: {
-            select: {
-              userPermissionId: true,
-            },
-          },
           mailsPhones: true,
           addresses: {
             select: {
@@ -360,10 +333,46 @@ export const createUser = entityFaker(
           privacy: true,
         },
       });
+    const apiKey = await app()
+      .get(PrismaService)
+      .apiKey.create({
+        data: {
+          token: faker.random.alpha({ count: 30 }),
+          user: { connect: { id: user.id } },
+          application: { connect: { id: DEFAULT_APPLICATION.id } },
+          apiKeyPermissions: {
+            create: [
+              ...(params.permissions.includes(Permission.USER_SEE_DETAILS)
+                ? []
+                : [
+                    {
+                      permission: Permission.USER_SEE_DETAILS,
+                      user: { connect: { id: user.id } },
+                      granter: { connect: { id: user.id } },
+                    },
+                  ]),
+              ...(params.permissions.includes(Permission.USER_UPDATE_DETAILS)
+                ? []
+                : [
+                    {
+                      permission: Permission.USER_UPDATE_DETAILS,
+                      user: { connect: { id: user.id } },
+                      granter: { connect: { id: user.id } },
+                    },
+                  ]),
+              ...params.permissions.map((permission) => ({
+                permission,
+                granter: { connect: { id: user.id } },
+              })),
+            ],
+          },
+        },
+      });
     return {
       ...user,
-      permissions: user.permissions.map((perm) => perm.userPermissionId),
-      token: await app().get(AuthService).signToken(user.id, user.login),
+      permissions: [],
+      token: await app().get(AuthService).signAuthenticationToken(apiKey.token),
+      apiKey,
     };
   },
 );
@@ -452,9 +461,9 @@ export const createAsso = entityFaker(
   'association',
   {
     login: faker.internet.username,
-    name: faker.person.firstName,
+    name: faker.db.association.name,
     mail: faker.string.sample,
-    deletedAt: new Date(0),
+    deletedAt: null,
     descriptionShortTranslation: {
       fr: faker.company.catchPhrase(),
       en: faker.company.catchPhrase(),
@@ -473,12 +482,9 @@ export const createAsso = entityFaker(
   async (app, params) => {
     const asso = await app()
       .get(PrismaService)
-      .asso.create({
+      .normalize.asso.create({
         data: {
-          ...omit(params, 'login', 'name', 'descriptionShortTranslationId', 'descriptionTranslationId'),
-          login: params.login,
-          name: params.name,
-          mail: params.mail,
+          ...pick(params, 'login', 'name', 'mail', 'deletedAt'),
           descriptionTranslation: {
             create: {
               fr: 'TODO : implement this value',
@@ -491,9 +497,19 @@ export const createAsso = entityFaker(
               ...params.descriptionShortTranslation,
             },
           },
+          assoMembershipRoles: {
+            create: {
+              name: 'President',
+              position: 0,
+              isPresident: true,
+            },
+          },
         },
       });
-    return { ...asso, president: null, presidentRole: null };
+    const presidentRole = await app()
+      .get(PrismaService)
+      .assoMembershipRole.findFirst({ where: { assoId: asso.id } });
+    return { ...asso, president: null, presidentRole: presidentRole };
   },
 );
 
@@ -551,7 +567,7 @@ export const createTimetableEntry = entityFaker(
       .timetableEntry.create({
         data: {
           timetableGroups: { connect: params.groups.map((group) => ({ id: group.id })) },
-          ...omit(params, 'groups', 'eventId', 'ueCourseId'),
+          ...omit(params, 'groups', 'eventId'),
         },
       }),
 );
@@ -661,7 +677,7 @@ export const createAnnal = entityFaker(
   async (app, { semester, sender, type, ueof }, { status }) =>
     app()
       .get(PrismaService)
-      .ueAnnal.create({
+      .normalize.ueAnnal.create({
         data: {
           uploadComplete: !(status & CommentStatus.PROCESSING),
           deletedAt: status & CommentStatus.DELETED ? faker.date.recent() : null,
@@ -709,7 +725,10 @@ export const createUeof = entityFaker(
       .get(PrismaService)
       .ueof.create({
         data: {
-          code: `${ue.code}_FR_TRO_U${semesters[0]?.code?.slice(-2)}`,
+          // If semester is PXX, year should be U(XX-1)
+          code: `${ue.code}_FR_TRO_U${semesters[0]?.code
+            ?.slice(-2)
+            .replace(/\d+/, (n) => String(+n - (semesters[0]?.code.startsWith('P') ? 1 : 0)))}`,
           ue: {
             connect: {
               code: ue.code,
@@ -734,7 +753,7 @@ export const createUeof = entityFaker(
               credits: credit.credits,
               branchOptions: {
                 connect: branchOptions.map((branchOption) => ({
-                  code: branchOption.code,
+                  id: branchOption.id,
                 })),
               },
             })),
@@ -817,8 +836,7 @@ export const createUe = entityFaker(
           code: params.code,
           createdAt: params.createdAt,
         },
-      })
-      .then(omit('ueofs')),
+      }),
 );
 
 export type CreateUserSubscriptionParameters = Omit<FakeUserUeSubscription, 'ueofCode' | 'semesterId' | 'userId'>;
@@ -850,9 +868,9 @@ export const createUeSubscription = entityFaker('userUeSubscription', {}, async 
 
 export type CreateCriterionParameters = FakeUeStarCriterion;
 export const createCriterion = entityFaker(
-  'ueCriterion',
+  'ueStarCriterion',
   {
-    name: faker.word.adjective,
+    name: faker.db.ueStarCriterion.name,
   },
   async (app, params) =>
     app()
@@ -879,7 +897,7 @@ export const createUeRating = entityFaker(
   async (app, dependencies, params) => {
     return app()
       .get(PrismaService)
-      .withDefaultBehaviour.ueStarVote.create({
+      .ueStarVote.create({
         data: {
           ...params,
           criterion: {
@@ -914,7 +932,7 @@ export const createComment = entityFaker(
   async (app, dependencies, params) => {
     const rawFakeData = await app()
       .get(PrismaService)
-      .withDefaultBehaviour.ueComment.create({
+      .ueComment.create({
         data: {
           ...omit(params, 'status'),
           validatedAt: params.status & CommentStatus.VALIDATED ? new Date() : undefined,
@@ -971,7 +989,7 @@ export const createCommentReply = entityFaker(
   async (app, dependencies, params) => {
     const rawFakeReply = await app()
       .get(PrismaService)
-      .withDefaultBehaviour.ueCommentReply.create({
+      .ueCommentReply.create({
         data: {
           ...omit(params, 'commentId', 'authorId', 'status'),
           deletedAt: params.status & CommentStatus.DELETED ? new Date() : undefined,
@@ -1015,6 +1033,31 @@ export const createHomepageWidget = entityFaker(
     app()
       .get(PrismaService)
       .userHomepageWidget.create({ data: { ...omit(params, 'userId'), user: { connect: { id: deps.user.id } } } }),
+);
+
+export type CreateApiApplicationParameter = Omit<FakeApiApplication, 'owner'>;
+export const createApplication = entityFaker(
+  'application',
+  {
+    name: faker.company.name,
+    redirectUrl: faker.internet.url,
+    clientSecret: () => faker.random.alphaNumeric(10),
+  },
+  async (app, dependencies, params) =>
+    app()
+      .get(PrismaService)
+      .normalize.apiApplication.create({
+        data: {
+          ...pick(params, 'id', 'name', 'redirectUrl', 'clientSecret'),
+          owner: { connect: { id: dependencies.owner.id } },
+          apiKeys: {
+            create: {
+              userId: dependencies.owner.id,
+              token: faker.random.alphaNumeric(10),
+            },
+          },
+        },
+      }),
 );
 
 /**
@@ -1176,7 +1219,7 @@ function entityFaker<
     if (onTheFly === true) {
       return factory() as OnTheFly extends true ? Promise<Entity<T>> : never;
     }
-    beforeAll(factory);
+    beforeAll(factory, 15000);
     return lazyEntity as OnTheFly extends true ? never : Entity<T>;
   };
   if (entityFactory.length === 2) {

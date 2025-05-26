@@ -131,7 +131,7 @@ export class UeService {
       ].filter((query) => query),
       // Filter per credit type
     } satisfies Prisma.UeWhereInput;
-    const items = await this.prisma.ue.findMany({
+    const items = await this.prisma.normalize.ue.findMany({
       where,
       take: this.config.PAGINATION_PAGE_SIZE,
       skip: ((query.page ?? 1) - 1) * this.config.PAGINATION_PAGE_SIZE,
@@ -154,7 +154,7 @@ export class UeService {
   getUe(code: string): Promise<Ue> {
     // Fetch an ue from the database. This ue shall not be returned as is because
     // it is not formatted at that point.
-    return this.prisma.ue.findUnique({
+    return this.prisma.normalize.ue.findUnique({
       where: {
         code,
       },
@@ -258,7 +258,7 @@ export class UeService {
    * @returns the list of all criteria
    */
   async getRateCriteria(): Promise<Criterion[]> {
-    return this.prisma.ueStarCriterion.findMany({});
+    return this.prisma.normalize.ueStarCriterion.findMany({});
   }
 
   /**
@@ -287,7 +287,7 @@ export class UeService {
           async (ueof) =>
             [
               ueof.code,
-              await this.prisma.ueStarVote.findMany({
+              await this.prisma.normalize.ueStarVote.findMany({
                 where: {
                   userId: userId,
                   ueofCode: ueof.code,
@@ -308,7 +308,7 @@ export class UeService {
    * @returns the new rate of the {@link ueofCode | ue} for the {@link user}
    */
   async rateUeof(userId: string, ueofCode: string, dto: UeRateReqDto): Promise<UeRating> {
-    return this.prisma.ueStarVote.upsert({
+    return this.prisma.normalize.ueStarVote.upsert({
       where: {
         ueofCode_userId_criterionId: {
           ueofCode: ueofCode,
@@ -329,7 +329,7 @@ export class UeService {
   }
 
   async unRateUeof(userId: string, ueofCode: string, criterionId: string): Promise<UeRating> {
-    return this.prisma.ueStarVote.delete({
+    return this.prisma.normalize.ueStarVote.delete({
       where: {
         ueofCode_userId_criterionId: {
           ueofCode: ueofCode,
@@ -343,7 +343,7 @@ export class UeService {
   async getUesOfUser(userId: string): Promise<Ue[]> {
     const currentSemester = await this.semesterService.getCurrentSemester();
     if (currentSemester === null) return [];
-    return this.prisma.ue.findMany({
+    return this.prisma.normalize.ue.findMany({
       where: {
         ueofs: {
           some: {
@@ -359,5 +359,25 @@ export class UeService {
         },
       },
     });
+  }
+
+  /**
+   * Returns if the UE was taught at some specific semester.
+   * @param ueCode Code of the UE to check.
+   * @param semesterCode Code of the semester to check.
+   */
+  async didUeHappenAtSemester(ueCode: string, semesterCode: string): Promise<boolean> {
+    return (
+      (await this.prisma.ueof.count({
+        where: {
+          ueId: ueCode,
+          openSemester: {
+            some: {
+              code: semesterCode,
+            },
+          },
+        },
+      })) > 0
+    );
   }
 }

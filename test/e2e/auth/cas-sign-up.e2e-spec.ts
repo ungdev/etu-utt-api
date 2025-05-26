@@ -3,31 +3,17 @@ import * as pactum from 'pactum';
 import { faker } from '@faker-js/faker';
 import { JwtService } from '@nestjs/jwt';
 import * as fakedb from '../../utils/fakedb';
-import { AuthService, RegisterData } from '../../../src/auth/auth.service';
-import { pick } from '../../../src/utils';
+import { AuthService } from '../../../src/auth/auth.service';
 import { PrismaService } from '../../../src/prisma/prisma.service';
-import { FakeUser } from '../../utils/fakedb';
 import { string } from 'pactum-matchers';
 import { ERROR_CODE } from '../../../src/exceptions';
 import { ConfigModule } from '../../../src/config/config.module';
-import { LdapServerMock, LdapUser } from 'ldap-server-mock';
+import { LdapUser } from 'ldap-server-mock';
 import { HttpStatus } from '@nestjs/common';
+import { mockLdapServer } from '../../external_services/ldap';
 
 const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
   const list: LdapUser[] = [];
-  const ldapServer = new LdapServerMock(
-    list,
-    {
-      searchBase: 'ou=people,dc=utt,dc=fr',
-      port: Number(process.env.LDAP_URL.split(':')[2]),
-    },
-    null,
-    null,
-    {
-      // Disable default logging
-      info: () => undefined,
-    },
-  );
   const branch = fakedb.createBranch(app);
   const branchOption = fakedb.createBranchOption(app, { branch });
   const semester = fakedb.createSemester(app, {
@@ -38,8 +24,7 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
   const ue = fakedb.createUe(app);
   fakedb.createUeof(app, { branchOptions: [branchOption], semesters: [semester], ue });
 
-  beforeAll(() => ldapServer.start());
-  afterAll(() => ldapServer.stop());
+  mockLdapServer(list);
 
   it('should fail as the provided token is not jwt-generated', () =>
     pactum
@@ -65,12 +50,9 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
       .spec()
       .post('/auth/signup/cas')
       .withJson({
-        registerToken: app()
+        registerToken: await app()
           .get(AuthService)
-          .signRegisterToken({
-            ...pick(user as Required<FakeUser>, 'login', 'firstName', 'lastName'),
-            mail: faker.internet.email(),
-          }),
+          .signRegisterUserToken(user.login, faker.internet.email(), user.firstName, user.lastName, 99999),
       })
       .expectAppError(ERROR_CODE.CREDENTIALS_ALREADY_TAKEN);
     await app()
@@ -78,23 +60,20 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
       .user.delete({ where: { id: user.id } });
   });
 
-  const executeValidSignupRequest = (type: string) => {
+  const executeValidSignupRequest = async (type: string) => {
     const firstName = faker.person.firstName();
     const lastName = faker.person.lastName();
-    const userData: RegisterData = {
-      login: `${lastName.toLowerCase().slice(0, 7)}${firstName.toLowerCase()}`.slice(0, 8),
-      mail: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@utt.fr`,
-      firstName,
-      lastName,
-    };
+    const login = `${lastName.toLowerCase().slice(0, 7)}${firstName.toLowerCase()}`.slice(0, 8);
+    const mail = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@utt.fr`;
+    const tokenExpiresIn = 9999;
     list.push({
-      dn: `uid=${userData.login},ou=people,dc=utt,dc=fr`,
+      dn: `uid=${login},ou=people,dc=utt,dc=fr`,
       attributes: {
-        uid: userData.login,
-        sn: userData.lastName,
-        givenName: userData.firstName,
-        displayName: `${userData.firstName} ${userData.lastName}`,
-        mail: userData.mail,
+        uid: login,
+        sn: lastName,
+        givenName: firstName,
+        displayName: `${firstName} ${lastName}`,
+        mail: mail,
         supannEmpId: 49777,
         supannEtuId: 49777,
         eduPersonAffiliation: [type, 'member'],
@@ -104,18 +83,22 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
         niveau: `${branch.code}2`,
         filiere: branchOption.code,
         datefin: 20240930,
-        jpegPhoto: `http://localhost/${userData.login}.jpg`,
+        jpegPhoto: `http://localhost/${login}.jpg`,
         gidNumber: type === 'student' ? 10000 : type === 'faculty' ? 5000 : 6000,
         uv: ['PETM6', 'SY16', 'LO17', 'RE02', 'IF03', 'CTC1', 'LG11', 'PEICT', ue.code],
       },
     });
-    return pactum
+    await pactum
       .spec()
       .post('/auth/signup/cas')
-      .withJson({ registerToken: app().get(AuthService).signRegisterToken(userData) })
+      .withJson({
+        registerToken: await app()
+          .get(AuthService)
+          .signRegisterUserToken(login, mail, firstName, lastName, tokenExpiresIn),
+      })
       .expectStatus(HttpStatus.CREATED)
-      .expectJsonMatch({ access_token: string() });
-    // TODO : test that the user has been created, along with all its data
+      .expectJsonMatch({ token: string() });
+    expect(await app().get(PrismaService).user.count({ where: { login } })).toEqual(1);
   };
 
   it('should successfully create the user and return a token', () => executeValidSignupRequest('student'));

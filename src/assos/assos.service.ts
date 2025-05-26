@@ -47,7 +47,7 @@ export class AssosService {
           }
         : {}),
     };
-    const assos = await this.prisma.asso.findMany({
+    const assos = await this.prisma.normalize.asso.findMany({
       where,
       take: this.config.PAGINATION_PAGE_SIZE,
       skip: ((query.page ?? 1) - 1) * this.config.PAGINATION_PAGE_SIZE,
@@ -68,7 +68,7 @@ export class AssosService {
    * @returns the {@link assoFormatted} of the asso matching the given id
    */
   async getAsso(assoId: string): Promise<Asso> {
-    return this.prisma.asso.findUnique({
+    return this.prisma.normalize.asso.findUnique({
       where: {
         id: assoId,
       },

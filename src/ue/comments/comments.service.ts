@@ -30,25 +30,22 @@ export class CommentsService {
   ): Promise<Pagination<UeComment>> {
     // Use a prisma transaction to execute two requests at once:
     // We fetch a page of comments matching our filters and retrieve the total count of comments matching our filters
-    const comments = await this.prisma.ueComment.findMany(
-      {
-        args: {
-          userId: userId,
-          includeLastValidatedBody: bypassAnonymousData,
-          includeDeletedReplied: bypassAnonymousData,
-        },
-        where: {
-          ueof: {
-            ue: {
-              code: dto.ueCode,
-            },
+    const comments = await this.prisma.normalize.ueComment.findMany({
+      args: {
+        userId: userId,
+        includeLastValidatedBody: bypassAnonymousData,
+        includeDeletedReplied: bypassAnonymousData,
+      },
+      where: {
+        ueof: {
+          ue: {
+            code: dto.ueCode,
           },
         },
-        take: this.config.PAGINATION_PAGE_SIZE,
-        skip: ((dto.page ?? 1) - 1) * this.config.PAGINATION_PAGE_SIZE,
       },
-      userId,
-    );
+      take: this.config.PAGINATION_PAGE_SIZE,
+      skip: ((dto.page ?? 1) - 1) * this.config.PAGINATION_PAGE_SIZE,
+    });
     const commentCount = await this.prisma.ueComment.count({
       where: { ueof: { ue: { code: dto.ueCode } } },
     });
@@ -71,19 +68,16 @@ export class CommentsService {
    * @returns a page of {@link UeComment} matching the user query
    */
   async getCommentFromId(commentId: string, userId: string, isModerator: boolean): Promise<UeComment> {
-    const comment = await this.prisma.ueComment.findUnique(
-      {
-        args: {
-          includeDeletedReplied: isModerator,
-          includeLastValidatedBody: isModerator,
-          userId,
-        },
-        where: {
-          id: commentId,
-        },
+    const comment = await this.prisma.normalize.ueComment.findUnique({
+      args: {
+        includeDeletedReplied: isModerator,
+        includeLastValidatedBody: isModerator,
+        userId,
       },
-      userId,
-    );
+      where: {
+        id: commentId,
+      },
+    });
     return comment;
   }
 
@@ -95,7 +89,7 @@ export class CommentsService {
    * @returns whether the user is the author of the {@link commentId | comment}
    */
   async isUserCommentAuthor(userId: string, commentId: string): Promise<boolean> {
-    const comment = await this.prisma.withDefaultBehaviour.ueComment.findUnique({
+    const comment = await this.prisma.ueComment.findUnique({
       where: { id: commentId },
       select: { authorId: true },
     });
@@ -167,13 +161,13 @@ export class CommentsService {
    */
   async hasAlreadyPostedAComment(userId: string, ueCode: string) {
     // Find the UE
-    const ue = await this.prisma.withDefaultBehaviour.ue.findUnique({
+    const ue = await this.prisma.ue.findUnique({
       where: {
         code: ueCode,
       },
     });
     // Find a comment (in the UE) whose author is the user
-    const comment = await this.prisma.ueComment.findMany({
+    const comment = await this.prisma.normalize.ueComment.findMany({
       args: {
         includeDeletedReplied: false,
         includeLastValidatedBody: false,
@@ -199,36 +193,33 @@ export class CommentsService {
   async createComment(body: UeCommentPostReqDto, userId: string): Promise<UeComment> {
     // Use last semester done when creating the comment
     const lastSemester = await this.getLastUserSubscription(userId, body.ueCode);
-    return this.prisma.ueComment.create(
-      {
-        args: {
-          includeDeletedReplied: true,
-          includeLastValidatedBody: true,
-          userId,
+    return this.prisma.normalize.ueComment.create({
+      args: {
+        includeDeletedReplied: true,
+        includeLastValidatedBody: true,
+        userId,
+      },
+      data: {
+        body: body.body,
+        isAnonymous: body.isAnonymous ?? false,
+        updatedAt: new Date(),
+        author: {
+          connect: {
+            id: userId,
+          },
         },
-        data: {
-          body: body.body,
-          isAnonymous: body.isAnonymous ?? false,
-          updatedAt: new Date(),
-          author: {
-            connect: {
-              id: userId,
-            },
+        ueof: {
+          connect: {
+            code: lastSemester.ueofCode,
           },
-          ueof: {
-            connect: {
-              code: lastSemester.ueofCode,
-            },
-          },
-          semester: {
-            connect: {
-              code: lastSemester.semesterId,
-            },
+        },
+        semester: {
+          connect: {
+            code: lastSemester.semesterId,
           },
         },
       },
-      userId,
-    );
+    });
   }
 
   /**
@@ -245,7 +236,7 @@ export class CommentsService {
     userId: string,
     isModerator: boolean,
   ): Promise<UeComment> {
-    const previousComment = await this.prisma.ueComment.findUnique({
+    const previousComment = await this.prisma.normalize.ueComment.findUnique({
       args: {
         userId,
         includeDeletedReplied: true,
@@ -261,26 +252,23 @@ export class CommentsService {
       previousComment.status & CommentStatus.VALIDATED &&
       !isModerator;
 
-    return this.prisma.ueComment.update(
-      {
-        args: {
-          userId,
-          includeDeletedReplied: true,
-          includeLastValidatedBody: true,
-        },
-        where: {
-          id: commentId,
-        },
-        data: {
-          body: body.body,
-          isAnonymous: body.isAnonymous,
-          validatedAt: needsValidationAgain ? null : undefined,
-          lastValidatedBody: needsValidationAgain ? previousComment.body : undefined,
-          updatedAt: new Date(),
-        },
+    return this.prisma.normalize.ueComment.update({
+      args: {
+        userId,
+        includeDeletedReplied: true,
+        includeLastValidatedBody: true,
       },
-      userId,
-    );
+      where: {
+        id: commentId,
+      },
+      data: {
+        body: body.body,
+        isAnonymous: body.isAnonymous,
+        validatedAt: needsValidationAgain ? null : undefined,
+        lastValidatedBody: needsValidationAgain ? previousComment.body : undefined,
+        updatedAt: new Date(),
+      },
+    });
   }
 
   /**
@@ -309,7 +297,7 @@ export class CommentsService {
    * @returns the created {@link UeCommentReply}
    */
   async replyComment(userId: string, commentId: string, reply: CommentReplyReqDto): Promise<UeCommentReply> {
-    return this.prisma.ueCommentReply.create({
+    return this.prisma.normalize.ueCommentReply.create({
       data: {
         body: reply.body,
         commentId,
@@ -326,7 +314,7 @@ export class CommentsService {
    * @returns the updated {@link UeCommentReply}
    */
   async editReply(replyId: string, reply: CommentReplyReqDto): Promise<UeCommentReply> {
-    return this.prisma.ueCommentReply.update({
+    return this.prisma.normalize.ueCommentReply.update({
       data: {
         body: reply.body,
       },
@@ -343,7 +331,7 @@ export class CommentsService {
    * @returns the deleted {@link UeCommentReply}
    */
   async deleteReply(replyId: string): Promise<UeCommentReply> {
-    return this.prisma.ueCommentReply.update({
+    return this.prisma.normalize.ueCommentReply.update({
       where: {
         id: replyId,
       },
@@ -391,22 +379,19 @@ export class CommentsService {
    * @returns the deleted {@link UeComment}
    */
   deleteComment(commentId: string, userId: string): Promise<UeComment> {
-    return this.prisma.ueComment.update(
-      {
-        args: {
-          userId,
-          includeDeletedReplied: true,
-          includeLastValidatedBody: false,
-        },
-        where: {
-          id: commentId,
-        },
-        data: {
-          deletedAt: new Date(),
-        },
+    return this.prisma.normalize.ueComment.update({
+      args: {
+        userId,
+        includeDeletedReplied: true,
+        includeLastValidatedBody: false,
       },
-      userId,
-    );
+      where: {
+        id: commentId,
+      },
+      data: {
+        deletedAt: new Date(),
+      },
+    });
   }
 
   /**

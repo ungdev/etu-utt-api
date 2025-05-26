@@ -25,5 +25,6 @@ export default function ueSubscriptionSeed(
       );
     }
   }
+  console.log('WARNING: no ue subscriptions seeded !!');
   return Promise.all(subscriptions);
 }

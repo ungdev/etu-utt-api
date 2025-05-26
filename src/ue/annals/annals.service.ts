@@ -70,7 +70,7 @@ export class AnnalsService {
       },
     });
     // Create upload/file entry
-    return this.prisma.ueAnnal.create({
+    return this.prisma.normalize.ueAnnal.create({
       data: {
         type: {
           connect: {
@@ -89,7 +89,7 @@ export class AnnalsService {
         },
         ueof: {
           connect: {
-            code: subscription.ueofCode ?? params.ueof,
+            code: subscription?.ueofCode ?? params.ueof,
           },
         },
       },
@@ -109,7 +109,7 @@ export class AnnalsService {
         },
       },
     };
-    const fileEntry = await this.prisma.ueAnnal.findUnique(dbFilter);
+    const fileEntry = await this.prisma.normalize.ueAnnal.findUnique(dbFilter);
     // We won't wait for the file to be processed to send the response.
     // Files do not need to be processed instantly and will only be displayed to all users when processed
     const promise = (async () => {
@@ -183,7 +183,7 @@ export class AnnalsService {
 
   async getUeAnnalsList(user: User, ueCode: string, includeAll: boolean) {
     return (
-      await this.prisma.ueAnnal.findMany({
+      await this.prisma.normalize.ueAnnal.findMany({
         where: {
           ueof: {
             ue: {
@@ -257,7 +257,7 @@ export class AnnalsService {
   }
 
   async getUeAnnal(annalId: string, userId: string, includeAll: boolean) {
-    return this.prisma.ueAnnal.findUnique({
+    return this.prisma.normalize.ueAnnal.findUnique({
       where: {
         id: annalId,
         deletedAt: includeAll ? undefined : null,
@@ -288,7 +288,7 @@ export class AnnalsService {
   }
 
   async getUeAnnalFile(annalId: string, userId: string, includeAll: boolean) {
-    const metadata = await this.prisma.ueAnnal.findUnique({
+    const metadata = await this.prisma.normalize.ueAnnal.findUnique({
       where: {
         id: annalId,
         deletedAt: includeAll ? undefined : null,
@@ -335,7 +335,7 @@ export class AnnalsService {
   }
 
   async updateAnnalMetadata(annalId: string, metadata: UpdateAnnalReqDto) {
-    return this.prisma.ueAnnal.update({
+    return this.prisma.normalize.ueAnnal.update({
       where: {
         id: annalId,
       },
@@ -355,7 +355,7 @@ export class AnnalsService {
   }
 
   async deleteAnnal(annalId: string) {
-    return this.prisma.ueAnnal.update({
+    return this.prisma.normalize.ueAnnal.update({
       where: {
         id: annalId,
       },

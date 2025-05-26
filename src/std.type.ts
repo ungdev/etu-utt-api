@@ -5,8 +5,9 @@ declare global {
      */
     groupyBy<K extends string | number | symbol>(keyMapper: (entity: T) => K): { [key in K]: T[] };
     /**
-     * Sorts the current array and returns it.
+     * Sorts the current array (in place) and returns it.
      * Array is sorted based on a mapper function, that returns in order the values by which to sort the array.
+     * Sorting based on a string IS NOT case-sensitive, meaning 'A' and 'a' have the same value.
      * @example
      * const array = [
      *   { a: 3, b: 'early into the alphabet' },
@@ -24,8 +25,22 @@ declare global {
      *               The length of the array should be fixed, not dependent on the value to map.
      */
     mappedSort(mapper: (e: T) => any[] | any): this;
-    /** Retrieves all unique values of this array, skipping all duplicates. Does not alter original array */
-    readonly uniqueValues: this;
+
+    /**
+     * Creates a new array containing the same values as the original array, but removing duplicates.
+     * The order is not changed. A duplicate gets the position where it was found first.
+     * The original array is not modified.
+     * @example
+     * const array = [1, 2, 3, 3, 2, 5, 2, 6];
+     * array.unique();
+     * // Result :
+     * // [1, 2, 3, 5, 6]
+     */
+    unique(): Array<T>;
+  }
+
+  interface ObjectConstructor {
+    keys<O extends object>(o: O): (keyof O)[];
   }
 }
 
@@ -51,10 +66,12 @@ Array.prototype.mappedSort = function <T>(this: Array<T>, mapper: (e: T) => any[
     const aValues = aMapped instanceof Array ? aMapped : [aMapped];
     const bValues = bMapped instanceof Array ? bMapped : [bMapped];
     for (let i = 0; i < Math.min(aValues.length, bValues.length); i++) {
-      if (aValues[i] < bValues[i]) {
+      const aValue = typeof aValues[i] === 'string' ? aValues[i].toUpperCase() : aValues[i];
+      const bValue = typeof bValues[i] === 'string' ? bValues[i].toUpperCase() : bValues[i];
+      if (aValue < bValue) {
         return -1;
       }
-      if (bValues[i] < aValues[i]) {
+      if (bValue < aValue) {
         return 1;
       }
     }
@@ -62,10 +79,8 @@ Array.prototype.mappedSort = function <T>(this: Array<T>, mapper: (e: T) => any[
   });
 };
 
-Object.defineProperty(Array.prototype, 'uniqueValues', {
-  get: function <T>(this: Array<T>) {
-    return this.filter((value, index) => this.indexOf(value) === index);
-  },
-});
+Array.prototype.unique = function <T>(this: Array<T>) {
+  return this.filter((value, index) => this.indexOf(value) === index);
+};
 
 export {};

@@ -21,7 +21,7 @@ const ASSO_SELECT_FILTER = {
 
 type UnformattedAsso = Prisma.AssoGetPayload<typeof ASSO_SELECT_FILTER>;
 export type Asso = UnformattedAsso & {
-  president: { role: { id: string; name: string }; user: { firstName: string; lastName: string } };
+  president: { role: { id: string; name: string }; user?: { id: string; firstName: string; lastName: string } };
 };
 
 export const generateCustomAssoModel = (prisma: PrismaClient) =>
@@ -35,7 +35,7 @@ export async function formatAsso(prisma: PrismaClient, asso: UnformattedAsso): P
   const presidentMembership = presidentRole
     ? await prisma.assoMembership.findFirst({
         where: { roleId: presidentRole.id },
-        select: { user: { select: { firstName: true, lastName: true } } },
+        select: { user: { select: { id: true, firstName: true, lastName: true } } },
       })
     : null;
   return {

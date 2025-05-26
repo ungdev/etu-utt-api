@@ -2,16 +2,18 @@ import { Global, Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
-import { JwtStrategy } from './strategy';
+import { JwtStrategy } from './strategy/jwt.strategy';
 import { UsersModule } from '../users/users.module';
 import { LdapModule } from '../ldap/ldap.module';
-import { UeService } from '../../src/ue/ue.service';
+import { UeService } from '../ue/ue.service';
+import ApplicationController from './application/application.controller';
+import ApplicationService from './application/application.service';
 
 @Global()
 @Module({
   imports: [JwtModule.register({}), UsersModule],
-  controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, LdapModule, UeService],
-  exports: [JwtStrategy],
+  controllers: [AuthController, ApplicationController],
+  providers: [AuthService, JwtStrategy, ApplicationService, LdapModule, UeService],
+  exports: [],
 })
 export class AuthModule {}

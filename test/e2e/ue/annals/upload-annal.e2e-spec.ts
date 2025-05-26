@@ -17,11 +17,13 @@ import { pick } from '../../../../src/utils';
 import { mkdirSync, rmSync } from 'fs';
 
 const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
-  const senderUser = createUser(app);
-  const nonUeUser = createUser(app, { login: 'user2', studentId: 2 });
-  const nonStudentUser = createUser(app, { login: 'nonStudent', studentId: 4, userType: 'TEACHER' });
+  const senderUser = createUser(app, { permissions: ['API_UPLOAD_ANNALS'] });
+  const nonUeUser = createUser(app, { login: 'user2', studentId: 2, permissions: ['API_UPLOAD_ANNALS'] });
+  const userNoPermission = createUser(app);
+  const userModerator = createUser(app, { permissions: ['API_UPLOAD_ANNALS', 'API_MODERATE_ANNALS'] });
   const annalType = createAnnalType(app);
   const semester = createSemester(app);
+  const otherRandomSemester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
   const ue = createUe(app);
@@ -32,8 +34,33 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
     return pactum.spec().post(`/ue/annals`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
-  it('should return a 404 because UE does not exist', () => {
-    return pactum
+  it('should fail as the user does not have the required permissions', () =>
+    pactum
+      .spec()
+      .withBearerToken(userNoPermission.token)
+      .post(`/ue/annals`)
+      .withBody({
+        semester: semester.code,
+        typeId: annalType.id,
+        ueCode: ue.code,
+      })
+      .expectAppError(ERROR_CODE.FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS, 'API_UPLOAD_ANNALS'));
+
+  it('should fail as user does not have permission API_MODERATE_ANNALS to upload to any ueof', () =>
+    pactum
+      .spec()
+      .withBearerToken(senderUser.token)
+      .post(`/ue/annals`)
+      .withBody({
+        semester: semester.code,
+        typeId: annalType.id,
+        ueCode: ue.code,
+        ueof: ueof.code,
+      })
+      .expectAppError(ERROR_CODE.FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS, 'API_MODERATE_ANNALS'));
+
+  it('should return a 404 because UE does not exist', () =>
+    pactum
       .spec()
       .withBearerToken(senderUser.token)
       .post(`/ue/annals`)
@@ -42,24 +69,23 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
         typeId: annalType.id,
         ueCode: ue.code.slice(0, ue.code.length - 1),
       })
-      .expectAppError(ERROR_CODE.NO_SUCH_UE, ue.code.slice(0, ue.code.length - 1));
-  });
+      .expectAppError(ERROR_CODE.NO_SUCH_UE, ue.code.slice(0, ue.code.length - 1)));
 
-  it('should return a 403 because user is not a student', () => {
-    return pactum
+  it('should return a 404 because UEOF does not exist', () =>
+    pactum
       .spec()
-      .withBearerToken(nonStudentUser.token)
+      .withBearerToken(userModerator.token)
       .post(`/ue/annals`)
       .withBody({
         semester: semester.code,
         typeId: annalType.id,
         ueCode: ue.code,
+        ueof: ueof.code.slice(0, ueof.code.length - 1),
       })
-      .expectAppError(ERROR_CODE.FORBIDDEN_INVALID_ROLE, 'STUDENT');
-  });
+      .expectAppError(ERROR_CODE.NO_SUCH_UEOF, ueof.code.slice(0, ueof.code.length - 1)));
 
-  it('should return a 403 because user has not done the UE', () => {
-    return pactum
+  it('should return a 403 because user has not done the UE', () =>
+    pactum
       .spec()
       .withBearerToken(nonUeUser.token)
       .post(`/ue/annals`)
@@ -68,8 +94,19 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
         typeId: annalType.id,
         ueCode: ue.code,
       })
-      .expectAppError(ERROR_CODE.NOT_DONE_UE_IN_SEMESTER, ue.code, semester.code);
-  });
+      .expectAppError(ERROR_CODE.NOT_DONE_UE_IN_SEMESTER, ue.code, semester.code));
+
+  it('should fail as ue did not happen at the given semester', () =>
+    pactum
+      .spec()
+      .withBearerToken(userModerator.token)
+      .post(`/ue/annals`)
+      .withBody({
+        semester: otherRandomSemester.code,
+        typeId: annalType.id,
+        ueCode: ue.code,
+      })
+      .expectAppError(ERROR_CODE.NO_SUCH_UE_AT_SEMESTER, ue.code, otherRandomSemester.code));
 
   describe('should create the annal', () => {
     beforeAll(() => {

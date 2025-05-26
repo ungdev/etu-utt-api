@@ -50,7 +50,7 @@ export default function ueSeed(
                     branchOptions: {
                       connect: faker.helpers
                         .arrayElements(branchOptions, faker.number.int({ min: 1, max: 3 }))
-                        .map((branchOption) => ({ code: branchOption.code })),
+                        .map((branchOption) => ({ id: branchOption.id })),
                     },
                   },
                 ],

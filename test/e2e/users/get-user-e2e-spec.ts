@@ -19,7 +19,7 @@ const GetUserE2ESpec = e2eSuite('GET /users/:userId', (app) => {
   it('should successfully find the user', async () => {
     const userFromDb = await app()
       .get(PrismaService)
-      .user.findUnique({
+      .normalize.user.findUnique({
         where: { login: userToSearch.login },
       });
     const branch = userFromDb.branchSubscriptions.find(

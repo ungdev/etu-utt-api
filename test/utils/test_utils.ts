@@ -4,7 +4,7 @@ import { TestingModule } from '@nestjs/testing';
 import { faker } from '@faker-js/faker';
 import { ConfigModule } from '../../src/config/config.module';
 import { DMMF } from '@prisma/client/runtime/library';
-import { clearUniqueValues } from '../../prisma/seed/utils';
+import { clearUniqueValues, generateDefaultApplication } from '../../prisma/seed/utils';
 import { PrismaClient } from '@prisma/client';
 
 /**
@@ -44,9 +44,11 @@ function suite<T extends AppProvider>(name: string, func: (app: T) => void) {
   return (app: T) =>
     describe(name, () => {
       beforeAll(async () => {
-        await cleanDb(app().get(PrismaService));
+        const prisma = app().get(PrismaService);
+        await cleanDb(prisma);
         clearUniqueValues();
-      });
+        await generateDefaultApplication(prisma);
+      }, 15000);
       func(app);
     });
 }
@@ -82,7 +84,7 @@ export async function cleanDb(prisma: PrismaService | PrismaClient) {
   // We can't delete each table one by one, because of foreign key constraints
   const tablesCleared = [] as string[];
   // _runtimeDataModel.models basically contains a JS-ified version of the schema.prisma
-  for (const modelName of Object.keys((prisma as any)._runtimeDataModel.models)) {
+  for (const modelName of Object.keys((prisma as any)._runtimeDataModel.models) as string[]) {
     // Check the table hasn't been already cleaned
     if (tablesCleared.includes(modelName)) continue;
     await clearTableWithCascade(prisma, modelName, tablesCleared);

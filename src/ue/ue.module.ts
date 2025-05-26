@@ -7,6 +7,7 @@ import { CreditController } from './credit/credit.controller';
 import { AnnalsService } from './annals/annals.service';
 import { CreditService } from './credit/credit.service';
 import { CommentsService } from './comments/comments.service';
+import { CourseService } from './course/course.service';
 
 /**
  * Defines the `UE` module. This module handles all routes prefixed by `/ue`.
@@ -14,7 +15,7 @@ import { CommentsService } from './comments/comments.service';
  */
 @Module({
   controllers: [CommentsController, AnnalsController, CreditController, UeController],
-  providers: [CommentsService, AnnalsService, CreditService, UeService],
-  exports: [UeService],
+  providers: [CommentsService, AnnalsService, CreditService, UeService, CourseService],
+  exports: [UeService, CourseService],
 })
 export class UeModule {}

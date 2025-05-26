@@ -1,7 +1,10 @@
-ARG NODE_VERSION=19-alpine
+ARG NODE_VERSION=22-alpine
 FROM node:${NODE_VERSION} AS base
 
 WORKDIR /usr/src/app
+
+# Add alpine dependencies for 'sharp'
+RUN apk add --upgrade --no-cache vips-dev build-base openssl
 
 COPY --chown=node:node package.json pnpm-lock.yaml ./
 

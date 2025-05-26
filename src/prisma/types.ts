@@ -23,6 +23,7 @@ export {
   UeCommentUpvote as RawUeCommentUpvote,
   UeAnnalType as RawAnnalType,
   UeAnnal as RawAnnal,
+  UeCourse as RawUeCourse,
   UserMailsPhones as RawUserMailsPhones,
   UserSocialNetwork as RawUserSocialNetwork,
   UserPreference as RawUserPreference,
@@ -33,6 +34,8 @@ export {
   AssoMembership as RawAssoMembership,
   UserHomepageWidget as RawHomepageWidget,
   UserPrivacy as RawUserPrivacy,
+  ApiApplication as RawApiApplication,
+  ApiKey as RawApiKey,
 } from '@prisma/client';
 
 export { RawTranslation };
