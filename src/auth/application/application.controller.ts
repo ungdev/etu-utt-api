@@ -22,7 +22,7 @@ export default class ApplicationController {
   @Get('/of/me')
   @ApiOperation({ description: 'Get the applications of the user issuing the request.' })
   async getMyApplications(@GetUser('id') userId: string): Promise<ApplicationResDto[]> {
-    return this.getApplicationsOf(userId, new PermissionManager({ [Permission.USER_SEE_DETAILS]: [userId] }));
+    return this.getApplicationsOf(userId, new PermissionManager().add(Permission.USER_SEE_DETAILS, userId));
   }
 
   @Get('/of/:userId')
@@ -84,12 +84,12 @@ export default class ApplicationController {
   async generateToken(
     @GetUser('id') userId: string,
     @Param('applicationId') applicationId: string,
-    @Body() dto: UpdateTokenReqDto,
+    @Body() dto?: UpdateTokenReqDto,
   ): Promise<AuthTokenResDto> {
     const application = await this.applicationService.get(applicationId);
     if (!application) throw new AppException(ERROR_CODE.NO_SUCH_APPLICATION, applicationId);
     if (application.owner.id !== userId) throw new AppException(ERROR_CODE.APPLICATION_NOT_OWNED, applicationId);
-    const token = await this.applicationService.regenerateApiKeyToken(userId, applicationId, dto.expiresIn);
+    const token = await this.applicationService.regenerateApiKeyToken(userId, applicationId, dto?.expiresIn);
     return { token };
   }
 

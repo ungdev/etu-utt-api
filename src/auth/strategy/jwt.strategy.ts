@@ -5,7 +5,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { ConfigModule } from '../../config/config.module';
 import { RequestAuthData } from '../interfaces/request-auth-data.interface';
 import { PermissionManager } from '../../utils';
-import { ALL_PERMISSIONS, PermissionsDescriptor } from '../interfaces/permissions.interface';
+import { UserPermission } from '../interfaces/permissions.interface';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -32,24 +32,15 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
         id: apiKey.userId,
       },
     });
-    const permissions: PermissionsDescriptor = {};
+    const permissions = new PermissionManager();
     for (const permission of apiKey.apiKeyPermissions) {
-      if (permissions[permission.permission] === ALL_PERMISSIONS) {
-        continue;
-      }
-      if (!permission.userId) {
-        permissions[permission.permission] = ALL_PERMISSIONS;
-      } else {
-        if (!permissions[permission.permission]) {
-          permissions[permission.permission] = [];
-        }
-        (permissions[permission.permission] as string[]).push(permission.userId);
-      }
+      // If it's an API permission, permission.userId will be undefined, so it does not really matter that typing isn't exact here.
+      permissions.add(permission.permission as UserPermission, permission.userId);
     }
     return {
       application: apiKey.application,
       user,
-      permissions: new PermissionManager(permissions),
+      permissions,
     };
   }
 }

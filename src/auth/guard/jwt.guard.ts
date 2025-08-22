@@ -45,7 +45,7 @@ export class JwtGuard extends AuthGuard('jwt') {
       throw new AppException(ERROR_CODE.INCONSISTENT_APPLICATION);
     }
     if (!loggedIn) {
-      request.user = { application, permissions: new PermissionManager({}) } satisfies RequestAuthData;
+      request.user = { application, permissions: new PermissionManager() } satisfies RequestAuthData;
     }
     // We can serve the request
     return true;

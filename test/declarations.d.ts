@@ -9,6 +9,7 @@ import { UeRating } from 'src/ue/interfaces/rate.interface';
 import { FakeUe, FakeUser, FakeHomepageWidget, FakeAsso } from './utils/fakedb';
 import { AppProvider } from './utils/test_utils';
 import { Language } from '@prisma/client';
+import {PermissionManager} from "../src/utils";
 
 type JsonLikeVariant<T> = Partial<{
   [K in keyof T]: T[K] extends string | Date
@@ -82,6 +83,8 @@ declare module './declarations' {
     expectCreditCategories(categories: JsonLikeVariant<FakeUeCreditCategory[]>): this;
     expectApplications(applications: FakeApiApplication[]): this;
     expectApplication(application: FakeApiApplication): this;
+
+    expectPermissions(permissions: PermissionManager): this;
 
     withLanguage(language: Language): this;
     language: Language;

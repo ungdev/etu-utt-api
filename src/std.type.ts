@@ -41,6 +41,7 @@ declare global {
 
   interface ObjectConstructor {
     keys<O extends object>(o: O): (keyof O)[];
+    entries<O extends object>(o: O): Array<[keyof O, O[keyof O]]>;
   }
 }
 

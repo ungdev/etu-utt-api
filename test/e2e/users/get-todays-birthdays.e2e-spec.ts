@@ -8,7 +8,7 @@ const GetTodaysBirthdaysE2ESpec = e2eSuite('GET /users/birthday/today', (app) =>
   const user = createUser(app, { infos: { birthday: new Date(now.getTime() - 3_600_000 * 24) } });
   const otherUser = createUser(app, {
     infos: {
-      birthday: new Date(now.getUTCFullYear() - 15, now.getUTCMonth(), now.getUTCDate()),
+      birthday: new Date(now.getFullYear() - 15, now.getMonth(), now.getDate()),
     },
   }); // Bro you are 15 years old wtf gaudry like
 

@@ -17,11 +17,13 @@ import {
 import { UeAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
 import { ConfigModule } from '../src/config/config.module';
 import { AppProvider } from './utils/test_utils';
-import { getTranslation, omit, pick } from '../src/utils';
+import { getTranslation, omit, PermissionManager, pick } from '../src/utils';
 import { isArray } from 'class-validator';
 import { Language } from '@prisma/client';
 import { DEFAULT_APPLICATION } from '../prisma/seed/utils';
 import ApplicationResDto from '../src/auth/application/dto/res/application-res.dto';
+import PermissionsResDto from '../src/auth/permissions/dto/res/permissions.dto';
+import { ALL_PERMISSIONS } from '../src/auth/interfaces/permissions.interface';
 
 /** Shortcut function for `this.expectStatus(200).expectJsonLike` */
 function expect<T>(this: Spec, obj: JsonLikeVariant<T>) {
@@ -274,6 +276,16 @@ Spec.prototype.expectApplication = function (application: FakeApiApplication) {
     ...pick(application as Required<FakeApiApplication>, 'id', 'name', 'redirectUrl'),
     owner: pick(application.owner, 'id', 'firstName', 'lastName'),
   } satisfies ApplicationResDto);
+};
+Spec.prototype.expectPermissions = function (permissions: PermissionManager) {
+  return (<Spec>this).expectStatus(HttpStatus.OK).expectJson({
+    apiPermissions: permissions.apiPermissions,
+    userPermissions: Object.entries(permissions.userPermissions).map(([permission, users]) => ({
+      permission,
+      isSoftPermission: users !== ALL_PERMISSIONS,
+      users: users !== ALL_PERMISSIONS ? users : null,
+    })),
+  } satisfies PermissionsResDto);
 };
 
 export { Spec, JsonLikeVariant, FakeUeWithOfs };

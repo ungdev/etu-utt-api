@@ -94,8 +94,8 @@ export default class UsersService {
     const userIds = (await this.prisma.$queryRaw`
         SELECT id
         FROM UserInfos
-        WHERE EXTRACT(DAY FROM birthday) = ${date.getUTCDate()}
-          AND EXTRACT(MONTH FROM birthday) = ${date.getUTCMonth() + 1}`) as Array<{ id: string }>;
+        WHERE EXTRACT(DAY FROM birthday) = ${date.getDate()}
+          AND EXTRACT(MONTH FROM birthday) = ${date.getMonth() + 1}`) as Array<{ id: string }>;
     return this.prisma.normalize.user.findMany({ where: { infosId: { in: userIds.map((u) => u.id) } } });
   }
 

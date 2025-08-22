@@ -4,7 +4,7 @@ import {
   ALL_PERMISSIONS,
   ApiPermission,
   UserPermission,
-  PermissionsDescriptor,
+  isApiPermission,
 } from './auth/interfaces/permissions.interface';
 
 /**
@@ -63,18 +63,41 @@ export const translationSelect = {
 };
 
 export class PermissionManager {
-  private readonly permissions: PermissionsDescriptor;
+  public readonly apiPermissions: ApiPermission[];
+  public readonly userPermissions: {
+    [k in UserPermission]?: ALL_PERMISSIONS | string[];
+  };
 
-  constructor(permissions: PermissionsDescriptor) {
-    this.permissions = permissions;
+  constructor() {
+    this.apiPermissions = [];
+    this.userPermissions = {};
   }
 
   can(permission: ApiPermission): boolean;
   can(permission: UserPermission, userId: string): boolean;
   can(permission: Permission, userId?: string) {
-    return (
-      this.permissions[permission] &&
-      (this.permissions[permission] === ALL_PERMISSIONS || this.permissions[permission].includes(userId))
-    );
+    if (isApiPermission(permission)) {
+      return this.apiPermissions.includes(permission);
+    }
+    return this.userPermissions[permission] === ALL_PERMISSIONS || this.userPermissions[permission].includes(userId);
+  }
+
+  add(permission: ApiPermission): PermissionManager;
+  add(permission: UserPermission, userId?: string): PermissionManager;
+  add(permission: Permission, userId?: string): PermissionManager {
+    if (isApiPermission(permission)) {
+      if (!this.apiPermissions.includes(permission)) {
+        this.apiPermissions.push(permission);
+      }
+    } else if (this.userPermissions[permission] != ALL_PERMISSIONS) {
+      if (!userId) {
+        this.userPermissions[permission] = ALL_PERMISSIONS;
+      } else if (!this.userPermissions[permission]) {
+        this.userPermissions[permission] = [userId];
+      } else {
+        (this.userPermissions[permission] as string[]).push(userId);
+      }
+    }
+    return this;
   }
 }

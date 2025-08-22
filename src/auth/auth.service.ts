@@ -440,16 +440,6 @@ export class AuthService {
     });
   }
 
-  /**
-   * Generates a completely random string composed of 128 characters (in base64)
-   * @private
-   */
-  static generateToken(): string {
-    const tokenLength = 128;
-    const token = crypto.randomBytes(tokenLength).toString('base64');
-    return token.slice(0, tokenLength);
-  }
-
   async signApiKey(apiKeyId: string, tokenExpiresIn: number, renewToken = true): Promise<string | null> {
     const apiKey = renewToken
       ? await this.prisma.apiKey.update({
@@ -459,5 +449,19 @@ export class AuthService {
       : await this.prisma.apiKey.findUnique({ where: { id: apiKeyId } });
     if (!apiKey) return null;
     return this.signAuthenticationToken(apiKey.token, tokenExpiresIn);
+  }
+
+  async doesApiKeyExist(apiKey: string): Promise<boolean> {
+    return (await this.prisma.apiKey.count({where: {id: apiKey}})) > 0;
+  }
+
+  /**
+   * Generates a completely random string composed of 128 characters (in base64)
+   * @private
+   */
+  static generateToken(): string {
+    const tokenLength = 128;
+    const token = crypto.randomBytes(tokenLength).toString('base64');
+    return token.slice(0, tokenLength);
   }
 }
