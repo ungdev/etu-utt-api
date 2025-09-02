@@ -365,7 +365,7 @@ export const ErrorData = Object.freeze({
  * type B = ExtrasTypeBuilder<'%hel%lo%'>; // [string, string, string]
  */
 export type ExtrasTypeBuilder<S extends string> = S extends `${infer Part1}%${infer Part2}`
-  ? [...ExtrasTypeBuilder<Part1>, ...ExtrasTypeBuilder<Part2>, string]
+  ? [...ExtrasTypeBuilder<Part1>, string, ...ExtrasTypeBuilder<Part2>]
   : [];
 
 /**
@@ -385,7 +385,7 @@ export class AppException<ErrorCode extends ERROR_CODE> extends HttpException {
       {
         errorCode: code,
         error: (extraMessages as string[]).reduce(
-          (message, extra) => message.replaceAll('%', extra),
+          (message, extra) => message.replace('%', extra),
           ErrorData[code].message,
         ),
       },
