@@ -333,6 +333,7 @@ export const createUser = entityFaker(
           privacy: true,
         },
       });
+    params.permissions.add(Permission.USER_SEE_DETAILS, user.id).add(Permission.USER_UPDATE_DETAILS, user.id);
     const apiKey = await app()
       .get(PrismaService)
       .apiKey.create({
