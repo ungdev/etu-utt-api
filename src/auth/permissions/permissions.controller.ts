@@ -4,7 +4,6 @@ import PermissionsService from './permissions.service';
 import { GetPermissions } from '../decorator/get-permissions.decorator';
 import { PermissionManager } from '../../utils';
 import PermissionsResDto from './dto/res/permissions.dto';
-import { ALL_PERMISSIONS } from '../interfaces/permissions.interface';
 import { AuthService } from '../auth.service';
 import { AppException, ERROR_CODE } from '../../exceptions';
 
@@ -22,7 +21,7 @@ export default class PermissionsController {
 
   @Get('/:apiKey')
   @ApiOperation({ description: 'Returns the permission of an application.' })
-  @ApiOkResponse({ type: PermissionsResDto })
+  @ApiOkResponse({ type: () => PermissionsResDto })
   async getPermissions(@Param('apiKey') apiKey: string): Promise<PermissionsResDto> {
     if (!(await this.authService.doesApiKeyExist(apiKey))) throw new AppException(ERROR_CODE.NO_SUCH_API_KEY, apiKey);
     const permissions = await this.permissionsService.getPermissionsFromApiKeyId(apiKey);
@@ -31,15 +30,11 @@ export default class PermissionsController {
 
   private formatPermissions(permissions: PermissionManager): PermissionsResDto {
     return {
-      apiPermissions: permissions.apiPermissions,
-      userPermissions: Object.entries(permissions.userPermissions).map(([permission, users]) => {
-        const isSoftPermission = users !== ALL_PERMISSIONS;
-        return {
-          permission,
-          isSoftPermission,
-          users: isSoftPermission ? users : null,
-        };
-      }),
+      hardPermissions: permissions.hardPermissions,
+      softPermissions: Object.entries(permissions.softPermissions).map(([permission, users]) => ({
+        permission,
+        users,
+      })),
     };
   }
 }

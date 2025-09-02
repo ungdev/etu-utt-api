@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import ApplicationResDto from './dto/res/application-res.dto';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import ApplicationService from './application.service';
 import { GetUser, IsPublic } from '../decorator';
 import { Application } from './interfaces/application.interface';
@@ -16,6 +16,7 @@ import { ApiAppErrorResponse } from '../../app.dto';
 import ApplicationSensibleResDto from './dto/res/application-sensible-res.dto';
 
 @Controller('auth/application')
+@ApiTags('Application')
 export default class ApplicationController {
   constructor(private applicationService: ApplicationService) {}
 

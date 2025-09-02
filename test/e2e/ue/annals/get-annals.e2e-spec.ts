@@ -14,13 +14,17 @@ import { e2eSuite } from '../../../utils/test_utils';
 import { ERROR_CODE } from '../../../../src/exceptions';
 import { UeAnnalFile } from '../../../../src/ue/annals/interfaces/annal.interface';
 import { JsonLikeVariant } from 'test/declarations';
-import { pick } from '../../../../src/utils';
+import { PermissionManager, pick } from '../../../../src/utils';
 import { CommentStatus } from '../../../../src/ue/comments/interfaces/comment.interface';
 
 const GetAnnal = e2eSuite('GET /ue/annals', (app) => {
   const senderUser = createUser(app);
   const nonUeUser = createUser(app, { login: 'user2', studentId: 2 });
-  const moderator = createUser(app, { login: 'user3', studentId: 3, permissions: ['API_MODERATE_ANNAL'] });
+  const moderator = createUser(app, {
+    login: 'user3',
+    studentId: 3,
+    permissions: new PermissionManager().add('API_MODERATE_ANNAL'),
+  });
   const nonStudentUser = createUser(app, { login: 'nonStudent', studentId: 4, userType: 'TEACHER' });
   const annalType = createAnnalType(app);
   const semester = createSemester(app);

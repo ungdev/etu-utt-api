@@ -6,7 +6,9 @@ import { Permission } from '@prisma/client';
 import { PermissionManager } from '../../../../src/utils';
 
 const GetOwnPermissionsE2ESpec = e2eSuite('GET /auth/permissions/current', (app) => {
-  const user = fakedb.createUser(app, { permissions: [Permission.USER_SEE_DETAILS, Permission.API_UPLOAD_ANNAL] });
+  const user = fakedb.createUser(app, {
+    permissions: new PermissionManager().add(Permission.USER_SEE_DETAILS).add(Permission.API_UPLOAD_ANNAL),
+  });
 
   it('must fail as user is not authenticated', () =>
     pactum.spec().get('/auth/permissions/current').expectAppError(ERROR_CODE.NOT_LOGGED_IN));

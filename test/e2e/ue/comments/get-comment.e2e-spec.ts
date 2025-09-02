@@ -15,14 +15,15 @@ import { e2eSuite } from '../../../utils/test_utils';
 import { ConfigModule } from '../../../../src/config/config.module';
 import { ERROR_CODE } from 'src/exceptions';
 import { PrismaService } from '../../../../src/prisma/prisma.service';
+import { PermissionManager } from '../../../../src/utils';
 
 const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
-  const user = createUser(app, { permissions: ['API_SEE_OPINIONS_UE'] });
+  const user = createUser(app, { permissions: new PermissionManager().add('API_SEE_OPINIONS_UE') });
   const userNoPermission = createUser(app, { login: 'user2', studentId: 2 });
   const moderator = createUser(app, {
     login: 'user3',
     studentId: 3,
-    permissions: ['API_MODERATE_COMMENTS', 'API_SEE_OPINIONS_UE'],
+    permissions: new PermissionManager().add('API_MODERATE_COMMENTS').add('API_SEE_OPINIONS_UE'),
   });
   const semester = createSemester(app);
   const branch = createBranch(app);

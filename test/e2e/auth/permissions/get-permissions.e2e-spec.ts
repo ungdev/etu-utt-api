@@ -7,7 +7,9 @@ import { PermissionManager } from '../../../../src/utils';
 
 const GetPermissionsE2ESpec = e2eSuite('GET /auth/permissions/:apiKey', (app) => {
   const loggedUser = fakedb.createUser(app);
-  const user = fakedb.createUser(app, { permissions: [Permission.USER_SEE_DETAILS, Permission.API_UPLOAD_ANNAL] });
+  const user = fakedb.createUser(app, {
+    permissions: new PermissionManager().add(Permission.USER_SEE_DETAILS).add(Permission.API_UPLOAD_ANNAL),
+  });
 
   it('must fail as user is not authenticated', () =>
     pactum.spec().get(`/auth/permissions/${user.apiKey.id}`).expectAppError(ERROR_CODE.NOT_LOGGED_IN));

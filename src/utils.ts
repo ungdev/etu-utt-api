@@ -1,11 +1,6 @@
 import { Language, Permission } from '@prisma/client';
 import { Translation } from './prisma/types';
-import {
-  ALL_PERMISSIONS,
-  ApiPermission,
-  UserPermission,
-  isApiPermission,
-} from './auth/interfaces/permissions.interface';
+import { ApiPermission, UserPermission } from './auth/interfaces/permissions.interface';
 
 /**
  * Returns a new object built from the given object with only the specified keys.
@@ -63,39 +58,39 @@ export const translationSelect = {
 };
 
 export class PermissionManager {
-  public readonly apiPermissions: ApiPermission[];
-  public readonly userPermissions: {
-    [k in UserPermission]?: ALL_PERMISSIONS | string[];
+  public readonly hardPermissions: Permission[];
+  public readonly softPermissions: {
+    [k in UserPermission]?: string[];
   };
 
   constructor() {
-    this.apiPermissions = [];
-    this.userPermissions = {};
+    this.hardPermissions = [];
+    this.softPermissions = {};
   }
 
   can(permission: ApiPermission): boolean;
+  can(permission: UserPermission): boolean;
   can(permission: UserPermission, userId: string): boolean;
   can(permission: Permission, userId?: string) {
-    if (isApiPermission(permission)) {
-      return this.apiPermissions.includes(permission);
-    }
-    return this.userPermissions[permission] === ALL_PERMISSIONS || this.userPermissions[permission].includes(userId);
+    return this.hardPermissions.includes(permission) || (userId && this.softPermissions[permission]?.includes(userId));
   }
 
   add(permission: ApiPermission): PermissionManager;
-  add(permission: UserPermission, userId?: string): PermissionManager;
+  add(permission: UserPermission): PermissionManager;
+  add(permission: UserPermission, userId: string): PermissionManager;
   add(permission: Permission, userId?: string): PermissionManager {
-    if (isApiPermission(permission)) {
-      if (!this.apiPermissions.includes(permission)) {
-        this.apiPermissions.push(permission);
+    if (!userId) {
+      if (!this.hardPermissions.includes(permission)) {
+        this.hardPermissions.push(permission);
       }
-    } else if (this.userPermissions[permission] != ALL_PERMISSIONS) {
-      if (!userId) {
-        this.userPermissions[permission] = ALL_PERMISSIONS;
-      } else if (!this.userPermissions[permission]) {
-        this.userPermissions[permission] = [userId];
+      if (this.softPermissions[permission]) {
+        delete this.softPermissions[permission];
+      }
+    } else if (!this.hardPermissions.includes(permission)) {
+      if (!this.softPermissions[permission]) {
+        this.softPermissions[permission] = [userId];
       } else {
-        (this.userPermissions[permission] as string[]).push(userId);
+        this.softPermissions[permission].push(userId);
       }
     }
     return this;
