@@ -17,7 +17,7 @@ export default function ueSubscriptionSeed(
       subscriptions.push(
         prisma.userUeSubscription.create({
           data: {
-            ueof: { connect: { code: `${ue.code}$${OF_SUFFIX}` } },
+            ueof: { connect: { code: `${ue.code}${OF_SUFFIX}` } },
             user: { connect: { id: user.id } },
             semester: { connect: { code: faker.helpers.arrayElement(semesters).code } },
           },
@@ -25,6 +25,5 @@ export default function ueSubscriptionSeed(
       );
     }
   }
-  console.log('WARNING: no ue subscriptions seeded !!');
   return Promise.all(subscriptions);
 }
