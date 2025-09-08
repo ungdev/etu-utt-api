@@ -43,6 +43,13 @@ jobs:
       - run: pnpm pnpx prisma generate
       - run: pnpm build
 
+  debug:
+    runs-on: self-hosted
+    steps:
+      - run: echo $(pnpm --version)
+      - run: echo $(node --version)
+      - run: echo $(pnpm prisma --version)
+
   test:
     runs-on: self-hosted
     strategy:
