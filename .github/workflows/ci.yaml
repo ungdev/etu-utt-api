@@ -46,6 +46,17 @@ jobs:
   debug:
     runs-on: self-hosted
     steps:
+      - uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
       - run: echo $(pnpm --version)
       - run: echo $(node --version)
       - run: echo $(pnpm prisma --version)
