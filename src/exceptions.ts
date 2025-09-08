@@ -75,6 +75,7 @@ export const enum ERROR_CODE {
   NO_SUCH_UEOF = 4411,
   NO_SUCH_APPLICATION = 4412,
   NO_SUCH_API_KEY = 4413,
+  NO_SUCH_UE_AT_SEMESTER = 4414,
   ANNAL_ALREADY_UPLOADED = 4901,
   RESOURCE_UNAVAILABLE = 4902,
   RESOURCE_INVALID_TYPE = 4903,
@@ -225,7 +226,7 @@ export const ErrorData = Object.freeze({
     httpCode: HttpStatus.UNAUTHORIZED,
   },
   [ERROR_CODE.FORBIDDEN_INVALID_ROLE]: {
-    message: 'Role % is required to access this resource',
+    message: 'One of the following roles is required to access this resource: %',
     httpCode: HttpStatus.UNAUTHORIZED,
   },
   [ERROR_CODE.INVALID_CAS_TICKET]: {
@@ -334,6 +335,10 @@ export const ErrorData = Object.freeze({
   },
   [ERROR_CODE.NO_SUCH_API_KEY]: {
     message: 'The api key % does not exist',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
+  [ERROR_CODE.NO_SUCH_UE_AT_SEMESTER]: {
+    message: 'UE % does not exist for semester %',
     httpCode: HttpStatus.NOT_FOUND,
   },
   [ERROR_CODE.ANNAL_ALREADY_UPLOADED]: {

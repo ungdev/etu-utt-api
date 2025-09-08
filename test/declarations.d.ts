@@ -9,7 +9,7 @@ import { UeRating } from 'src/ue/interfaces/rate.interface';
 import { FakeUe, FakeUser, FakeHomepageWidget, FakeAsso } from './utils/fakedb';
 import { AppProvider } from './utils/test_utils';
 import { Language } from '@prisma/client';
-import {PermissionManager} from "../src/utils";
+import { PermissionManager } from '../src/utils';
 
 type JsonLikeVariant<T> = Partial<{
   [K in keyof T]: T[K] extends string | Date

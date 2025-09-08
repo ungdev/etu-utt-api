@@ -13,13 +13,17 @@ import {
 import { Dummies, JsonLike, e2eSuite } from '../../../utils/test_utils';
 import { ERROR_CODE } from '../../../../src/exceptions';
 import { CommentStatus } from 'src/ue/comments/interfaces/comment.interface';
-import { pick } from '../../../../src/utils';
+import { PermissionManager, pick } from '../../../../src/utils';
 import { PrismaService } from '../../../../src/prisma/prisma.service';
 
 const DeleteAnnal = e2eSuite('DELETE /ue/annals/{annalId}', (app) => {
-  const senderUser = createUser(app);
-  const nonUeUser = createUser(app, { login: 'user2', studentId: 2 });
-  const nonStudentUser = createUser(app, { login: 'nonStudent', studentId: 4, userType: 'TEACHER' });
+  const senderUser = createUser(app, { permissions: new PermissionManager().add('API_UPLOAD_ANNALS') });
+  const nonUeUser = createUser(app, {
+    login: 'user2',
+    studentId: 2,
+    permissions: new PermissionManager().add('API_UPLOAD_ANNALS'),
+  });
+  const userNoPermission = createUser(app);
   const annalType = createAnnalType(app);
   const semester = createSemester(app);
   const branch = createBranch(app);
@@ -41,13 +45,12 @@ const DeleteAnnal = e2eSuite('DELETE /ue/annals/{annalId}', (app) => {
       .expectAppError(ERROR_CODE.NO_SUCH_ANNAL, Dummies.UUID);
   });
 
-  it('should return a 403 because user is not a student', () => {
-    return pactum
+  it('should fail as the user does not have the required permissions', () =>
+    pactum
       .spec()
-      .withBearerToken(nonStudentUser.token)
-      .delete(`/ue/annals/${annal_validated.id}`)
-      .expectAppError(ERROR_CODE.FORBIDDEN_INVALID_ROLE, 'STUDENT');
-  });
+      .withBearerToken(userNoPermission.token)
+      .delete(`/ue/annals/${Dummies.UUID}`)
+      .expectAppError(ERROR_CODE.FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS, 'API_UPLOAD_ANNALS'));
 
   it('should return a 403 because user is not the author', () => {
     return pactum

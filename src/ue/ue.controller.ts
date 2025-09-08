@@ -3,7 +3,7 @@ import { HttpStatusCode } from 'axios';
 import type { Response } from 'express';
 import { UeSearchReqDto } from './dto/req/ue-search-req.dto';
 import { UeService } from './ue.service';
-import { GetUser, IsPublic, RequireUserType } from '../auth/decorator';
+import { GetUser, IsPublic, RequireApiPermission, RequireUserType } from '../auth/decorator';
 import { User } from '../users/interfaces/user.interface';
 import { UUIDParam } from '../app.pipe';
 import { AppException, ERROR_CODE } from '../exceptions';
@@ -67,7 +67,7 @@ export class UeController {
   }
 
   @Get('/rate/criteria')
-  @RequireUserType('STUDENT', 'FORMER_STUDENT')
+  @RequireApiPermission('API_SEE_OPINIONS_UE')
   @ApiOperation({ description: 'Get the different criteria on which users can rate UEs.' })
   @ApiOkResponse({ type: UeRateCriterionResDto, isArray: true })
   async getRateCriteria(): Promise<UeRateCriterionResDto[]> {
@@ -75,7 +75,7 @@ export class UeController {
   }
 
   @Get('/:ueCode/rate')
-  @RequireUserType('STUDENT', 'FORMER_STUDENT')
+  @RequireApiPermission('API_GIVE_OPINIONS_UE')
   @ApiOperation({ description: 'Get the rates given by the current user.' })
   @ApiOkResponse({
     description: 'Keys are criterionId and values are the marks.',
@@ -88,7 +88,7 @@ export class UeController {
   }
 
   @Put('/ueof/:ueofCode/rate')
-  @RequireUserType('STUDENT')
+  @RequireApiPermission('API_GIVE_OPINIONS_UE')
   @ApiOperation({ description: 'Rate the UE by some criterion.' })
   @ApiOkResponse({ type: UeRateReqDto })
   @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_UE, 'There is no UE with the provided code.')
@@ -107,7 +107,7 @@ export class UeController {
   }
 
   @Delete('/ueof/:ueofCode/rate/:criterionId')
-  @RequireUserType('STUDENT', 'FORMER_STUDENT')
+  @RequireApiPermission('API_GIVE_OPINIONS_UE')
   @ApiOperation({ description: 'Remove the rate on the UE about some criterion.' })
   @ApiOkResponse({ type: UeRateReqDto })
   @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_UE, 'There is no UE with the provided code.')

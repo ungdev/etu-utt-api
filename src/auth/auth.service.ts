@@ -452,7 +452,7 @@ export class AuthService {
   }
 
   async doesApiKeyExist(apiKey: string): Promise<boolean> {
-    return (await this.prisma.apiKey.count({where: {id: apiKey}})) > 0;
+    return (await this.prisma.apiKey.count({ where: { id: apiKey } })) > 0;
   }
 
   /**

@@ -18,6 +18,6 @@ export class RoleGuard implements CanActivate {
     // If the user has one of the needed permissions, serve the request
     for (const requiredType of requiredTypes) if (user.userType === requiredType) return true;
     // The user has none of the required permissions, throw an error
-    throw new AppException(ERROR_CODE.FORBIDDEN_INVALID_ROLE, requiredTypes[0]);
+    throw new AppException(ERROR_CODE.FORBIDDEN_INVALID_ROLE, requiredTypes.join(','));
   }
 }

@@ -15,13 +15,18 @@ import { Permission } from '@prisma/client';
 import { PermissionManager } from '../../../../src/utils';
 
 const GetAnnalMetadata = e2eSuite('GET /ue/annals/metadata', (app) => {
-  const ueUser = createUser(app);
-  const nonUeUser = createUser(app, { login: 'user2', studentId: 3 });
+  const ueUser = createUser(app, { permissions: new PermissionManager().add(Permission.API_SEE_ANNALS) });
+  const nonUeUser = createUser(app, {
+    login: 'user2',
+    studentId: 3,
+    permissions: new PermissionManager().add(Permission.API_SEE_ANNALS),
+  });
   const uploader = createUser(app, {
     login: 'user3',
     studentId: 4,
-    permissions: new PermissionManager().add(Permission.API_UPLOAD_ANNAL),
+    permissions: new PermissionManager().add(Permission.API_SEE_ANNALS).add(Permission.API_UPLOAD_ANNALS),
   });
+  const userNoPermission = createUser(app);
   const annalType = createAnnalType(app);
   const semester = createSemester(app);
   const branch = createBranch(app);
@@ -31,14 +36,18 @@ const GetAnnalMetadata = e2eSuite('GET /ue/annals/metadata', (app) => {
   createUeSubscription(app, { user: ueUser, ueof, semester });
 
   it('should return a 401 as user is not authenticated', () => {
-    return pactum
+    return pactum.spec().get(`/ue/annals/metadata`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
+  });
+
+  it('should fail as the user does not have the required permissions', () =>
+    pactum
       .spec()
+      .withBearerToken(userNoPermission.token)
       .get(`/ue/annals/metadata`)
       .withQueryParams({
         ueCode: ue.code,
       })
-      .expectAppError(ERROR_CODE.NOT_LOGGED_IN);
-  });
+      .expectAppError(ERROR_CODE.FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS, 'API_SEE_ANNALS'));
 
   it('should return a 404 because UE does not exist', () => {
     return pactum

@@ -13,9 +13,11 @@ import { ERROR_CODE } from '../../../../src/exceptions';
 import { Dummies, e2eSuite, JsonLike } from '../../../utils/test_utils';
 import { PrismaService } from '../../../../src/prisma/prisma.service';
 import { CommentStatus } from 'src/ue/comments/interfaces/comment.interface';
+import { PermissionManager } from '../../../../src/utils';
 
 const PostCommmentReply = e2eSuite('POST /ue/comments/{commentId}/reply', (app) => {
-  const user = createUser(app);
+  const user = createUser(app, { permissions: new PermissionManager().add('API_GIVE_OPINIONS_UE') });
+  const userNoPermission = createUser(app);
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
@@ -33,6 +35,18 @@ const PostCommmentReply = e2eSuite('POST /ue/comments/{commentId}/reply', (app) 
       })
       .expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
+
+  it('should fail as the user does not have the required permissions', () =>
+    pactum
+      .spec()
+      .withBearerToken(userNoPermission.token)
+      .post(`/ue/comments/${comment.id}/reply`)
+      .withBody({
+        ueCode: ue.code,
+        body: false,
+        isAnonymous: true,
+      })
+      .expectAppError(ERROR_CODE.FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS, 'API_GIVE_OPINIONS_UE'));
 
   it('should return a 400 because body is required', () => {
     return pactum

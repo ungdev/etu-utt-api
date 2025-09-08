@@ -18,14 +18,18 @@ import { PermissionManager, pick } from '../../../../src/utils';
 import { CommentStatus } from '../../../../src/ue/comments/interfaces/comment.interface';
 
 const GetAnnal = e2eSuite('GET /ue/annals', (app) => {
-  const senderUser = createUser(app);
-  const nonUeUser = createUser(app, { login: 'user2', studentId: 2 });
+  const senderUser = createUser(app, { permissions: new PermissionManager().add('API_SEE_ANNALS') });
+  const nonUeUser = createUser(app, {
+    login: 'user2',
+    studentId: 2,
+    permissions: new PermissionManager().add('API_SEE_ANNALS'),
+  });
   const moderator = createUser(app, {
     login: 'user3',
     studentId: 3,
-    permissions: new PermissionManager().add('API_MODERATE_ANNAL'),
+    permissions: new PermissionManager().add('API_SEE_ANNALS').add('API_MODERATE_ANNALS'),
   });
-  const nonStudentUser = createUser(app, { login: 'nonStudent', studentId: 4, userType: 'TEACHER' });
+  const userNoPermission = createUser(app);
   const annalType = createAnnalType(app);
   const semester = createSemester(app);
   const branch = createBranch(app);
@@ -51,14 +55,18 @@ const GetAnnal = e2eSuite('GET /ue/annals', (app) => {
   );
 
   it('should return a 401 as user is not authenticated', () => {
-    return pactum
+    return pactum.spec().get(`/ue/annals`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
+  });
+
+  it('should fail as the user does not have the required permissions', () =>
+    pactum
       .spec()
+      .withBearerToken(userNoPermission.token)
       .get(`/ue/annals`)
       .withQueryParams({
         ueCode: ue.code,
       })
-      .expectAppError(ERROR_CODE.NOT_LOGGED_IN);
-  });
+      .expectAppError(ERROR_CODE.FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS, 'API_SEE_ANNALS'));
 
   it('should return a 404 because UE does not exist', () => {
     return pactum
@@ -69,17 +77,6 @@ const GetAnnal = e2eSuite('GET /ue/annals', (app) => {
         ueCode: ue.code.slice(0, ue.code.length - 1),
       })
       .expectAppError(ERROR_CODE.NO_SUCH_UE, ue.code.slice(0, ue.code.length - 1));
-  });
-
-  it('should return a 403 because user is not a student', () => {
-    return pactum
-      .spec()
-      .withBearerToken(nonStudentUser.token)
-      .get(`/ue/annals`)
-      .withQueryParams({
-        ueCode: ue.code,
-      })
-      .expectAppError(ERROR_CODE.FORBIDDEN_INVALID_ROLE, 'STUDENT');
   });
 
   it('should return the ue annal list', async () => {

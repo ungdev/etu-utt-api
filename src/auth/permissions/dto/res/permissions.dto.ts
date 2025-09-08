@@ -1,5 +1,5 @@
-import { ApiPermission, UserPermission } from '../../../interfaces/permissions.interface';
-import {Permission} from "@prisma/client";
+import { UserPermission } from '../../../interfaces/permissions.interface';
+import { Permission } from '@prisma/client';
 
 export default class PermissionsResDto {
   hardPermissions: Permission[];
