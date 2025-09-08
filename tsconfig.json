@@ -20,7 +20,7 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
   },
-  /*"ts-node": {
+  "ts-node": {
     "files": true
-  },*/
+  },
 }
