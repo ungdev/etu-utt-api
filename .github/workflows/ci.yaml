@@ -26,22 +26,22 @@ jobs:
 #      - run: pnpm pnpx prisma generate
 #      - run: pnpm lint
 #
-#  build:
-#    runs-on: self-hosted
-#    steps:
-#      - uses: actions/checkout@v4
-#      - name: Install pnpm
-#        uses: pnpm/action-setup@v4
-#        with:
-#          version: 10
-#      - name: Use Node.js
-#        uses: actions/setup-node@v4
-#        with:
-#          node-version: '20.x'
-#          cache: 'pnpm'
-#      - run: pnpm install --frozen-lockfile
-#      - run: pnpm pnpx prisma generate
-#      - run: pnpm build
+  build:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm pnpx prisma generate
+      - run: pnpm build
 
   debug:
     runs-on: self-hosted
