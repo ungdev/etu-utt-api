@@ -39,7 +39,7 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .get(`/ue/comments/${faker.datatype.uuid().slice(0, -1)}`)
+      .get(`/ue/comments/${faker.string.uuid().slice(0, -1)}`)
       .expectAppError(ERROR_CODE.PARAM_NOT_UUID, 'commentId');
   });
 
@@ -47,7 +47,7 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .get(`/ue/comments/${faker.datatype.uuid()}`)
+      .get(`/ue/comments/${faker.string.uuid()}`)
       .expectAppError(ERROR_CODE.NO_SUCH_COMMENT);
   });
 

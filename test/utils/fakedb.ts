@@ -246,23 +246,23 @@ export type CreateUserParameters = FakeUser & { password: string };
 export const createUser = entityFaker(
   'user',
   {
-    login: faker.internet.userName,
-    studentId: faker.datatype.number,
-    lastName: faker.name.lastName,
-    firstName: faker.name.firstName,
+    login: faker.internet.username,
+    studentId: () => faker.number.int({ max: 99999 }),
+    lastName: faker.person.lastName,
+    firstName: faker.person.firstName,
     userType: 'STUDENT' as UserType,
     password: faker.internet.password,
     infos: {
       sex: 'OTHER' as Sex,
       birthday: new Date(0),
-      nickname: faker.datatype.string,
+      nickname: faker.string.sample,
     },
     addresses: [
       {
-        street: faker.address.street,
-        postalCode: faker.address.zipCode,
-        city: faker.address.city,
-        country: faker.address.country,
+        street: faker.location.street,
+        postalCode: faker.location.zipCode,
+        city: faker.location.city,
+        country: faker.location.country,
       },
     ],
     branchSubscriptions: [],
@@ -337,7 +337,7 @@ export const createUser = entityFaker(
       .get(PrismaService)
       .apiKey.create({
         data: {
-          token: faker.random.alpha({ count: 30 }),
+          token: faker.string.alphanumeric(30),
           user: { connect: { id: user.id } },
           application: { connect: { id: DEFAULT_APPLICATION.id } },
           apiKeyPermissions: {
@@ -460,9 +460,9 @@ export type CreateAssoParameters = FakeAsso;
 export const createAsso = entityFaker(
   'association',
   {
-    login: faker.internet.userName,
+    login: faker.internet.username,
     name: faker.db.association.name,
-    mail: faker.datatype.string,
+    mail: faker.string.sample,
     deletedAt: null,
     descriptionShortTranslation: {
       fr: faker.company.catchPhrase(),
@@ -531,7 +531,7 @@ export const createTimetableGroup = entityFaker(
       .get(PrismaService)
       .timetableGroup.create({
         data: {
-          name: faker.random.words(),
+          name: faker.word.words(),
           userTimetableGroups: {
             createMany: {
               data: params.users.map((user) => ({ userId: user.user.id, priority: user.priority })),
@@ -558,7 +558,7 @@ export const createTimetableEntry = entityFaker(
     occurrencesCount: 1,
     repeatEvery: 0,
     type: 'CUSTOM' as TimetableEntryType,
-    location: faker.address.cityName,
+    location: faker.location.city,
     groups: [],
   },
   (app, params) =>
@@ -599,7 +599,7 @@ export const createBranch = entityFaker(
   'branch',
   {
     code: faker.db.branch.code,
-    name: faker.name.jobTitle,
+    name: faker.person.jobTitle,
   },
   async (app, params) =>
     app()
@@ -622,7 +622,7 @@ export const createBranchOption = entityFaker(
   'branchOption',
   {
     code: faker.db.branchOption.code,
-    name: faker.name.jobTitle,
+    name: faker.person.jobTitle,
   },
   async (app, dependencies, params) =>
     app()
@@ -664,7 +664,7 @@ export const createSemester = entityFaker(
 export const createAnnalType = entityFaker(
   'annalType',
   {
-    name: faker.random.word,
+    name: faker.word.sample,
   },
   async (app, params) => {
     return app().get(PrismaService).ueAnnalType.create({ data: params });
@@ -696,15 +696,15 @@ export type CreateUeofParameters = Omit<FakeUeof, 'credits' | 'code' | 'openSeme
 export const createUeof = entityFaker(
   'ueof',
   {
-    siepId: () => faker.datatype.number({ min: 100000, max: 999999 }),
-    name: () => faker.db.translation(faker.name.jobTitle),
+    siepId: () => faker.number.int({ min: 100000, max: 999999 }),
+    name: () => faker.db.translation(faker.person.jobTitle),
     credits: [
       {
         category: {
           code: faker.db.ueCreditCategory.code,
-          name: faker.name.jobTitle,
+          name: faker.person.jobTitle,
         },
-        credits: () => faker.datatype.number({ min: 1, max: 6 }),
+        credits: () => faker.number.int({ min: 1, max: 6 }),
       },
     ],
     info: {
@@ -712,12 +712,12 @@ export const createUeof = entityFaker(
       objectives: faker.db.translation,
     },
     workTime: {
-      cm: () => faker.datatype.number({ min: 0, max: 100 }),
-      td: () => faker.datatype.number({ min: 0, max: 100 }),
-      tp: () => faker.datatype.number({ min: 0, max: 100 }),
-      the: () => faker.datatype.number({ min: 0, max: 100 }),
+      cm: () => faker.number.int({ min: 0, max: 100 }),
+      td: () => faker.number.int({ min: 0, max: 100 }),
+      tp: () => faker.number.int({ min: 0, max: 100 }),
+      the: () => faker.number.int({ min: 0, max: 100 }),
       project: faker.datatype.boolean,
-      internship: () => faker.datatype.number({ min: 0, max: 100 }),
+      internship: () => faker.number.int({ min: 0, max: 100 }),
     },
   },
   async (app, { branchOptions, ue, semesters }, params) =>
@@ -925,7 +925,7 @@ export type CreateCommentParameters = Omit<FakeComment, 'ueofCode' | 'authorId' 
 export const createComment = entityFaker(
   'comment',
   {
-    body: faker.random.words,
+    body: faker.word.words,
     isAnonymous: faker.datatype.boolean,
     status: CommentStatus.VALIDATED,
   },
@@ -983,7 +983,7 @@ export type CreateCommentReplyParameters = FakeCommentReply;
 export const createCommentReply = entityFaker(
   'commentReply',
   {
-    body: faker.random.words,
+    body: faker.word.words,
     status: CommentStatus.VALIDATED,
   },
   async (app, dependencies, params) => {
@@ -1013,7 +1013,7 @@ export type CreateUeCreditCategoryParameters = FakeUeCreditCategory;
 export const createUeCreditCategory = entityFaker(
   'ueCreditCategory',
   {
-    name: faker.name.jobTitle,
+    name: faker.person.jobTitle,
     code: faker.db.ueCreditCategory.code,
   },
   async (app, params) => app().get(PrismaService).ueCreditCategory.create({ data: params }),
@@ -1023,11 +1023,11 @@ export type CreateHomepageWidgetParameters = FakeHomepageWidget;
 export const createHomepageWidget = entityFaker(
   'homepageWidget',
   {
-    widget: faker.datatype.string,
-    x: () => faker.datatype.number(10),
-    y: () => faker.datatype.number(10),
-    width: () => faker.datatype.number(10),
-    height: () => faker.datatype.number(10),
+    widget: faker.string.sample,
+    x: () => faker.number.int(10),
+    y: () => faker.number.int(10),
+    width: () => faker.number.int(10),
+    height: () => faker.number.int(10),
   },
   async (app, deps, params) =>
     app()
@@ -1041,7 +1041,7 @@ export const createApplication = entityFaker(
   {
     name: faker.company.name,
     redirectUrl: faker.internet.url,
-    clientSecret: () => faker.random.alphaNumeric(10),
+    clientSecret: () => faker.string.alphanumeric(10),
   },
   async (app, dependencies, params) =>
     app()
@@ -1053,7 +1053,7 @@ export const createApplication = entityFaker(
           apiKeys: {
             create: {
               userId: dependencies.owner.id,
-              token: faker.random.alphaNumeric(10),
+              token: faker.string.alphanumeric(10),
             },
           },
         },
