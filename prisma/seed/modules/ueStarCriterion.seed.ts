@@ -11,11 +11,11 @@ export default function ueStarCriterionSeed(prisma: PrismaClient): Promise<RawUe
     criterions.push(
       prisma.ueStarCriterion.create({
         data: {
-          name: faker.random.words(),
+          name: faker.word.words(),
           descriptionTranslation: {
             create: {
-              fr: faker.random.words(),
-              en: faker.random.words(),
+              fr: faker.word.words(),
+              en: faker.word.words(),
             },
           },
         },

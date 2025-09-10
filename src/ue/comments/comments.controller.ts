@@ -21,7 +21,10 @@ import { PermissionManager } from '../../utils';
 @Controller('ue/comments')
 @ApiTags('UE Comment')
 export class CommentsController {
-  constructor(readonly commentsService: CommentsService, readonly ueService: UeService) {}
+  constructor(
+    readonly commentsService: CommentsService,
+    readonly ueService: UeService,
+  ) {}
 
   @Get()
   @RequireApiPermission(Permission.API_SEE_OPINIONS_UE)

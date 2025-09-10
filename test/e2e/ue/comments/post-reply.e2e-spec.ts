@@ -52,7 +52,8 @@ const PostCommmentReply = e2eSuite('POST /ue/comments/{commentId}/reply', (app) 
       .spec()
       .withBearerToken(user.token)
       .post(`/ue/comments/${comment.id}/reply`)
-      .expectAppError(ERROR_CODE.PARAM_MISSING, 'body');
+      .withBody(undefined)
+      .expectAppError(ERROR_CODE.BODY_MISSING);
   });
 
   it('should return a 400 because body is not a string', () => {

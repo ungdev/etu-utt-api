@@ -14,8 +14,8 @@ type JsonLikeVariant<T> = Partial<{
   [K in keyof T]: T[K] extends string | Date
     ? string | RegExp
     : T[K] extends (infer R)[]
-    ? JsonLikeVariant<R>[]
-    : JsonLikeVariant<T[K]>;
+      ? JsonLikeVariant<R>[]
+      : JsonLikeVariant<T[K]>;
 }>;
 type FakeUeWithOfs = FakeUe & { ueofs: FakeUeof[] };
 

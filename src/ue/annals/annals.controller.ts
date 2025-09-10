@@ -23,7 +23,10 @@ import { PermissionManager } from '../../utils';
 @Controller('ue/annals')
 @ApiTags('Annal')
 export class AnnalsController {
-  constructor(readonly annalsService: AnnalsService, readonly ueService: UeService) {}
+  constructor(
+    readonly annalsService: AnnalsService,
+    readonly ueService: UeService,
+  ) {}
 
   @Get()
   @RequireApiPermission('API_SEE_ANNALS')

@@ -12,13 +12,14 @@ const UpdateApplicationTokenE2ESpec = e2eSuite('PATCH /auth/application/:applica
   const application = fakedb.createApplication(app, { owner: user });
 
   it('should fail as user is not authenticated', () =>
-    pactum.spec().patch(`/auth/application/${application.id}/token`).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
+    pactum.spec().patch(`/auth/application/${application.id}/token`).withJson({}).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
 
   it('should fail as the application does not exist', () =>
     pactum
       .spec()
       .patch(`/auth/application/ABCDEF/token`)
       .withBearerToken(user.token)
+      .withJson({})
       .expectAppError(ERROR_CODE.NO_SUCH_APPLICATION, 'ABCDEF'));
 
   it('should fail as user is not the owner of the application', () =>
@@ -26,6 +27,7 @@ const UpdateApplicationTokenE2ESpec = e2eSuite('PATCH /auth/application/:applica
       .spec()
       .patch(`/auth/application/${application.id}/token`)
       .withBearerToken(otherUser.token)
+      .withJson({})
       .expectAppError(ERROR_CODE.APPLICATION_NOT_OWNED, application.id));
 
   it('should return a new client secret', () =>
@@ -33,6 +35,7 @@ const UpdateApplicationTokenE2ESpec = e2eSuite('PATCH /auth/application/:applica
       .spec()
       .patch(`/auth/application/${application.id}/token`)
       .withBearerToken(user.token)
+      .withJson({})
       .expectStatus(HttpStatus.OK)
       .expect(async (ctx) => {
         expect(ctx.res.json['token']).toBeDefined();

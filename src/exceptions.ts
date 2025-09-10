@@ -37,6 +37,7 @@ export const enum ERROR_CODE {
   PARAM_NOT_INT = 2019,
   NO_FILE_PROVIDED = 2020,
   PARAM_NOT_URL = 2021,
+  BODY_MISSING = 2022,
   PARAM_DOES_NOT_MATCH_REGEX = 2102,
   NO_FIELD_PROVIDED = 2201,
   WIDGET_OVERLAPPING = 2301,
@@ -182,6 +183,10 @@ export const ErrorData = Object.freeze({
   },
   [ERROR_CODE.PARAM_NOT_URL]: {
     message: 'The following parameters must be URL: %',
+    httpCode: HttpStatus.BAD_REQUEST,
+  },
+  [ERROR_CODE.BODY_MISSING]: {
+    message: 'This method requires a body',
     httpCode: HttpStatus.BAD_REQUEST,
   },
   [ERROR_CODE.PARAM_DOES_NOT_MATCH_REGEX]: {

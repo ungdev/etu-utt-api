@@ -2,10 +2,9 @@ import { UploadedFile, UseInterceptors, ParseFilePipe, Injectable } from '@nestj
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { AppException, ERROR_CODE } from './exceptions';
-import type { MimeType } from 'file-type';
 
 export type MulterWithMime = {
-  mime: MimeType;
+  mime: string;
   multer: Express.Multer.File;
 };
 
@@ -83,5 +82,5 @@ export const UploadRoute = (fieldName: string) =>
     }),
   );
 
-export const UserFile = (fileTypes: MimeType[], maxByteSize: number) =>
+export const UserFile = (fileTypes: string[], maxByteSize: number) =>
   UploadedFile(new FileValidationPipe(fileTypes, maxByteSize));
