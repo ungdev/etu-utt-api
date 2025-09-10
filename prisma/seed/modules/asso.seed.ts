@@ -10,12 +10,12 @@ export default function assoSeed(prisma: PrismaClient) {
     assos.push(
       prisma.asso.create({
         data: {
-          login: faker.random.word(),
+          login: faker.word.sample(),
           name: faker.company.name(),
           mail: faker.internet.email(),
           phoneNumber: faker.phone.number(),
           website: faker.internet.domainName(),
-          logo: faker.image.business(),
+          logo: faker.image.urlLoremFlickr({ category: 'business' }),
           createdAt: date,
           updatedAt: date,
           descriptionShortTranslation: {

@@ -52,7 +52,8 @@ export interface ArrayDto<T> extends Array<T> {
 }
 
 // Don't make it extend Array<T>, it would break the validation as a field called 0 would be needed.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging,@typescript-eslint/no-unused-vars
 export class ArrayDto<T> {}
 
 export class AppValidationPipe extends ValidationPipe {
@@ -64,11 +65,15 @@ export class AppValidationPipe extends ValidationPipe {
     });
   }
   public async transform(value: any, argumentMetadata?: ArgumentMetadata): Promise<any> {
+    // If the parameter has a @Body decorator but has no value, that means no body was passed
+    if (argumentMetadata.type === 'body' && value === undefined) {
+      throw new AppException(ERROR_CODE.BODY_MISSING);
+    }
     if (argumentMetadata.metatype && argumentMetadata.metatype.prototype instanceof ArrayDto) {
       const res = await super.transform(new argumentMetadata.metatype(value), argumentMetadata);
       // Now, res contains an ArrayDto with the right types inside.
       // We want to convert it to what the interface tells it is.
-      // First, we can take the items, we now have the most part of the type.
+      // First, we can take the items, we now have the most important part of the type.
       const toArray = res.items;
       // We only need the items field, so we add it.
       toArray.items = res.items;
