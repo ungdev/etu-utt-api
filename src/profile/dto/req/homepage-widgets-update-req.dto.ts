@@ -35,5 +35,5 @@ export class HomepageWidgetsUpdateReqDto extends ArrayDto<HomepageWidgetsUpdateE
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => HomepageWidgetsUpdateElement)
-  declare items: HomepageWidgetsUpdateElement[];
+  items: HomepageWidgetsUpdateElement[];
 }
