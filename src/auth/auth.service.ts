@@ -87,6 +87,7 @@ export class AuthService {
           case LdapAccountGroup.ASSOCIATIONS:
             type = UserType.ASSOCIATION;
             assoName = ldapUser.displayName;
+            break;
         }
       }
     }

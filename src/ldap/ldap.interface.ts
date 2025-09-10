@@ -25,8 +25,6 @@ interface LdapUserGeneric {
    * Any student will be in `student`
    */
   eduPersonAffiliation: string[] | string;
-  /** The scheduled date of the end of the account (YYYYMMDD) */
-  datefin: string;
 }
 
 interface LdapUserStudent {

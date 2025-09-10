@@ -5,7 +5,6 @@ import { translationSelect } from '../../utils';
 const ASSO_SELECT_FILTER = {
   select: {
     id: true,
-    login: true,
     name: true,
     mail: true,
     phoneNumber: true,

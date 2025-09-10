@@ -4,7 +4,6 @@ import AssoPresident from './asso-president-res.dto';
 
 export default class AssoDetailResDto {
   id: string;
-  login: string;
   name: string;
   mail: string;
   phoneNumber: string;

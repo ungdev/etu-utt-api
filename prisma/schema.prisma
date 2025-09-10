@@ -57,12 +57,12 @@ model Asso {
   createdAt                     DateTime  @default(now())
   updatedAt                     DateTime  @updatedAt
   deletedAt                     DateTime?
-  descriptionShortTranslationId String    @unique
-  descriptionTranslationId      String    @unique
+  descriptionShortTranslationId String?   @unique
+  descriptionTranslationId      String?   @unique
   userId                        String    @unique // User account of the asso
 
-  descriptionShortTranslation Translation          @relation(name: "descriptionShortTranslation", fields: [descriptionShortTranslationId], references: [id], onDelete: Cascade)
-  descriptionTranslation      Translation          @relation(name: "descriptionTranslation", fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
+  descriptionShortTranslation Translation?         @relation(name: "descriptionShortTranslation", fields: [descriptionShortTranslationId], references: [id], onDelete: Cascade)
+  descriptionTranslation      Translation?         @relation(name: "descriptionTranslation", fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
   assoMemberships             AssoMembership[]
   assoMessages                AssoMessage[]
   events                      Event[]

@@ -460,7 +460,6 @@ export type CreateAssoParameters = FakeAsso;
 export const createAsso = entityFaker(
   'association',
   {
-    login: faker.internet.username,
     name: faker.db.association.name,
     mail: faker.string.sample,
     deletedAt: null,
@@ -484,7 +483,7 @@ export const createAsso = entityFaker(
       .get(PrismaService)
       .normalize.asso.create({
         data: {
-          ...pick(params, 'login', 'name', 'mail', 'deletedAt'),
+          ...pick(params, 'name', 'mail', 'deletedAt'),
           descriptionTranslation: {
             create: {
               fr: 'TODO : implement this value',
@@ -504,6 +503,20 @@ export const createAsso = entityFaker(
               isPresident: true,
             },
           },
+          user: {
+            create: {
+              login: params.name,
+              firstName: '',
+              lastName: '',
+              userType: UserType.ASSOCIATION,
+              socialNetwork: { create: {} },
+              mailsPhones: { create: {} },
+              rgpd: { create: {} },
+              preference: { create: {} },
+              infos: { create: {} },
+              privacy: { create: {} },
+            }
+          }
         },
       });
     const presidentRole = await app()
