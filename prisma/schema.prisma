@@ -48,7 +48,7 @@ model ApiKeyPermission {
 
 model Asso {
   id                            String    @id @default(uuid())
-  login                         String    @unique @db.VarChar(50)
+  //login                         String    @unique @db.VarChar(50)
   name                          String    @unique @db.VarChar(100)
   mail                          String    @unique @db.VarChar(100)
   phoneNumber                   String?   @db.VarChar(30)
@@ -59,6 +59,7 @@ model Asso {
   deletedAt                     DateTime?
   descriptionShortTranslationId String    @unique
   descriptionTranslationId      String    @unique
+  userId                        String    @unique // User account of the asso
 
   descriptionShortTranslation Translation          @relation(name: "descriptionShortTranslation", fields: [descriptionShortTranslationId], references: [id], onDelete: Cascade)
   descriptionTranslation      Translation          @relation(name: "descriptionTranslation", fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
@@ -66,6 +67,7 @@ model Asso {
   assoMessages                AssoMessage[]
   events                      Event[]
   assoMembershipRoles         AssoMembershipRole[]
+  user                        User                 @relation(fields: [userId], references: [id])
 }
 
 model AssoMembership {
@@ -590,6 +592,7 @@ model User {
   apiKeys               ApiKey[]
   apiPermissionsTarget  ApiKeyPermission[] @relation(name: "target")
   apiPermissionsGrants  ApiKeyPermission[] @relation(name: "granter")
+  asso                  Asso?
 }
 
 model UserAddress {
@@ -845,6 +848,7 @@ enum UserType {
   FORMER_STUDENT
   TEACHER
   EMPLOYEE
+  ASSOCIATION
   OTHER
 }
 

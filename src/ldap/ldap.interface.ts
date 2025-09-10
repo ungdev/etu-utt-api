@@ -16,7 +16,7 @@ interface LdapUserGeneric {
   givenName: string;
   /** User's last name */
   sn: string;
-  /** User's email adress. Domain is always utt.fr */
+  /** User's email address. Domain is always utt.fr */
   mail: string;
   /**
    * Groups the User is member of.
@@ -61,4 +61,7 @@ interface LdapUserEmployees {
 
 interface LdapUserAsso {
   gidNumber: LdapAccountGroup.ASSOCIATIONS;
+  /** Name of the association */
+  displayName: string;
+
 }
