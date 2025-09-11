@@ -503,7 +503,7 @@ export const createAsso = entityFaker(
               isPresident: true,
             },
           },
-          user: {
+          assoAccount: {
             create: {
               login: params.name,
               firstName: '',

@@ -95,12 +95,13 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
       dn: `uid=${login},ou=people,dc=utt,dc=fr`,
       attributes: personAttributes,
     });
+    const authService = app()
+      .get(AuthService);
     await pactum
       .spec()
       .post('/auth/signup/cas')
       .withJson({
-        registerToken: await app()
-          .get(AuthService)
+        registerToken: await authService
           .signRegisterUserToken(login, mail, firstName, lastName, tokenExpiresIn),
       })
       .expectStatus(HttpStatus.CREATED)
@@ -108,14 +109,22 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
     expect(await app().get(PrismaService).user.count({ where: { login } })).toEqual(1);
   };
 
-  it('should successfully create the user and return a token', () => executeValidSignupRequest(getPersonAttributes('student')));
-  it('should successfully create the user and return a token (as a teacher)', () =>
-    executeValidSignupRequest(getPersonAttributes('faculty')));
+  it('should successfully create the user and return a token', async () => {
+    const personAttribute = getPersonAttributes('student');
+    await executeValidSignupRequest(personAttribute);
+    await app().get(PrismaService).user.deleteMany({where: {login: personAttribute.uid}});
+  });
+
+  it('should successfully create the user and return a token (as a teacher)', async () => {
+    const personAttribute = getPersonAttributes('faculty');
+    await executeValidSignupRequest(personAttribute);
+    await app().get(PrismaService).user.deleteMany({where: {login: personAttribute.uid}});
+  });
   // Can this happen ? If it does, should we throw an error instead ?
   // it('should successfully create the user and return a token (as other)', () => executeValidSignupRequest(getPersonAttributes('other')));
 
   it('should successfully create an asso user, along with an Asso', async () => {
-    const login = faker.internet.displayName();
+    const login = faker.internet.displayName().replaceAll(/[^A-Za-z1-9]/g, '');
     const mail = faker.internet.email();
     const assoName = faker.company.name();
     await executeValidSignupRequest({
@@ -125,6 +134,7 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
       gidNumber: '6000',
     });
     expect(await app().get(PrismaService).asso.count({ where: { name: assoName } })).toEqual(1);
+    await app().get(PrismaService).user.deleteMany({ where: { login } });
   });
 });
 

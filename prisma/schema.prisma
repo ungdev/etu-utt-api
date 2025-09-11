@@ -14,7 +14,7 @@ model ApiApplication {
   redirectUrl  String
   clientSecret String
 
-  owner   User     @relation(fields: [ownerId], references: [id])
+  owner   User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   apiKeys ApiKey[]
 }
 
@@ -58,7 +58,7 @@ model Asso {
   deletedAt                     DateTime?
   descriptionShortTranslationId String?   @unique
   descriptionTranslationId      String?   @unique
-  userId                        String    @unique // User account of the asso
+  assoAccountId                 String    @unique // User account of the asso
 
   descriptionShortTranslation Translation?         @relation(name: "descriptionShortTranslation", fields: [descriptionShortTranslationId], references: [id], onDelete: Cascade)
   descriptionTranslation      Translation?         @relation(name: "descriptionTranslation", fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
@@ -66,7 +66,7 @@ model Asso {
   assoMessages                AssoMessage[]
   events                      Event[]
   assoMembershipRoles         AssoMembershipRole[]
-  user                        User                 @relation(fields: [userId], references: [id])
+  assoAccount                 User                 @relation(fields: [assoAccountId], references: [id], onDelete: Cascade)
 }
 
 model AssoMembership {
@@ -635,7 +635,7 @@ model UserBranchSubscription {
   branchOptionId String
   semesterCode   String
 
-  user         User            @relation(fields: [userId], references: [id])
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   branchOption UTTBranchOption @relation(fields: [branchOptionId], references: [id])
   semester     Semester        @relation(fields: [semesterCode], references: [code])
 }
@@ -656,7 +656,7 @@ model UserFormation {
   formationId       String
   followingMethodId String
 
-  user            User                        @relation(fields: [userId], references: [id])
+  user            User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
   formation       UTTFormation                @relation(fields: [formationId], references: [name])
   followingMethod UTTFormationFollowingMethod @relation(fields: [followingMethodId], references: [name])
 }
@@ -726,7 +726,7 @@ model UserHomepageWidget {
   height Int
   userId String
 
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model UserPreference {
@@ -765,10 +765,9 @@ model UserTimestamps {
   lastLoginDate DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  deletedAt     DateTime?
   userId        String    @unique
 
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model UserTimetableGroup {
