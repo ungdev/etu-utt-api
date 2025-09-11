@@ -48,7 +48,6 @@ model ApiKeyPermission {
 
 model Asso {
   id                            String    @id @default(uuid())
-  //login                         String    @unique @db.VarChar(50)
   name                          String    @unique @db.VarChar(100)
   mail                          String    @unique @db.VarChar(100)
   phoneNumber                   String?   @db.VarChar(30)
