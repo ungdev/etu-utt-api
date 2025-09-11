@@ -90,7 +90,7 @@ Spec.prototype.expectAppError = function <ErrorCode extends ERROR_CODE>(
 ) {
   return (<Spec>this).expectStatus(ErrorData[errorCode].httpCode).expectJson({
     errorCode,
-    error: (args as string[]).reduce((arg, extra) => arg.replaceAll('%', extra), ErrorData[errorCode].message),
+    error: (args as string[]).reduce((arg, extra) => arg.replace('%', extra), ErrorData[errorCode].message),
   });
 };
 Spec.prototype.expectUe = function (

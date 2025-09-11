@@ -90,7 +90,7 @@ const SignupE2ESpec = e2eSuite('POST /auth/signup', (app) => {
       .spec()
       .post('/auth/signup')
       .withBody(undefined)
-      .expectAppError(ERROR_CODE.PARAM_MISSING, 'firstName, lastName, login, password');
+      .expectAppError(ERROR_CODE.BODY_MISSING);
   });
   it('should create a new user', async () => {
     await pactum

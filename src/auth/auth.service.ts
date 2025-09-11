@@ -255,7 +255,7 @@ export class AuthService {
   isTokenValid(token: string): boolean {
     try {
       this.jwt.verify(token, { secret: this.config.JWT_SECRET });
-    } catch (e) {
+    } catch {
       return false;
     }
     return true;

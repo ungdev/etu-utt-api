@@ -39,6 +39,6 @@ On aura alors par exemple `auth.service.ts` ou `profile-update-req.dto.ts`.
 
 ## Style de code
 
-Le fichier `.eslintrc.js` contient les conventions de syntaxe utilisées dans le projet. Avant d’être acceptée, une PR
+Le fichier `eslint.config.mjs` contient les conventions de syntaxe utilisées dans le projet. Avant d’être acceptée, une PR
 doit toujours suivre ces conventions. Pour s’assurer que l’intégralité du projet les suit, vous pouvez simplement
 exécuter la commande `pnpm lint`. Si cette commande produit des erreurs, vous devez les corriger avant de _merge_ la PR.

@@ -129,7 +129,7 @@ export class AuthController {
       "If status is 'ok', the user is authenticated. Either use the token to authenticate his requests (if application is the EtuUTT website) or pass it to `POST /auth/validate` (if application is not the EtuUTT website).\n" +
       "If the status is 'no_api_key', the user should use the token to register an api key for the application. See `POST /auth/api-key\n" +
       "If status is 'no_account', the user should use the token to sign up with `POST /auth/signup/cas`.",
-    type: AuthSigninResDto,
+    type: CasLoginResDto,
   })
   async casSignIn(
     @Body() dto: AuthCasSignInReqDto,
@@ -179,6 +179,7 @@ export class AuthController {
   @ApiCreatedResponse({
     description:
       'The account was successfully created. The token to authenticate the following requests is passed in the body',
+    type: AuthTokenResDto,
   })
   @ApiAppErrorResponse(
     ERROR_CODE.INVALID_TOKEN_FORMAT,
@@ -210,6 +211,7 @@ export class AuthController {
   @ApiCreatedResponse({
     description:
       'Create an API access for user to the application that made the request. Returns an authentication token. A route to sign-in should be called before, to get the required token in body.',
+    type: AuthRedirectionResDto,
   })
   @ApiAppErrorResponse(ERROR_CODE.INVALID_TOKEN_FORMAT, 'Token could not be decoded.')
   @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_USER, 'User has been deleted since the token was generated.')
@@ -236,6 +238,7 @@ export class AuthController {
   })
   @ApiOkResponse({
     description: 'Token is correct, another token is returned, that can be used to authenticate requests.',
+    type: AuthTokenResDto,
   })
   @ApiAppErrorResponse(ERROR_CODE.INVALID_TOKEN_FORMAT, 'Token could not be decoded, or clientSecret is wrong.')
   @ApiAppErrorResponse(

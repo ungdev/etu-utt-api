@@ -9,7 +9,10 @@ import { UserPermission } from '../interfaces/permissions.interface';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
-  constructor(config: ConfigModule, private prisma: PrismaService) {
+  constructor(
+    config: ConfigModule,
+    private prisma: PrismaService,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey: config.JWT_SECRET,
