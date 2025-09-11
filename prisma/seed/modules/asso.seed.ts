@@ -30,7 +30,7 @@ export default function assoSeed(prisma: PrismaClient) {
               en: faker.lorem.paragraph(),
             },
           },
-          user: {
+          assoAccount: {
             create: {
               login: name,
               firstName: '',
