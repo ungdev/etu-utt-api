@@ -284,7 +284,7 @@ const createBranchOption = <OnTheFly extends boolean = false>(
     // Paramètres par défaut
     const params = {
       code: faker.db.branch.code(),
-      name: faker.name.jobTitle(),
+      name: faker.person.jobTitle(),
       ...rawParams,
     } as Params<'branchOption'>;
     // Création de l'entité
@@ -319,7 +319,7 @@ export const createBranchOption = entityFaker(
   'branchOption',
   {
     code: faker.db.branchOption.code,
-    name: faker.name.jobTitle,
+    name: faker.person.jobTitle,
   },
   async (app, dependencies, params) =>
     app().get(PrismaService).uTTBranchOption.create({

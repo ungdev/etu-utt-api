@@ -189,7 +189,7 @@ Faker.prototype.db = {
     name: () => fakeSafeUniqueData('ueStarCriterion', 'name', faker.word.adjective),
   },
   association: {
-    name: () => fakeSafeUniqueData('association', 'name', faker.name.firstName),
+    name: () => fakeSafeUniqueData('association', 'name', faker.person.firstName),
   },
 };
 
