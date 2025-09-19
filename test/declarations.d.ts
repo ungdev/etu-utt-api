@@ -79,7 +79,7 @@ declare module './declarations' {
     expectAssos(app: AppProvider, assos: FakeAsso[], count: number): this;
     /** expects to return the given {@link asso} */
     expectAsso(asso: FakeAsso): this;
-    expectAssoMembershipRoles(roles: FakeAssoMembershipRole[], users: FakeUser[][]): this;
+    expectAssoMembershipRoles(roles: JsonLikeVariant<FakeAssoMembershipRole>[], users: FakeUser[][]): this;
     expectCreditCategories(categories: JsonLikeVariant<FakeUeCreditCategory[]>): this;
     expectApplications(applications: FakeApiApplication[]): this;
     expectApplication(application: FakeApiApplication): this;
