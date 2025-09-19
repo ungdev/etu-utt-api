@@ -9,11 +9,7 @@ const SearchE2ESpec = e2eSuite('GET /assos', (app) => {
   for (let i = 0; i < 29; i++) {
     assos.push(createAsso(app));
   }
-  const bde = createAsso(app, {
-    login: 'bdeutt',
-    name: 'BDE',
-    mail: 'bde@utt.fr',
-  });
+  const bde = createAsso(app, { name: 'BDE', mail: 'bde@utt.fr' });
   assos.push(bde);
 
   beforeAll(() => {
