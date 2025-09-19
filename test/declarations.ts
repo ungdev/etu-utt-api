@@ -262,7 +262,7 @@ Spec.prototype.expectAssoMembershipRoles = function (roles: FakeAssoMembershipRo
       members: users[i].map((user) => pick(user, 'id', 'firstName', 'lastName')),
     }))
   });
-}
+};
 Spec.prototype.expectCreditCategories = function (creditCategories: FakeUeCreditCategory[]) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJson(creditCategories);
 };

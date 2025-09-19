@@ -1,10 +1,11 @@
-import { Controller, Get, Param, ParseUUIDPipe, Query } from '@nestjs/common';
-import { IsPublic, RequireApiPermission } from '../auth/decorator';
+import { Controller, Delete, Get, Post, Put, Query } from '@nestjs/common';
+import { ParamAsso } from './decorator/get-asso';
+import { IsPublic } from '../auth/decorator';
 import { AssosService } from './assos.service';
-import AssosSearchReqDto from './dto/req/assos-search-req.dto';
-import { AppException, ERROR_CODE } from '../exceptions';
+import { ERROR_CODE } from '../exceptions';
 import { Asso } from './interfaces/asso.interface';
 import { pick } from '../utils';
+import AssosSearchReqDto from './dto/req/assos-search-req.dto';
 import AssoOverviewResDto from './dto/res/asso-overview-res.dto';
 import AssoDetailResDto from './dto/res/asso-detail-res.dto';
 import AssoMembersResDto from './dto/res/asso-members-res.dto';
@@ -37,15 +38,8 @@ export class AssosController {
   })
   @ApiOkResponse({ type: AssoDetailResDto })
   @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_ASSO, 'There is no asso with the given id')
-  async getAsso(
-    @Param(
-      'assoId',
-      new ParseUUIDPipe({ exceptionFactory: () => new AppException(ERROR_CODE.PARAM_NOT_UUID, 'assoId') }),
-    )
-    assoId: string,
-  ): Promise<AssoDetailResDto> {
-    if (!(await this.assosService.doesAssoExist(assoId))) throw new AppException(ERROR_CODE.NO_SUCH_ASSO, assoId);
-    return this.formatAssoDetail(await this.assosService.getAsso(assoId.toUpperCase()));
+  getAsso(@ParamAsso() asso: Asso): AssoDetailResDto {
+    return this.formatAssoDetail(asso);
   }
 
   // The route below is not public as it exposes the full name of all members, only the president is supposed to be exposed publicly in the route above
@@ -55,15 +49,8 @@ export class AssosController {
   })
   @ApiOkResponse({ type: AssoDetailResDto })
   @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_ASSO, 'There is no asso with the given id')
-  async getAssoMembers(
-    @Param(
-      'assoId',
-      new ParseUUIDPipe({ exceptionFactory: () => new AppException(ERROR_CODE.PARAM_NOT_UUID, 'assoId') }),
-    )
-    assoId: string,
-  ): Promise<AssoMembersResDto> {
-    if (!(await this.assosService.doesAssoExist(assoId))) throw new AppException(ERROR_CODE.NO_SUCH_ASSO, assoId);
-    return { roles: (await this.assosService.getAssoMembers(assoId.toUpperCase())).map(this.formatAssoMembershipRole) };
+  async getAssoMembers(@ParamAsso() asso: Asso): Promise<AssoMembersResDto> {
+    return { roles: (await this.assosService.getAssoMembers(asso.id)).map(this.formatAssoMembershipRole) };
   }
 
   formatAssoOverview(asso: Asso): AssoOverviewResDto {
@@ -92,6 +79,6 @@ export class AssosController {
     return {
       ...pick(members, 'id', 'name', 'position', 'isPresident'),
       members: members.assoMembership.map((membership) => pick(membership.user, 'id', 'firstName', 'lastName')),
-    }
+    };
   }
 }
