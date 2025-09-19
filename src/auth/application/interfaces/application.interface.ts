@@ -23,5 +23,5 @@ const APPLICATION_SELECT_FILTER = {
 export type Application = Prisma.ApiApplicationGetPayload<typeof APPLICATION_SELECT_FILTER>;
 
 export function generateCustomApplicationModel(prisma: PrismaClient) {
-  return generateCustomModel(prisma, 'apiApplication', APPLICATION_SELECT_FILTER, (_, rating: Application) => rating);
+  return generateCustomModel(prisma, 'apiApplication', APPLICATION_SELECT_FILTER, (_, application: Application) => application);
 }

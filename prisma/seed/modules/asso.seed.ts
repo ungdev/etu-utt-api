@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, UserType } from '@prisma/client';
 
 export default function assoSeed(prisma: PrismaClient) {
   console.log('Seeding assos...');
@@ -7,11 +7,11 @@ export default function assoSeed(prisma: PrismaClient) {
   const fakerRounds = 10;
   for (let i = 0; i < fakerRounds; i++) {
     const date: Date = faker.date.past();
+    const name = faker.company.name();
     assos.push(
       prisma.asso.create({
         data: {
-          login: faker.word.sample(),
-          name: faker.company.name(),
+          name,
           mail: faker.internet.email(),
           phoneNumber: faker.phone.number(),
           website: faker.internet.domainName(),
@@ -30,6 +30,20 @@ export default function assoSeed(prisma: PrismaClient) {
               en: faker.lorem.paragraph(),
             },
           },
+          assoAccount: {
+            create: {
+              login: name,
+              firstName: '',
+              lastName: '',
+              userType: UserType.ASSOCIATION,
+              socialNetwork: { create: {} },
+              mailsPhones: { create: {} },
+              rgpd: { create: {} },
+              preference: { create: {} },
+              infos: { create: {} },
+              privacy: { create: {} },
+            }
+          }
         },
       }),
     );

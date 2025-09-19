@@ -60,40 +60,48 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
       .user.delete({ where: { id: user.id } });
   });
 
-  const executeValidSignupRequest = async (type: string) => {
+  const getPersonAttributes = (type: 'student' | 'faculty' | 'other') => {
     const firstName = faker.person.firstName();
     const lastName = faker.person.lastName();
     const login = `${lastName.toLowerCase().slice(0, 7)}${firstName.toLowerCase()}`.slice(0, 8);
     const mail = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@utt.fr`;
+    return {
+      uid: login,
+      sn: lastName,
+      givenName: firstName,
+      displayName: `${firstName} ${lastName}`,
+      mail: mail,
+      supannEmpId: 49777,
+      supannEtuId: 49777,
+      eduPersonAffiliation: [type, 'member'],
+      employeeType: type,
+      formation: 'Ingénieur',
+      telephonenumber: faker.helpers.fromRegExp(/\+33 \d \d\d \d\d \d\d \d\d/),
+      niveau: `${branch.code}2`,
+      filiere: branchOption.code,
+      datefin: 20240930,
+      jpegPhoto: `http://localhost/${login}.jpg`,
+      gidNumber: type === 'student' ? '10000' : type === 'faculty' ? '5000' : '9999',
+      uv: ['PETM6', 'SY16', 'LO17', 'RE02', 'IF03', 'CTC1', 'LG11', 'PEICT', ue.code],
+    }
+  };
+  const executeValidSignupRequest = async (personAttributes) => {
+    const firstName = faker.person.firstName();
+    const lastName = faker.person.lastName();
+    const login = personAttributes.uid;
+    const mail = personAttributes.mail;
     const tokenExpiresIn = 9999;
     list.push({
       dn: `uid=${login},ou=people,dc=utt,dc=fr`,
-      attributes: {
-        uid: login,
-        sn: lastName,
-        givenName: firstName,
-        displayName: `${firstName} ${lastName}`,
-        mail: mail,
-        supannEmpId: 49777,
-        supannEtuId: 49777,
-        eduPersonAffiliation: [type, 'member'],
-        employeeType: type,
-        formation: 'Ingénieur',
-        telephonenumber: faker.helpers.fromRegExp(/\+33 \d \d\d \d\d \d\d \d\d/),
-        niveau: `${branch.code}2`,
-        filiere: branchOption.code,
-        datefin: 20240930,
-        jpegPhoto: `http://localhost/${login}.jpg`,
-        gidNumber: type === 'student' ? 10000 : type === 'faculty' ? 5000 : 6000,
-        uv: ['PETM6', 'SY16', 'LO17', 'RE02', 'IF03', 'CTC1', 'LG11', 'PEICT', ue.code],
-      },
+      attributes: personAttributes,
     });
+    const authService = app()
+      .get(AuthService);
     await pactum
       .spec()
       .post('/auth/signup/cas')
       .withJson({
-        registerToken: await app()
-          .get(AuthService)
+        registerToken: await authService
           .signRegisterUserToken(login, mail, firstName, lastName, tokenExpiresIn),
       })
       .expectStatus(HttpStatus.CREATED)
@@ -101,10 +109,33 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
     expect(await app().get(PrismaService).user.count({ where: { login } })).toEqual(1);
   };
 
-  it('should successfully create the user and return a token', () => executeValidSignupRequest('student'));
-  it('should successfully create the user and return a token (as a teacher)', () =>
-    executeValidSignupRequest('faculty'));
-  it('should successfully create the user and return a token (as other)', () => executeValidSignupRequest('other'));
+  it('should successfully create the user and return a token', async () => {
+    const personAttribute = getPersonAttributes('student');
+    await executeValidSignupRequest(personAttribute);
+    await app().get(PrismaService).user.deleteMany({where: {login: personAttribute.uid}});
+  });
+
+  it('should successfully create the user and return a token (as a teacher)', async () => {
+    const personAttribute = getPersonAttributes('faculty');
+    await executeValidSignupRequest(personAttribute);
+    await app().get(PrismaService).user.deleteMany({where: {login: personAttribute.uid}});
+  });
+  // Can this happen ? If it does, should we throw an error instead ?
+  // it('should successfully create the user and return a token (as other)', () => executeValidSignupRequest(getPersonAttributes('other')));
+
+  it('should successfully create an asso user, along with an Asso', async () => {
+    const login = faker.internet.displayName().replaceAll(/[^A-Za-z1-9]/g, '');
+    const mail = faker.internet.email();
+    const assoName = faker.company.name();
+    await executeValidSignupRequest({
+      uid: login,
+      displayName: assoName,
+      mail,
+      gidNumber: '6000',
+    });
+    expect(await app().get(PrismaService).asso.count({ where: { name: assoName } })).toEqual(1);
+    await app().get(PrismaService).user.deleteMany({ where: { login } });
+  });
 });
 
 export default CasSignUpE2ESpec;

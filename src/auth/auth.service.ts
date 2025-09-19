@@ -63,21 +63,31 @@ export class AuthService {
     const branchOption: string[] = [];
     const ues: string[] = [];
     let type: UserType = UserType.OTHER;
+    let assoName: string = undefined;
     const currentSemester = await this.semesterService.getCurrentSemester();
 
     if (fetchLdap) {
       const ldapUser = await this.ldap.fetch(dto.login);
       if (ldapUser) {
-        if (ldapUser.gidNumber === LdapAccountGroup.STUDENTS) {
-          dto.studentId = Number(ldapUser.supannEtuId);
-          type = UserType.STUDENT;
-          branch.push(...(Array.isArray(ldapUser.niveau) ? ldapUser.niveau : [ldapUser.niveau]));
-          ues.push(...(Array.isArray(ldapUser.uv) ? ldapUser.uv : [ldapUser.uv])); // TODO : check what is done by the admin : are they UEOF or UE codes ?
-          branchOption.push(...(Array.isArray(ldapUser.filiere) ? ldapUser.filiere : [ldapUser.filiere]));
-          [formation] = Array.isArray(ldapUser.formation) ? ldapUser.formation : [ldapUser.formation]; // TODO: this is wrong, students can have multiple formations !
-        } else if (ldapUser.gidNumber === LdapAccountGroup.EMPLOYEES) {
-          type = doesEntryIncludeSome(ldapUser.eduPersonAffiliation, 'faculty') ? UserType.TEACHER : UserType.EMPLOYEE;
-          phoneNumber = ldapUser.telephoneNumber;
+        switch (ldapUser.gidNumber) {
+          case LdapAccountGroup.STUDENTS:
+            dto.studentId = Number(ldapUser.supannEtuId);
+            type = UserType.STUDENT;
+            branch.push(...(Array.isArray(ldapUser.niveau) ? ldapUser.niveau : [ldapUser.niveau]));
+            ues.push(...(Array.isArray(ldapUser.uv) ? ldapUser.uv : [ldapUser.uv])); // TODO : check what is done by the admin : are they UEOF or UE codes ?
+            branchOption.push(...(Array.isArray(ldapUser.filiere) ? ldapUser.filiere : [ldapUser.filiere]));
+            [formation] = Array.isArray(ldapUser.formation) ? ldapUser.formation : [ldapUser.formation]; // TODO: this is wrong, students can have multiple formations !
+            break;
+          case LdapAccountGroup.EMPLOYEES:
+            type = doesEntryIncludeSome(ldapUser.eduPersonAffiliation, 'faculty')
+              ? UserType.TEACHER
+              : UserType.EMPLOYEE;
+            phoneNumber = ldapUser.telephoneNumber;
+            break;
+          case LdapAccountGroup.ASSOCIATIONS:
+            type = UserType.ASSOCIATION;
+            assoName = ldapUser.displayName;
+            break;
         }
       }
     }
@@ -195,6 +205,7 @@ export class AuthService {
           rgpd: { create: {} },
           userType: type,
           privacy: { create: {} },
+          ...(assoName ? { asso: { create: { name: assoName, mail: dto.mail } } } : {}),
         },
         include: {
           apiKeys: true,

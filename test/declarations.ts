@@ -245,7 +245,7 @@ Spec.prototype.expectAssos = function (app: AppProvider, assos: FakeAsso[], coun
 };
 Spec.prototype.expectAsso = function (asso: FakeAsso) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJson({
-    ...pick(asso, 'id', 'login', 'name', 'mail', 'phoneNumber', 'website', 'logo'),
+    ...pick(asso, 'id', 'name', 'mail', 'phoneNumber', 'website', 'logo'),
     description: getTranslation(asso.descriptionTranslation, (<Spec>this).language),
     president: {
       role: !!asso.presidentRole ? pick(asso.presidentRole, 'id', 'name') : null,

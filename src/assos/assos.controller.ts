@@ -59,7 +59,7 @@ export class AssosController {
 
   formatAssoDetail(asso: Asso): AssoDetailResDto {
     return {
-      ...pick(asso, 'id', 'login', 'name', 'mail', 'phoneNumber', 'website', 'logo'),
+      ...pick(asso, 'id', 'name', 'mail', 'phoneNumber', 'website', 'logo'),
       description: asso.descriptionTranslation,
       president: {
         role: pick(asso.president.role, 'id', 'name'),
