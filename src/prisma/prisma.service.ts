@@ -12,7 +12,7 @@ import { generateCustomUeCommentReplyModel } from '../ue/comments/interfaces/com
 import { generateCustomAssoModel } from '../assos/interfaces/asso.interface';
 import { generateCustomCreditCategoryModel } from '../ue/credit/interfaces/credit-category.interface';
 import { generateCustomApplicationModel } from '../auth/application/interfaces/application.interface';
-import { generateCustomAssoMembershipRoleModel } from 'src/assos/interfaces/membership-role.interface';
+import { generateCustomAssoMembershipRoleModel } from '../assos/interfaces/membership-role.interface';
 
 @Injectable()
 export class PrismaService extends PrismaClient<ReturnType<typeof prismaOptions>> {

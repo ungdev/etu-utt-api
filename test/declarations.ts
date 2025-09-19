@@ -13,6 +13,8 @@ import {
   FakeAsso,
   FakeUeCreditCategory,
   FakeApiApplication,
+  FakeAssoMembershipRole,
+  FakeAssoMembership,
 } from './utils/fakedb';
 import { UeAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
 import { ConfigModule } from '../src/config/config.module';
@@ -253,6 +255,14 @@ Spec.prototype.expectAsso = function (asso: FakeAsso) {
     },
   });
 };
+Spec.prototype.expectAssoMembershipRoles = function (roles: FakeAssoMembershipRole[], users: FakeUser[][]) {
+  return (<Spec>this).expectStatus(HttpStatus.OK).expectJson({
+    roles: roles.map((role, i) => ({
+      ...pick(role, 'id', 'name', 'position', 'isPresident'),
+      members: users[i].map((user) => pick(user, 'id', 'firstName', 'lastName')),
+    }))
+  });
+}
 Spec.prototype.expectCreditCategories = function (creditCategories: FakeUeCreditCategory[]) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJson(creditCategories);
 };
