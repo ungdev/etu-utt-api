@@ -30,11 +30,11 @@ export default class PermissionsController {
 
   private formatPermissions(permissions: PermissionManager): PermissionsResDto {
     return {
-      hardPermissions: permissions.hardPermissions,
+      hardPermissions: permissions.hardPermissions.sort(),
       softPermissions: Object.entries(permissions.softPermissions).map(([permission, users]) => ({
         permission,
         users,
-      })),
+      })).mappedSort((permission) => permission.permission),
     };
   }
 }

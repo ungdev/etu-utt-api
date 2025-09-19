@@ -278,11 +278,11 @@ Spec.prototype.expectApplication = function (application: FakeApiApplication) {
 };
 Spec.prototype.expectPermissions = function (permissions: PermissionManager) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJson({
-    hardPermissions: permissions.hardPermissions,
+    hardPermissions: permissions.hardPermissions.sort(),
     softPermissions: Object.entries(permissions.softPermissions).map(([permission, users]) => ({
       permission,
       users,
-    })),
+    })).mappedSort((permission) => permission.permission),
   } satisfies PermissionsResDto);
 };
 
