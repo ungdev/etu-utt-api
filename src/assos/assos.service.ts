@@ -89,4 +89,15 @@ export class AssosService {
       })) != 0
     );
   }
+
+  async getAssoMembers(assoId: string) {
+    return this.prisma.normalize.assoMembershipRole.findMany({
+      where: {
+        assoId,
+        assoMembership: {
+          some: { assoId } // we use "some" to filter out (eventual) empty AssoMembershipRoles
+        }
+      }
+    });
+  }
 }

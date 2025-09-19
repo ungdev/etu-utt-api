@@ -1,5 +1,5 @@
 import { Controller, Get, Param, ParseUUIDPipe, Query } from '@nestjs/common';
-import { IsPublic } from '../auth/decorator';
+import { IsPublic, RequireApiPermission } from '../auth/decorator';
 import { AssosService } from './assos.service';
 import AssosSearchReqDto from './dto/req/assos-search-req.dto';
 import { AppException, ERROR_CODE } from '../exceptions';
@@ -7,8 +7,10 @@ import { Asso } from './interfaces/asso.interface';
 import { pick } from '../utils';
 import AssoOverviewResDto from './dto/res/asso-overview-res.dto';
 import AssoDetailResDto from './dto/res/asso-detail-res.dto';
+import AssoMembersResDto from './dto/res/asso-members-res.dto';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiAppErrorResponse, paginatedResponseDto } from '../app.dto';
+import { AssoMembershipRole } from './interfaces/membership-role.interface';
 
 @Controller('assos')
 @ApiTags('Assos')
@@ -46,6 +48,24 @@ export class AssosController {
     return this.formatAssoDetail(await this.assosService.getAsso(assoId.toUpperCase()));
   }
 
+  // The route below is not public as it exposes the full name of all members, only the president is supposed to be exposed publicly in the route above
+  @Get('/:assoId/members')
+  @ApiOperation({
+    description: 'Get the members of an asso, with their roles.',
+  })
+  @ApiOkResponse({ type: AssoDetailResDto })
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_ASSO, 'There is no asso with the given id')
+  async getAssoMembers(
+    @Param(
+      'assoId',
+      new ParseUUIDPipe({ exceptionFactory: () => new AppException(ERROR_CODE.PARAM_NOT_UUID, 'assoId') }),
+    )
+    assoId: string,
+  ): Promise<AssoMembersResDto> {
+    if (!(await this.assosService.doesAssoExist(assoId))) throw new AppException(ERROR_CODE.NO_SUCH_ASSO, assoId);
+    return { roles: (await this.assosService.getAssoMembers(assoId.toUpperCase())).map(this.formatAssoMembershipRole) };
+  }
+
   formatAssoOverview(asso: Asso): AssoOverviewResDto {
     return {
       ...pick(asso, 'id', 'name', 'logo', 'president'),
@@ -66,5 +86,12 @@ export class AssosController {
         user: !!asso.president.user ? pick(asso.president.user, 'id', 'firstName', 'lastName') : null,
       },
     };
+  }
+
+  formatAssoMembershipRole(members: AssoMembershipRole) {
+    return {
+      ...pick(members, 'id', 'name', 'position', 'isPresident'),
+      members: members.assoMembership.map((membership) => pick(membership.user, 'id', 'firstName', 'lastName')),
+    }
   }
 }
