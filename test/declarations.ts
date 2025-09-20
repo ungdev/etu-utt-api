@@ -17,7 +17,7 @@ import {
 } from './utils/fakedb';
 import { UeAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
 import { ConfigModule } from '../src/config/config.module';
-import { AppProvider } from './utils/test_utils';
+import { AppProvider, JsonLike } from './utils/test_utils';
 import { getTranslation, omit, pick } from '../src/utils';
 import { isArray } from 'class-validator';
 import { Language } from '@prisma/client';
@@ -261,7 +261,11 @@ Spec.prototype.expectAssoMembershipRoles = function (
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonLike({
     roles: roles.map((role, i) => ({
       ...pick(role, 'id', 'name', 'position', 'isPresident'),
-      members: users[i].map((user) => pick(user, 'id', 'firstName', 'lastName')),
+      members: users[i].map((user) => ({
+        ...pick(user, 'firstName', 'lastName'),
+        id: JsonLike.ANY_UUID,
+        userid: user.id,
+      })),
     })),
   });
 };

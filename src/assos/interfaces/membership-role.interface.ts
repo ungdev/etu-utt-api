@@ -10,6 +10,7 @@ const ASSO_MEMBERSHIPROLE_SELECT_FILTER = {
     isPresident: true,
     assoMembership: {
       select: {
+        id: true,
         permissions: {
           select: {
             id: true,

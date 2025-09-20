@@ -16,6 +16,8 @@ import AssoMembersResDto from './dto/res/asso-members-res.dto';
 import AssosRoleCreateReqDto from './dto/req/assos-role-create.dto';
 import AssoRoleResDto, { AssoRoleListResDto, AssoRoleListWithMembersResDto } from './dto/res/assos-role-res.dto';
 import AssosRoleUpdateReqDto from './dto/req/assos-role-update.dto';
+import AssosMemberCreateReqDto from './dto/req/assos-member-create.dto';
+import AssosMemberUpdateReqDto from './dto/req/assos-member-update.dto';
 
 @Controller('assos')
 @ApiTags('Assos')
@@ -63,28 +65,38 @@ export class AssosController {
   })
   @ApiOkResponse()
   @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_ASSO, 'There is no asso with the given id')
-  async addAssoMember(@ParamAsso() asso: Asso) {
+  async addAssoMember(@ParamAsso() asso: Asso, @GetUser() user: User, @Body() body: AssosMemberCreateReqDto) {
+    if (!this.assosService.hasAssoPermission(asso.id, user.id, 'manage_members') && asso.president.user?.id !== user.id)
+      throw new AppException(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, 'manage_members');
     // TODO: Implement this route
+    // Check the user and the group exist and the user is not already in the group.
+    // Check permissions given are a subset of the permissions of current user.
   }
 
-  @Delete('/:assoId/members/:userId')
+  @Delete('/:assoId/members/:memberId')
   @ApiOperation({
     description: 'Kicks a member from an asso.',
   })
   @ApiOkResponse()
   @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_ASSO, 'There is no asso with the given id')
-  async kickAssoMember(@ParamAsso() asso: Asso) {
+  async kickAssoMember(@ParamAsso() asso: Asso, @GetUser() user: User) {
+    if (!this.assosService.hasAssoPermission(asso.id, user.id, 'manage_members') && asso.president.user?.id !== user.id)
+      throw new AppException(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, 'manage_members');
     // TODO: Implement this route
+    // Check the membership exists within the asso.
   }
 
-  @Put('/:assoId/members/:userId')
+  @Put('/:assoId/members/:memberId')
   @ApiOperation({
     description: 'Updates roles of a member in an asso.',
   })
   @ApiOkResponse()
   @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_ASSO, 'There is no asso with the given id')
-  async updateAssoMember(@ParamAsso() asso: Asso) {
+  async updateAssoMember(@ParamAsso() asso: Asso, @GetUser() user: User, @Body() body: AssosMemberUpdateReqDto) {
+    if (!this.assosService.hasAssoPermission(asso.id, user.id, 'manage_members') && asso.president.user?.id !== user.id)
+      throw new AppException(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, 'manage_members');
     // TODO: Implement this route
+    // Do the checks of both routes above
   }
 
   @Post('/:assoId/roles')
@@ -187,7 +199,11 @@ export class AssosController {
   formatAssoMembershipRole(members: AssoMembershipRole) {
     return {
       ...pick(members, 'id', 'name', 'position', 'isPresident'),
-      members: members.assoMembership.map((membership) => pick(membership.user, 'id', 'firstName', 'lastName')),
+      members: members.assoMembership.map((membership) => ({
+        id: membership.id,
+        userid: membership.user.id,
+        ...pick(membership.user, 'firstName', 'lastName'),
+      })),
     };
   }
 
