@@ -65,6 +65,7 @@ export const enum ERROR_CODE {
   NOT_ANNAL_SENDER = 4228,
   NOT_ALREADY_DONE_UEOF = 4229,
   APPLICATION_NOT_OWNED = 4230,
+  USER_ALREADY_ASSO_ROLE_MEMBER = 4231,
   NO_SUCH_UE = 4401,
   NO_SUCH_COMMENT = 4402,
   NO_SUCH_REPLY = 4403,
@@ -79,6 +80,7 @@ export const enum ERROR_CODE {
   NO_SUCH_APPLICATION = 4412,
   NO_SUCH_UE_AT_SEMESTER = 4413,
   NO_SUCH_ASSO_ROLE = 4414,
+  NO_SUCH_ASSO_MEMBERSHIP = 4415,
   ANNAL_ALREADY_UPLOADED = 4901,
   RESOURCE_UNAVAILABLE = 4902,
   RESOURCE_INVALID_TYPE = 4903,
@@ -300,6 +302,10 @@ export const ErrorData = Object.freeze({
     message: 'Application % is not owned by you',
     httpCode: HttpStatus.UNAUTHORIZED,
   },
+  [ERROR_CODE.USER_ALREADY_ASSO_ROLE_MEMBER]: {
+    message: 'User is already member of this role: %',
+    httpCode: HttpStatus.CONFLICT,
+  },
   [ERROR_CODE.NO_SUCH_UE]: {
     message: 'The UE % does not exist',
     httpCode: HttpStatus.NOT_FOUND,
@@ -354,6 +360,10 @@ export const ErrorData = Object.freeze({
   },
   [ERROR_CODE.NO_SUCH_ASSO_ROLE]: {
     message: 'No such role in asso %',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
+  [ERROR_CODE.NO_SUCH_ASSO_MEMBERSHIP]: {
+    message: 'No such membership in asso: %',
     httpCode: HttpStatus.NOT_FOUND,
   },
   [ERROR_CODE.ANNAL_ALREADY_UPLOADED]: {

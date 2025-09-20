@@ -1,11 +1,12 @@
 import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post, Put, Query } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiAppErrorResponse, paginatedResponseDto } from '../app.dto';
-import { AssoMembershipRole } from './interfaces/membership-role.interface';
+import { AssoMembership, AssoMembershipRole } from './interfaces/membership-role.interface';
 import { ParamAsso } from './decorator/get-asso';
 import { GetUser, IsPublic } from '../auth/decorator';
 import { AssosService } from './assos.service';
 import { AppException, ERROR_CODE } from '../exceptions';
+import { ParamMember } from './decorator/get-member';
 import { Asso } from './interfaces/asso.interface';
 import { User } from '../users/interfaces/user.interface';
 import { pick } from '../utils';
@@ -18,11 +19,16 @@ import AssoRoleResDto, { AssoRoleListResDto, AssoRoleListWithMembersResDto } fro
 import AssosRoleUpdateReqDto from './dto/req/assos-role-update.dto';
 import AssosMemberCreateReqDto from './dto/req/assos-member-create.dto';
 import AssosMemberUpdateReqDto from './dto/req/assos-member-update.dto';
+import AssoMembershipResDto from './dto/res/assos-membership-res.dto';
+import UsersService from '../users/users.service';
 
 @Controller('assos')
 @ApiTags('Assos')
 export class AssosController {
-  constructor(readonly assosService: AssosService) {}
+  constructor(
+    readonly assosService: AssosService,
+    readonly userService: UsersService,
+  ) {}
 
   @Get()
   @IsPublic()
@@ -63,40 +69,65 @@ export class AssosController {
   @ApiOperation({
     description: 'Adds a member to an asso.',
   })
-  @ApiOkResponse()
+  @ApiOkResponse({ type: AssoMembershipResDto })
   @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_ASSO, 'There is no asso with the given id')
+  @ApiAppErrorResponse(
+    ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS,
+    'The user has no permission to perform this action for this asso',
+  )
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_ASSO_ROLE, 'There is no role with the given id in this asso')
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_USER, 'There is no user with the given id')
+  @ApiAppErrorResponse(ERROR_CODE.USER_ALREADY_ASSO_ROLE_MEMBER, 'The user is already a member of this asso')
   async addAssoMember(@ParamAsso() asso: Asso, @GetUser() user: User, @Body() body: AssosMemberCreateReqDto) {
     if (!this.assosService.hasAssoPermission(asso.id, user.id, 'manage_members') && asso.president.user?.id !== user.id)
       throw new AppException(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, 'manage_members');
-    // TODO: Implement this route
-    // Check the user and the group exist and the user is not already in the group.
-    // Check permissions given are a subset of the permissions of current user.
+    const role = await this.assosService.getAssoRole(body.roleId, asso.id);
+    if (!role) throw new AppException(ERROR_CODE.NO_SUCH_ASSO_ROLE, asso.id);
+    if (!(await this.userService.fetchUser(body.userId))) throw new AppException(ERROR_CODE.NO_SUCH_USER, body.userId);
+    if (this.assosService.hasRole(role.id, body.userId))
+      throw new AppException(ERROR_CODE.USER_ALREADY_ASSO_ROLE_MEMBER, role.name);
+    if (!this.assosService.hasAssoPermissions(asso.id, user.id, body.permissions))
+      throw new AppException(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, body.permissions.join(', '));
+    return this.assosService
+      .addAssoMemberRole(asso.id, body.userId, role.id, body.permissions, body.endAt)
+      .then(this.formatAssoMembership);
   }
 
   @Delete('/:assoId/members/:memberId')
   @ApiOperation({
     description: 'Kicks a member from an asso.',
   })
-  @ApiOkResponse()
+  @ApiOkResponse({ type: AssoMembershipResDto })
   @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_ASSO, 'There is no asso with the given id')
-  async kickAssoMember(@ParamAsso() asso: Asso, @GetUser() user: User) {
+  async kickAssoMember(@ParamAsso() asso: Asso, @ParamMember() member: AssoMembership, @GetUser() user: User) {
     if (!this.assosService.hasAssoPermission(asso.id, user.id, 'manage_members') && asso.president.user?.id !== user.id)
       throw new AppException(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, 'manage_members');
-    // TODO: Implement this route
-    // Check the membership exists within the asso.
+    if (member.assoId !== asso.id) throw new AppException(ERROR_CODE.NO_SUCH_ASSO_MEMBERSHIP, member.id);
+    return this.assosService.updateAssoMember(member.id, { endAt: new Date() }).then(this.formatAssoMembership);
   }
 
   @Put('/:assoId/members/:memberId')
   @ApiOperation({
     description: 'Updates roles of a member in an asso.',
   })
-  @ApiOkResponse()
+  @ApiOkResponse({ type: AssoMembershipResDto })
   @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_ASSO, 'There is no asso with the given id')
-  async updateAssoMember(@ParamAsso() asso: Asso, @GetUser() user: User, @Body() body: AssosMemberUpdateReqDto) {
+  async updateAssoMember(
+    @ParamAsso() asso: Asso,
+    @ParamMember() member: AssoMembership,
+    @GetUser() user: User,
+    @Body() body: AssosMemberUpdateReqDto,
+  ) {
     if (!this.assosService.hasAssoPermission(asso.id, user.id, 'manage_members') && asso.president.user?.id !== user.id)
       throw new AppException(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, 'manage_members');
-    // TODO: Implement this route
-    // Do the checks of both routes above
+    if (member.assoId !== asso.id) throw new AppException(ERROR_CODE.NO_SUCH_ASSO_MEMBERSHIP, member.id);
+    const role = await this.assosService.getAssoRole(body.roleId, asso.id);
+    if (!role) throw new AppException(ERROR_CODE.NO_SUCH_ASSO_ROLE, asso.id);
+    if (this.assosService.hasRole(role.id, member.userId))
+      throw new AppException(ERROR_CODE.USER_ALREADY_ASSO_ROLE_MEMBER, role.name);
+    if (!this.assosService.hasAssoPermissions(asso.id, user.id, body.permissions))
+      throw new AppException(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, body.permissions.join(', '));
+    return this.assosService.updateAssoMember(member.id, body).then(this.formatAssoMembership);
   }
 
   @Post('/:assoId/roles')
@@ -201,6 +232,8 @@ export class AssosController {
       ...pick(members, 'id', 'name', 'position', 'isPresident'),
       members: members.assoMembership.map((membership) => ({
         id: membership.id,
+        startAt: membership.startAt,
+        endAt: membership.endAt,
         userid: membership.user.id,
         ...pick(membership.user, 'firstName', 'lastName'),
       })),
@@ -209,5 +242,9 @@ export class AssosController {
 
   formatPartialAssoMembershipRole(members: Partial<AssoMembershipRole>) {
     return pick(members, 'id', 'name', 'position', 'isPresident');
+  }
+
+  formatAssoMembership(member: AssoMembership): AssoMembershipResDto {
+    return pick(member, 'id', 'roleId', 'userId', 'endAt');
   }
 }

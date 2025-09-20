@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient, AssoMembership as PrismaAssoMembership } from '@prisma/client';
 import { generateCustomModel } from '../../prisma/prisma.service';
 import { translationSelect } from '../../utils';
 
@@ -11,6 +11,8 @@ const ASSO_MEMBERSHIPROLE_SELECT_FILTER = {
     assoMembership: {
       select: {
         id: true,
+        startAt: true,
+        endAt: true,
         permissions: {
           select: {
             id: true,
@@ -33,6 +35,7 @@ const ASSO_MEMBERSHIPROLE_SELECT_FILTER = {
 } as const satisfies Prisma.AssoMembershipRoleFindManyArgs;
 
 export type AssoMembershipRole = Prisma.AssoMembershipRoleGetPayload<typeof ASSO_MEMBERSHIPROLE_SELECT_FILTER>;
+export type AssoMembership = PrismaAssoMembership & { permissions: { id: string }[] };
 
 export const generateCustomAssoMembershipRoleModel = (prisma: PrismaClient) =>
   generateCustomModel(prisma, 'assoMembershipRole', ASSO_MEMBERSHIPROLE_SELECT_FILTER, (_, r: AssoMembershipRole) => r);
