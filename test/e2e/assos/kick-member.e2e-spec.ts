@@ -55,7 +55,7 @@ const KickAssoMemberE2ESpec = e2eSuite('DELETE /assos/:id/members/:id', (app) =>
     pactum
       .spec()
       .withBearerToken(user.token)
-      .delete(`/assos/${userInAsso.id}/members/${Dummies.UUID}`)
+      .delete(`/assos/${asso.id}/members/${Dummies.UUID}`)
       .expectAppError(ERROR_CODE.NO_SUCH_ASSO_MEMBERSHIP, Dummies.UUID));
 
   it('should return a 403 as user has no permission', () =>

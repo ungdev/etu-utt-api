@@ -244,7 +244,7 @@ export class AssosController {
       throw new AppException(ERROR_CODE.PARAM_TOO_HIGH, 'position');
     return this.assosService
       .updateAssoRole(role.id, asso.id, pick(body, 'name', 'position'), pick(role, 'name', 'position'))
-      .then((data) => ({ roles: data.map(this.formatPartialAssoMembershipRole) }));
+      .then((data) => ({ roles: data.map(this.formatPartialAssoMembershipRole).mappedSort((role) => role.position) }));
   }
 
   formatAssoOverview(asso: Asso): AssoOverviewResDto {

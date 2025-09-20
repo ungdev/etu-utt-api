@@ -106,7 +106,6 @@ const UpdateAssoRoleE2ESpec = e2eSuite('PUT /assos/:id/roles/:id', (app) => {
         position: 0,
       })
       .expectAssoMembershipRoles([
-        { ...presRole, position: 1 },
         {
           id: assoMembershipRole.id,
           isPresident: false,
@@ -114,6 +113,7 @@ const UpdateAssoRoleE2ESpec = e2eSuite('PUT /assos/:id/roles/:id', (app) => {
           position: 0,
           assoId: asso.id,
         },
+        { ...presRole, position: 1 },
       ]);
   });
 
