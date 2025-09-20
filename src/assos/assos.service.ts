@@ -167,9 +167,23 @@ export class AssosService {
   }
 
   async deleteAssoRole(roleId: string): Promise<Omit<AssoMembershipRole, 'assoMembership'>> {
-    return this.prisma.assoMembershipRole.delete({
+    const deletedRole = await this.prisma.assoMembershipRole.delete({
       where: { id: roleId },
     });
+    await this.prisma.assoMembershipRole.updateMany({
+      where: {
+        assoId: deletedRole.assoId,
+        position: {
+          gte: deletedRole.position,
+        },
+      },
+      data: {
+        position: {
+          decrement: 1,
+        },
+      },
+    });
+    return deletedRole;
   }
 
   async updateAssoRole(

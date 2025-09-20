@@ -31,7 +31,7 @@ const GetAssoMembersE2ESpec = e2eSuite('GET /assos/:id/members', (app) => {
       .spec()
       .withBearerToken(user.token)
       .get(`/assos/${asso.id}/members`)
-      .expectAssoMembershipRoles(
+      .expectAssoMembershipRolesWithMembers(
         [
           assoMembershipRole,
           {

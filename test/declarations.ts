@@ -14,6 +14,7 @@ import {
   FakeUeCreditCategory,
   FakeApiApplication,
   FakeAssoMembershipRole,
+  FakeAssoMembership,
 } from './utils/fakedb';
 import { UeAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
 import { ConfigModule } from '../src/config/config.module';
@@ -254,7 +255,20 @@ Spec.prototype.expectAsso = function (asso: FakeAsso) {
     },
   });
 };
-Spec.prototype.expectAssoMembershipRoles = function (
+Spec.prototype.expectAssoMembership = function (member: FakeAssoMembership) {
+  return (<Spec>this)
+    .expectStatus(HttpStatus.OK)
+    .expectJson(pick(member, 'id', 'roleId', 'userId', 'startAt', 'endAt'));
+};
+Spec.prototype.expectAssoMembershipRole = function (role: FakeAssoMembershipRole) {
+  return (<Spec>this).expectStatus(HttpStatus.OK).expectJson(pick(role, 'id', 'name', 'position', 'isPresident'));
+};
+Spec.prototype.expectAssoMembershipRoles = function (roles: FakeAssoMembershipRole[]) {
+  return (<Spec>this).expectStatus(HttpStatus.OK).expectJson({
+    roles: roles.map((role) => pick(role, 'id', 'name', 'position', 'isPresident')),
+  });
+};
+Spec.prototype.expectAssoMembershipRolesWithMembers = function (
   roles: JsonLikeVariant<FakeAssoMembershipRole>[],
   users: FakeUser[][],
 ) {

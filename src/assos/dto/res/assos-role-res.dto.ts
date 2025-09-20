@@ -11,6 +11,6 @@ export class AssoRoleListResDto {
   roles: AssoRoleResDto[];
 }
 
-export class AssoRoleListWithMembersResDto extends AssoRoleResDto {
-  roles: (UserMicroResDto & { userid: string; startAt: Date; endAt: Date })[];
+export class AssoRoleListWithMembersResDto {
+  roles: (AssoRoleResDto & { members: (UserMicroResDto & { userid: string; startAt: Date; endAt: Date })[] })[];
 }

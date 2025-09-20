@@ -251,6 +251,6 @@ export class AssosController {
   }
 
   formatAssoMembership(member: AssoMembership): AssoMembershipResDto {
-    return pick(member, 'id', 'roleId', 'userId', 'endAt');
+    return pick(member, 'id', 'roleId', 'userId', 'endAt', 'startAt');
   }
 }
