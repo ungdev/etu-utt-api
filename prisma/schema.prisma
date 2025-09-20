@@ -86,10 +86,8 @@ model AssoMembership {
 
 model AssoMembershipPermission {
   id            String @id
-  descriptionId String @unique
 
   assoMembership AssoMembership[]
-  description    Translation      @relation(fields: [descriptionId], references: [id], onDelete: Cascade)
 }
 
 model AssoMembershipRole {
@@ -247,7 +245,6 @@ model Translation {
   formationFollowingMethodDescriptions UTTFormationFollowingMethod?
   starCriterionDescriptions            UeStarCriterion?
   ueNames                              Ueof?
-  assoMembershipPermissionDescriptions AssoMembershipPermission?
 }
 
 model Ue {

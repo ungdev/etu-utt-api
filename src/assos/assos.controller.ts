@@ -86,7 +86,10 @@ export class AssosController {
     if (!(await this.userService.fetchUser(body.userId))) throw new AppException(ERROR_CODE.NO_SUCH_USER, body.userId);
     if (this.assosService.hasRole(role.id, body.userId))
       throw new AppException(ERROR_CODE.USER_ALREADY_ASSO_ROLE_MEMBER, role.name);
-    if (!this.assosService.hasAssoPermissions(asso.id, user.id, body.permissions))
+    if (
+      !this.assosService.hasAssoPermissions(asso.id, user.id, body.permissions) &&
+      asso.president.user?.id !== user.id
+    )
       throw new AppException(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, body.permissions.join(', '));
     return this.assosService
       .addAssoMemberRole(asso.id, body.userId, role.id, body.permissions, body.endAt)
@@ -125,7 +128,10 @@ export class AssosController {
     if (!role) throw new AppException(ERROR_CODE.NO_SUCH_ASSO_ROLE, asso.id);
     if (this.assosService.hasRole(role.id, member.userId))
       throw new AppException(ERROR_CODE.USER_ALREADY_ASSO_ROLE_MEMBER, role.name);
-    if (!this.assosService.hasAssoPermissions(asso.id, user.id, body.permissions))
+    if (
+      !this.assosService.hasAssoPermissions(asso.id, user.id, body.permissions) &&
+      asso.president.user?.id !== user.id
+    )
       throw new AppException(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, body.permissions.join(', '));
     return this.assosService.updateAssoMember(member.id, body).then(this.formatAssoMembership);
   }

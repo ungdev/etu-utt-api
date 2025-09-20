@@ -1,6 +1,5 @@
 import { Prisma, PrismaClient, AssoMembership as PrismaAssoMembership } from '@prisma/client';
 import { generateCustomModel } from '../../prisma/prisma.service';
-import { translationSelect } from '../../utils';
 
 const ASSO_MEMBERSHIPROLE_SELECT_FILTER = {
   select: {
@@ -16,7 +15,6 @@ const ASSO_MEMBERSHIPROLE_SELECT_FILTER = {
         permissions: {
           select: {
             id: true,
-            description: translationSelect,
           },
         },
         user: {
