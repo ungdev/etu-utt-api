@@ -182,7 +182,7 @@ export class AssosController {
 
   @Delete('/:assoId/roles/:roleId')
   @ApiOperation({
-    description: 'Deletes a role from an asso.',
+    description: 'Deletes a role from an asso. Caution: all members with this role will lose it.',
   })
   @ApiOkResponse({ type: AssoRoleResDto })
   @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_ASSO, 'There is no asso with the given id')
@@ -240,6 +240,8 @@ export class AssosController {
       throw new AppException(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, 'manage_roles');
     const role = await this.assosService.getAssoRole(roleId, asso.id);
     if (!role) throw new AppException(ERROR_CODE.NO_SUCH_ASSO_ROLE, asso.id);
+    if (body.position > (await this.assosService.getRoleRange(asso.id)))
+      throw new AppException(ERROR_CODE.PARAM_TOO_HIGH, 'position');
     return this.assosService
       .updateAssoRole(role.id, asso.id, pick(body, 'name', 'position'), pick(role, 'name', 'position'))
       .then((data) => ({ roles: data.map(this.formatPartialAssoMembershipRole) }));

@@ -268,6 +268,11 @@ Spec.prototype.expectAssoMembershipCreated = function (member: JsonLikeVariant<F
 Spec.prototype.expectAssoMembershipRole = function (role: FakeAssoMembershipRole) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJson(pick(role, 'id', 'name', 'position', 'isPresident'));
 };
+Spec.prototype.expectAssoMembershipRoleCreated = function (role: FakeAssoMembershipRole) {
+  return (<Spec>this)
+    .expectStatus(HttpStatus.CREATED)
+    .expectJsonLike(pick(role, 'id', 'name', 'position', 'isPresident'));
+};
 Spec.prototype.expectAssoMembershipRoles = function (roles: FakeAssoMembershipRole[]) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJson({
     roles: roles.map((role) => pick(role, 'id', 'name', 'position', 'isPresident')),

@@ -80,7 +80,7 @@ model AssoMembership {
 
   user        User                       @relation(fields: [userId], references: [id])
   asso        Asso                       @relation(fields: [assoId], references: [id])
-  role        AssoMembershipRole         @relation(fields: [roleId], references: [id])
+  role        AssoMembershipRole         @relation(fields: [roleId], references: [id], onDelete: Cascade)
   permissions AssoMembershipPermission[]
 }
 

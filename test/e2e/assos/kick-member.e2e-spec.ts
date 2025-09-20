@@ -74,7 +74,7 @@ const KickAssoMemberE2ESpec = e2eSuite('DELETE /assos/:id/members/:id', (app) =>
 
   it('should kick the user from the AssoRole', () =>
     pactum.spec().withBearerToken(userAllowed.token).delete(`/assos/${asso.id}/members/${mb.id}`).expectAssoMembership({
-      id: JsonLike.ANY_UUID,
+      id: mb.id,
       assoId: asso.id,
       userId: userInAsso.id,
       roleId: assoMembershipRole.id,
@@ -101,7 +101,7 @@ const KickAssoMemberE2ESpec = e2eSuite('DELETE /assos/:id/members/:id', (app) =>
       .withBearerToken(token)
       .delete(`/assos/${asso.id}/members/${mbOtherUser.id}`)
       .expectAssoMembership({
-        id: JsonLike.ANY_UUID,
+        id: mbOtherUser.id,
         assoId: asso.id,
         userId: otherUserInAsso.id,
         roleId: assoMembershipRole.id,

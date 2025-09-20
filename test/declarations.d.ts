@@ -86,6 +86,7 @@ declare module './declarations' {
     /** expects to return the given {@link asso} */
     expectAsso(asso: FakeAsso): this;
     expectAssoMembershipRole(role: FakeAssoMembershipRole): this;
+    expectAssoMembershipRoleCreated(role: JsonLikeVariant<FakeAssoMembershipRole>): this;
     expectAssoMembershipRoles(roles: JsonLikeVariant<FakeAssoMembershipRole>[]): this;
     expectAssoMembershipRolesWithMembers(roles: JsonLikeVariant<FakeAssoMembershipRole>[], users: FakeUser[][]): this;
     expectAssoMembership(membership: JsonLikeVariant<FakeAssoMembership>): this;

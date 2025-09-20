@@ -145,11 +145,13 @@ export class AssosService {
 
   async createAssoRole(assoId: string, roleName: string): Promise<Omit<AssoMembershipRole, 'assoMembership'>> {
     const lastPosition =
-      (await this.prisma.assoMembershipRole.findMany({
-        where: { assoId },
-        orderBy: { position: 'desc' },
-        take: 1,
-      })[0]?.position) ?? -1;
+      (
+        await this.prisma.assoMembershipRole.findFirst({
+          where: { assoId },
+          orderBy: { position: 'desc' },
+          take: 1,
+        })
+      )?.position ?? -1;
     return this.prisma.assoMembershipRole.create({
       data: {
         assoId,
@@ -158,6 +160,16 @@ export class AssosService {
         isPresident: false,
       },
     });
+  }
+
+  async getRoleRange(assoId: string): Promise<number> {
+    return this.prisma.assoMembershipRole
+      .findFirst({
+        where: { assoId },
+        orderBy: { position: 'desc' },
+        take: 1,
+      })
+      .then((r) => (r ? r.position : 0));
   }
 
   async getAssoRole(roleId: string, assoId: string): Promise<Omit<AssoMembershipRole, 'assoMembership'>> {
