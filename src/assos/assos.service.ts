@@ -287,10 +287,7 @@ export class AssosService {
     });
   }
 
-  async updateAssoMember(
-    memberId: string,
-    update: Partial<AssosMemberUpdateReqDto> & { endAt: Date },
-  ): Promise<AssoMembership> {
+  async updateAssoMember(memberId: string, update: AssosMemberUpdateReqDto): Promise<AssoMembership> {
     return this.prisma.assoMembership.update({
       where: { id: memberId },
       data: {

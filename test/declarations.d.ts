@@ -88,7 +88,8 @@ declare module './declarations' {
     expectAssoMembershipRole(role: FakeAssoMembershipRole): this;
     expectAssoMembershipRoles(roles: JsonLikeVariant<FakeAssoMembershipRole>[]): this;
     expectAssoMembershipRolesWithMembers(roles: JsonLikeVariant<FakeAssoMembershipRole>[], users: FakeUser[][]): this;
-    expectAssoMembership(membership: FakeAssoMembership): this;
+    expectAssoMembership(membership: JsonLikeVariant<FakeAssoMembership>): this;
+    expectAssoMembershipCreated(membership: JsonLikeVariant<FakeAssoMembership>): this;
     expectCreditCategories(categories: JsonLikeVariant<FakeUeCreditCategory[]>): this;
     expectApplications(applications: FakeApiApplication[]): this;
     expectApplication(application: FakeApiApplication): this;

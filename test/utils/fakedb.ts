@@ -430,7 +430,7 @@ export const createAssoMembership = entityFaker(
   'assoMembership',
   {
     startAt: new Date(0),
-    endAt: new Date(0),
+    endAt: new Date(Date.now() + 31536000000), // One year from now
     createdAt: new Date(0),
   },
   async (app, dependencies, params) =>

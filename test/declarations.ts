@@ -255,10 +255,15 @@ Spec.prototype.expectAsso = function (asso: FakeAsso) {
     },
   });
 };
-Spec.prototype.expectAssoMembership = function (member: FakeAssoMembership) {
+Spec.prototype.expectAssoMembership = function (member: JsonLikeVariant<FakeAssoMembership>) {
   return (<Spec>this)
     .expectStatus(HttpStatus.OK)
-    .expectJson(pick(member, 'id', 'roleId', 'userId', 'startAt', 'endAt'));
+    .expectJsonLike(pick(member, 'id', 'roleId', 'userId', 'startAt', 'endAt'));
+};
+Spec.prototype.expectAssoMembershipCreated = function (member: JsonLikeVariant<FakeAssoMembership>) {
+  return (<Spec>this)
+    .expectStatus(HttpStatus.CREATED)
+    .expectJsonLike(pick(member, 'id', 'roleId', 'userId', 'startAt', 'endAt'));
 };
 Spec.prototype.expectAssoMembershipRole = function (role: FakeAssoMembershipRole) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJson(pick(role, 'id', 'name', 'position', 'isPresident'));
