@@ -81,7 +81,7 @@ const UpdateAssoMemberE2ESpec = e2eSuite('PATCH /assos/:id/members/:id', (app) =
     pactum
       .spec()
       .withBearerToken(user.token)
-      .patch(`/assos/${userInAsso.id}/members/${Dummies.UUID}`)
+      .patch(`/assos/${asso.id}/members/${Dummies.UUID}`)
       .withBody({
         roleId: assoMembershipRole.id,
         permissions: [permission.id],
