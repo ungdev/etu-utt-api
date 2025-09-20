@@ -77,21 +77,6 @@ export class AssosService {
     });
   }
 
-  /**
-   * Checks whether an asso exists
-   * @param assoId the id of the asso to check
-   * @returns whether the asso exists
-   */
-  async doesAssoExist(assoId: string) {
-    return (
-      (await this.prisma.asso.count({
-        where: {
-          id: assoId,
-        },
-      })) != 0
-    );
-  }
-
   async getAssoMembers(assoId: string) {
     return this.prisma.normalize.assoMembershipRole.findMany({
       where: {
