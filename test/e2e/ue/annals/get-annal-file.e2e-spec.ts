@@ -16,11 +16,11 @@ import { CommentStatus } from '../../../../src/ue/comments/interfaces/comment.in
 import { PermissionManager } from '../../../../src/utils';
 
 const GetAnnalFile = e2eSuite('GET /ue/annals/{annalId}', (app) => {
-  const senderUser = createUser(app, { permissions: new PermissionManager().add('API_SEE_ANNALS') });
+  const senderUser = createUser(app, { permissions: new PermissionManager().with('API_SEE_ANNALS') });
   const nonUeUser = createUser(app, {
     login: 'user2',
     studentId: 2,
-    permissions: new PermissionManager().add('API_SEE_ANNALS'),
+    permissions: new PermissionManager().with('API_SEE_ANNALS'),
   });
   // const moderator = createUser(app, { login: 'user3', studentId: 3, permissions: new PermissionManager().add('annalModerator') });
   const userNoPermission = createUser(app);

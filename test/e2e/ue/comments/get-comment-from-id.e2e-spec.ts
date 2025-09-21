@@ -7,10 +7,10 @@ import { omit, PermissionManager } from '../../../../src/utils';
 import { FakeComment } from '../../../utils/fakedb';
 
 const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) => {
-  const user = fakedb.createUser(app, { permissions: new PermissionManager().add('API_SEE_OPINIONS_UE') });
+  const user = fakedb.createUser(app, { permissions: new PermissionManager().with('API_SEE_OPINIONS_UE') });
   const userNotAuthor = fakedb.createUser(app, {
     login: 'user2',
-    permissions: new PermissionManager().add('API_SEE_OPINIONS_UE'),
+    permissions: new PermissionManager().with('API_SEE_OPINIONS_UE'),
   });
   const userNoPermission = fakedb.createUser(app);
   const semester = fakedb.createSemester(app);

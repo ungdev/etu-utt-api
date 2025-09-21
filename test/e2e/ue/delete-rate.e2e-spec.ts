@@ -16,10 +16,10 @@ import { faker } from '@faker-js/faker';
 import { PermissionManager } from '../../../src/utils';
 
 const DeleteRate = e2eSuite('DELETE /ue/ueof/{ueofCode}/rate/{critetionId}', (app) => {
-  const user = createUser(app, { permissions: new PermissionManager().add('API_GIVE_OPINIONS_UE') });
+  const user = createUser(app, { permissions: new PermissionManager().with('API_GIVE_OPINIONS_UE') });
   const userNotRated = createUser(app, {
     login: 'user2',
-    permissions: new PermissionManager().add('API_GIVE_OPINIONS_UE'),
+    permissions: new PermissionManager().with('API_GIVE_OPINIONS_UE'),
   });
   const userNoPermissions = createUser(app);
   const semester = createSemester(app);

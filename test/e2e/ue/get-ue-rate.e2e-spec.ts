@@ -15,10 +15,10 @@ import { PermissionManager } from '../../../src/utils';
 
 const GetRateE2ESpec = e2eSuite('GET /ue/:ueCode/rate', (app) => {
   const userNoPermission = createUser(app);
-  const userFullRating = createUser(app, { permissions: new PermissionManager().add('API_GIVE_OPINIONS_UE') });
+  const userFullRating = createUser(app, { permissions: new PermissionManager().with('API_GIVE_OPINIONS_UE') });
   const userPartialRating = createUser(app, {
     login: 'user2',
-    permissions: new PermissionManager().add('API_GIVE_OPINIONS_UE'),
+    permissions: new PermissionManager().with('API_GIVE_OPINIONS_UE'),
   });
   const semester = createSemester(app);
   const branch = createBranch(app);

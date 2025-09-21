@@ -23,7 +23,7 @@ export default class ApplicationController {
   @Get('/of/me')
   @ApiOperation({ description: 'Get the applications of the user issuing the request.' })
   async getMyApplications(@GetUser('id') userId: string): Promise<ApplicationResDto[]> {
-    return this.getApplicationsOf(userId, new PermissionManager().add(Permission.USER_SEE_DETAILS, userId));
+    return this.getApplicationsOf(userId, new PermissionManager().with(Permission.USER_SEE_DETAILS, userId));
   }
 
   @Get('/of/:userId')

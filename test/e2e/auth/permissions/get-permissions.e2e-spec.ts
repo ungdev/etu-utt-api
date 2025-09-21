@@ -8,7 +8,7 @@ import { PermissionManager } from '../../../../src/utils';
 const GetPermissionsE2ESpec = e2eSuite('GET /auth/permissions/:apiKey', (app) => {
   const loggedUser = fakedb.createUser(app);
   const user = fakedb.createUser(app, {
-    permissions: new PermissionManager().add(Permission.USER_SEE_DETAILS).add(Permission.API_UPLOAD_ANNALS),
+    permissions: new PermissionManager().with(Permission.USER_SEE_DETAILS).with(Permission.API_UPLOAD_ANNALS),
   });
 
   it('must fail as user is not authenticated', () =>
@@ -28,9 +28,9 @@ const GetPermissionsE2ESpec = e2eSuite('GET /auth/permissions/:apiKey', (app) =>
       .get(`/auth/permissions/${user.apiKey.id}`)
       .expectPermissions(
         new PermissionManager()
-          .add(Permission.API_UPLOAD_ANNALS)
-          .add(Permission.USER_SEE_DETAILS)
-          .add(Permission.USER_UPDATE_DETAILS, user.id),
+          .with(Permission.API_UPLOAD_ANNALS)
+          .with(Permission.USER_SEE_DETAILS)
+          .with(Permission.USER_UPDATE_DETAILS, user.id),
       ));
 });
 

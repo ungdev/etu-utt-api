@@ -8,7 +8,7 @@ import { PermissionManager } from '../../../../src/utils';
 const GetApplicationsOfUserE2ESpec = e2eSuite('GET /auth/application/of/:userId', (app) => {
   const user = fakedb.createUser(app);
   const unauthorizedUser = fakedb.createUser(app);
-  const adminUser = fakedb.createUser(app, { permissions: new PermissionManager().add(Permission.USER_SEE_DETAILS) });
+  const adminUser = fakedb.createUser(app, { permissions: new PermissionManager().with(Permission.USER_SEE_DETAILS) });
   const applications = [fakedb.createApplication(app, { owner: user }), fakedb.createApplication(app, { owner: user })];
 
   it('should return an Unauthorized as user is not logged in', () =>

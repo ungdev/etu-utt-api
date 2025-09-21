@@ -12,7 +12,7 @@ export default class PermissionsService {
     const permissions = new PermissionManager();
     for (const permission of rawPermissions) {
       // If it's an API permission, permission.userId will be undefined, so it does not really matter that typing isn't exact here.
-      permissions.add(permission.permission as UserPermission, permission.userId);
+      permissions.with(permission.permission as UserPermission, permission.userId);
     }
     return permissions;
   }

@@ -75,10 +75,10 @@ export class PermissionManager {
     return this.hardPermissions.includes(permission) || (userId && this.softPermissions[permission]?.includes(userId));
   }
 
-  add(permission: ApiPermission): PermissionManager;
-  add(permission: UserPermission): PermissionManager;
-  add(permission: UserPermission, userId: string): PermissionManager;
-  add(permission: Permission, userId?: string): PermissionManager {
+  with(permission: ApiPermission): PermissionManager;
+  with(permission: UserPermission): PermissionManager;
+  with(permission: UserPermission, userId: string): PermissionManager;
+  with(permission: Permission, userId?: string): PermissionManager {
     if (!userId) {
       if (!this.hardPermissions.includes(permission)) {
         this.hardPermissions.push(permission);

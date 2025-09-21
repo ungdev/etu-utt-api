@@ -17,11 +17,11 @@ import { PermissionManager, pick } from '../../../../src/utils';
 import { PrismaService } from '../../../../src/prisma/prisma.service';
 
 const DeleteAnnal = e2eSuite('DELETE /ue/annals/{annalId}', (app) => {
-  const senderUser = createUser(app, { permissions: new PermissionManager().add('API_UPLOAD_ANNALS') });
+  const senderUser = createUser(app, { permissions: new PermissionManager().with('API_UPLOAD_ANNALS') });
   const nonUeUser = createUser(app, {
     login: 'user2',
     studentId: 2,
-    permissions: new PermissionManager().add('API_UPLOAD_ANNALS'),
+    permissions: new PermissionManager().with('API_UPLOAD_ANNALS'),
   });
   const userNoPermission = createUser(app);
   const annalType = createAnnalType(app);

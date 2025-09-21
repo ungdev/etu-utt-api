@@ -38,7 +38,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     const permissions = new PermissionManager();
     for (const permission of apiKey.apiKeyPermissions) {
       // If it's an API permission, permission.userId will be undefined, so it does not really matter that typing isn't exact here.
-      permissions.add(permission.permission as UserPermission, permission.userId);
+      permissions.with(permission.permission as UserPermission, permission.userId);
     }
     return {
       application: apiKey.application,

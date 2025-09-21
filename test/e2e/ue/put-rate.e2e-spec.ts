@@ -16,10 +16,10 @@ import { faker } from '@faker-js/faker';
 import { PermissionManager } from '../../../src/utils';
 
 const PutRate = e2eSuite('PUT /ue/ueof/{ueofCode}/rate', (app) => {
-  const user = createUser(app, { permissions: new PermissionManager().add('API_GIVE_OPINIONS_UE') });
+  const user = createUser(app, { permissions: new PermissionManager().with('API_GIVE_OPINIONS_UE') });
   const userNoUe = createUser(app, {
     login: 'user2',
-    permissions: new PermissionManager().add('API_GIVE_OPINIONS_UE'),
+    permissions: new PermissionManager().with('API_GIVE_OPINIONS_UE'),
   });
   const userNoPermission = createUser(app);
   const semester = createSemester(app);

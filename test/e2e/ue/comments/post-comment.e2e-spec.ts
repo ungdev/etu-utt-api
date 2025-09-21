@@ -16,10 +16,10 @@ import { CommentStatus } from 'src/ue/comments/interfaces/comment.interface';
 import { PermissionManager } from '../../../../src/utils';
 
 const PostCommment = e2eSuite('POST /ue/comments', (app) => {
-  const userNotDoneUe = createUser(app, { permissions: new PermissionManager().add('API_GIVE_OPINIONS_UE') });
+  const userNotDoneUe = createUser(app, { permissions: new PermissionManager().with('API_GIVE_OPINIONS_UE') });
   const userDidUe = createUser(app, {
     login: 'user2',
-    permissions: new PermissionManager().add('API_GIVE_OPINIONS_UE'),
+    permissions: new PermissionManager().with('API_GIVE_OPINIONS_UE'),
   });
   const userNoPermission = createUser(app);
   const semester = createSemester(app);

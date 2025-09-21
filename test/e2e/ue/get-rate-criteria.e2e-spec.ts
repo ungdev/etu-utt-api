@@ -6,7 +6,7 @@ import { ERROR_CODE } from '../../../src/exceptions';
 
 const GetRateCriteria = e2eSuite('GET /ue/rate/criteria', (app) => {
   const userNoPermission = createUser(app);
-  const user = createUser(app, { permissions: new PermissionManager().add('API_SEE_OPINIONS_UE') });
+  const user = createUser(app, { permissions: new PermissionManager().with('API_SEE_OPINIONS_UE') });
   const criteria: FakeUeStarCriterion[] = [];
   for (let i = 0; i < 30; i++) criteria.push(createCriterion(app));
 
