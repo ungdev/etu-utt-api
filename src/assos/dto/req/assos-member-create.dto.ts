@@ -1,5 +1,6 @@
-import { IsArray, IsDate, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateIf } from 'class-validator';
+import { IsArray, IsDate, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 import { Type } from 'class-transformer';
+import { IsFutureDate } from '../../../validation';
 
 export default class AssosMemberCreateReqDto {
   @IsString()
@@ -19,9 +20,7 @@ export default class AssosMemberCreateReqDto {
   @IsOptional()
   @IsDate()
   @IsNotEmpty()
+  @IsFutureDate()
   @Type(() => Date)
-  @ValidateIf((date: string) => new Date(date).getTime() > Date.now(), {
-    message: 'endAt must be a date in the future',
-  })
   endAt: Date;
 }

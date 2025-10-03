@@ -40,6 +40,19 @@ const AddAssoMemberE2ESpec = e2eSuite('POST /assos/:id/members', (app) => {
       })
       .expectAppError(ERROR_CODE.PARAM_NOT_UUID, 'assoId'));
 
+  it('should return a 400 as expiration date is in the past', () =>
+    pactum
+      .spec()
+      .withBearerToken(user.token)
+      .post(`/assos/${asso.id}/members`)
+      .withBody({
+        userId: user2.id,
+        roleId: assoMembershipRole.id,
+        endAt: new Date(),
+        permissions: [],
+      })
+      .expectAppError(ERROR_CODE.PARAM_PAST_DATE, 'endAt'));
+
   it('should return a 404 as asso is not found', () =>
     pactum
       .spec()

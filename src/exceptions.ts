@@ -38,6 +38,8 @@ export const enum ERROR_CODE {
   NO_FILE_PROVIDED = 2020,
   PARAM_NOT_URL = 2021,
   BODY_MISSING = 2022,
+  PARAM_PAST_DATE = 2023,
+  PARAM_MISSING_EITHER = 2024,
   PARAM_DOES_NOT_MATCH_REGEX = 2102,
   NO_FIELD_PROVIDED = 2201,
   WIDGET_OVERLAPPING = 2301,
@@ -192,6 +194,14 @@ export const ErrorData = Object.freeze({
   },
   [ERROR_CODE.BODY_MISSING]: {
     message: 'This method requires a body',
+    httpCode: HttpStatus.BAD_REQUEST,
+  },
+  [ERROR_CODE.PARAM_PAST_DATE]: {
+    message: 'The date provided must be in the future: %',
+    httpCode: HttpStatus.BAD_REQUEST,
+  },
+  [ERROR_CODE.PARAM_MISSING_EITHER]: {
+    message: 'One of these parameters must be provided: %',
     httpCode: HttpStatus.BAD_REQUEST,
   },
   [ERROR_CODE.PARAM_DOES_NOT_MATCH_REGEX]: {

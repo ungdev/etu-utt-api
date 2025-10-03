@@ -30,6 +30,8 @@ const UpdateAssoMemberE2ESpec = e2eSuite('PATCH /assos/:id/members/:id', (app) =
   const mbOtherUser = createAssoMembership(app, { asso, role: assoMembershipRole, user: otherUserInAsso });
   createAssoMembership(app, { asso, role: assoMembershipRole, user: userAllowed, permissions: [permission] });
 
+  const endAt = new Date(Date.now() + 7 * 24 * 3600 * 1000);
+
   it('should return 403 as user is not authenticated', () =>
     pactum
       .spec()
@@ -37,7 +39,7 @@ const UpdateAssoMemberE2ESpec = e2eSuite('PATCH /assos/:id/members/:id', (app) =
       .withBody({
         roleId: assoMembershipRole.id,
         permissions: [permission.id],
-        endAt: new Date(),
+        endAt,
       })
       .expectAppError(ERROR_CODE.NOT_LOGGED_IN));
 
@@ -49,7 +51,7 @@ const UpdateAssoMemberE2ESpec = e2eSuite('PATCH /assos/:id/members/:id', (app) =
       .withBody({
         roleId: assoMembershipRole.id,
         permissions: [permission.id],
-        endAt: new Date(),
+        endAt,
       })
       .expectAppError(ERROR_CODE.PARAM_NOT_UUID, 'assoId'));
 
@@ -61,9 +63,20 @@ const UpdateAssoMemberE2ESpec = e2eSuite('PATCH /assos/:id/members/:id', (app) =
       .withBody({
         roleId: assoMembershipRole.id,
         permissions: [permission.id],
-        endAt: new Date(),
+        endAt,
       })
       .expectAppError(ERROR_CODE.PARAM_NOT_UUID, 'memberId'));
+
+  it('should return a 400 as expiration date is in the past', () =>
+    pactum
+      .spec()
+      .withBearerToken(userAllowed.token)
+      .patch(`/assos/${asso.id}/members/${mb.id}`)
+      .withBody({
+        permissions: [permission.id],
+        endAt: new Date(),
+      })
+      .expectAppError(ERROR_CODE.PARAM_PAST_DATE, 'endAt'));
 
   it('should return a 404 as asso is not found', () =>
     pactum
@@ -73,7 +86,7 @@ const UpdateAssoMemberE2ESpec = e2eSuite('PATCH /assos/:id/members/:id', (app) =
       .withBody({
         roleId: assoMembershipRole.id,
         permissions: [permission.id],
-        endAt: new Date(),
+        endAt,
       })
       .expectAppError(ERROR_CODE.NO_SUCH_ASSO, Dummies.UUID));
 
@@ -85,7 +98,7 @@ const UpdateAssoMemberE2ESpec = e2eSuite('PATCH /assos/:id/members/:id', (app) =
       .withBody({
         roleId: assoMembershipRole.id,
         permissions: [permission.id],
-        endAt: new Date(),
+        endAt,
       })
       .expectAppError(ERROR_CODE.NO_SUCH_ASSO_MEMBERSHIP, Dummies.UUID));
 
@@ -97,7 +110,7 @@ const UpdateAssoMemberE2ESpec = e2eSuite('PATCH /assos/:id/members/:id', (app) =
       .withBody({
         roleId: assoMembershipRole.id,
         permissions: [permission.id],
-        endAt: new Date(),
+        endAt,
       })
       .expectAppError(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, permission.id));
 
@@ -109,7 +122,7 @@ const UpdateAssoMemberE2ESpec = e2eSuite('PATCH /assos/:id/members/:id', (app) =
       .withBody({
         roleId: assoMembershipRole.id,
         permissions: [permission.id],
-        endAt: new Date(),
+        endAt,
       })
       .expectAppError(ERROR_CODE.NO_SUCH_ASSO_MEMBERSHIP, mbAsso2.id));
 
@@ -121,7 +134,7 @@ const UpdateAssoMemberE2ESpec = e2eSuite('PATCH /assos/:id/members/:id', (app) =
       .withBody({
         roleId: Dummies.UUID,
         permissions: [permission.id],
-        endAt: new Date(),
+        endAt,
       })
       .expectAppError(ERROR_CODE.NO_SUCH_ASSO_ROLE, asso.id));
 
@@ -132,7 +145,7 @@ const UpdateAssoMemberE2ESpec = e2eSuite('PATCH /assos/:id/members/:id', (app) =
       .patch(`/assos/${asso.id}/members/${mb.id}`)
       .withBody({
         permissions: [permission.id, otherPermission.id],
-        endAt: new Date(),
+        endAt,
       })
       .expectAppError(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, [permission.id, otherPermission.id].join(', ')));
 
@@ -144,7 +157,7 @@ const UpdateAssoMemberE2ESpec = e2eSuite('PATCH /assos/:id/members/:id', (app) =
       .withBody({
         roleId: assoMembershipRole2.id,
         permissions: [],
-        endAt: new Date(),
+        endAt,
       })
       .expectAppError(ERROR_CODE.USER_ALREADY_ASSO_ROLE_MEMBER, assoMembershipRole2.name));
 
@@ -155,7 +168,7 @@ const UpdateAssoMemberE2ESpec = e2eSuite('PATCH /assos/:id/members/:id', (app) =
       .patch(`/assos/${asso.id}/members/${mb.id}`)
       .withBody({
         permissions: [permission.id],
-        endAt: new Date(),
+        endAt,
       })
       .expectAssoMembership({
         id: JsonLike.ANY_UUID,
@@ -186,7 +199,7 @@ const UpdateAssoMemberE2ESpec = e2eSuite('PATCH /assos/:id/members/:id', (app) =
       .patch(`/assos/${asso.id}/members/${mbOtherUser.id}`)
       .withBody({
         permissions: [permission.id],
-        endAt: new Date(),
+        endAt,
       })
       .expectAssoMembership({
         id: JsonLike.ANY_UUID,
