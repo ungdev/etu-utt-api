@@ -455,7 +455,7 @@ export const createAssoMembership = entityFaker(
             },
           },
           permissions: {
-            connect: dependencies.permissions ?? [],
+            connect: dependencies.permissions,
           },
         },
         include: {

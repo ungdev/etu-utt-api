@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigModule } from '../config/config.module';
 import { PrismaService } from '../prisma/prisma.service';
+import { RawAssoMembershipRole } from '../prisma/types';
 import { Asso } from './interfaces/asso.interface';
 import { AssoMembership, AssoMembershipRole } from './interfaces/membership-role.interface';
 import AssosSearchReqDto from './dto/req/assos-search-req.dto';
@@ -77,7 +78,7 @@ export class AssosService {
     });
   }
 
-  async getAssoMembers(assoId: string) {
+  async getAssoMembers(assoId: string): Promise<AssoMembershipRole[]> {
     return this.prisma.normalize.assoMembershipRole.findMany({
       where: {
         assoId,
@@ -85,32 +86,8 @@ export class AssosService {
     });
   }
 
-  async hasAssoPermission(assoId: string, userId: string, permission: string): Promise<boolean> {
-    return (
-      (await this.prisma.assoMembership.count({
-        where: {
-          assoId,
-          OR: [
-            {
-              permissions: {
-                some: {
-                  id: permission,
-                },
-              },
-            },
-            { role: { isPresident: true } },
-          ],
-          user: {
-            id: userId,
-          },
-          endAt: { gte: new Date() },
-        },
-      })) > 0
-    );
-  }
-
-  async hasAssoPermissions(assoId: string, userId: string, perms: string[]): Promise<boolean> {
-    const permissions = new Set(
+  private async getAssoPermissions(assoId: string, userId: string, ...perms: string[]) {
+    return new Set(
       (
         await this.prisma.assoMembership.findMany({
           where: {
@@ -125,10 +102,23 @@ export class AssosService {
         })
       ).flatMap((m) => m.permissions.map((p) => p.id)),
     );
+  }
+
+  /** Checks whether the user has at least one of the given permissions. Includes asso account check */
+  async hasAssoPermission(asso: Asso, userId: string, ...perms: string[]): Promise<boolean> {
+    if (asso.assoAccountId === userId) return true;
+    const permissions = await this.getAssoPermissions(asso.id, userId, ...perms);
+    return perms.some((p) => permissions.has(p));
+  }
+
+  /** Checks whether the user has all given permissions. Includes asso account check */
+  async hasAssoPermissions(asso: Asso, userId: string, ...perms: string[]): Promise<boolean> {
+    if (asso.assoAccountId === userId) return true;
+    const permissions = await this.getAssoPermissions(asso.id, userId, ...perms);
     return perms.every((p) => permissions.has(p));
   }
 
-  async createAssoRole(assoId: string, roleName: string): Promise<Omit<AssoMembershipRole, 'assoMembership'>> {
+  async createAssoRole(assoId: string, roleName: string): Promise<RawAssoMembershipRole> {
     const lastPosition =
       (
         await this.prisma.assoMembershipRole.findFirst({
@@ -157,13 +147,13 @@ export class AssosService {
       .then((r) => (r ? r.position : 0));
   }
 
-  async getAssoRole(roleId: string, assoId: string): Promise<Omit<AssoMembershipRole, 'assoMembership'>> {
+  async getAssoRole(roleId: string, assoId: string): Promise<RawAssoMembershipRole> {
     return this.prisma.assoMembershipRole.findUnique({
       where: { id: roleId, assoId },
     });
   }
 
-  async deleteAssoRole(roleId: string): Promise<Omit<AssoMembershipRole, 'assoMembership'>> {
+  async deleteAssoRole(roleId: string): Promise<RawAssoMembershipRole> {
     const deletedRole = await this.prisma.assoMembershipRole.delete({
       where: { id: roleId },
     });
@@ -188,40 +178,32 @@ export class AssosService {
     assoId: string,
     newData: Partial<Pick<AssoMembershipRole, 'name' | 'position'>>,
     oldData: Pick<AssoMembershipRole, 'name' | 'position'>,
-  ): Promise<Omit<AssoMembershipRole, 'assoMembership'>[]> {
-    if (newData.position !== oldData.position) {
-      await this.prisma.$transaction([
-        this.prisma.assoMembershipRole.updateMany({
-          where: {
-            position: {
-              gte: Math.min(oldData.position, newData.position),
-              lte: Math.max(oldData.position, newData.position),
-            },
+  ): Promise<RawAssoMembershipRole[]> {
+    await this.prisma.$transaction([
+      this.prisma.assoMembershipRole.updateMany({
+        where: {
+          position: {
+            gte: Math.min(oldData.position, newData.position),
+            lte: Math.max(oldData.position, newData.position),
           },
-          data: {
-            position: {
-              increment: newData.position > oldData.position ? -1 : 1,
-            },
+        },
+        data: {
+          position: {
+            increment: newData.position !== oldData.position ? (newData.position > oldData.position ? -1 : 1) : 0,
           },
-        }),
-        this.prisma.assoMembershipRole.update({
-          where: { id: roleId },
-          data: {
-            position: newData.position,
-            ...(newData.name ? { name: newData.name } : {}),
-          },
-        }),
-      ]);
-    }
-    if (newData.name !== oldData.name)
-      await this.prisma.assoMembershipRole.update({
+        },
+      }),
+      this.prisma.assoMembershipRole.update({
         where: { id: roleId },
         data: {
+          position: newData.position,
           name: newData.name,
         },
-      });
+      }),
+    ]);
     return this.prisma.assoMembershipRole.findMany({
       where: { assoId },
+      orderBy: { position: 'asc' },
     });
   }
 
@@ -241,7 +223,7 @@ export class AssosService {
     );
   }
 
-  async addAssoMemberRole(
+  async addAssoMembership(
     assoId: string,
     userId: string,
     roleId: string,

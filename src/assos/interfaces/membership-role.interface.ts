@@ -7,7 +7,7 @@ const ASSO_MEMBERSHIPROLE_SELECT_FILTER = {
     name: true,
     position: true,
     isPresident: true,
-    assoMembership: {
+    assoMemberships: {
       select: {
         id: true,
         startAt: true,
@@ -28,7 +28,7 @@ const ASSO_MEMBERSHIPROLE_SELECT_FILTER = {
     },
   },
   orderBy: {
-    name: 'asc',
+    position: 'asc',
   },
 } as const satisfies Prisma.AssoMembershipRoleFindManyArgs;
 

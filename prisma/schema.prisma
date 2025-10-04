@@ -85,7 +85,7 @@ model AssoMembership {
 }
 
 model AssoMembershipPermission {
-  id            String @id
+  id String @id
 
   assoMembership AssoMembership[]
 }
@@ -97,8 +97,8 @@ model AssoMembershipRole {
   isPresident Boolean
   assoId      String
 
-  assoMembership AssoMembership[]
-  asso           Asso             @relation(fields: [assoId], references: [id])
+  assoMemberships AssoMembership[]
+  asso            Asso             @relation(fields: [assoId], references: [id])
 }
 
 model AssoMessage {

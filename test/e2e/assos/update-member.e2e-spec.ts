@@ -1,4 +1,4 @@
-import { Dummies, e2eSuite, JsonLike } from '../../utils/test_utils';
+import { Dummies, e2eSuite } from '../../utils/test_utils';
 import {
   createAsso,
   createAssoMembership,
@@ -14,31 +14,48 @@ import { DEFAULT_APPLICATION } from '../../../prisma/seed/utils';
 import { AuthService } from '../../../src/auth/auth.service';
 
 const UpdateAssoMemberE2ESpec = e2eSuite('PATCH /assos/:id/members/:id', (app) => {
-  const user = createUser(app);
+  const userNotAllowed = createUser(app);
   const userAllowed = createUser(app);
   const userInAsso = createUser(app);
   const otherUserInAsso = createUser(app);
   const asso = createAsso(app);
   const asso2 = createAsso(app);
-  const assoMembershipRole = createAssoMembershipRole(app, { asso });
-  const assoMembershipRole2 = createAssoMembershipRole(app, { asso });
-  const permission = createAssoMembershipPermission(app, { id: 'manage_members' });
+  const assoMembershipRoleInAsso = createAssoMembershipRole(app, { asso });
+  const assoMembershipRole2InAsso = createAssoMembershipRole(app, { asso });
+  const manageMembersPermission = createAssoMembershipPermission(app, { id: 'manage_members' });
   const otherPermission = createAssoMembershipPermission(app, { id: 'destroy_etuutt' });
-  const mb = createAssoMembership(app, { asso, role: assoMembershipRole, user: userInAsso });
-  createAssoMembership(app, { asso, role: assoMembershipRole2, user: userInAsso });
-  const mbAsso2 = createAssoMembership(app, { asso: asso2, role: assoMembershipRole, user: userInAsso });
-  const mbOtherUser = createAssoMembership(app, { asso, role: assoMembershipRole, user: otherUserInAsso });
-  createAssoMembership(app, { asso, role: assoMembershipRole, user: userAllowed, permissions: [permission] });
+  const userInAssoMembershipInAsso = createAssoMembership(app, {
+    asso,
+    role: assoMembershipRoleInAsso,
+    user: userInAsso,
+  });
+  createAssoMembership(app, { asso, role: assoMembershipRole2InAsso, user: userInAsso });
+  const userInAssoMembershipInAsso2 = createAssoMembership(app, {
+    asso: asso2,
+    role: assoMembershipRoleInAsso,
+    user: userInAsso,
+  });
+  const otherUserInAssoMembershipInAsso = createAssoMembership(app, {
+    asso,
+    role: assoMembershipRoleInAsso,
+    user: otherUserInAsso,
+  });
+  createAssoMembership(app, {
+    asso,
+    role: assoMembershipRoleInAsso,
+    user: userAllowed,
+    permissions: [manageMembersPermission],
+  });
 
   const endAt = new Date(Date.now() + 7 * 24 * 3600 * 1000);
 
   it('should return 403 as user is not authenticated', () =>
     pactum
       .spec()
-      .patch(`/assos/${asso.id}/members/${mb.id}`)
+      .patch(`/assos/${asso.id}/members/${userInAssoMembershipInAsso.id}`)
       .withBody({
-        roleId: assoMembershipRole.id,
-        permissions: [permission.id],
+        roleId: assoMembershipRoleInAsso.id,
+        permissions: [manageMembersPermission.id],
         endAt,
       })
       .expectAppError(ERROR_CODE.NOT_LOGGED_IN));
@@ -46,11 +63,11 @@ const UpdateAssoMemberE2ESpec = e2eSuite('PATCH /assos/:id/members/:id', (app) =
   it('should return a 400 as the asso id param is not valid', () =>
     pactum
       .spec()
-      .withBearerToken(user.token)
-      .patch(`/assos/thisisnotavaliduuid/members/${mb.id}`)
+      .withBearerToken(userNotAllowed.token)
+      .patch(`/assos/thisisnotavaliduuid/members/${userInAssoMembershipInAsso.id}`)
       .withBody({
-        roleId: assoMembershipRole.id,
-        permissions: [permission.id],
+        roleId: assoMembershipRoleInAsso.id,
+        permissions: [manageMembersPermission.id],
         endAt,
       })
       .expectAppError(ERROR_CODE.PARAM_NOT_UUID, 'assoId'));
@@ -58,11 +75,11 @@ const UpdateAssoMemberE2ESpec = e2eSuite('PATCH /assos/:id/members/:id', (app) =
   it('should return a 400 as the member id param is not valid', () =>
     pactum
       .spec()
-      .withBearerToken(user.token)
+      .withBearerToken(userNotAllowed.token)
       .patch(`/assos/${asso.id}/members/thisisnotavaliduuid`)
       .withBody({
-        roleId: assoMembershipRole.id,
-        permissions: [permission.id],
+        roleId: assoMembershipRoleInAsso.id,
+        permissions: [manageMembersPermission.id],
         endAt,
       })
       .expectAppError(ERROR_CODE.PARAM_NOT_UUID, 'memberId'));
@@ -71,9 +88,9 @@ const UpdateAssoMemberE2ESpec = e2eSuite('PATCH /assos/:id/members/:id', (app) =
     pactum
       .spec()
       .withBearerToken(userAllowed.token)
-      .patch(`/assos/${asso.id}/members/${mb.id}`)
+      .patch(`/assos/${asso.id}/members/${userInAssoMembershipInAsso.id}`)
       .withBody({
-        permissions: [permission.id],
+        permissions: [manageMembersPermission.id],
         endAt: new Date(),
       })
       .expectAppError(ERROR_CODE.PARAM_PAST_DATE, 'endAt'));
@@ -81,11 +98,11 @@ const UpdateAssoMemberE2ESpec = e2eSuite('PATCH /assos/:id/members/:id', (app) =
   it('should return a 404 as asso is not found', () =>
     pactum
       .spec()
-      .withBearerToken(user.token)
-      .patch(`/assos/${Dummies.UUID}/members/${mb.id}`)
+      .withBearerToken(userNotAllowed.token)
+      .patch(`/assos/${Dummies.UUID}/members/${userInAssoMembershipInAsso.id}`)
       .withBody({
-        roleId: assoMembershipRole.id,
-        permissions: [permission.id],
+        roleId: assoMembershipRoleInAsso.id,
+        permissions: [manageMembersPermission.id],
         endAt,
       })
       .expectAppError(ERROR_CODE.NO_SUCH_ASSO, Dummies.UUID));
@@ -93,11 +110,11 @@ const UpdateAssoMemberE2ESpec = e2eSuite('PATCH /assos/:id/members/:id', (app) =
   it('should return a 404 as member is not found', () =>
     pactum
       .spec()
-      .withBearerToken(user.token)
+      .withBearerToken(userNotAllowed.token)
       .patch(`/assos/${asso.id}/members/${Dummies.UUID}`)
       .withBody({
-        roleId: assoMembershipRole.id,
-        permissions: [permission.id],
+        roleId: assoMembershipRoleInAsso.id,
+        permissions: [manageMembersPermission.id],
         endAt,
       })
       .expectAppError(ERROR_CODE.NO_SUCH_ASSO_MEMBERSHIP, Dummies.UUID));
@@ -105,35 +122,35 @@ const UpdateAssoMemberE2ESpec = e2eSuite('PATCH /assos/:id/members/:id', (app) =
   it('should return a 403 as user has no permission', () =>
     pactum
       .spec()
-      .withBearerToken(user.token)
-      .patch(`/assos/${asso.id}/members/${mb.id}`)
+      .withBearerToken(userNotAllowed.token)
+      .patch(`/assos/${asso.id}/members/${userInAssoMembershipInAsso.id}`)
       .withBody({
-        roleId: assoMembershipRole.id,
-        permissions: [permission.id],
+        roleId: assoMembershipRoleInAsso.id,
+        permissions: [manageMembersPermission.id],
         endAt,
       })
-      .expectAppError(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, permission.id));
+      .expectAppError(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, manageMembersPermission.id));
 
   it('should fail as membership is not part of this Asso', () =>
     pactum
       .spec()
       .withBearerToken(userAllowed.token)
-      .patch(`/assos/${asso.id}/members/${mbAsso2.id}`)
+      .patch(`/assos/${asso.id}/members/${userInAssoMembershipInAsso2.id}`)
       .withBody({
-        roleId: assoMembershipRole.id,
-        permissions: [permission.id],
+        roleId: assoMembershipRoleInAsso.id,
+        permissions: [manageMembersPermission.id],
         endAt,
       })
-      .expectAppError(ERROR_CODE.NO_SUCH_ASSO_MEMBERSHIP, mbAsso2.id));
+      .expectAppError(ERROR_CODE.NO_SUCH_ASSO_MEMBERSHIP, userInAssoMembershipInAsso2.id));
 
   it('should return a 404 as role does not exist', () =>
     pactum
       .spec()
       .withBearerToken(userAllowed.token)
-      .patch(`/assos/${asso.id}/members/${mb.id}`)
+      .patch(`/assos/${asso.id}/members/${userInAssoMembershipInAsso.id}`)
       .withBody({
         roleId: Dummies.UUID,
-        permissions: [permission.id],
+        permissions: [manageMembersPermission.id],
         endAt,
       })
       .expectAppError(ERROR_CODE.NO_SUCH_ASSO_ROLE, asso.id));
@@ -142,42 +159,48 @@ const UpdateAssoMemberE2ESpec = e2eSuite('PATCH /assos/:id/members/:id', (app) =
     pactum
       .spec()
       .withBearerToken(userAllowed.token)
-      .patch(`/assos/${asso.id}/members/${mb.id}`)
+      .patch(`/assos/${asso.id}/members/${userInAssoMembershipInAsso.id}`)
       .withBody({
-        permissions: [permission.id, otherPermission.id],
+        permissions: [manageMembersPermission.id, otherPermission.id],
         endAt,
       })
-      .expectAppError(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, [permission.id, otherPermission.id].join(', ')));
+      .expectAppError(
+        ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS,
+        asso.id,
+        [manageMembersPermission.id, otherPermission.id].join(', '),
+      ));
 
   it('should fail as user is already in the AssoRole', () =>
     pactum
       .spec()
       .withBearerToken(userAllowed.token)
-      .patch(`/assos/${asso.id}/members/${mb.id}`)
+      .patch(`/assos/${asso.id}/members/${userInAssoMembershipInAsso.id}`)
       .withBody({
-        roleId: assoMembershipRole2.id,
+        roleId: assoMembershipRole2InAsso.id,
         permissions: [],
         endAt,
       })
-      .expectAppError(ERROR_CODE.USER_ALREADY_ASSO_ROLE_MEMBER, assoMembershipRole2.name));
+      .expectAppError(ERROR_CODE.USER_ALREADY_ASSO_ROLE_MEMBER, assoMembershipRole2InAsso.name));
 
-  it('should update the membership', () =>
-    pactum
+  it('should update the membership', () => {
+    userInAssoMembershipInAsso.endAt = endAt;
+    return pactum
       .spec()
       .withBearerToken(userAllowed.token)
-      .patch(`/assos/${asso.id}/members/${mb.id}`)
+      .patch(`/assos/${asso.id}/members/${userInAssoMembershipInAsso.id}`)
       .withBody({
-        permissions: [permission.id],
+        permissions: [manageMembersPermission.id],
         endAt,
       })
       .expectAssoMembership({
-        id: JsonLike.ANY_UUID,
+        id: userInAssoMembershipInAsso.id,
         assoId: asso.id,
         userId: userInAsso.id,
-        roleId: assoMembershipRole.id,
-        startAt: JsonLike.ANY_DATE,
-        endAt: JsonLike.ANY_DATE,
-      }));
+        roleId: assoMembershipRoleInAsso.id,
+        startAt: userInAssoMembershipInAsso.startAt.toISOString(),
+        endAt: userInAssoMembershipInAsso.endAt.toISOString(),
+      });
+  });
 
   it('should update the membership with asso account', async () => {
     const assoUser = await app()
@@ -193,21 +216,22 @@ const UpdateAssoMemberE2ESpec = e2eSuite('PATCH /assos/:id/members/:id', (app) =
         },
       });
     const token = await app().get(AuthService).signAuthenticationToken(apiKey.token);
+    otherUserInAssoMembershipInAsso.endAt = endAt;
     return pactum
       .spec()
       .withBearerToken(token)
-      .patch(`/assos/${asso.id}/members/${mbOtherUser.id}`)
+      .patch(`/assos/${asso.id}/members/${otherUserInAssoMembershipInAsso.id}`)
       .withBody({
-        permissions: [permission.id],
+        permissions: [manageMembersPermission.id],
         endAt,
       })
       .expectAssoMembership({
-        id: JsonLike.ANY_UUID,
+        id: otherUserInAssoMembershipInAsso.id,
         assoId: asso.id,
         userId: otherUserInAsso.id,
-        roleId: assoMembershipRole.id,
-        startAt: JsonLike.ANY_DATE,
-        endAt: JsonLike.ANY_DATE,
+        roleId: assoMembershipRoleInAsso.id,
+        startAt: otherUserInAssoMembershipInAsso.startAt.toISOString(),
+        endAt: otherUserInAssoMembershipInAsso.endAt.toISOString(),
       });
   });
 });

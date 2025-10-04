@@ -6,15 +6,15 @@ export const ParamMember = (paramName = 'memberId') =>
   Param(
     paramName,
     new ParseUUIDPipe({ exceptionFactory: () => new AppException(ERROR_CODE.PARAM_NOT_UUID, paramName) }),
-    ParseAssoPipe,
+    ParseAssoMemberPipe,
   );
 
 @Injectable()
-class ParseAssoPipe implements PipeTransform<string> {
+class ParseAssoMemberPipe implements PipeTransform<string> {
   constructor(private readonly assosService: AssosService) {}
   async transform(value: string) {
-    const asso = await this.assosService.getMembership(value.toUpperCase());
-    if (!asso) throw new AppException(ERROR_CODE.NO_SUCH_ASSO_MEMBERSHIP, value);
-    return asso;
+    const membership = await this.assosService.getMembership(value.toUpperCase());
+    if (!membership) throw new AppException(ERROR_CODE.NO_SUCH_ASSO_MEMBERSHIP, value);
+    return membership;
   }
 }

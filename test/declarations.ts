@@ -288,7 +288,7 @@ Spec.prototype.expectAssoMembershipRolesWithMembers = function (
       members: users[i].map((user) => ({
         ...pick(user, 'firstName', 'lastName'),
         id: JsonLike.ANY_UUID,
-        userid: user.id,
+        userId: user.id,
         startAt: JsonLike.ANY_DATE,
         endAt: JsonLike.ANY_DATE,
       })),

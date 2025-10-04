@@ -97,6 +97,9 @@ const UpdateAssoRoleE2ESpec = e2eSuite('PUT /assos/:id/roles/:id', (app) => {
     const presRole = await app()
       .get(PrismaService)
       .assoMembershipRole.findFirstOrThrow({ where: { assoId: asso.id, isPresident: true } });
+    assoMembershipRole.position = 0;
+    assoMembershipRole.name = 'Updated';
+    presRole.position = 1;
     return pactum
       .spec()
       .withBearerToken(userAllowed.token)
@@ -105,16 +108,7 @@ const UpdateAssoRoleE2ESpec = e2eSuite('PUT /assos/:id/roles/:id', (app) => {
         name: 'Updated',
         position: 0,
       })
-      .expectAssoMembershipRoles([
-        {
-          id: assoMembershipRole.id,
-          isPresident: false,
-          name: 'Updated',
-          position: 0,
-          assoId: asso.id,
-        },
-        { ...presRole, position: 1 },
-      ]);
+      .expectAssoMembershipRoles([assoMembershipRole, presRole]);
   });
 
   it('should update the role with asso account', async () => {
@@ -134,6 +128,9 @@ const UpdateAssoRoleE2ESpec = e2eSuite('PUT /assos/:id/roles/:id', (app) => {
         },
       });
     const token = await app().get(AuthService).signAuthenticationToken(apiKey.token);
+    assoMembershipRole.position = 1;
+    assoMembershipRole.name = 'Reverted';
+    presRole.position = 0;
     return pactum
       .spec()
       .withBearerToken(token)
@@ -142,16 +139,7 @@ const UpdateAssoRoleE2ESpec = e2eSuite('PUT /assos/:id/roles/:id', (app) => {
         name: 'Reverted',
         position: 1,
       })
-      .expectAssoMembershipRoles([
-        { ...presRole, position: 0 },
-        {
-          id: assoMembershipRole.id,
-          isPresident: false,
-          name: 'Reverted',
-          position: 1,
-          assoId: asso.id,
-        },
-      ]);
+      .expectAssoMembershipRoles([presRole, assoMembershipRole]);
   });
 });
 

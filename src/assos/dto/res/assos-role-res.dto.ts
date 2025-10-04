@@ -1,6 +1,6 @@
-import UserMicroResDto from 'src/users/dto/res/user-micro-res.dto';
+import UserMicroResDto from '../../../users/dto/res/user-micro-res.dto';
 
-export default class AssoRoleResDto {
+export default class AssoRoleOverviewResDto {
   id: string;
   name: string;
   position: number;
@@ -8,9 +8,20 @@ export default class AssoRoleResDto {
 }
 
 export class AssoRoleListResDto {
-  roles: AssoRoleResDto[];
+  roles: AssoRoleOverviewResDto[];
 }
 
-export class AssoRoleListWithMembersResDto {
-  roles: (AssoRoleResDto & { members: (UserMicroResDto & { userid: string; startAt: Date; endAt: Date })[] })[];
+class AssoRoleMember extends UserMicroResDto {
+  userId: string;
+  startAt: Date;
+  endAt: Date;
+  permissions: string[];
+}
+
+export class AssoRole extends AssoRoleOverviewResDto {
+  members: AssoRoleMember[];
+}
+
+export class AssoRoleResDto {
+  roles: AssoRole[];
 }
