@@ -180,15 +180,17 @@ export class AssosService {
     newData: Partial<Pick<AssoMembershipRole, 'name' | 'position'>>,
   ): Promise<RawAssoMembershipRole[]> {
     // This poll must be performed the closest possible to the transaction
-    const { position } = await this.prisma.assoMembershipRole.findFirst({
-      where: { id: roleId, assoId },
-      select: { position: true },
-    });
+    const [{ position }] = await this.prisma.$transaction([
+      this.prisma.assoMembershipRole.findFirst({
+        where: { id: roleId, assoId },
+        select: { position: true },
+      }),
+      this.prisma.assoMembershipRole.update({
+        where: { id: roleId },
+        data: { position: -1 },
+      }),
+    ]);
     if (position < 0) throw new AppException(ERROR_CODE.ASSO_ROLE_ALREADY_MOVED);
-    await this.prisma.assoMembershipRole.update({
-      where: { id: roleId },
-      data: { position: -1 },
-    });
     try {
       await this.prisma.$transaction([
         this.prisma.assoMembershipRole.updateMany({
