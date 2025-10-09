@@ -86,6 +86,7 @@ export const enum ERROR_CODE {
   ANNAL_ALREADY_UPLOADED = 4901,
   RESOURCE_UNAVAILABLE = 4902,
   RESOURCE_INVALID_TYPE = 4903,
+  ASSO_ROLE_ALREADY_MOVED = 4904,
   CREDENTIALS_ALREADY_TAKEN = 5001,
   HIDDEN_DUCK = 9999,
 }
@@ -390,6 +391,10 @@ export const ErrorData = Object.freeze({
   },
   [ERROR_CODE.CREDENTIALS_ALREADY_TAKEN]: {
     message: 'The given credentials are already taken',
+    httpCode: HttpStatus.CONFLICT,
+  },
+  [ERROR_CODE.ASSO_ROLE_ALREADY_MOVED]: {
+    message: 'You should not try to update role position simultaneously',
     httpCode: HttpStatus.CONFLICT,
   },
   [ERROR_CODE.HIDDEN_DUCK]: {

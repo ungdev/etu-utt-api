@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { Body, Controller, Delete, Get, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiAppErrorResponse, paginatedResponseDto } from '../app.dto';
@@ -211,13 +212,19 @@ export class AssosController {
     if (!role) throw new AppException(ERROR_CODE.NO_SUCH_ASSO_ROLE, asso.id);
     if (body.position > (await this.assosService.getRoleRange(asso.id)))
       throw new AppException(ERROR_CODE.PARAM_TOO_HIGH, 'position');
-    const updatedRoles = await this.assosService.updateAssoRole(
-      role.id,
-      asso.id,
-      pick(body, 'name', 'position'),
-      pick(role, 'name', 'position'),
-    );
-    return { roles: updatedRoles.map(this.formatPartialAssoMembershipRole) };
+    try {
+      const updatedRoles = await this.assosService.updateAssoRole(role.id, asso.id, pick(body, 'name', 'position'));
+      return { roles: updatedRoles.map(this.formatPartialAssoMembershipRole) };
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === 'P2002' &&
+        e.meta.target === 'AssoMembershipRole_assoId_position_key'
+      ) {
+        throw new AppException(ERROR_CODE.ASSO_ROLE_ALREADY_MOVED);
+      }
+      throw e;
+    }
   }
 
   formatAssoOverview(asso: Asso): AssoOverviewResDto {

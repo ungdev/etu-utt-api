@@ -99,6 +99,8 @@ model AssoMembershipRole {
 
   assoMemberships AssoMembership[]
   asso            Asso             @relation(fields: [assoId], references: [id])
+
+  @@unique([assoId, position])
 }
 
 model AssoMessage {
