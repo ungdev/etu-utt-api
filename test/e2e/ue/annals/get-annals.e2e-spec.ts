@@ -83,7 +83,11 @@ const GetAnnal = e2eSuite('GET /ue/annals', (app) => {
       .withQueryParams({
         ueCode: ue.code,
       })
-      .expectUeAnnals([annal_not_validated, annal_validated, annal_not_uploaded].map(formatAnnalFile));
+      .expectUeAnnals(
+        [annal_not_validated, annal_validated, annal_not_uploaded]
+          .mappedSort((annal) => [annal.createdAt.getTime(), annal.id])
+          .map(formatAnnalFile),
+      );
     await pactum
       .spec()
       .withBearerToken(nonUeUser.token)
@@ -99,7 +103,11 @@ const GetAnnal = e2eSuite('GET /ue/annals', (app) => {
       .withQueryParams({
         ueCode: ue.code,
       })
-      .expectUeAnnals([annal_not_validated, annal_validated, annal_not_uploaded, annal_deleted].map(formatAnnalFile));
+      .expectUeAnnals(
+        [annal_not_validated, annal_deleted, annal_not_uploaded, annal_validated]
+          .mappedSort((annal) => [annal.createdAt.getTime(), annal.id])
+          .map(formatAnnalFile),
+      );
   });
 
   const formatAnnalFile = (from: Partial<UeAnnalFile>): JsonLikeVariant<UeAnnalFile> => {
