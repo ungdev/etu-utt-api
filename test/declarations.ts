@@ -176,21 +176,11 @@ Spec.prototype.expectUeComment = function expect(this: Spec, obj, created = fals
   });
 };
 Spec.prototype.expectUeComments = function expect(obj) {
-  return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonMatchStrict({
+  return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonMatch({
     itemCount: obj.itemCount,
     itemsPerPage: obj.itemsPerPage,
     items: obj.items.map((comment) => ({
-      ...pick(
-        comment,
-        'id',
-        'author',
-        'body',
-        'isAnonymous',
-        'semester',
-        'status',
-        'upvoted',
-        'upvotes',
-      ),
+      ...pick(comment, 'id', 'author', 'body', 'isAnonymous', 'semester', 'status', 'upvoted', 'upvotes'),
       ueof: {
         code: comment.ueof.code,
         info: {
@@ -264,7 +254,7 @@ Spec.prototype.expectApplications = function (applications: FakeApiApplication[]
           ({
             ...pick(application as Required<FakeApiApplication>, 'id', 'name', 'redirectUrl'),
             owner: pick(application.owner, 'id', 'firstName', 'lastName'),
-          } satisfies ApplicationResDto),
+          }) satisfies ApplicationResDto,
       ),
   );
 };

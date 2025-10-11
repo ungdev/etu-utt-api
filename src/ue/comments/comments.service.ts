@@ -26,7 +26,7 @@ export class CommentsService {
   async getComments(
     userId: string,
     dto: GetUeCommentsReqDto,
-    bypassRestrictedData: boolean,
+    bypassRestrictedData:boolean,
   ): Promise<Pagination<UeComment>> {
     // We fetch a page of comments matching our filters and retrieve the total count of comments matching our filters
     const comments = await this.prisma.normalize.ueComment.findMany({

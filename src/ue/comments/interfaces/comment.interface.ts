@@ -113,13 +113,15 @@ export function generateCustomCommentModel(prisma: PrismaClient) {
         // CREATE operation → skip where filters
         return query;
       }
-      if (query.where == null && !(args.includeDeleted && args.includeHiddenComments)) {
+      const includeDeleted = !!args.includeDeleted;
+      const includeHiddenComments = !!args.includeHiddenComments;
+      if (query.where == null && !(includeDeleted && includeHiddenComments)) {
         Object.assign(query, { ...query, where: {} });
       }
-      if (!args.includeDeleted) {
+      if (!includeDeleted) {
         Object.assign(query.where, { ...query.where, deletedAt: null, answers: { every: { deletedAt: null } } });
       }
-      if (!args.includeHiddenComments) {
+      if (!includeHiddenComments) {
         Object.assign(query.where, { ...query.where, reports: { none: { mitigated: false } } });
       }
       return query;
@@ -128,17 +130,24 @@ export function generateCustomCommentModel(prisma: PrismaClient) {
 }
 
 export function formatComment(prisma: PrismaClient, comment: UnformattedUEComment, args: UEExtraArgs): UeComment {
+  const bypassAnonymousData = !!args.bypassAnonymousData;
+  const includeReports = !!args.includeReports;
   return {
     ...omit(comment, 'deletedAt'),
-    author: args.bypassAnonymousData || args.userId == comment.author.id ? comment.author : null,
-    answers: comment.answers.map((answer) => formatReply(prisma, answer)),
+    author:
+      !comment.isAnonymous || bypassAnonymousData || args.userId == comment.author.id ? comment.author : null,
+    answers: comment.answers.map((answer) => {
+      let anwser = formatReply(prisma, answer);
+      if(!includeReports) anwser.reports = null;
+      return anwser;
+    }),
     status:
       (comment.reports.some((r) => !r.mitigated) && CommentStatus.HIDDEN) |
       (comment.deletedAt && CommentStatus.DELETED),
     upvotes: comment.upvotes.length,
     upvoted: comment.upvotes.some((upvote) => upvote.userId == args.userId),
     semester: comment.semester.code,
-    reports: args.includeReports ? comment.reports : null,
+    reports: includeReports ? comment.reports : null,
   };
 }
 
