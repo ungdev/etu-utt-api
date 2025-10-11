@@ -128,7 +128,7 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/:commentId', (app) => {
         answers: [],
         upvotes: 1,
         upvoted: false,
-        status: CommentStatus.UNVERIFIED,
+        status: CommentStatus.ACTIVE,
       });
     await app().get(PrismaService).ueComment.deleteMany();
     await createComment(app, { ueof, user, semester }, comment, true);
@@ -159,7 +159,7 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/:commentId', (app) => {
         answers: [],
         upvotes: 1,
         upvoted: false,
-        status: CommentStatus.VALIDATED,
+        status: CommentStatus.ACTIVE,
       });
     await app().get(PrismaService).ueComment.deleteMany();
     await createComment(app, { ueof, user, semester }, comment, true);

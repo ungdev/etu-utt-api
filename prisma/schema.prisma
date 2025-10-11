@@ -340,18 +340,16 @@ model UeAnnalReportReason {
 }
 
 model UeComment {
-  id                String    @id @default(uuid())
-  body              String    @db.Text
-  isAnonymous       Boolean
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @default(now())
+  id          String    @id @default(uuid())
+  body        String    @db.Text
+  isAnonymous Boolean
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now())
   // Removed @updatedAt because the property is used to display the last datetime the content of the comment was altered on
-  deletedAt         DateTime?
-  validatedAt       DateTime?
-  authorId          String?
-  lastValidatedBody String?
-  semesterId        String
-  ueofCode          String
+  deletedAt   DateTime?
+  authorId    String?
+  semesterId  String
+  ueofCode    String
 
   author   User?             @relation(fields: [authorId], references: [id], onDelete: SetNull)
   semester Semester          @relation(fields: [semesterId], references: [code])
@@ -377,13 +375,14 @@ model UeCommentReply {
 }
 
 model UeCommentReport {
-  id        String   @id @default(uuid())
-  body      String   @db.Text
-  createdAt DateTime @default(now())
-  mitigated Boolean  @default(false)
-  commentId String
-  reasonId  String
-  userId    String
+  id           String   @id @default(uuid())
+  body         String   @db.Text
+  createdAt    DateTime @default(now())
+  mitigated    Boolean  @default(false)
+  commentId    String
+  reasonId     String
+  userId       String
+  reportedBody String
 
   comment UeComment             @relation(fields: [commentId], references: [id], onDelete: Cascade)
   reason  UeCommentReportReason @relation(fields: [reasonId], references: [name], onDelete: Cascade)
@@ -393,16 +392,17 @@ model UeCommentReport {
 }
 
 model UeCommentReplyReport {
-  id        String   @id @default(uuid())
-  body      String   @db.Text
-  createdAt DateTime @default(now())
-  mitigated Boolean  @default(false)
-  reasonId  String
-  replyId   String
-  userId    String
+  id           String   @id @default(uuid())
+  body         String   @db.Text
+  createdAt    DateTime @default(now())
+  mitigated    Boolean  @default(false)
+  replyId      String
+  reasonId     String
+  userId       String
+  reportedBody String
 
-  reason UeCommentReportReason @relation(fields: [reasonId], references: [name], onDelete: Cascade)
   reply  UeCommentReply        @relation(fields: [replyId], references: [id], onDelete: Cascade)
+  reason UeCommentReportReason @relation(fields: [reasonId], references: [name], onDelete: Cascade)
   user   User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, replyId, reasonId]) // Prevent from spam
@@ -433,7 +433,7 @@ model UeCourse {
   createdAt   DateTime   @default(now())
   semesterId  String
   timetableId String     @unique()
-  ueofCode   String
+  ueofCode    String
 
   courseExchangesFrom UeCourseExchange[] @relation(name: "courseFrom")
   courseExchangesTo   UeCourseExchange[] @relation(name: "courseTo")

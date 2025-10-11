@@ -12,7 +12,7 @@ import {
 } from '../../../utils/fakedb';
 import { e2eSuite } from '../../../utils/test_utils';
 import { ERROR_CODE } from '../../../../src/exceptions';
-import { UeAnnalFile } from '../../../../src/ue/annals/interfaces/annal.interface';
+import { AnnalStatus, UeAnnalFile } from '../../../../src/ue/annals/interfaces/annal.interface';
 import { JsonLikeVariant } from 'test/declarations';
 import { pick } from '../../../../src/utils';
 import { CommentStatus } from '../../../../src/ue/comments/interfaces/comment.interface';
@@ -36,18 +36,18 @@ const GetAnnal = e2eSuite('GET /ue/annals', (app) => {
   const annal_not_validated = createAnnal(
     app,
     { semester, sender: senderUser, type: annalType, ueof },
-    { status: CommentStatus.UNVERIFIED },
+    { status: AnnalStatus.UNVERIFIED },
   );
   const annal_validated = createAnnal(app, { semester, sender: senderUser, type: annalType, ueof });
   const annal_not_uploaded = createAnnal(
     app,
     { semester, sender: senderUser, type: annalType, ueof },
-    { status: CommentStatus.UNVERIFIED | CommentStatus.PROCESSING },
+    { status: AnnalStatus.UNVERIFIED | AnnalStatus.PROCESSING },
   );
   const annal_deleted = createAnnal(
     app,
     { semester, sender: senderUser, type: annalType, ueof },
-    { status: CommentStatus.DELETED | CommentStatus.VALIDATED },
+    { status: AnnalStatus.DELETED | AnnalStatus.VALIDATED },
   );
 
   it('should return a 401 as user is not authenticated', () => {

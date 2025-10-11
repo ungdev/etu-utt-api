@@ -105,7 +105,7 @@ export class CommentsController {
     @GetPermissions() permissions: PermissionManager,
   ): Promise<UeCommentResDto> {
     const isCommentModerator = permissions.can(Permission.API_MODERATE_COMMENTS);
-    if (!(await this.commentsService.doesCommentExist(commentId, user.id, isCommentModerator, isCommentModerator)))
+    if (!(await this.commentsService.doesCommentExist(commentId, user.id, isCommentModerator)))
       throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
     if (isCommentModerator || (await this.commentsService.isUserCommentAuthor(user.id, commentId)))
       return this.commentsService.updateComment(body, commentId, user.id, isCommentModerator);
@@ -155,7 +155,7 @@ export class CommentsController {
     @GetPermissions() permissions: PermissionManager,
   ): Promise<UeCommentUpvoteResDto$True> {
     const commentModerator = permissions.can(Permission.API_MODERATE_COMMENTS);
-    if (!(await this.commentsService.doesCommentExist(commentId, user.id, commentModerator, commentModerator)))
+    if (!(await this.commentsService.doesCommentExist(commentId, user.id, commentModerator)))
       throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
     if (await this.commentsService.isUserCommentAuthor(user.id, commentId))
       throw new AppException(ERROR_CODE.IS_COMMENT_AUTHOR);
@@ -181,7 +181,7 @@ export class CommentsController {
     @GetPermissions() permissions: PermissionManager,
   ): Promise<UeCommentUpvoteResDto$False> {
     const commentModerator = permissions.can(Permission.API_MODERATE_COMMENTS);
-    if (!(await this.commentsService.doesCommentExist(commentId, user.id, commentModerator, commentModerator)))
+    if (!(await this.commentsService.doesCommentExist(commentId, user.id, commentModerator)))
       throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
     // TODO : on est d'accord qu'on peut virer cette condition ? Puisque de toutes manières l'utilisateur ne peut pas mettre un upvote.
     if (await this.commentsService.isUserCommentAuthor(user.id, commentId))
@@ -204,7 +204,7 @@ export class CommentsController {
     @GetPermissions() permissions: PermissionManager,
   ): Promise<UeCommentReplyResDto> {
     const isCommentModerator = permissions.can(Permission.API_MODERATE_COMMENTS);
-    if (!(await this.commentsService.doesCommentExist(commentId, user.id, isCommentModerator, isCommentModerator)))
+    if (!(await this.commentsService.doesCommentExist(commentId, user.id, isCommentModerator)))
       throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
     return this.commentsService.replyComment(user.id, commentId, body);
   }

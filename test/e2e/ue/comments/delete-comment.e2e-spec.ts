@@ -82,14 +82,13 @@ const DeleteComment = e2eSuite('DELETE /ue/comments/:commentId', (app) => {
         answers: [],
         upvotes: 1,
         upvoted: true,
-        status: CommentStatus.DELETED | CommentStatus.VALIDATED,
+        status: CommentStatus.DELETED,
       });
     await app()
       .get(PrismaService)
       .normalize.ueComment.delete({
         args: {
-          includeDeletedReplied: false,
-          includeLastValidatedBody: false,
+          includeDeleted: true,
           userId: user.id,
         },
         where: { id: comment1.id },

@@ -3,7 +3,7 @@ import { Prisma, PrismaClient } from '@prisma/client';
 import { omit } from '../../../utils';
 import { generateCustomModel } from '../../../prisma/prisma.service';
 
-const REPLY_SELECT_FILTER = {
+export const REPLY_SELECT_FILTER = {
   select: {
     id: true,
     author: {
@@ -17,6 +17,26 @@ const REPLY_SELECT_FILTER = {
     createdAt: true,
     updatedAt: true,
     deletedAt: true,
+    reports: {
+      select: {
+        body: true,
+        mitigated: true,
+        createdAt: true,
+        reason: {
+          select: {
+            name: true,
+          },
+        },
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            studentId: true,
+          },
+        },
+      },
+    },
   },
 } as const;
 
@@ -35,6 +55,6 @@ export function generateCustomUeCommentReplyModel(prisma: PrismaClient) {
 export function formatReply(_: PrismaClient, reply: UnformattedUeCommentReply): UeCommentReply {
   return {
     ...omit(reply, 'deletedAt'),
-    status: (reply.deletedAt && CommentStatus.DELETED) | CommentStatus.VALIDATED,
+    status: (reply.reports.some((r)=> !r.mitigated) && CommentStatus.HIDDEN) | (reply.deletedAt && CommentStatus.DELETED),
   };
 }

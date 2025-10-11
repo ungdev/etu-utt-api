@@ -316,7 +316,6 @@ const prisma = _prisma.$extends({
                 isAnonymous: true,
                 createdAt,
                 updatedAt,
-                validatedAt: isValid ? updatedAt : null,
                 ueof: { connect: { code: codes.ueof } },
                 semester: { connect: { code: semesterCode } },
               },
@@ -326,13 +325,12 @@ const prisma = _prisma.$extends({
         }
         if (
           comment.body !== body ||
-          comment.updatedAt !== updatedAt ||
-          (comment.validatedAt === null ? 0 : 1) !== isValid
+          comment.updatedAt !== updatedAt
         ) {
           return {
             data: await _prisma.ueComment.update({
               where: { id: comment.id },
-              data: { body, updatedAt, validatedAt: isValid ? updatedAt : null },
+              data: { body, updatedAt},
             }),
             operation: 'updated',
           };

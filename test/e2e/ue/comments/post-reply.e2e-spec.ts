@@ -119,7 +119,7 @@ const PostCommmentReply = e2eSuite('POST /ue/comments/{commentId}/reply', (app) 
           body: 'heyhey',
           createdAt: JsonLike.ANY_DATE,
           updatedAt: JsonLike.ANY_DATE,
-          status: CommentStatus.VALIDATED,
+          status: CommentStatus.ACTIVE,
         },
         true,
       );

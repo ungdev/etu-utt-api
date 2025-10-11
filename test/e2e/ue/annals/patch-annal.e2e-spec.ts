@@ -12,8 +12,8 @@ import {
 } from '../../../utils/fakedb';
 import { Dummies, JsonLike, e2eSuite } from '../../../utils/test_utils';
 import { ERROR_CODE } from '../../../../src/exceptions';
-import { CommentStatus } from 'src/ue/comments/interfaces/comment.interface';
 import { pick } from '../../../../src/utils';
+import { AnnalStatus } from 'src/ue/annals/interfaces/annal.interface';
 
 const EditAnnal = e2eSuite('PATCH /ue/annals/{annalId}', (app) => {
   const senderUser = createUser(app, { permissions: ['API_UPLOAD_ANNALS'] });
@@ -30,12 +30,12 @@ const EditAnnal = e2eSuite('PATCH /ue/annals/{annalId}', (app) => {
   const annal_not_uploaded = createAnnal(
     app,
     { semester, sender: senderUser, type: annalType, ueof },
-    { status: CommentStatus.PROCESSING | CommentStatus.UNVERIFIED },
+    { status: AnnalStatus.PROCESSING | AnnalStatus.UNVERIFIED },
   );
   const annal_deleted = createAnnal(
     app,
     { semester, sender: senderUser, type: annalType, ueof },
-    { status: CommentStatus.VALIDATED | CommentStatus.DELETED },
+    { status: AnnalStatus.VALIDATED | AnnalStatus.DELETED },
   );
 
   const xx_analType_xx = createAnnalType(app, {});
@@ -102,7 +102,7 @@ const EditAnnal = e2eSuite('PATCH /ue/annals/{annalId}', (app) => {
       .expectUeAnnal({
         semesterId: xx_semester_xx.code,
         type: xx_analType_xx,
-        status: CommentStatus.VALIDATED,
+        status: AnnalStatus.VALIDATED,
         sender: pick(senderUser, 'id', 'firstName', 'lastName'),
         id: annal_validated.id,
         createdAt: annal_validated.createdAt.toISOString(),
