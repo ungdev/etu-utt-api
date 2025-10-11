@@ -15,6 +15,7 @@ import { ERROR_CODE } from '../../../../src/exceptions';
 import { CommentStatus } from 'src/ue/comments/interfaces/comment.interface';
 import { pick } from '../../../../src/utils';
 import { PrismaService } from '../../../../src/prisma/prisma.service';
+import { AnnalStatus } from 'src/ue/annals/interfaces/annal.interface';
 
 const DeleteAnnal = e2eSuite('DELETE /ue/annals/{annalId}', (app) => {
   const senderUser = createUser(app, { permissions: ['API_UPLOAD_ANNALS'] });
@@ -64,7 +65,7 @@ const DeleteAnnal = e2eSuite('DELETE /ue/annals/{annalId}', (app) => {
       .expectUeAnnal({
         ...pick(annal_validated, 'id', 'semesterId'),
         type: annalType,
-        status: CommentStatus.DELETED | CommentStatus.VALIDATED,
+        status: AnnalStatus.DELETED | AnnalStatus.VALIDATED,
         sender: pick(senderUser, 'id', 'firstName', 'lastName'),
         createdAt: annal_validated.createdAt.toISOString(),
         updatedAt: JsonLike.ANY_DATE,

@@ -63,8 +63,6 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
           'semesterId',
           'authorId',
           'deletedAt',
-          'validatedAt',
-          'lastValidatedBody',
         ) as Required<FakeComment>),
         answers: [
           {
@@ -97,8 +95,6 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
           'semesterId',
           'authorId',
           'deletedAt',
-          'validatedAt',
-          'lastValidatedBody',
         ) as Required<FakeComment>),
         answers: [
           {

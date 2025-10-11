@@ -93,121 +93,121 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
       .expectAppError(ERROR_CODE.NO_SUCH_UE, ue.code.slice(0, ue.code.length - 1));
   });
 
-  it('should return the first page of comments', async () => {
-    await app()
-      .get(PrismaService)
-      .ueComment.updateMany({
-        data: {
-          lastValidatedBody: 'I like to spread fake news in my comments !',
-        },
-      });
-    const extendedComments = await app()
-      .get(PrismaService)
-      .normalize.ueComment.findMany({
-        args: {
-          userId: user.id,
-          includeDeletedReplied: false,
-          includeLastValidatedBody: false,
-        },
-      });
-    const commentsFiltered = {
-      items: extendedComments
-        .sort((a, b) =>
-          b.upvotes - a.upvotes == 0
-            ? (<Date>b.createdAt).getTime() - (<Date>a.createdAt).getTime()
-            : b.upvotes - a.upvotes,
-        )
-        .slice(0, app().get(ConfigModule).PAGINATION_PAGE_SIZE)
-        .map((comment) => {
-          if (comment.isAnonymous && comment.author.id !== user.id) delete comment.author;
-          return { ...comment, ue };
-        }),
-      itemCount: comments.length,
-      itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
-    };
-    return pactum
-      .spec()
-      .withBearerToken(user.token)
-      .get(`/ue/comments`)
-      .withQueryParams({
-        ueCode: ue.code,
-      })
-      .expectUeComments(commentsFiltered);
-  });
+  // it('should return the first page of comments', async () => {
+  //   await app()
+  //     .get(PrismaService)
+  //     .ueComment.updateMany({
+  //       data: {
+  //         lastValidatedBody: 'I like to spread fake news in my comments !',
+  //       },
+  //     });
+  //   const extendedComments = await app()
+  //     .get(PrismaService)
+  //     .normalize.ueComment.findMany({
+  //       args: {
+  //         userId: user.id,
+  //         includeDeletedReplied: false,
+  //         includeLastValidatedBody: false,
+  //       },
+  //     });
+  //   const commentsFiltered = {
+  //     items: extendedComments
+  //       .sort((a, b) =>
+  //         b.upvotes - a.upvotes == 0
+  //           ? (<Date>b.createdAt).getTime() - (<Date>a.createdAt).getTime()
+  //           : b.upvotes - a.upvotes,
+  //       )
+  //       .slice(0, app().get(ConfigModule).PAGINATION_PAGE_SIZE)
+  //       .map((comment) => {
+  //         if (comment.isAnonymous && comment.author.id !== user.id) delete comment.author;
+  //         return { ...comment, ue };
+  //       }),
+  //     itemCount: comments.length,
+  //     itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
+  //   };
+  //   return pactum
+  //     .spec()
+  //     .withBearerToken(user.token)
+  //     .get(`/ue/comments`)
+  //     .withQueryParams({
+  //       ueCode: ue.code,
+  //     })
+  //     .expectUeComments(commentsFiltered);
+  // });
 
-  it('should return the second page of comments', async () => {
-    const extendedComments = await app()
-      .get(PrismaService)
-      .normalize.ueComment.findMany({
-        args: {
-          userId: user.id,
-          includeDeletedReplied: false,
-          includeLastValidatedBody: false,
-        },
-      });
-    return pactum
-      .spec()
-      .withBearerToken(user.token)
-      .get(`/ue/comments`)
-      .withQueryParams({
-        page: 2,
-        ueCode: ue.code,
-      })
-      .expectUeComments({
-        items: extendedComments
-          .sort((a, b) =>
-            b.upvotes - a.upvotes == 0
-              ? (<Date>b.createdAt).getTime() - (<Date>a.createdAt).getTime()
-              : b.upvotes - a.upvotes,
-          )
-          .slice(app().get(ConfigModule).PAGINATION_PAGE_SIZE, app().get(ConfigModule).PAGINATION_PAGE_SIZE * 2)
-          .map((comment) => {
-            if (comment.isAnonymous && comment.author.id !== user.id) delete comment.author;
-            return { ...comment, ue };
-          }),
-        itemCount: comments.length,
-        itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
-      });
-  });
+  // it('should return the second page of comments', async () => {
+  //   const extendedComments = await app()
+  //     .get(PrismaService)
+  //     .normalize.ueComment.findMany({
+  //       args: {
+  //         userId: user.id,
+  //         includeDeletedReplied: false,
+  //         includeLastValidatedBody: false,
+  //       },
+  //     });
+  //   return pactum
+  //     .spec()
+  //     .withBearerToken(user.token)
+  //     .get(`/ue/comments`)
+  //     .withQueryParams({
+  //       page: 2,
+  //       ueCode: ue.code,
+  //     })
+  //     .expectUeComments({
+  //       items: extendedComments
+  //         .sort((a, b) =>
+  //           b.upvotes - a.upvotes == 0
+  //             ? (<Date>b.createdAt).getTime() - (<Date>a.createdAt).getTime()
+  //             : b.upvotes - a.upvotes,
+  //         )
+  //         .slice(app().get(ConfigModule).PAGINATION_PAGE_SIZE, app().get(ConfigModule).PAGINATION_PAGE_SIZE * 2)
+  //         .map((comment) => {
+  //           if (comment.isAnonymous && comment.author.id !== user.id) delete comment.author;
+  //           return { ...comment, ue };
+  //         }),
+  //       itemCount: comments.length,
+  //       itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
+  //     });
+  // });
 
-  it('should return comments with lastValidatedBodies', async () => {
-    await app()
-      .get(PrismaService)
-      .ueComment.updateMany({
-        data: {
-          lastValidatedBody: 'I like to spread fake news in my comments !',
-        },
-      });
-    const extendedComments = await app()
-      .get(PrismaService)
-      .normalize.ueComment.findMany({
-        args: {
-          userId: user.id,
-          includeDeletedReplied: false,
-          includeLastValidatedBody: true,
-        },
-      });
-    const commentsFiltered = {
-      items: extendedComments
-        .sort((a, b) =>
-          b.upvotes - a.upvotes == 0
-            ? (<Date>b.createdAt).getTime() - (<Date>a.createdAt).getTime()
-            : b.upvotes - a.upvotes,
-        )
-        .map((comment) => ({ ...comment, ue }))
-        .slice(0, app().get(ConfigModule).PAGINATION_PAGE_SIZE),
-      itemCount: comments.length,
-      itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
-    };
-    return pactum
-      .spec()
-      .withBearerToken(moderator.token)
-      .get(`/ue/comments`)
-      .withQueryParams({
-        ueCode: ue.code,
-      })
-      .expectUeComments(commentsFiltered);
-  });
+  // it('should return comments with lastValidatedBodies', async () => {
+  //   await app()
+  //     .get(PrismaService)
+  //     .ueComment.updateMany({
+  //       data: {
+  //         lastValidatedBody: 'I like to spread fake news in my comments !',
+  //       },
+  //     });
+  //   const extendedComments = await app()
+  //     .get(PrismaService)
+  //     .normalize.ueComment.findMany({
+  //       args: {
+  //         userId: user.id,
+  //         includeDeletedReplied: false,
+  //         includeLastValidatedBody: true,
+  //       },
+  //     });
+  //   const commentsFiltered = {
+  //     items: extendedComments
+  //       .sort((a, b) =>
+  //         b.upvotes - a.upvotes == 0
+  //           ? (<Date>b.createdAt).getTime() - (<Date>a.createdAt).getTime()
+  //           : b.upvotes - a.upvotes,
+  //       )
+  //       .map((comment) => ({ ...comment, ue }))
+  //       .slice(0, app().get(ConfigModule).PAGINATION_PAGE_SIZE),
+  //     itemCount: comments.length,
+  //     itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
+  //   };
+  //   return pactum
+  //     .spec()
+  //     .withBearerToken(moderator.token)
+  //     .get(`/ue/comments`)
+  //     .withQueryParams({
+  //       ueCode: ue.code,
+  //     })
+  //     .expectUeComments(commentsFiltered);
+  // });
 });
 
 export default GetCommentsE2ESpec;

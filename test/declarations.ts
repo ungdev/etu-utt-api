@@ -186,7 +186,6 @@ Spec.prototype.expectUeComments = function expect(obj) {
         'author',
         'body',
         'isAnonymous',
-        'lastValidatedBody',
         'semester',
         'status',
         'upvoted',

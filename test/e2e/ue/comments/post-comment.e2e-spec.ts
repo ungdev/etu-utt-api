@@ -125,7 +125,7 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
           answers: [],
           upvotes: 0,
           upvoted: false,
-          status: CommentStatus.UNVERIFIED,
+          status: CommentStatus.ACTIVE,
         },
         true,
       );
@@ -172,7 +172,7 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
           answers: [],
           upvotes: 0,
           upvoted: false,
-          status: CommentStatus.UNVERIFIED,
+          status: CommentStatus.ACTIVE,
         },
         true,
       );

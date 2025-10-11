@@ -20,21 +20,22 @@ export class CommentsService {
    * Retrieves a page of {@link UeComment} matching the user query
    * @param userId the user fetching the comments. Used to determine if an anonymous comment should include its author
    * @param dto the query parameters of this route
-   * @param bypassAnonymousData if true, the author of an anonymous comment will be included in the response (this is the case if the user is a moderator)
+   * @param bypassRestrictedData if true, deleted comments, deleted replies, hidden comments, and anonymous author will be included in the response (only for moderators)
    * @returns a page of {@link UeComment} matching the user query
    */
   async getComments(
     userId: string,
     dto: GetUeCommentsReqDto,
-    bypassAnonymousData: boolean,
+    bypassRestrictedData: boolean,
   ): Promise<Pagination<UeComment>> {
-    // Use a prisma transaction to execute two requests at once:
     // We fetch a page of comments matching our filters and retrieve the total count of comments matching our filters
     const comments = await this.prisma.normalize.ueComment.findMany({
       args: {
         userId: userId,
-        includeLastValidatedBody: bypassAnonymousData,
-        includeDeletedReplied: bypassAnonymousData,
+        includeDeleted: bypassRestrictedData,
+        includeHiddenComments: bypassRestrictedData,
+        includeReports: bypassRestrictedData,
+        bypassAnonymousData: bypassRestrictedData,
       },
       where: {
         ueof: {
@@ -47,12 +48,13 @@ export class CommentsService {
       skip: ((dto.page ?? 1) - 1) * this.config.PAGINATION_PAGE_SIZE,
     });
     const commentCount = await this.prisma.ueComment.count({
-      where: { ueof: { ue: { code: dto.ueCode } } },
+      where: {
+        ueof: { ue: { code: dto.ueCode } },
+        deletedAt: bypassRestrictedData ? undefined : null,
+        reports: bypassRestrictedData ? undefined : { none: { mitigated: false } },
+      },
     });
-    // If the user is neither a moderator or the comment author, and the comment is anonymous,
-    // we remove the author from the response
-    for (const comment of comments)
-      if (comment.isAnonymous && !bypassAnonymousData && comment.author?.id !== userId) comment.author = undefined;
+
     // Data pagination
     return {
       items: comments,
@@ -65,14 +67,17 @@ export class CommentsService {
    * Retrieves a single {@link UeComment} from a comment UUID
    * @param commentId the UUID of the comment
    * @param userId the user fetching the comments. Used to determine if an anonymous comment should include its author
+   * @param isModerator if true the user is a moderator
    * @returns a page of {@link UeComment} matching the user query
    */
   async getCommentFromId(commentId: string, userId: string, isModerator: boolean): Promise<UeComment> {
     const comment = await this.prisma.normalize.ueComment.findUnique({
       args: {
-        includeDeletedReplied: isModerator,
-        includeLastValidatedBody: isModerator,
-        userId,
+        userId: userId,
+        includeDeleted: isModerator,
+        includeHiddenComments: isModerator,
+        includeReports: isModerator,
+        bypassAnonymousData: isModerator,
       },
       where: {
         id: commentId,
@@ -129,6 +134,7 @@ export class CommentsService {
     );
   }
 
+  //TODO: This function may belongs to another service (users or ue)
   /**
    * Retrieves the last semester done by a user for a given ue
    * @remarks The user must not be null
@@ -169,8 +175,6 @@ export class CommentsService {
     // Find a comment (in the UE) whose author is the user
     const comment = await this.prisma.normalize.ueComment.findMany({
       args: {
-        includeDeletedReplied: false,
-        includeLastValidatedBody: false,
         userId,
       },
       where: {
@@ -195,8 +199,6 @@ export class CommentsService {
     const lastSemester = await this.getLastUserSubscription(userId, body.ueCode);
     return this.prisma.normalize.ueComment.create({
       args: {
-        includeDeletedReplied: true,
-        includeLastValidatedBody: true,
         userId,
       },
       data: {
@@ -239,24 +241,19 @@ export class CommentsService {
     const previousComment = await this.prisma.normalize.ueComment.findUnique({
       args: {
         userId,
-        includeDeletedReplied: true,
-        includeLastValidatedBody: true,
+        includeHiddenComments: isModerator,
+        includeDeleted: isModerator,
       },
       where: {
         id: commentId,
       },
     });
-    const needsValidationAgain =
-      body.body &&
-      body.body !== previousComment.body &&
-      previousComment.status & CommentStatus.VALIDATED &&
-      !isModerator;
 
     return this.prisma.normalize.ueComment.update({
       args: {
         userId,
-        includeDeletedReplied: true,
-        includeLastValidatedBody: true,
+        includeHiddenComments: isModerator,
+        includeDeleted: isModerator,
       },
       where: {
         id: commentId,
@@ -264,8 +261,6 @@ export class CommentsService {
       data: {
         body: body.body,
         isAnonymous: body.isAnonymous,
-        validatedAt: needsValidationAgain ? null : undefined,
-        lastValidatedBody: needsValidationAgain ? previousComment.body : undefined,
         updatedAt: new Date(),
       },
     });
@@ -382,8 +377,8 @@ export class CommentsService {
     return this.prisma.normalize.ueComment.update({
       args: {
         userId,
-        includeDeletedReplied: true,
-        includeLastValidatedBody: false,
+        includeDeleted: true,
+        includeHiddenComments: true,
       },
       where: {
         id: commentId,
@@ -397,29 +392,20 @@ export class CommentsService {
   /**
    * Checks whether a comment exists
    * @param commentId the id of the comment to check
+   * @param isModerator if true the user is a moderator
    * @returns whether the {@link commentId | comment} exists
    */
-  async doesCommentExist(commentId: string, userId: string, includeUnverified: boolean, includeDeleted = false) {
+  async doesCommentExist(commentId: string, userId: string, isModerator: boolean = false) {
     return (
       (await this.prisma.ueComment.count({
         where: {
           id: commentId,
-          deletedAt: includeDeleted ? undefined : null,
-          OR: [
-            {
-              validatedAt: {
-                not: null,
-              },
-              reports: {
-                none: {
-                  mitigated: false,
-                },
-              },
+          deletedAt: isModerator ? undefined : null,
+          reports: {
+            none: {
+              mitigated: isModerator ? undefined : false,
             },
-            {
-              authorId: includeUnverified ? undefined : userId,
-            },
-          ],
+          },
         },
       })) != 0
     );

@@ -40,7 +40,7 @@ import { PrismaService } from '../../src/prisma/prisma.service';
 import { AppProvider } from './test_utils';
 import { Permission, Sex, TimetableEntryType, UserType } from '@prisma/client';
 import { CommentStatus } from '../../src/ue/comments/interfaces/comment.interface';
-import { UeAnnalFile } from '../../src/ue/annals/interfaces/annal.interface';
+import { AnnalStatus, UeAnnalFile } from '../../src/ue/annals/interfaces/annal.interface';
 import { omit, pick, translationSelect } from '../../src/utils';
 import { DEFAULT_APPLICATION } from '../../prisma/seed/utils';
 
@@ -104,10 +104,10 @@ export type FakeUeof = Partial<Omit<RawUeof, 'nameTranslationId' | 'ueofInfoId' 
 export type FakeUserUeSubscription = Partial<RawUserUeSubscription>;
 export type FakeUeStarCriterion = Partial<RawUeStarCriterion>;
 export type FakeUeStarVote = Partial<RawUeStarVote>;
-export type FakeComment = Partial<RawUeComment> & { status: Exclude<CommentStatus, CommentStatus.PROCESSING> };
+export type FakeComment = Partial<RawUeComment> & { status: Exclude<CommentStatus, CommentStatus.HIDDEN> };
 export type FakeCommentUpvote = Partial<RawUeCommentUpvote>;
 export type FakeCommentReply = Partial<RawUeCommentReply> & {
-  status: Exclude<CommentStatus, CommentStatus.PROCESSING | CommentStatus.UNVERIFIED>;
+  status: Exclude<CommentStatus, CommentStatus.HIDDEN>;
 };
 export type FakeUeCreditCategory = Partial<RawCreditCategory>;
 export type FakeUeAnnalType = Partial<RawAnnalType>;
@@ -188,7 +188,7 @@ export interface FakeEntityMap {
   comment: {
     entity: FakeComment;
     params: CreateCommentParameters & {
-      status: Exclude<CommentStatus, CommentStatus.PROCESSING>;
+      status: Exclude<CommentStatus, CommentStatus.HIDDEN>;
     };
     deps: { user: FakeUser; ueof: FakeUeof; semester: FakeSemester };
   };
@@ -200,7 +200,7 @@ export interface FakeEntityMap {
   commentReply: {
     entity: FakeCommentReply;
     params: CreateCommentReplyParameters & {
-      status: Exclude<CommentStatus, CommentStatus.PROCESSING | CommentStatus.UNVERIFIED>;
+      status: Exclude<CommentStatus, CommentStatus.HIDDEN>;
     };
     deps: { user: FakeUser; comment: FakeComment };
   };
@@ -215,7 +215,7 @@ export interface FakeEntityMap {
   annal: {
     entity: FakeUeAnnal;
     params: {
-      status: CommentStatus;
+      status: AnnalStatus;
     };
     deps: {
       type: FakeUeAnnalType;
@@ -686,15 +686,15 @@ export const createAnnalType = entityFaker(
 
 export const createAnnal = entityFaker(
   'annal',
-  { status: CommentStatus.VALIDATED },
+  { status: AnnalStatus.VALIDATED },
   async (app, { semester, sender, type, ueof }, { status }) =>
     app()
       .get(PrismaService)
       .normalize.ueAnnal.create({
         data: {
-          uploadComplete: !(status & CommentStatus.PROCESSING),
-          deletedAt: status & CommentStatus.DELETED ? faker.date.recent() : null,
-          validatedAt: status & CommentStatus.VALIDATED ? faker.date.past() : null,
+          uploadComplete: !(status & AnnalStatus.PROCESSING),
+          deletedAt: status & AnnalStatus.DELETED ? faker.date.recent() : null,
+          validatedAt: status & AnnalStatus.VALIDATED ? faker.date.past() : null,
           semesterId: semester.code,
           senderId: sender.id,
           typeId: type.id,
@@ -940,7 +940,7 @@ export const createComment = entityFaker(
   {
     body: faker.word.words,
     isAnonymous: faker.datatype.boolean,
-    status: CommentStatus.VALIDATED,
+    status: CommentStatus.ACTIVE,
   },
   async (app, dependencies, params) => {
     const rawFakeData = await app()
@@ -948,7 +948,6 @@ export const createComment = entityFaker(
       .ueComment.create({
         data: {
           ...omit(params, 'status'),
-          validatedAt: params.status & CommentStatus.VALIDATED ? new Date() : undefined,
           deletedAt: params.status & CommentStatus.DELETED ? new Date() : undefined,
           ueof: {
             connect: {
@@ -997,7 +996,7 @@ export const createCommentReply = entityFaker(
   'commentReply',
   {
     body: faker.word.words,
-    status: CommentStatus.VALIDATED,
+    status: CommentStatus.ACTIVE,
   },
   async (app, dependencies, params) => {
     const rawFakeReply = await app()
