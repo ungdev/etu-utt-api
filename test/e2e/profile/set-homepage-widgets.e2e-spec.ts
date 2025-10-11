@@ -26,16 +26,19 @@ const SetHomepageWidgetsE2ESpec = e2eSuite('PUT /profile/homepage', (app) => {
     },
   ] as HomepageWidgetsUpdateElement[];
 
-  it('should fail as user is not connected', () =>
-    pactum.spec().put('/profile/homepage').withJson(body).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
+  it('should fail as user is not connected', async () =>
+    await pactum.spec().put('/profile/homepage').withJson(body).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
 
-  it('should fail as body is not valid', () =>
-    pactum
+  it('should fail as body is not valid', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    await pactum
       .spec()
       .put('/profile/homepage')
       .withBearerToken(user.token)
       .withJson({ widget: 'a_widget', height: 1, width: 1, x: 0, y: 0 })
-      .expectAppError(ERROR_CODE.PARAM_MALFORMED, 'items'));
+      .expectAppError(ERROR_CODE.PARAM_MALFORMED, 'items');
+    consoleErrorSpy.mockRestore();
+  });
 
   it('should fail for each value of the body as they are not allowed (too small, wrong type, ...)', async () => {
     await pactum
@@ -88,14 +91,13 @@ const SetHomepageWidgetsE2ESpec = e2eSuite('PUT /profile/homepage', (app) => {
       .expectAppError(ERROR_CODE.PARAM_NOT_POSITIVE, 'height');
   });
 
-  it('should fail as the widgets are overlapping', () => {
-    pactum
+  it('should fail as the widgets are overlapping', async () =>
+    await pactum
       .spec()
       .put('/profile/homepage')
       .withBearerToken(user.token)
       .withJson([body[0], { ...body[1], x: 0, y: 0 }])
-      .expectAppError(ERROR_CODE.WIDGET_OVERLAPPING, '0', '1');
-  });
+      .expectAppError(ERROR_CODE.WIDGET_OVERLAPPING, '0', '1'));
 
   it('should successfully set the homepage widgets', async () => {
     await pactum.spec().put('/profile/homepage').withBearerToken(user.token).withJson(body).expectHomepageWidgets(body);
