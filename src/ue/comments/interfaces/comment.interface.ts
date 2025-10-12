@@ -2,6 +2,7 @@ import { Prisma, PrismaClient } from '@prisma/client';
 import { RequestType, generateCustomModel } from '../../../prisma/prisma.service';
 import { REPLY_SELECT_FILTER, UeCommentReply, formatReply } from './comment-reply.interface';
 import { omit } from '../../../utils';
+import { RawUeCommentReport } from 'src/prisma/types';
 
 const COMMENT_SELECT_FILTER = {
   select: {
@@ -42,6 +43,8 @@ const COMMENT_SELECT_FILTER = {
     },
     reports: {
       select: {
+        id: true,
+        reportedBody: true,
         body: true,
         mitigated: true,
         createdAt: true,
@@ -93,13 +96,23 @@ export type UEExtraArgs = {
   bypassAnonymousData?: boolean;
 };
 
-export type UnformattedUEComment = Prisma.UeCommentGetPayload<typeof COMMENT_SELECT_FILTER>;
-export type UeComment = Omit<UnformattedUEComment, 'upvotes' | 'deletedAt' | 'answers' | 'semester'> & {
+export type UeCommentReport = Omit<RawUeCommentReport, 'reason' | 'reasonId' | 'commentId' | 'comment' | 'userId'> & {
+  reason: string;
+  user: {
+    id: string;
+    studentId: number;
+    firstName: string;
+    lastName: string;
+  };
+};
+export type UnformattedUeComment = Prisma.UeCommentGetPayload<typeof COMMENT_SELECT_FILTER>;
+export type UeComment = Omit<UnformattedUeComment, 'upvotes' | 'deletedAt' | 'answers' | 'semester' | 'reports'> & {
   upvotes: number;
   upvoted: boolean;
   status: CommentStatus;
   answers: UeCommentReply[];
   semester: string;
+  reports: UeCommentReport[];
 };
 
 export function generateCustomCommentModel(prisma: PrismaClient) {
@@ -129,16 +142,15 @@ export function generateCustomCommentModel(prisma: PrismaClient) {
   );
 }
 
-export function formatComment(prisma: PrismaClient, comment: UnformattedUEComment, args: UEExtraArgs): UeComment {
+export function formatComment(prisma: PrismaClient, comment: UnformattedUeComment, args: UEExtraArgs): UeComment {
   const bypassAnonymousData = !!args.bypassAnonymousData;
   const includeReports = !!args.includeReports;
   return {
     ...omit(comment, 'deletedAt'),
-    author:
-      !comment.isAnonymous || bypassAnonymousData || args.userId == comment.author.id ? comment.author : null,
+    author: !comment.isAnonymous || bypassAnonymousData || args.userId == comment.author.id ? comment.author : null,
     answers: comment.answers.map((answer) => {
       let anwser = formatReply(prisma, answer);
-      if(!includeReports) anwser.reports = null;
+      if (!includeReports) anwser.reports = null;
       return anwser;
     }),
     status:
@@ -147,7 +159,7 @@ export function formatComment(prisma: PrismaClient, comment: UnformattedUECommen
     upvotes: comment.upvotes.length,
     upvoted: comment.upvotes.some((upvote) => upvote.userId == args.userId),
     semester: comment.semester.code,
-    reports: includeReports ? comment.reports : null,
+    reports: includeReports ? comment.reports.map((r) => ({ ...r, reason: r.reason.name })) : null,
   };
 }
 

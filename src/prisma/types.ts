@@ -21,6 +21,7 @@ export {
   UeComment as RawUeComment,
   UeCommentReply as RawUeCommentReply,
   UeCommentUpvote as RawUeCommentUpvote,
+  UeCommentReport as RawUeCommentReport,
   UeAnnalType as RawAnnalType,
   UeAnnal as RawAnnal,
   UeCourse as RawUeCourse,
