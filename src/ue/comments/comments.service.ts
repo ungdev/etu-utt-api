@@ -6,8 +6,10 @@ import CommentReplyReqDto from './dto/req/ue-comment-reply-req.dto';
 import UeCommentUpdateReqDto from './dto/req/ue-comment-update-req.dto';
 import GetUeCommentsReqDto from './dto/req/ue-get-comments-req.dto';
 import { UeCommentReply } from './interfaces/comment-reply.interface';
-import { CommentStatus, UeComment } from './interfaces/comment.interface';
+import { UeComment } from './interfaces/comment.interface';
 import { ConfigModule } from '../../config/config.module';
+import GetReportedCommentsReqDto from './dto/req/ue-get-reported-comments-req.dto copy';
+import CommentReportReqDto from './dto/req/ue-comment-report-req.dto';
 
 @Injectable()
 export class CommentsService {
@@ -26,7 +28,7 @@ export class CommentsService {
   async getComments(
     userId: string,
     dto: GetUeCommentsReqDto,
-    bypassRestrictedData:boolean,
+    bypassRestrictedData: boolean,
   ): Promise<Pagination<UeComment>> {
     // We fetch a page of comments matching our filters and retrieve the total count of comments matching our filters
     const comments = await this.prisma.normalize.ueComment.findMany({
@@ -409,5 +411,92 @@ export class CommentsService {
         },
       })) != 0
     );
+  }
+
+  /**
+   * Retrieves a page of {@link UeComment} having at least one non mitigated report
+   * @returns a page of {@link UeComment} matching the user query
+   */
+  async getReportedComments(userId: string, dto: GetReportedCommentsReqDto): Promise<Pagination<UeComment>> {
+    // We fetch a page of comments matching our filters and retrieve the total count of comments matching our filters
+    const comments = await this.prisma.normalize.ueComment.findMany({
+      args: {
+        userId: userId,
+        includeDeleted: false,
+        includeHiddenComments: true,
+        includeReports: true,
+        bypassAnonymousData: true,
+      },
+      where: {
+        reports: {
+          some: {
+            mitigated: false,
+          },
+        },
+      },
+      take: this.config.PAGINATION_PAGE_SIZE,
+      skip: ((dto.page ?? 1) - 1) * this.config.PAGINATION_PAGE_SIZE,
+    });
+    const commentCount = await this.prisma.ueComment.count({
+      where: {
+        reports: {
+          some: {
+            mitigated: false,
+          },
+        },
+      },
+    });
+
+    // Data pagination
+    return {
+      items: comments,
+      itemCount: commentCount,
+      itemsPerPage: this.config.PAGINATION_PAGE_SIZE,
+    };
+  }
+
+  /**
+   * Report a comment
+   * @param userId the user id of the reporter
+   * @param body the report data
+   */
+  async reportComment(userId: string, body: CommentReportReqDto, commentId: string, isModerator: boolean) {
+    // How are reasons handled by the front ?
+    // Do we need another route to load reasons ?
+    const comment = await this.getCommentFromId(commentId, userId, isModerator);
+    const report = this.prisma.ueCommentReport.create({
+      data: {
+        body: body.body,
+        reportedBody: comment.body,
+        reason: {
+          connect: {
+            name: body.reason,
+          },
+        },
+        comment: {
+          connect: {
+            id: commentId,
+          },
+        },
+        user: {
+          connect: {
+            id: userId,
+          },
+        },
+      },
+    });
+    return report;
+  }
+
+  async mitigateReport(commentId: string, reportId: string) {
+    this.prisma.ueCommentReport.update({
+      where: {
+        commentId,
+        id: reportId,
+      },
+      data: {
+        mitigated: true
+      }
+    });
   }
 }

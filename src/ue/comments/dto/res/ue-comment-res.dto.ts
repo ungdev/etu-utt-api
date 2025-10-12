@@ -1,4 +1,5 @@
 import UeCommentAuthorResDto from './ue-comment-author-res.dto';
+import UeCommentReportResDto from './ue-comment-report-res.dto';
 
 export default class UeCommentResDto {
   id: string;
@@ -12,7 +13,7 @@ export default class UeCommentResDto {
   upvoted: boolean;
   status: number;
   answers: CommentResDto_Answer[];
-  lastValidatedBody?: string;
+  reports?: UeCommentReportResDto[];
 }
 
 class CommentResDto_Answer {
