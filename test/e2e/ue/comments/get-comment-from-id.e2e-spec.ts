@@ -15,7 +15,7 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
   const branchOption = fakedb.createBranchOption(app, { branch });
   const ue = fakedb.createUe(app);
   const ueof = fakedb.createUeof(app, { branchOptions: [branchOption], semesters: [semester], ue });
-  const comment = fakedb.createComment(app, { user, ueof, semester });
+  const comment = fakedb.createComment(app, { user, ueof, semester }, { isAnonymous: true });
   fakedb.createCommentUpvote(app, { user: userNotAuthor, comment });
   const reply = fakedb.createCommentReply(app, { user, comment }, { body: 'HelloWorld' });
 
@@ -78,6 +78,12 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
             updatedAt: reply.updatedAt.toISOString(),
           },
         ],
+        author: {
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          studentId: user.studentId,
+        },
         updatedAt: comment.updatedAt.toISOString(),
         createdAt: comment.createdAt.toISOString(),
         semester: semester.code,
@@ -105,6 +111,11 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
             ...omit(reply, 'authorId', 'deletedAt', 'commentId'),
             createdAt: reply.createdAt.toISOString(),
             updatedAt: reply.updatedAt.toISOString(),
+            author: {
+              id: user.id,
+              firstName: user.firstName,
+              lastName: user.lastName,
+            },
           },
         ],
         updatedAt: comment.updatedAt.toISOString(),

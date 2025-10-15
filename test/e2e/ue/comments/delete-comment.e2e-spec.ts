@@ -73,6 +73,7 @@ const DeleteComment = e2eSuite('DELETE /ue/comments/:commentId', (app) => {
           id: user.id,
           firstName: user.firstName,
           lastName: user.lastName,
+          studentId: user.studentId,
         },
         createdAt: comment1.createdAt.toISOString(),
         updatedAt: comment1.updatedAt.toISOString(),

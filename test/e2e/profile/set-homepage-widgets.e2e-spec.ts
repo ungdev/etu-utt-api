@@ -98,7 +98,12 @@ const SetHomepageWidgetsE2ESpec = e2eSuite('PUT /profile/homepage', (app) => {
   });
 
   it('should successfully set the homepage widgets', async () => {
-    await pactum.spec().put('/profile/homepage').withBearerToken(user.token).withJson(body).expectHomepageWidgets(body);
+    await pactum
+      .spec()
+      .put('/profile/homepage')
+      .withBearerToken(user.token)
+      .withJson(body)
+      .expectHomepageWidgets(body.mappedSort((w) => w.x));
     const prisma = app().get(PrismaService);
     const widgetsFromDb = await prisma.userHomepageWidget.findMany();
     expect(widgetsFromDb).toHaveLength(2);

@@ -11,17 +11,17 @@ export class AssoRoleListResDto {
   roles: AssoRoleOverviewResDto[];
 }
 
-class AssoRoleMember extends UserMicroResDto {
-  userId: string;
-  startAt: Date;
-  endAt: Date;
-  permissions: string[];
+export class AssoRoleResDto {
+  roles: AssoRole[];
 }
 
 export class AssoRole extends AssoRoleOverviewResDto {
   members: AssoRoleMember[];
 }
 
-export class AssoRoleResDto {
-  roles: AssoRole[];
+class AssoRoleMember extends UserMicroResDto {
+  userId: string;
+  startAt: Date;
+  endAt: Date;
+  permissions: string[];
 }

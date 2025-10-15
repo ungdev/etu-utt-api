@@ -49,10 +49,6 @@ export class CommentsService {
     const commentCount = await this.prisma.ueComment.count({
       where: { ueof: { ue: { code: dto.ueCode } } },
     });
-    // If the user is neither a moderator or the comment author, and the comment is anonymous,
-    // we remove the author from the response
-    for (const comment of comments)
-      if (comment.isAnonymous && !bypassAnonymousData && comment.author?.id !== userId) comment.author = undefined;
     // Data pagination
     return {
       items: comments,

@@ -107,14 +107,14 @@ export class AssosService {
   }
 
   /** Checks whether the user has at least one of the given permissions. Includes asso account check */
-  async hasAssoPermission(asso: Asso, userId: string, ...perms: string[]): Promise<boolean> {
+  async hasSomeAssoPermission(asso: Asso, userId: string, ...perms: string[]): Promise<boolean> {
     if (asso.assoAccountId === userId) return true;
     const permissions = await this.getAssoPermissions(asso.id, userId, ...perms);
     return perms.some((p) => permissions.has(p));
   }
 
   /** Checks whether the user has all given permissions. Includes asso account check */
-  async hasAssoPermissions(asso: Asso, userId: string, ...perms: string[]): Promise<boolean> {
+  async hasEveryAssoPermission(asso: Asso, userId: string, ...perms: string[]): Promise<boolean> {
     if (asso.assoAccountId === userId) return true;
     const permissions = await this.getAssoPermissions(asso.id, userId, ...perms);
     return perms.every((p) => permissions.has(p));

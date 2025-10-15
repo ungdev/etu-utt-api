@@ -5,6 +5,7 @@ import { UeRating } from 'src/ue/interfaces/rate.interface';
 import {
   FakeApiApplication,
   FakeAssoMembership,
+  FakeAssoMembershipPermission,
   FakeAssoMembershipRole,
   FakeUeAnnalType,
   FakeUeof,
@@ -88,7 +89,11 @@ declare module './declarations' {
     expectAssoMembershipRole(role: FakeAssoMembershipRole): this;
     expectAssoMembershipRoleCreated(role: JsonLikeVariant<FakeAssoMembershipRole>): this;
     expectAssoMembershipRoles(roles: JsonLikeVariant<FakeAssoMembershipRole>[]): this;
-    expectAssoMembershipRolesWithMembers(roles: JsonLikeVariant<FakeAssoMembershipRole>[], users: FakeUser[][]): this;
+    expectAssoMembershipRolesWithMembers(
+      roles: JsonLikeVariant<FakeAssoMembershipRole>[],
+      users: FakeUser[][],
+      permissions: FakeAssoMembershipPermission[][][],
+    ): this;
     expectAssoMembership(membership: JsonLikeVariant<FakeAssoMembership>): this;
     expectAssoMembershipCreated(membership: JsonLikeVariant<FakeAssoMembership>): this;
     expectCreditCategories(categories: JsonLikeVariant<FakeUeCreditCategory[]>): this;
@@ -99,5 +104,8 @@ declare module './declarations' {
     language: Language;
     withApplication(application: string): this;
     application: string;
+
+    /** Internal use only (use it in declarations.ts) as it does NOT check HTTP status */
+    $expectRegexableJson<T>(obj: JsonLikeVariant<T>): this;
   }
 }

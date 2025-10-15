@@ -116,6 +116,7 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
             id: userDidUe.id,
             firstName: userDidUe.firstName,
             lastName: userDidUe.lastName,
+            studentId: userDidUe.studentId,
           },
           createdAt: JsonLike.ANY_DATE,
           updatedAt: JsonLike.ANY_DATE,
@@ -126,6 +127,7 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
           upvotes: 0,
           upvoted: false,
           status: CommentStatus.UNVERIFIED,
+          lastValidatedBody: null,
         },
         true,
       );
@@ -163,6 +165,7 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
             id: userDidUe.id,
             firstName: userDidUe.firstName,
             lastName: userDidUe.lastName,
+            studentId: userDidUe.studentId,
           },
           createdAt: JsonLike.ANY_DATE,
           updatedAt: JsonLike.ANY_DATE,
@@ -173,6 +176,7 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
           upvotes: 0,
           upvoted: false,
           status: CommentStatus.UNVERIFIED,
+          lastValidatedBody: null,
         },
         true,
       );

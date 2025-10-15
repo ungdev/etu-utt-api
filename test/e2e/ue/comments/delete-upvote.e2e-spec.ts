@@ -72,7 +72,7 @@ const DeleteUpvote = e2eSuite('DELETE /ue/comments/{commentId}/upvote', (app) =>
       .withBearerToken(userNotAuthor.token)
       .delete(`/ue/comments/${comment1.id}/upvote`)
       .expectStatus(HttpStatus.OK)
-      .expectJsonMatchStrict({ upvoted: false });
+      .$expectRegexableJson({ upvoted: false });
     return createCommentUpvote(app, { user: userNotAuthor, comment: comment1 }, upvote, true);
   });
 

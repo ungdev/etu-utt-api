@@ -54,8 +54,8 @@ const GetUserAssociationE2ESpec = e2eSuite('GET /users/:userId/associations', (a
     ).map((membership) => ({
       ...omit(membership, 'role', 'endAt', 'startAt', 'asso'),
       role: membership.role.name,
-      endAt: membership.endAt.toISOString(),
-      startAt: membership.startAt.toISOString(),
+      endAt: membership.endAt,
+      startAt: membership.startAt,
       asso: {
         ...omit(membership.asso, 'descriptionShortTranslation'),
         shortDescription: membership.asso.descriptionShortTranslation.fr,
@@ -67,7 +67,7 @@ const GetUserAssociationE2ESpec = e2eSuite('GET /users/:userId/associations', (a
       .get(`/users/${user.id}/associations`)
       .withBearerToken(user.token)
       .expectStatus(HttpStatus.OK)
-      .expectJsonMatchStrict(assoMembershipFromDb.filter((value) => value !== undefined));
+      .$expectRegexableJson(assoMembershipFromDb.filter((value) => value !== undefined));
   });
 });
 

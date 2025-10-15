@@ -18,7 +18,7 @@ import UeAnnalResDto from './dto/res/ue-annal-res.dto';
 import UeAnnalMetadataResDto from './dto/res/ue-annal-metadata-res.dto';
 import { GetPermissions } from '../../auth/decorator/get-permissions.decorator';
 import { Permission } from '@prisma/client';
-import { PermissionManager } from '../../utils';
+import { omit, PermissionManager } from '../../utils';
 
 @Controller('ue/annals')
 @ApiTags('Annal')
@@ -75,7 +75,7 @@ export class AnnalsController {
       throw new AppException(ERROR_CODE.NOT_DONE_UE_IN_SEMESTER, ueCode, semester);
     if (!(await this.ueService.didUeHappenAtSemester(ueCode, semester)))
       throw new AppException(ERROR_CODE.NO_SUCH_UE_AT_SEMESTER, ueCode, semester);
-    return this.annalsService.createAnnalFile(user, { ueCode, semester, typeId, ueof });
+    return omit(await this.annalsService.createAnnalFile(user, { ueCode, semester, typeId, ueof }), 'ueof');
   }
 
   @Get('metadata')
@@ -134,7 +134,7 @@ export class AnnalsController {
         .status !== CommentStatus.PROCESSING
     )
       throw new AppException(ERROR_CODE.ANNAL_ALREADY_UPLOADED);
-    return this.annalsService.uploadAnnalFile(await file, annalId, rotate);
+    return omit(await this.annalsService.uploadAnnalFile(await file, annalId, rotate), 'ueof');
   }
 
   @Get(':annalId')
@@ -193,7 +193,7 @@ export class AnnalsController {
       !permissions.can(Permission.API_MODERATE_ANNALS)
     )
       throw new AppException(ERROR_CODE.NOT_ANNAL_SENDER);
-    return this.annalsService.updateAnnalMetadata(annalId, body);
+    return omit(await this.annalsService.updateAnnalMetadata(annalId, body), 'ueof');
   }
 
   @Delete(':annalId')
@@ -219,6 +219,6 @@ export class AnnalsController {
       !permissions.can(Permission.API_MODERATE_ANNALS)
     )
       throw new AppException(ERROR_CODE.NOT_ANNAL_SENDER);
-    return this.annalsService.deleteAnnal(annalId);
+    return omit(await this.annalsService.deleteAnnal(annalId), 'ueof');
   }
 }
