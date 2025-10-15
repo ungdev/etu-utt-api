@@ -145,12 +145,12 @@ const AddAssoMemberE2ESpec = e2eSuite('POST /assos/:id/members', (app) => {
         permissions: [manageMembersPermission.id],
       })
       .expectAssoMembershipCreated({
-        id: JsonLike.ANY_UUID,
+        id: JsonLike.UUID,
         assoId: asso.id,
         userId: userTargetFromAllowedUser.id,
         roleId: assoMembershipRole.id,
-        startAt: JsonLike.ANY_DATE,
-        endAt: JsonLike.ANY_DATE,
+        startAt: JsonLike.DATE,
+        endAt: JsonLike.DATE,
       }));
 
   it('should add the user to the AssoRole with asso account', async () => {
@@ -177,12 +177,12 @@ const AddAssoMemberE2ESpec = e2eSuite('POST /assos/:id/members', (app) => {
         permissions: [manageMembersPermission.id, otherPermission.id],
       })
       .expectAssoMembershipCreated({
-        id: JsonLike.ANY_UUID,
+        id: JsonLike.UUID,
         assoId: asso.id,
         userId: userTargetFromAssoAccount.id,
         roleId: assoMembershipRole.id,
-        startAt: JsonLike.ANY_DATE,
-        endAt: JsonLike.ANY_DATE,
+        startAt: JsonLike.DATE,
+        endAt: JsonLike.DATE,
       });
   });
 });

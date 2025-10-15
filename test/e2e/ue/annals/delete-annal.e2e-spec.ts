@@ -67,7 +67,7 @@ const DeleteAnnal = e2eSuite('DELETE /ue/annals/{annalId}', (app) => {
         status: CommentStatus.DELETED | CommentStatus.VALIDATED,
         sender: pick(senderUser, 'id', 'firstName', 'lastName'),
         createdAt: annal_validated.createdAt.toISOString(),
-        updatedAt: JsonLike.ANY_DATE,
+        updatedAt: JsonLike.DATE,
       });
     return app()
       .get(PrismaService)

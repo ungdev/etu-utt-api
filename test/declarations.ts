@@ -21,7 +21,7 @@ import { UeAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
 import { ConfigModule } from '../src/config/config.module';
 import { AppProvider, JsonLike } from './utils/test_utils';
 import { getTranslation, omit, pick } from '../src/utils';
-import { regex } from 'pactum-matchers';
+import { regex, string, uuid } from 'pactum-matchers';
 import { Language } from '@prisma/client';
 import { DEFAULT_APPLICATION } from '../prisma/seed/utils';
 import ApplicationResDto from '../src/auth/application/dto/res/application-res.dto';
@@ -277,10 +277,10 @@ Spec.prototype.expectAssoMembershipRolesWithMembers = function (
       ...pick(role, 'id', 'name', 'position', 'isPresident'),
       members: users[i].map((user, j) => ({
         ...pick(user, 'firstName', 'lastName'),
-        id: JsonLike.ANY_UUID,
+        id: JsonLike.UUID,
         userId: user.id,
-        startAt: JsonLike.ANY_DATE,
-        endAt: JsonLike.ANY_DATE,
+        startAt: JsonLike.DATE,
+        endAt: JsonLike.DATE,
         permissions: permissions[i][j].map((p) => p.id),
       })),
     })),
@@ -317,6 +317,14 @@ Spec.prototype.$expectRegexableJson = function <T>(this: Spec, obj: JsonLikeVari
   function wrap<T>(obj: JsonLikeVariant<T>) {
     if (obj instanceof RegExp) return regex(obj.source);
     if (obj instanceof Date) return obj.toISOString();
+    if (typeof obj === 'symbol') {
+      switch (<symbol>obj) {
+        case JsonLike.STRING:
+          return string();
+        case JsonLike.UUID:
+          return uuid();
+      }
+    }
     if (Array.isArray(obj)) return obj.map(wrap);
     if (obj === null || typeof obj !== 'object') return obj;
     return Object.fromEntries(Object.entries(obj).map(([key, value]) => [key, wrap(value)]));
@@ -342,6 +350,7 @@ function generateSchema<T>(obj: JsonLikeVariant<T>): object {
       additionalProperties: false,
       properties: Object.fromEntries(Object.entries(obj).map(([key, value]) => [key, generateSchema(value)])),
     };
+  if (obj === JsonLike.STRING || obj === JsonLike.UUID) return { type: 'string' };
   switch (typeof obj) {
     case 'string':
       return { type: 'string' };

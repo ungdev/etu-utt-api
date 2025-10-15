@@ -19,7 +19,7 @@ import { Language } from '@prisma/client';
 
 type JsonLikeVariant<T> = Partial<{
   [K in keyof T]: T[K] extends string | Date
-    ? string | RegExp
+    ? string | symbol | RegExp
     : T[K] extends (infer R)[]
       ? JsonLikeVariant<R>[]
       : JsonLikeVariant<T[K]>;

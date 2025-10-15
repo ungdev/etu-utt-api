@@ -35,7 +35,7 @@ const GetAssoMembersE2ESpec = e2eSuite('GET /assos/:id/members', (app) => {
       .expectAssoMembershipRolesWithMembers(
         [
           {
-            id: JsonLike.ANY_UUID,
+            id: JsonLike.UUID,
             isPresident: true,
             name: 'President',
             position: 0,

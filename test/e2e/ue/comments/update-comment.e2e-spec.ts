@@ -114,15 +114,15 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/:commentId', (app) => {
       })
       .expectUeComment({
         ueof,
-        id: JsonLike.ANY_UUID,
+        id: JsonLike.UUID,
         author: {
           id: user.id,
           firstName: user.firstName,
           lastName: user.lastName,
           studentId: user.studentId,
         },
-        createdAt: JsonLike.ANY_DATE,
-        updatedAt: JsonLike.ANY_DATE,
+        createdAt: JsonLike.DATE,
+        updatedAt: JsonLike.DATE,
         semester: semester.code,
         isAnonymous: true,
         body: 'Cette  UE est troooop bien',
@@ -147,15 +147,15 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/:commentId', (app) => {
       })
       .expectUeComment({
         ueof,
-        id: JsonLike.ANY_UUID,
+        id: JsonLike.UUID,
         author: {
           id: user.id,
           firstName: user.firstName,
           lastName: user.lastName,
           studentId: user.studentId,
         },
-        createdAt: JsonLike.ANY_DATE,
-        updatedAt: JsonLike.ANY_DATE,
+        createdAt: JsonLike.DATE,
+        updatedAt: JsonLike.DATE,
         semester: semester.code,
         isAnonymous: false,
         body: comment.body,

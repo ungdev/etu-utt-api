@@ -110,15 +110,15 @@ const PostCommmentReply = e2eSuite('POST /ue/comments/{commentId}/reply', (app) 
       })
       .expectUeCommentReply(
         {
-          id: JsonLike.ANY_UUID,
+          id: JsonLike.UUID,
           author: {
             id: user.id,
             lastName: user.lastName,
             firstName: user.firstName,
           },
           body: 'heyhey',
-          createdAt: JsonLike.ANY_DATE,
-          updatedAt: JsonLike.ANY_DATE,
+          createdAt: JsonLike.DATE,
+          updatedAt: JsonLike.DATE,
           status: CommentStatus.VALIDATED,
         },
         true,

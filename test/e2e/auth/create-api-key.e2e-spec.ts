@@ -1,9 +1,8 @@
 import * as pactum from 'pactum';
-import { e2eSuite } from '../../utils/test_utils';
+import { e2eSuite, JsonLike } from '../../utils/test_utils';
 import { AuthService } from '../../../src/auth/auth.service';
 import { ERROR_CODE } from '../../../src/exceptions';
 import * as fakedb from '../../utils/fakedb';
-import { string } from 'pactum-matchers';
 import { pick } from '../../../src/utils';
 import { HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../../../src/prisma/prisma.service';
@@ -41,7 +40,7 @@ const CreateApiKeyE2ESpec = e2eSuite('POST /auth/api-key', (app) => {
       .post('/auth/api-key')
       .withJson({ token: await authService().signRegisterApiKeyToken(otherUser.id, application.id, 99999) })
       .expectStatus(HttpStatus.CREATED)
-      .expectJsonMatch({ redirectUrl: string() })
+      .$expectRegexableJson({ redirectUrl: JsonLike.STRING })
       .expect((ctx) => {
         const body = ctx.res.json as { redirectUrl: string };
         expect(body.redirectUrl.startsWith(application.redirectUrl)).toBeTruthy();

@@ -58,7 +58,7 @@ const CreateAssoRoleE2ESpec = e2eSuite('POST /assos/:id/roles', (app) => {
       .post(`/assos/${asso.id}/roles`)
       .withBody(validBody)
       .expectAssoMembershipRoleCreated({
-        id: JsonLike.ANY_UUID,
+        id: JsonLike.UUID,
         isPresident: false,
         name: validBody.name,
         position: 2, // position 0 is by default the president role and we already have created a role at position 1
@@ -85,7 +85,7 @@ const CreateAssoRoleE2ESpec = e2eSuite('POST /assos/:id/roles', (app) => {
       .post(`/assos/${asso.id}/roles`)
       .withBody(validBody)
       .expectAssoMembershipRoleCreated({
-        id: JsonLike.ANY_UUID,
+        id: JsonLike.UUID,
         isPresident: false,
         name: validBody.name,
         position: 3,

@@ -106,7 +106,7 @@ const EditAnnal = e2eSuite('PATCH /ue/annals/{annalId}', (app) => {
         sender: pick(senderUser, 'id', 'firstName', 'lastName'),
         id: annal_validated.id,
         createdAt: annal_validated.createdAt.toISOString(),
-        updatedAt: JsonLike.ANY_DATE,
+        updatedAt: JsonLike.DATE,
       });
   });
 });

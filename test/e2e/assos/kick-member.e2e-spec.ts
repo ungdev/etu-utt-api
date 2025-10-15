@@ -94,7 +94,7 @@ const KickAssoMemberE2ESpec = e2eSuite('DELETE /assos/:id/members/:id', (app) =>
         userId: userInAsso.id,
         roleId: assoMembershipRole.id,
         startAt: userInAssoMembershipInAsso.startAt.toISOString(),
-        endAt: JsonLike.ANY_DATE,
+        endAt: JsonLike.DATE,
       }));
 
   it('should kick the user from the AssoRole with asso account', async () => {
@@ -121,7 +121,7 @@ const KickAssoMemberE2ESpec = e2eSuite('DELETE /assos/:id/members/:id', (app) =>
         userId: otherUserInAsso.id,
         roleId: assoMembershipRole.id,
         startAt: otherUserInAssoMembershipInAsso.startAt.toISOString(),
-        endAt: JsonLike.ANY_DATE,
+        endAt: JsonLike.DATE,
       });
   });
 });

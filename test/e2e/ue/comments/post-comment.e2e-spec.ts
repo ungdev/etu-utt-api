@@ -110,7 +110,7 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
       })
       .expectUeComment(
         {
-          id: JsonLike.ANY_UUID,
+          id: JsonLike.UUID,
           ueof,
           author: {
             id: userDidUe.id,
@@ -118,8 +118,8 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
             lastName: userDidUe.lastName,
             studentId: userDidUe.studentId,
           },
-          createdAt: JsonLike.ANY_DATE,
-          updatedAt: JsonLike.ANY_DATE,
+          createdAt: JsonLike.DATE,
+          updatedAt: JsonLike.DATE,
           semester: semester.code,
           isAnonymous: true,
           body: 'Cette  UE est troooop bien',
@@ -160,15 +160,15 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
       .expectUeComment(
         {
           ueof,
-          id: JsonLike.ANY_UUID,
+          id: JsonLike.UUID,
           author: {
             id: userDidUe.id,
             firstName: userDidUe.firstName,
             lastName: userDidUe.lastName,
             studentId: userDidUe.studentId,
           },
-          createdAt: JsonLike.ANY_DATE,
-          updatedAt: JsonLike.ANY_DATE,
+          createdAt: JsonLike.DATE,
+          updatedAt: JsonLike.DATE,
           semester: semester.code,
           isAnonymous: false,
           body: 'Cette  UE est troooop bien',
