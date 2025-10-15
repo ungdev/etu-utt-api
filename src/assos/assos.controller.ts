@@ -1,7 +1,8 @@
 import { Body, Controller, Delete, Get, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiAppErrorResponse, paginatedResponseDto } from '../app.dto';
-import { AssoMembership, AssoMembershipRole } from './interfaces/membership-role.interface';
+import { AssoMembershipRole } from './interfaces/membership-role.interface';
+import { AssoMembership } from './interfaces/membership.interface';
 import { ParamAsso } from './decorator/get-asso';
 import { GetUser, IsPublic } from '../auth/decorator';
 import { AssosService } from './assos.service';

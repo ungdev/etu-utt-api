@@ -10,9 +10,10 @@ import { generateCustomUeModel } from '../ue/interfaces/ue.interface';
 import { generateCustomUeAnnalModel } from '../ue/annals/interfaces/annal.interface';
 import { generateCustomUeCommentReplyModel } from '../ue/comments/interfaces/comment-reply.interface';
 import { generateCustomAssoModel } from '../assos/interfaces/asso.interface';
+import { generateCustomAssoMembershipModel } from '../assos/interfaces/membership.interface';
+import { generateCustomAssoMembershipRoleModel } from '../assos/interfaces/membership-role.interface';
 import { generateCustomCreditCategoryModel } from '../ue/credit/interfaces/credit-category.interface';
 import { generateCustomApplicationModel } from '../auth/application/interfaces/application.interface';
-import { generateCustomAssoMembershipRoleModel } from '../assos/interfaces/membership-role.interface';
 
 @Injectable()
 export class PrismaService extends PrismaClient<ReturnType<typeof prismaOptions>> {
@@ -49,6 +50,7 @@ function createNormalizedEntitiesUtility(prisma: PrismaClient) {
     ue: generateCustomUeModel(prisma),
     ueAnnal: generateCustomUeAnnalModel(prisma),
     asso: generateCustomAssoModel(prisma),
+    assoMembership: generateCustomAssoMembershipModel(prisma),
     assoMembershipRole: generateCustomAssoMembershipRoleModel(prisma),
     ueCreditCategory: generateCustomCreditCategoryModel(prisma),
     apiApplication: generateCustomApplicationModel(prisma),
