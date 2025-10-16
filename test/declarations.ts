@@ -15,12 +15,13 @@ import {
   FakeApiApplication,
   FakeAssoMembershipRole,
   FakeAssoMembership,
+  FakeImageMedia,
 } from './utils/fakedb';
 import { UeAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
 import { ConfigModule } from '../src/config/config.module';
 import { AppProvider, JsonLike } from './utils/test_utils';
 import { getTranslation, omit, PermissionManager, pick } from '../src/utils';
-import { regex, string, uuid } from 'pactum-matchers';
+import { regex, string, uuid, int } from 'pactum-matchers';
 import { Language } from '@prisma/client';
 import { DEFAULT_APPLICATION } from '../prisma/seed/utils';
 import ApplicationResDto from '../src/auth/application/dto/res/application-res.dto';
@@ -133,7 +134,10 @@ Spec.prototype.expectUsers = function (app: AppProvider, users: FakeUser[], coun
   return (<Spec>this).expectStatus(HttpStatus.OK).$expectRegexableJson({
     items: users.map((user) => ({
       ...pick(user, 'id', 'firstName', 'lastName', 'login', 'studentId', 'userType'),
-      infos: pick(user.infos, 'nickname', 'avatar', 'nationality', 'passions', 'website'),
+      infos: {
+        ...pick(user.infos, 'nickname', 'nationality', 'passions', 'website'),
+        avatar: user.infos.avatarMediaId ? `/media/image/${user.infos.avatarMediaId}.webp` : null,
+      },
       branchSubscriptions: user.branchSubscriptions.map((branch) => pick(branch, 'id')),
       mailsPhones: pick(user.mailsPhones, 'mailUTT'),
       socialNetwork: omit(user.socialNetwork, 'id', 'discord'),
@@ -223,7 +227,8 @@ Spec.prototype.expectHomepageWidgets = function (this: Spec, widgets: Omit<FakeH
 Spec.prototype.expectAssos = function (this: Spec, app: AppProvider, assos: FakeAsso[], count: number) {
   return this.expectStatus(HttpStatus.OK).expectJson({
     items: assos.map((asso) => ({
-      ...pick(asso, 'id', 'name', 'logo'),
+      ...pick(asso, 'id', 'name'),
+      logo: asso.logoMediaId ? `/media/image/${asso.logoMediaId}.webp` : null,
       shortDescription: getTranslation(asso.descriptionShortTranslation, (<Spec>this).language),
       president: {
         role: !!asso.presidentRole ? pick(asso.presidentRole, 'id', 'name') : null,
@@ -236,7 +241,8 @@ Spec.prototype.expectAssos = function (this: Spec, app: AppProvider, assos: Fake
 };
 Spec.prototype.expectAsso = function (asso: FakeAsso) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJson({
-    ...pick(asso, 'id', 'name', 'mail', 'phoneNumber', 'website', 'logo'),
+    ...pick(asso, 'id', 'name', 'mail', 'phoneNumber', 'website'),
+    logo: asso.logoMediaId ? `/media/image/${asso.logoMediaId}.webp` : null,
     description: getTranslation(asso.descriptionTranslation, (<Spec>this).language),
     president: {
       role: !!asso.presidentRole ? pick(asso.presidentRole, 'id', 'name') : null,
@@ -315,6 +321,16 @@ Spec.prototype.expectPermissions = function (permissions: PermissionManager) {
       .mappedSort((permission) => permission.permission),
   } satisfies PermissionsResDto);
 };
+Spec.prototype.expectImageMedia = function (media: JsonLikeVariant<FakeImageMedia>) {
+  return (<Spec>this).expectStatus(HttpStatus.CREATED).$expectRegexableJson({
+    id: media.id,
+    size: media.size,
+    width: media.width,
+    height: media.height,
+    preset: media.preset,
+    isPublic: media.isPublic,
+  });
+};
 
 export { Spec, JsonLikeVariant, FakeUeWithOfs };
 
@@ -330,6 +346,8 @@ Spec.prototype.$expectRegexableJson = function <T>(this: Spec, obj: JsonLikeVari
           return string();
         case JsonLike.UUID:
           return uuid();
+        case JsonLike.INT:
+          return int();
       }
     }
     if (Array.isArray(obj)) return obj.map(wrap);
@@ -362,6 +380,7 @@ function generateSchema<T>(obj: JsonLikeVariant<T>): object {
       ),
     };
   if (obj === JsonLike.STRING || obj === JsonLike.UUID) return { type: 'string' };
+  if (obj === JsonLike.INT) return { type: 'number' };
   switch (typeof obj) {
     case 'string':
       return { type: 'string' };

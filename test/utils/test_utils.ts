@@ -3,7 +3,6 @@ import { INestApplication } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { faker } from '@faker-js/faker';
 import { ConfigModule } from '../../src/config/config.module';
-import { DMMF } from '@prisma/client/runtime/library';
 import { clearUniqueValues, generateDefaultApplication } from '../../prisma/seed/utils';
 import { PrismaClient } from '@prisma/client';
 
@@ -69,6 +68,7 @@ export const unitSuite = suite<UnitAppProvider>;
 export const JsonLike = {
   STRING: Symbol('string'),
   UUID: Symbol('uuid'),
+  INT: Symbol('int'),
   DATE: /^\d{4}-[01]\d-[0-3]\d(?:T[0-2]\d:[0-5]\d:[0-5]\d[.,]\d+Z)?$/, // dateTime from pactum-matchers doesn't ms
 };
 
@@ -81,46 +81,9 @@ export const Dummies = {
  * @param prisma The prisma service instance.
  */
 export async function cleanDb(prisma: PrismaService | PrismaClient) {
-  // We can't delete each table one by one, because of foreign key constraints
-  const tablesCleared = [] as string[];
+  await prisma.$executeRawUnsafe(`SET FOREIGN_KEY_CHECKS = 0`);
   // _runtimeDataModel.models basically contains a JS-ified version of the schema.prisma
-  for (const modelName of Object.keys((prisma as any)._runtimeDataModel.models) as string[]) {
-    // Check the table hasn't been already cleaned
-    if (tablesCleared.includes(modelName)) continue;
-    await clearTableWithCascade(prisma, modelName, tablesCleared);
-  }
-}
-
-/**
- * Clears a table, and all the tables that have a foreign key constraint on it.
- * This should only be used by {@link cleanDb}.
- * @param prisma The prisma service instance.
- * @param modelName The name of the model to clear.
- * @param tablesCleared The list of tables that have already been cleared.
- */
-async function clearTableWithCascade(prisma: PrismaService | PrismaClient, modelName: string, tablesCleared: string[]) {
-  // No, the full type of the model is not even exported :(
-  // (type RuntimeDataModel in prisma/client/runtime/library)
-  const model: Omit<DMMF.Model, 'name'> = (prisma as any)._runtimeDataModel.models[modelName];
-  for (const field of Object.values(model.fields)) {
-    // First, check that the field is a relation, and not a normal String, or Int, or any normal SQL type
-    // We then check that this is not a self-referencing relation, to avoid infinite loops
-    // The way we verify that this is not the part of the relation that is referenced is by checking the length of relationFromFields : if it has a length, the table contains the FK, if not, that's the other table
-    // Plot twist : Prisma allows for ManyToMany relations. That means that, to avoid infinitely looping, we verify the other relation in the opposite direction (with the same name) holds the FK
-    if (
-      field.kind === 'object' &&
-      field.type !== modelName &&
-      field.relationFromFields.length === 0 &&
-      !tablesCleared.includes(field.type) &&
-      (prisma as any)._runtimeDataModel.models[field.type].fields.find(
-        (f: DMMF.Field) => f.relationName === field.relationName,
-      ).relationFromFields.length !== 0
-    ) {
-      // After all these checks, simply delete rows from the other table first to avoid foreign key constraint errors
-      await clearTableWithCascade(prisma, field.type, tablesCleared);
-    }
-  }
-  // And finally, once it's safe to do it, delete the rows, and mark it as cleared
-  await prisma[modelName].deleteMany();
-  tablesCleared.push(modelName);
+  for (const modelName of Object.keys((prisma as any)._runtimeDataModel.models) as string[])
+    await prisma[modelName].deleteMany();
+  await prisma.$executeRawUnsafe(`SET FOREIGN_KEY_CHECKS = 1`);
 }

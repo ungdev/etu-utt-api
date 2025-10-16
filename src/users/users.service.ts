@@ -129,7 +129,7 @@ export default class UsersService {
       role: membership.role.name,
       asso: {
         ...membership.asso,
-        logo: membership.asso.logo ? `/media/image/${membership.asso.logo.id}.webp` : undefined,
+        logo: membership.asso.logo ? `/media/image/${membership.asso.logo.id}.webp` : null,
       },
     }));
     return membership;
