@@ -9,6 +9,7 @@ import { AssoMembershipRole } from './interfaces/membership-role.interface';
 import AssosSearchReqDto from './dto/req/assos-search-req.dto';
 import AssosMemberUpdateReqDto from './dto/req/assos-member-update.dto';
 import { AppException, ERROR_CODE } from '../exceptions';
+import AssosUpdateReqDto from './dto/req/assos-update-req.dto';
 
 @Injectable()
 export class AssosService {
@@ -77,6 +78,21 @@ export class AssosService {
     return this.prisma.normalize.asso.findUnique({
       where: {
         id: assoId,
+      },
+    });
+  }
+
+  async updateAsso(assoId: string, update: AssosUpdateReqDto): Promise<Asso> {
+    return this.prisma.normalize.asso.update({
+      where: { id: assoId },
+      data: {
+        ...(update.name ? { name: update.name } : {}),
+        ...(update.logo ? { logo: { connect: { id: update.logo } } } : {}),
+        ...(update.descriptionShort ? { descriptionShortTranslation: { update: update.descriptionShort } } : {}),
+        ...(update.description ? { descriptionTranslation: { update: update.description } } : {}),
+        ...(update.email ? { mail: update.email } : {}),
+        ...(update.phoneNumber ? { phoneNumber: update.phoneNumber } : {}),
+        ...(update.website ? { website: update.website } : {}),
       },
     });
   }

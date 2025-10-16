@@ -53,6 +53,7 @@
     "fast-xml-parser": "^5.0.9",
     "file-type": "^20.4.1",
     "ldapts": "^7.3.1",
+    "lexical": "^0.37.0",
     "multer": "1.4.5-lts.1",
     "pactum-matchers": "^1.1.7",
     "passport-jwt": "^4.0.1",
