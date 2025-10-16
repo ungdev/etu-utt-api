@@ -52,7 +52,7 @@ model Asso {
   mail                          String    @unique @db.VarChar(100)
   phoneNumber                   String?   @db.VarChar(30)
   website                       String?   @db.VarChar(100)
-  logo                          String?   @db.VarChar(100)
+  logoMediaId                   String?   @db.Char(36)
   createdAt                     DateTime  @default(now())
   updatedAt                     DateTime  @updatedAt
   deletedAt                     DateTime?
@@ -60,6 +60,8 @@ model Asso {
   descriptionTranslationId      String?   @unique
   assoAccountId                 String    @unique // User account of the asso
 
+  logo                        ImageMedia?          @relation("logo", fields: [logoMediaId], references: [id], onDelete: SetNull)
+  descriptionImages           ImageMedia[]         @relation("descriptionImages")
   descriptionShortTranslation Translation?         @relation(name: "descriptionShortTranslation", fields: [descriptionShortTranslationId], references: [id], onDelete: Cascade)
   descriptionTranslation      Translation?         @relation(name: "descriptionTranslation", fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
   assoMemberships             AssoMembership[]
@@ -160,6 +162,22 @@ model GitHubIssue {
   userId        String
 
   user User @relation(fields: [userId], references: [id])
+}
+
+model ImageMedia {
+  id         String           @id @default(uuid()) @db.Char(36)
+  size       Int              @db.UnsignedInt
+  width      Int              @db.UnsignedInt
+  height     Int              @db.UnsignedInt
+  uploadedAt DateTime         @default(now())
+  isPublic   Boolean          @default(false)
+  uploaderId String
+  preset     ImageMediaPreset
+
+  uploader            User        @relation(fields: [uploaderId], references: [id])
+  avatarForUsers      UserInfos[]
+  logoForAssos        Asso[]      @relation("logo")
+  descriptionForAssos Asso[]      @relation("descriptionImages")
 }
 
 model Semester {
@@ -592,6 +610,7 @@ model User {
   apiPermissionsTarget  ApiKeyPermission[]       @relation(name: "target")
   apiPermissionsGrants  ApiKeyPermission[]       @relation(name: "granter")
   asso                  Asso?
+  uploadedImages        ImageMedia[]
 }
 
 model UserAddress {
@@ -662,16 +681,17 @@ model UserFormation {
 }
 
 model UserInfos {
-  id          String    @id @default(uuid())
-  sex         Sex?
-  nationality String?   @db.VarChar(50)
-  birthday    DateTime? @db.Date
-  avatar      String    @default("default.png") @db.VarChar(255)
-  nickname    String?   @db.VarChar(50)
-  passions    String?   @db.Text
-  website     String?   @db.VarChar(255)
+  id            String    @id @default(uuid())
+  sex           Sex?
+  nationality   String?   @db.VarChar(50)
+  birthday      DateTime? @db.Date
+  avatarMediaId String?   @db.Char(36)
+  nickname      String?   @db.VarChar(50)
+  passions      String?   @db.Text
+  website       String?   @db.VarChar(255)
 
-  user User?
+  user   User?
+  avatar ImageMedia? @relation(fields: [avatarMediaId], references: [id], onDelete: SetNull)
 }
 
 model UserMailsPhones {
@@ -899,6 +919,11 @@ enum AddressPrivacy {
   ALL_PUBLIC
 }
 
+enum ImageMediaPreset {
+  AVATAR
+  CUSTOM
+}
+
 enum Permission {
   API_SEE_OPINIONS_UE // See the rates of an UE
   API_GIVE_OPINIONS_UE // Rate an UE you have done or are doing
@@ -906,6 +931,7 @@ enum Permission {
   API_UPLOAD_ANNALS // Upload an annal
   API_MODERATE_ANNALS // Moderate annals
   API_MODERATE_COMMENTS // Moderate comments
+  API_UPLOAD_MEDIA // Upload to media enpoints
 
   USER_SEE_DETAILS // See personal details about someone, even the ones the user decided to hide
   USER_UPDATE_DETAILS // Update personal details about someone

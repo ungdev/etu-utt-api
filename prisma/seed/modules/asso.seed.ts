@@ -15,7 +15,29 @@ export default function assoSeed(prisma: PrismaClient) {
           mail: faker.internet.email(),
           phoneNumber: faker.phone.number(),
           website: faker.internet.domainName(),
-          logo: faker.image.urlLoremFlickr({ category: 'business' }),
+          logo: {
+            create: {
+              height: 100,
+              width: 100,
+              size: 1024,
+              isPublic: true,
+              preset: 'AVATAR',
+              uploader: {
+                create: {
+                  login: name,
+                  firstName: '',
+                  lastName: '',
+                  userType: UserType.ASSOCIATION,
+                  socialNetwork: { create: {} },
+                  mailsPhones: { create: {} },
+                  rgpd: { create: {} },
+                  preference: { create: {} },
+                  infos: { create: {} },
+                  privacy: { create: {} },
+                },
+              },
+            },
+          },
           createdAt: date,
           updatedAt: date,
           descriptionShortTranslation: {
@@ -42,8 +64,8 @@ export default function assoSeed(prisma: PrismaClient) {
               preference: { create: {} },
               infos: { create: {} },
               privacy: { create: {} },
-            }
-          }
+            },
+          },
         },
       }),
     );

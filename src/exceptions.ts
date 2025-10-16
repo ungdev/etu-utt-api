@@ -40,6 +40,7 @@ export const enum ERROR_CODE {
   BODY_MISSING = 2022,
   PARAM_PAST_DATE = 2023,
   PARAM_MISSING_EITHER = 2024,
+  PARAM_LEXICAL_ILLEGAL = 2101,
   PARAM_DOES_NOT_MATCH_REGEX = 2102,
   NO_FIELD_PROVIDED = 2201,
   WIDGET_OVERLAPPING = 2301,
@@ -68,6 +69,8 @@ export const enum ERROR_CODE {
   NOT_ALREADY_DONE_UEOF = 4229,
   APPLICATION_NOT_OWNED = 4230,
   USER_ALREADY_ASSO_ROLE_MEMBER = 4231,
+  MEDIA_NOT_PUBLIC = 4232,
+  MEDIA_PRESET_REQUIRED = 4233,
   NO_SUCH_UE = 4401,
   NO_SUCH_COMMENT = 4402,
   NO_SUCH_REPLY = 4403,
@@ -84,11 +87,13 @@ export const enum ERROR_CODE {
   NO_SUCH_UE_AT_SEMESTER = 4414,
   NO_SUCH_ASSO_ROLE = 4415,
   NO_SUCH_ASSO_MEMBERSHIP = 4416,
+  NO_SUCH_MEDIA = 4417,
   ANNAL_ALREADY_UPLOADED = 4901,
   RESOURCE_UNAVAILABLE = 4902,
   RESOURCE_INVALID_TYPE = 4903,
   ASSO_ROLE_ALREADY_MOVED = 4904,
   CREDENTIALS_ALREADY_TAKEN = 5001,
+  SERVER_DISK_ERROR = 8001,
   HIDDEN_DUCK = 9999,
 }
 
@@ -206,6 +211,10 @@ export const ErrorData = Object.freeze({
     message: 'One of these parameters must be provided: %',
     httpCode: HttpStatus.BAD_REQUEST,
   },
+  [ERROR_CODE.PARAM_LEXICAL_ILLEGAL]: {
+    message: 'Content has a wrong syntax: %',
+    httpCode: HttpStatus.BAD_REQUEST,
+  },
   [ERROR_CODE.PARAM_DOES_NOT_MATCH_REGEX]: {
     message: 'The following parameters must match the regex "%": %',
     httpCode: HttpStatus.BAD_REQUEST,
@@ -318,6 +327,14 @@ export const ErrorData = Object.freeze({
     message: 'User is already member of this role: %',
     httpCode: HttpStatus.CONFLICT,
   },
+  [ERROR_CODE.MEDIA_NOT_PUBLIC]: {
+    message: 'Media must be public',
+    httpCode: HttpStatus.FORBIDDEN,
+  },
+  [ERROR_CODE.MEDIA_PRESET_REQUIRED]: {
+    message: 'Media must have preset %',
+    httpCode: HttpStatus.FORBIDDEN,
+  },
   [ERROR_CODE.NO_SUCH_UE]: {
     message: 'The UE % does not exist',
     httpCode: HttpStatus.NOT_FOUND,
@@ -382,6 +399,10 @@ export const ErrorData = Object.freeze({
     message: 'No such membership in asso: %',
     httpCode: HttpStatus.NOT_FOUND,
   },
+  [ERROR_CODE.NO_SUCH_MEDIA]: {
+    message: 'No such media: %',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
   [ERROR_CODE.ANNAL_ALREADY_UPLOADED]: {
     message: 'A file has alreay been uploaded for this annal',
     httpCode: HttpStatus.CONFLICT,
@@ -401,6 +422,10 @@ export const ErrorData = Object.freeze({
   [ERROR_CODE.ASSO_ROLE_ALREADY_MOVED]: {
     message: 'You should not try to update role position simultaneously',
     httpCode: HttpStatus.CONFLICT,
+  },
+  [ERROR_CODE.SERVER_DISK_ERROR]: {
+    message: 'An error occurred while accessing the server disk',
+    httpCode: HttpStatus.SERVICE_UNAVAILABLE,
   },
   [ERROR_CODE.HIDDEN_DUCK]: {
     message: 'Hey, you found the hidden duck ! Error : %',
