@@ -28,13 +28,14 @@ export class ImageMediaController {
     const media = await this.imageMediaService.getMedia(mediaId);
     if (!media) throw new AppException(ERROR_CODE.NO_SUCH_MEDIA, mediaId);
     if (!media.isPublic && !user) throw new AppException(ERROR_CODE.NOT_LOGGED_IN);
-    try {
-      const stream = this.imageMediaService.readMediaFromDisk(mediaId);
-      response.setHeader('Content-Type', 'image/webp');
-      stream.pipe(response);
-    } catch {
-      throw new AppException(ERROR_CODE.SERVER_DISK_ERROR);
-    }
+    const stream = this.imageMediaService.readMediaFromDisk(mediaId);
+    response.setHeader('Content-Type', 'image/webp');
+    stream.pipe(response);
+    stream.on('error', () => {
+      stream.close();
+      const exception = new AppException(ERROR_CODE.SERVER_DISK_ERROR);
+      response.status(exception.getStatus()).json(exception.getResponse());
+    });
   }
 
   @Post('/')
@@ -55,9 +56,9 @@ export class ImageMediaController {
     const media = await this.imageMediaService.convertMedia(multer, options);
     const savedMedia = await this.imageMediaService.registerMedia(media, user, options.public ?? false);
     try {
-      this.imageMediaService.writeMediaToDisk(savedMedia.id, multer.multer.buffer);
+      await this.imageMediaService.writeMediaToDisk(savedMedia.id, multer.multer.buffer);
     } catch {
-      this.imageMediaService.unRegisterMedia(savedMedia.id);
+      await this.imageMediaService.unRegisterMedia(savedMedia.id);
       throw new AppException(ERROR_CODE.SERVER_DISK_ERROR);
     }
     this.imageMediaService.cleanup();

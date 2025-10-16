@@ -32,7 +32,7 @@ const UpdateProfile = e2eSuite('PATCH /users/current', (app) => {
         displayAddress: 'ALL_PUBLIC',
       })
       .$expectRegexableJson({
-        avatar: user.infos.avatar,
+        avatar: user.infos.avatarMediaId ? `/media/image/${user.infos.avatarMediaId}.webp` : null,
         birthday: user.infos.birthday,
         discord: user.socialNetwork.discord,
         facebook: 'fbProfile',

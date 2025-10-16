@@ -113,7 +113,7 @@ export default class UsersController {
       userType: user.userType,
       infos: {
         ...pick(user.infos, 'nickname', 'nationality', 'passions', 'website'),
-        avatar: user.infos.avatar ? `/media/image/${user.infos.avatar.id}.webp` : undefined,
+        avatar: user.infos.avatar ? `/media/image/${user.infos.avatar.id}.webp` : null,
         sex: user.privacy.sex || includeAll ? user.infos.sex : undefined,
         birthday: user.privacy.birthday || includeAll ? user.infos.birthday : undefined,
       },
@@ -154,7 +154,7 @@ export default class UsersController {
       lastName: user.lastName,
       nickname: user.infos.nickname,
       type: user.userType,
-      avatar: user.infos.avatar ? `/media/image/${user.infos.avatar.id}.webp` : undefined,
+      avatar: user.infos.avatar ? `/media/image/${user.infos.avatar.id}.webp` : null,
       sex: user.privacy.sex || includeAll ? user.infos.sex : undefined,
       nationality: user.infos.nationality,
       birthday: user.privacy.birthday || includeAll ? user.infos.birthday : undefined,

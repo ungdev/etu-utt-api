@@ -97,7 +97,7 @@ export class AssosService {
     });
     if (update.description || update.descriptionShort) {
       // Cleanup unused images
-      const regex = /"src": "https:\/\/[^"]+\/media\/image\/([^/]+)\.webp"/g;
+      const regex = /"src":"https:\/\/[^"]+\/media\/image\/([^/]+)\.webp"/g;
       const imagesInUse = new Set<string>();
       for (const field in updated.descriptionTranslation)
         for (const match of (<string>updated.descriptionTranslation[field]).matchAll(regex)) imagesInUse.add(match[1]);
@@ -112,18 +112,25 @@ export class AssosService {
           })
         ).map((m) => m.id),
       );
-      const deletions = currentImages.difference(imagesInUse);
-      const additions = imagesInUse.difference(currentImages);
-      if (deletions.size > 0 || additions.size > 0)
-        // don't wait for this to complete
-        this.prisma.$transaction([
+      const deletions = [...currentImages].filter((x) => !imagesInUse.has(x));
+      const additions = [...imagesInUse].filter((x) => !currentImages.has(x));
+      const existingAdditionIds = new Set(
+        (
+          await this.prisma.imageMedia.findMany({
+            where: { id: { in: additions } },
+            select: { id: true },
+          })
+        ).map((m) => m.id),
+      );
+      if (deletions.length > 0 || additions.length > 0)
+        await this.prisma.$transaction([
           ...Array.from(deletions).map((id) =>
             this.prisma.imageMedia.update({
               where: { id },
               data: { descriptionForAssos: { disconnect: { id: assoId } } },
             }),
           ),
-          ...Array.from(additions).map((id) =>
+          ...Array.from(additions.filter((x) => existingAdditionIds.has(x))).map((id) =>
             this.prisma.imageMedia.update({
               where: { id },
               data: { descriptionForAssos: { connect: { id: assoId } } },
