@@ -1,5 +1,5 @@
 import { ERROR_CODE, ErrorData, ExtrasTypeBuilder } from '../src/exceptions';
-import { UeComment } from 'src/ue/comments/interfaces/comment.interface';
+import { UeComment, UeCommentReport } from 'src/ue/comments/interfaces/comment.interface';
 import { UeCommentReply } from 'src/ue/comments/interfaces/comment-reply.interface';
 import { UeRating } from 'src/ue/interfaces/rate.interface';
 import { FakeApiApplication, FakeUeAnnalType, FakeUeof } from './utils/fakedb';
@@ -59,6 +59,8 @@ declare module './declarations' {
      * The HTTP Status code may be 200 or 204, depending on the {@link created} property.
      */
     expectUeCommentReply(reply: JsonLikeVariant<UeCommentReply>, created = false): this;
+    /** expects to return the given {@link UeCommentReport} */
+    expectUeCommentReport(report: JsonLikeVariant<UeCommentReport>): this;
     /** expects to return the given {@link criterion} list */
     expectUeCriteria(criterion: JsonLikeVariant<Criterion[]>): this;
     /** expects to return the given {@link rate} */

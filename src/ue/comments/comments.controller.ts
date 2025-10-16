@@ -17,9 +17,9 @@ import UeCommentReplyResDto from './dto/res/ue-comment-reply-res.dto';
 import { Permission } from '@prisma/client';
 import { GetPermissions } from '../../auth/decorator/get-permissions.decorator';
 import { PermissionManager } from '../../utils';
-import GetReportedCommentsReqDto from './dto/req/ue-get-reported-comments-req.dto copy';
 import UeCommentReportResDto from './dto/res/ue-comment-report-res.dto';
 import CommentReportReqDto from './dto/req/ue-comment-report-req.dto';
+import GetReportedCommentsReqDto from './dto/req/ue-get-reported-comments-req.dto';
 
 @Controller('ue/comments')
 @ApiTags('UE Comment')
@@ -70,6 +70,17 @@ export class CommentsController {
     if (await this.commentsService.hasAlreadyPostedAComment(user.id, body.ueCode))
       throw new AppException(ERROR_CODE.FORBIDDEN_ALREADY_COMMENTED);
     return this.commentsService.createComment(body, user.id);
+  }
+
+  @Get('/reports')
+  @RequireApiPermission('API_MODERATE_COMMENTS')
+  @ApiOperation({ description: 'Get all reported comments, this route is paginated' })
+  @ApiOkResponse({ type: paginatedResponseDto(UeCommentResDto) })
+  async getReportedComments(
+    @GetUser() user: User,
+    @Query() dto: GetReportedCommentsReqDto,
+  ): Promise<Pagination<UeCommentResDto>> {
+    return await this.commentsService.getReportedComments(user.id, dto);
   }
 
   // TODO : en vrai la route GET /ue/comments renvoie les mêmes infos nan ? :sweat_smile:
@@ -259,20 +270,10 @@ export class CommentsController {
     throw new AppException(ERROR_CODE.NOT_REPLY_AUTHOR);
   }
 
-  @Get('/reports')
-  @RequireApiPermission('API_MODERATE_COMMENTS')
-  @ApiOperation({ description: 'Get all reported comments, this route is paginated' })
-  @ApiOkResponse({ type: paginatedResponseDto(UeCommentResDto) })
-  async getReportedComments(
-    @GetUser() user: User,
-    @Body() body: GetReportedCommentsReqDto,
-  ): Promise<Pagination<UeCommentResDto>> {
-    return await this.commentsService.getReportedComments(user.id, body);
-  }
-
   @Post(':commentId/report')
   @RequireApiPermission('API_SEE_OPINIONS_UE')
   @ApiOperation({ description: 'Report a comment' })
+  @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: UeCommentReportResDto })
   async reportComment(
     @GetUser() user: User,
@@ -285,10 +286,12 @@ export class CommentsController {
       throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
     if (await this.commentsService.isUserCommentAuthor(user.id, commentId))
       throw new AppException(ERROR_CODE.IS_COMMENT_AUTHOR);
-    return await this.commentsService.reportComment(user.id, body, commentId, commentModerator);
+    if (!(await this.commentsService.doesReportReasonExist(body.reason)))
+      throw new AppException(ERROR_CODE.NO_SUCH_REPORT_REASON);
+    return this.commentsService.reportComment(user.id, body, commentId, commentModerator);
   }
 
-  @Put(':commentId/:reportId')
+  @Patch(':commentId/:reportId')
   @RequireApiPermission('API_MODERATE_COMMENTS')
   @ApiOperation({ description: 'Mitigate a report' })
   @ApiOkResponse({ type: UeCommentReportResDto })
@@ -301,8 +304,8 @@ export class CommentsController {
     const commentModerator = permissions.can('API_MODERATE_COMMENTS');
     if (!(await this.commentsService.doesCommentExist(commentId, user.id, commentModerator)))
       throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
-    if (await this.commentsService.isUserCommentAuthor(user.id, commentId))
-      throw new AppException(ERROR_CODE.IS_COMMENT_AUTHOR);
-    return await this.commentsService.mitigateReport(commentId,reportId);
+    if(!(await this.commentsService.doesReportExist(reportId)))
+      throw new AppException(ERROR_CODE.NO_SUCH_REPORT)
+    return await this.commentsService.mitigateReport(commentId, reportId);
   }
 }

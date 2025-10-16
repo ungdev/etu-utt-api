@@ -33,12 +33,13 @@ import {
   RawUserPrivacy,
   RawApiKey,
   RawApiApplication,
+  RawUeCommentReport,
 } from '../../src/prisma/types';
 import { faker } from '@faker-js/faker';
 import { AuthService } from '../../src/auth/auth.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { AppProvider } from './test_utils';
-import { Permission, Sex, TimetableEntryType, UserType } from '@prisma/client';
+import { Permission, Sex, TimetableEntryType, UeCommentReportReason, UserType } from '@prisma/client';
 import { CommentStatus } from '../../src/ue/comments/interfaces/comment.interface';
 import { AnnalStatus, UeAnnalFile } from '../../src/ue/annals/interfaces/annal.interface';
 import { omit, pick, translationSelect } from '../../src/utils';
@@ -104,11 +105,13 @@ export type FakeUeof = Partial<Omit<RawUeof, 'nameTranslationId' | 'ueofInfoId' 
 export type FakeUserUeSubscription = Partial<RawUserUeSubscription>;
 export type FakeUeStarCriterion = Partial<RawUeStarCriterion>;
 export type FakeUeStarVote = Partial<RawUeStarVote>;
-export type FakeComment = Partial<RawUeComment> & { status: Exclude<CommentStatus, CommentStatus.HIDDEN> };
+export type FakeComment = Partial<RawUeComment> & { status: Exclude<CommentStatus, CommentStatus.HIDDEN>, reports: FakeCommentReport[] };
 export type FakeCommentUpvote = Partial<RawUeCommentUpvote>;
 export type FakeCommentReply = Partial<RawUeCommentReply> & {
   status: Exclude<CommentStatus, CommentStatus.HIDDEN>;
 };
+export type FakeCommentReport = Partial<RawUeCommentReport>;
+export type FakeCommentReportReason = Partial<UeCommentReportReason>;
 export type FakeUeCreditCategory = Partial<RawCreditCategory>;
 export type FakeUeAnnalType = Partial<RawAnnalType>;
 export type FakeUeAnnal = Partial<UeAnnalFile>;
@@ -203,6 +206,15 @@ export interface FakeEntityMap {
       status: Exclude<CommentStatus, CommentStatus.HIDDEN>;
     };
     deps: { user: FakeUser; comment: FakeComment };
+  };
+  commentReport: {
+    entity: FakeCommentReport;
+    params: CreateCommentReport;
+    deps: { comment: FakeComment; user: FakeUser; reason: FakeCommentReportReason };
+  };
+  commentReportReason: {
+    entity: FakeCommentReportReason;
+    params: CreateCommentReportReason;
   };
   ueCreditCategory: {
     entity: FakeUeCreditCategory;
@@ -515,8 +527,8 @@ export const createAsso = entityFaker(
               preference: { create: {} },
               infos: { create: {} },
               privacy: { create: {} },
-            }
-          }
+            },
+          },
         },
       });
     const presidentRole = await app()
@@ -934,7 +946,7 @@ export const createUeRating = entityFaker(
   },
 );
 
-export type CreateCommentParameters = Omit<FakeComment, 'ueofCode' | 'authorId' | 'semesterId' | 'status'>;
+export type CreateCommentParameters = Omit<FakeComment, 'ueofCode' | 'authorId' | 'semesterId' | 'status' | 'reports'>;
 export const createComment = entityFaker(
   'comment',
   {
@@ -943,6 +955,7 @@ export const createComment = entityFaker(
     status: CommentStatus.ACTIVE,
   },
   async (app, dependencies, params) => {
+    delete (params as any).reports
     const rawFakeData = await app()
       .get(PrismaService)
       .ueComment.create({
@@ -966,7 +979,7 @@ export const createComment = entityFaker(
           },
         },
       });
-    return { ...omit(rawFakeData, 'ueofCode', 'authorId', 'semesterId'), status: params.status };
+    return { ...omit(rawFakeData, 'ueofCode', 'authorId', 'semesterId'), status: params.status, reports: [] };
   },
 );
 
@@ -1019,6 +1032,62 @@ export const createCommentReply = entityFaker(
       });
     return { ...rawFakeReply, status: params.status };
   },
+);
+export type CreateCommentReport = FakeCommentReport;
+export const createCommentReport = entityFaker(
+  'commentReport',
+  {
+    body: faker.word.words(),
+    mitigated: faker.datatype.boolean(),
+    createdAt: faker.date.recent(),
+  },
+  async (app, deps, params) => {
+    return app()
+      .get(PrismaService)
+      .ueCommentReport.create({
+        data: {
+          ...omit(params, 'userId', 'commentId', 'reasonId'),
+          reportedBody: deps.comment.body,
+          comment: {
+            connect: {
+              id: deps.comment.id,
+            },
+          },
+          user: {
+            connect: {
+              id: deps.user.id,
+            },
+          },
+          reason: {
+            connect: {
+              name: deps.reason.name,
+            },
+          },
+        },
+      });
+  },
+);
+
+export type CreateCommentReportReason = FakeCommentReportReason;
+export const createCommentReportReason = entityFaker(
+  'commentReportReason',
+  {
+    name: faker.word.adjective(),
+  },
+  async (app, params) =>
+    app()
+      .get(PrismaService)
+      .ueCommentReportReason.create({
+        data: {
+          ...omit(params, 'descriptionTranslationId'),
+          descriptionTranslation: {
+            create: {
+              id: params.descriptionTranslationId,
+              fr: 'TODO : implement this value',
+            },
+          },
+        },
+      }),
 );
 
 export type CreateUeCreditCategoryParameters = FakeUeCreditCategory;

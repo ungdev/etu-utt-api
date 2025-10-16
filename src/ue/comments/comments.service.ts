@@ -8,8 +8,11 @@ import GetUeCommentsReqDto from './dto/req/ue-get-comments-req.dto';
 import { UeCommentReply } from './interfaces/comment-reply.interface';
 import { UeComment } from './interfaces/comment.interface';
 import { ConfigModule } from '../../config/config.module';
-import GetReportedCommentsReqDto from './dto/req/ue-get-reported-comments-req.dto copy';
 import CommentReportReqDto from './dto/req/ue-comment-report-req.dto';
+import GetReportedCommentsReqDto from './dto/req/ue-get-reported-comments-req.dto';
+import UeCommentReportResDto from './dto/res/ue-comment-report-res.dto';
+import { omit } from '../../utils';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class CommentsService {
@@ -398,19 +401,18 @@ export class CommentsService {
    * @returns whether the {@link commentId | comment} exists
    */
   async doesCommentExist(commentId: string, userId: string, isModerator: boolean = false) {
-    return (
-      (await this.prisma.ueComment.count({
-        where: {
-          id: commentId,
-          deletedAt: isModerator ? undefined : null,
-          reports: {
-            none: {
-              mitigated: isModerator ? undefined : false,
-            },
-          },
+    const where: Prisma.UeCommentWhereInput = {
+      id: commentId,
+    };
+    if (!isModerator) {
+      where.deletedAt = null;
+      where.reports = {
+        none: {
+          mitigated: false,
         },
-      })) != 0
-    );
+      };
+    }
+    return (await this.prisma.ueComment.count({ where })) != 0;
   }
 
   /**
@@ -456,15 +458,38 @@ export class CommentsService {
   }
 
   /**
+   * Check if a report  exist
+   * @param reportId the id of the report
+   * @returns true if it exists
+   */
+  async doesReportExist(reportId: string): Promise<Boolean> {
+    return (await this.prisma.ueCommentReport.count({ where: { id: reportId } })) == 1;
+  }
+
+  /**
+   * Check if a report reason exist
+   * @param reasonName the name of the report reason
+   * @returns true if it exists
+   */
+  async doesReportReasonExist(reasonName: string): Promise<Boolean> {
+    return (await this.prisma.ueCommentReportReason.count({ where: { name: reasonName } })) == 1;
+  }
+
+  /**
    * Report a comment
    * @param userId the user id of the reporter
    * @param body the report data
    */
-  async reportComment(userId: string, body: CommentReportReqDto, commentId: string, isModerator: boolean) {
+  async reportComment(
+    userId: string,
+    body: CommentReportReqDto,
+    commentId: string,
+    isModerator: boolean,
+  ): Promise<UeCommentReportResDto> {
     // How are reasons handled by the front ?
     // Do we need another route to load reasons ?
     const comment = await this.getCommentFromId(commentId, userId, isModerator);
-    const report = this.prisma.ueCommentReport.create({
+    const report = await this.prisma.ueCommentReport.create({
       data: {
         body: body.body,
         reportedBody: comment.body,
@@ -484,19 +509,32 @@ export class CommentsService {
           },
         },
       },
+      include: {
+        user: true,
+        reason: true,
+      },
     });
-    return report;
+    return {
+      ...omit(report, 'reason', 'reasonId', 'userId', 'user'),
+      reason: report.reason.name,
+      user: {
+        firstName: report.user.firstName,
+        id: report.user.id,
+        lastName: report.user.lastName,
+        studentId: report.user.studentId,
+      },
+    };
   }
 
   async mitigateReport(commentId: string, reportId: string) {
-    this.prisma.ueCommentReport.update({
+    return this.prisma.ueCommentReport.update({
       where: {
         commentId,
         id: reportId,
       },
       data: {
-        mitigated: true
-      }
+        mitigated: true,
+      },
     });
   }
 }
