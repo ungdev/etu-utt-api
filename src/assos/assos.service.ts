@@ -83,7 +83,7 @@ export class AssosService {
   }
 
   async updateAsso(assoId: string, update: AssosUpdateReqDto): Promise<Asso> {
-    return this.prisma.normalize.asso.update({
+    const updated = await this.prisma.normalize.asso.update({
       where: { id: assoId },
       data: {
         ...(update.name ? { name: update.name } : {}),
@@ -95,6 +95,43 @@ export class AssosService {
         ...(update.website ? { website: update.website } : {}),
       },
     });
+    if (update.description || update.descriptionShort) {
+      // Cleanup unused images
+      const regex = /"src": "https:\/\/[^"]+\/media\/image\/([^/]+)\.webp"/g;
+      const imagesInUse = new Set<string>();
+      for (const field in updated.descriptionTranslation)
+        for (const match of (<string>updated.descriptionTranslation[field]).matchAll(regex)) imagesInUse.add(match[1]);
+      for (const field in updated.descriptionShortTranslation)
+        for (const match of (<string>updated.descriptionShortTranslation[field]).matchAll(regex))
+          imagesInUse.add(match[1]);
+      const currentImages = new Set(
+        (
+          await this.prisma.imageMedia.findMany({
+            where: { descriptionForAssos: { some: { id: assoId } } },
+            select: { id: true },
+          })
+        ).map((m) => m.id),
+      );
+      const deletions = currentImages.difference(imagesInUse);
+      const additions = imagesInUse.difference(currentImages);
+      if (deletions.size > 0 || additions.size > 0)
+        // don't wait for this to complete
+        this.prisma.$transaction([
+          ...Array.from(deletions).map((id) =>
+            this.prisma.imageMedia.update({
+              where: { id },
+              data: { descriptionForAssos: { disconnect: { id: assoId } } },
+            }),
+          ),
+          ...Array.from(additions).map((id) =>
+            this.prisma.imageMedia.update({
+              where: { id },
+              data: { descriptionForAssos: { connect: { id: assoId } } },
+            }),
+          ),
+        ]);
+    }
+    return updated;
   }
 
   async getAssoMembers(assoId: string): Promise<AssoMembershipRole[]> {
