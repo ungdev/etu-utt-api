@@ -22,6 +22,7 @@ import { ImageMediaModule } from './media/image/imagemedia.module';
     ConfigModule,
     HttpModule,
     PrismaModule,
+    ImageMediaModule,
     SemesterModule,
     AuthModule,
     ProfileModule,
@@ -30,7 +31,6 @@ import { ImageMediaModule } from './media/image/imagemedia.module';
     TimetableModule,
     BranchModule,
     AssosModule,
-    ImageMediaModule,
   ],
   // The providers below are used for all the routes of the api.
   // For example, the JwtGuard is used for all the routes and checks whether the user is authenticated.

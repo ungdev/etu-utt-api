@@ -171,10 +171,10 @@ model ImageMedia {
   height     Int              @db.UnsignedInt
   uploadedAt DateTime         @default(now())
   isPublic   Boolean          @default(false)
-  uploaderId String
+  uploaderId String?
   preset     ImageMediaPreset
 
-  uploader            User        @relation(fields: [uploaderId], references: [id])
+  uploader            User?       @relation(fields: [uploaderId], references: [id])
   avatarForUsers      UserInfos[]
   logoForAssos        Asso[]      @relation("logo")
   descriptionForAssos Asso[]      @relation("descriptionImages")

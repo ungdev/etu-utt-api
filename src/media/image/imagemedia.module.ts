@@ -5,5 +5,6 @@ import { ImageMediaService } from './imagemedia.service';
 @Module({
   controllers: [ImageMediaController],
   providers: [ImageMediaService],
+  exports: [ImageMediaService],
 })
 export class ImageMediaModule {}

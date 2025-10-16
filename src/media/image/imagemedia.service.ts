@@ -32,7 +32,7 @@ export class ImageMediaService {
     if (!(options.preset in presets)) options.preset = ImageMediaPreset.CUSTOM;
     if (options.preset) Object.assign(options, presets[options.preset]);
     let instructions = sharp(file.multer.buffer);
-    const metadata = await instructions.metadata();
+    let metadata = await instructions.metadata();
     const size = [metadata.width, metadata.height];
     if (options.rotation) {
       instructions = instructions.rotate(options.rotation * 90);
@@ -43,16 +43,16 @@ export class ImageMediaService {
     if (options.width && options.height)
       instructions = instructions.resize(options.width, options.height, { fit: 'cover' });
     file.mime = 'image/webp';
-    file.multer.buffer = await instructions
-      .webp({
-        quality: options.quality,
-        effort: options.effort,
-        nearLossless: true,
-        smartSubsample: true,
-        alphaQuality: options.quality,
-      })
-      .toBuffer();
-    return { width: size[0], height: size[1], size: file.multer.buffer.length, preset: options.preset };
+    instructions = instructions.webp({
+      quality: options.quality,
+      effort: options.effort,
+      nearLossless: true,
+      smartSubsample: true,
+      alphaQuality: options.quality,
+    });
+    file.multer.buffer = await instructions.toBuffer();
+    metadata = await sharp(file.multer.buffer).metadata();
+    return { width: metadata.width, height: metadata.height, size: file.multer.buffer.length, preset: options.preset };
   }
 
   async registerMedia(metaData: ImageMetadata, uploader: User, isPublic: boolean): Promise<ImageMedia> {
