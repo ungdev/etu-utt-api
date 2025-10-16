@@ -59,6 +59,7 @@ const GetUserAssociationE2ESpec = e2eSuite('GET /users/:userId/associations', (a
       asso: {
         ...omit(membership.asso, 'descriptionShortTranslation'),
         shortDescription: membership.asso.descriptionShortTranslation.fr,
+        logo: membership.asso.logo ? `/media/image/${membership.asso.logo.id}.webp` : null,
       },
     }));
 

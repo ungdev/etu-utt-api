@@ -7,6 +7,7 @@ import {
   FakeAssoMembership,
   FakeAssoMembershipPermission,
   FakeAssoMembershipRole,
+  FakeImageMedia,
   FakeUeAnnalType,
   FakeUeof,
 } from './utils/fakedb';
@@ -21,9 +22,11 @@ import { PermissionManager } from '../src/utils';
 type JsonLikeVariant<T> = Partial<{
   [K in keyof T]: T[K] extends string | Date
     ? symbol | RegExp | T[K]
-    : T[K] extends (infer R)[]
-      ? JsonLikeVariant<R>[]
-      : JsonLikeVariant<T[K]>;
+    : T[K] extends number
+      ? symbol | number
+      : T[K] extends (infer R)[]
+        ? JsonLikeVariant<R>[]
+        : JsonLikeVariant<T[K]>;
 }>;
 type FakeUeWithOfs = FakeUe & { ueofs: FakeUeof[] };
 
@@ -104,6 +107,7 @@ declare module './declarations' {
     expectCreditCategories(categories: JsonLikeVariant<FakeUeCreditCategory[]>): this;
     expectApplications(applications: FakeApiApplication[]): this;
     expectApplication(application: FakeApiApplication): this;
+    expectImageMedia(media: JsonLikeVariant<FakeImageMedia>): this;
 
     expectPermissions(permissions: PermissionManager): this;
 

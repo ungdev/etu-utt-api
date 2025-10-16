@@ -81,10 +81,10 @@ export class AssosController {
     if (!(await this.assosService.hasSomeAssoPermission(asso, user.id, 'manage_infos')))
       throw new AppException(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, 'manage_infos');
     for (const key in body.description)
-      if (!isValidLexicalContent(body.description[key]))
+      if (body.description[key] && !isValidLexicalContent(body.description[key]))
         throw new AppException(ERROR_CODE.PARAM_LEXICAL_ILLEGAL, `description.${key}`);
     for (const key in body.descriptionShort)
-      if (!isValidLexicalContent(body.descriptionShort[key]))
+      if (body.descriptionShort[key] && !isValidLexicalContent(body.descriptionShort[key]))
         throw new AppException(ERROR_CODE.PARAM_LEXICAL_ILLEGAL, `descriptionShort.${key}`);
     if (body.logo) {
       const media = await this.mediaService.getMedia(body.logo);

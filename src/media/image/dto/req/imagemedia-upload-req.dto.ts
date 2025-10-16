@@ -1,4 +1,5 @@
 import { ImageMediaPreset } from '@prisma/client';
+import { Type } from 'class-transformer';
 import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export default class ImageMediaUploadReqDto {
@@ -6,30 +7,35 @@ export default class ImageMediaUploadReqDto {
   @IsInt()
   @Min(100)
   @Max(1920)
+  @Type(() => Number)
   width?: number;
 
   @IsOptional()
   @IsInt()
   @Min(100)
   @Max(1080)
+  @Type(() => Number)
   height?: number;
 
   @IsOptional()
   @IsInt()
   @Min(1)
   @Max(100)
+  @Type(() => Number)
   quality?: number;
 
   @IsOptional()
   @IsInt()
   @Min(0)
   @Max(6)
+  @Type(() => Number)
   effort?: number;
 
   @IsOptional()
   @IsInt()
   @Min(0)
   @Max(3)
+  @Type(() => Number)
   rotation?: 0 | 1 | 2 | 3;
 
   @IsOptional()
@@ -40,5 +46,6 @@ export default class ImageMediaUploadReqDto {
   /** By default, images are NOT public and only accessible to logged users. */
   @IsOptional()
   @IsBoolean()
+  @Type(() => Boolean)
   public?: boolean;
 }

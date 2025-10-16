@@ -124,7 +124,9 @@ export class PermissionManager {
 
 export function isValidLexicalContent(userInput: string) {
   try {
-    const editor = createEditor();
+    const editor = createEditor({
+      onError: () => {}, // silent parsing errors
+    });
     const parsed = JSON.parse(userInput);
     const editorState = editor.parseEditorState(parsed);
     editorState.read(() => {});
