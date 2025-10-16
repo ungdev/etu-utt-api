@@ -76,6 +76,8 @@ export const enum ERROR_CODE {
   NO_SUCH_UEOF = 4411,
   NO_SUCH_APPLICATION = 4412,
   NO_SUCH_UE_AT_SEMESTER = 4413,
+  NO_SUCH_REPORT = 4414,
+  NO_SUCH_REPORT_REASON = 4415,
   ANNAL_ALREADY_UPLOADED = 4901,
   RESOURCE_UNAVAILABLE = 4902,
   RESOURCE_INVALID_TYPE = 4903,
@@ -339,6 +341,14 @@ export const ErrorData = Object.freeze({
   },
   [ERROR_CODE.NO_SUCH_UE_AT_SEMESTER]: {
     message: 'UE % does not exist for semester %',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
+  [ERROR_CODE.NO_SUCH_REPORT]: {
+    message: 'The report does not exist', 
+    httpCode: HttpStatus.NOT_FOUND,
+  },
+  [ERROR_CODE.NO_SUCH_REPORT_REASON]: {
+    message: 'The report reason does not exist',
     httpCode: HttpStatus.NOT_FOUND,
   },
   [ERROR_CODE.ANNAL_ALREADY_UPLOADED]: {

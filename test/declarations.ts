@@ -2,7 +2,7 @@ import { HttpStatus } from '@nestjs/common';
 import Spec from 'pactum/src/models/Spec';
 import { FakeUeWithOfs, JsonLikeVariant } from './declarations.d';
 import { ERROR_CODE, ErrorData, ExtrasTypeBuilder } from '../src/exceptions';
-import { UeComment } from '../src/ue/comments/interfaces/comment.interface';
+import { UeComment, UeCommentReport } from '../src/ue/comments/interfaces/comment.interface';
 import { UeCommentReply } from '../src/ue/comments/interfaces/comment-reply.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { UeRating } from 'src/ue/interfaces/rate.interface';
@@ -166,7 +166,7 @@ Spec.prototype.expectUesWithPagination = function (app: AppProvider, ues: FakeUe
 };
 Spec.prototype.expectUeComment = function expect(this: Spec, obj, created = false) {
   return this.expectStatus(created ? HttpStatus.CREATED : HttpStatus.OK).expectJsonLike({
-    ...omit(obj as any, 'ueof'),
+    ...omit(obj as any, 'ueof','reports'),
     ueof: {
       code: obj.ueof.code,
       info: {
@@ -198,6 +198,7 @@ Spec.prototype.expectUeComments = function expect(obj) {
   } satisfies JsonLikeVariant<Pagination<UeComment>>);
 };
 Spec.prototype.expectUeCommentReply = expectOkOrCreate<UeCommentReply>;
+Spec.prototype.expectUeCommentReport = expectOkOrCreate<UeCommentReport>;
 Spec.prototype.expectUeCriteria = expect<Criterion[]>;
 Spec.prototype.expectUeRate = expect<UeRating>;
 Spec.prototype.expectUeRates = expect<{ [criterion: string]: UeRating[] }>;

@@ -80,6 +80,7 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
         createdAt: comment.createdAt.toISOString(),
         semester: semester.code,
         upvotes: 1,
+        reports: [],
         upvoted: false,
       }));
 
@@ -107,6 +108,7 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
         createdAt: comment.createdAt.toISOString(),
         semester: semester.code,
         upvotes: 1,
+        reports: [],
         upvoted: true,
       });
   });
