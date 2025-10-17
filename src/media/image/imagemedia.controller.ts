@@ -2,7 +2,7 @@ import { Controller, Get, Post, Query, Response } from '@nestjs/common';
 import { ApiConsumes, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Response as ExpressResponse } from 'express';
 import { FileSize, MulterWithMime, UploadRoute, UserFile } from '../../upload.interceptor';
-import { GetUser, IsPublic, RequireApiPermission } from '../../auth/decorator';
+import { GetUser, IsPublic, RequireApiPermission, SkipApplicationCheck } from '../../auth/decorator';
 import { AppException, ERROR_CODE } from '../../exceptions';
 import { ApiAppErrorResponse } from '../../app.dto';
 import { ImageMediaService } from './imagemedia.service';
@@ -17,7 +17,8 @@ import ImageMediaUploadResDto from './dto/res/imagemedia-upload-res.dto';
 export class ImageMediaController {
   constructor(readonly imageMediaService: ImageMediaService) {}
 
-  @Get('/:mediaId')
+  @Get('/:mediaId.webp')
+  @SkipApplicationCheck()
   @IsPublic()
   @ApiOperation({ description: 'Retrieve a media by its id.' })
   @ApiOkResponse({ description: 'The media is contained in the body of the response' })
