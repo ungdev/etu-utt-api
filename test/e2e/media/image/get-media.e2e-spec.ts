@@ -29,15 +29,15 @@ export const GetMediaE2ESpec = e2eSuite('GET /media/image/:mediaId', (app) => {
   });
 
   it('should return a 404 as the media does not exist', () =>
-    pactum.spec().get(`/media/image/${Dummies.UUID}`).expectAppError(ERROR_CODE.NO_SUCH_MEDIA, Dummies.UUID));
+    pactum.spec().get(`/media/image/${Dummies.UUID}.webp`).expectAppError(ERROR_CODE.NO_SUCH_MEDIA, Dummies.UUID));
 
   it('should return a 401 as the media is not public', () =>
-    pactum.spec().get(`/media/image/${nonPublicMedia.id}`).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
+    pactum.spec().get(`/media/image/${nonPublicMedia.id}.webp`).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
 
   it('should return a 200 and the media (public)', () =>
     pactum
       .spec()
-      .get(`/media/image/${publicMedia.id}`)
+      .get(`/media/image/${publicMedia.id}.webp`)
       .expectStatus(200)
       .expectHeader('content-type', 'image/webp')
       .expectBodyContains('RIFF'));
@@ -46,11 +46,11 @@ export const GetMediaE2ESpec = e2eSuite('GET /media/image/:mediaId', (app) => {
     pactum
       .spec()
       .withBearerToken(user.token)
-      .get(`/media/image/${nonPublicMedia.id}`)
+      .get(`/media/image/${nonPublicMedia.id}.webp`)
       .expectStatus(200)
       .expectHeader('content-type', 'image/webp')
       .expectBodyContains('RIFF'));
 
   it('should return a 503 as there is an error reading the file', () =>
-    pactum.spec().get(`/media/image/${publicMediaInError.id}`).expectAppError(ERROR_CODE.SERVER_DISK_ERROR));
+    pactum.spec().get(`/media/image/${publicMediaInError.id}.webp`).expectAppError(ERROR_CODE.SERVER_DISK_ERROR));
 });
