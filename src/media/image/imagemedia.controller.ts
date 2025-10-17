@@ -30,6 +30,7 @@ export class ImageMediaController {
     if (!media.isPublic && !user) throw new AppException(ERROR_CODE.NOT_LOGGED_IN);
     const stream = this.imageMediaService.readMediaFromDisk(mediaId);
     response.setHeader('Content-Type', 'image/webp');
+    response.setHeader('Cache-Control', `${media.isPublic ? 'public' : 'private'}, max-age=31536000, immutable`); // 1 year
     stream.pipe(response);
     stream.on('error', () => {
       stream.close();
