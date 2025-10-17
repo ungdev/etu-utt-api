@@ -13,10 +13,14 @@ import { ERROR_CODE } from 'src/exceptions';
 import { e2eSuite } from '../../utils/test_utils';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { faker } from '@faker-js/faker';
+import { PermissionManager } from '../../../src/utils';
 
 const PutRate = e2eSuite('PUT /ue/ueof/{ueofCode}/rate', (app) => {
-  const user = createUser(app, { permissions: ['API_GIVE_OPINIONS_UE'] });
-  const userNoUe = createUser(app, { login: 'user2', permissions: ['API_GIVE_OPINIONS_UE'] });
+  const user = createUser(app, { permissions: new PermissionManager().with('API_GIVE_OPINIONS_UE') });
+  const userNoUe = createUser(app, {
+    login: 'user2',
+    permissions: new PermissionManager().with('API_GIVE_OPINIONS_UE'),
+  });
   const userNoPermission = createUser(app);
   const semester = createSemester(app);
   const branch = createBranch(app);

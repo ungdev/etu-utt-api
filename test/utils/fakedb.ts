@@ -41,7 +41,7 @@ import { AppProvider } from './test_utils';
 import { Permission, Sex, TimetableEntryType, UserType } from '@prisma/client';
 import { CommentStatus } from '../../src/ue/comments/interfaces/comment.interface';
 import { UeAnnalFile } from '../../src/ue/annals/interfaces/annal.interface';
-import { omit, pick, translationSelect } from '../../src/utils';
+import { omit, PermissionManager, pick, translationSelect } from '../../src/utils';
 import { DEFAULT_APPLICATION } from '../../prisma/seed/utils';
 
 /**
@@ -50,7 +50,7 @@ import { DEFAULT_APPLICATION } from '../../prisma/seed/utils';
  */
 export type FakeUser = Partial<RawUser> & {
   infos?: Partial<RawUserInfos>;
-  permissions?: Permission[];
+  permissions?: PermissionManager;
   mailsPhones?: Partial<RawUserMailsPhones>;
   addresses?: Array<Partial<RawUserAddress>>;
   socialNetwork?: Partial<RawUserSocialNetwork>;
@@ -266,7 +266,7 @@ export const createUser = entityFaker(
       },
     ],
     branchSubscriptions: [],
-    permissions: [],
+    permissions: () => new PermissionManager(),
     privacy: {},
   },
   async (app, params) => {
@@ -333,6 +333,7 @@ export const createUser = entityFaker(
           privacy: true,
         },
       });
+    params.permissions.with(Permission.USER_SEE_DETAILS, user.id).with(Permission.USER_UPDATE_DETAILS, user.id);
     const apiKey = await app()
       .get(PrismaService)
       .apiKey.create({
@@ -342,35 +343,28 @@ export const createUser = entityFaker(
           application: { connect: { id: DEFAULT_APPLICATION.id } },
           apiKeyPermissions: {
             create: [
-              ...(params.permissions.includes(Permission.USER_SEE_DETAILS)
-                ? []
-                : [
-                    {
-                      permission: Permission.USER_SEE_DETAILS,
-                      user: { connect: { id: user.id } },
-                      granter: { connect: { id: user.id } },
-                    },
-                  ]),
-              ...(params.permissions.includes(Permission.USER_UPDATE_DETAILS)
-                ? []
-                : [
-                    {
-                      permission: Permission.USER_UPDATE_DETAILS,
-                      user: { connect: { id: user.id } },
-                      granter: { connect: { id: user.id } },
-                    },
-                  ]),
-              ...params.permissions.map((permission) => ({
+              ...params.permissions.hardPermissions.map((permission) => ({
                 permission,
                 granter: { connect: { id: user.id } },
               })),
+              ...Object.entries(params.permissions.softPermissions).reduce(
+                (previous, [permission, users]) => [
+                  ...previous,
+                  ...users.map((permissionUser) => ({
+                    permission,
+                    user: { connect: { id: permissionUser } },
+                    granter: { connect: { id: user.id } },
+                  })),
+                ],
+                [],
+              ),
             ],
           },
         },
       });
     return {
       ...user,
-      permissions: [],
+      permissions: params.permissions,
       token: await app().get(AuthService).signAuthenticationToken(apiKey.token),
       apiKey,
     };

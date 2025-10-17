@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import ApplicationResDto from './dto/res/application-res.dto';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import ApplicationService from './application.service';
 import { GetUser, IsPublic } from '../decorator';
 import { Application } from './interfaces/application.interface';
@@ -16,13 +16,14 @@ import { ApiAppErrorResponse } from '../../app.dto';
 import ApplicationSensibleResDto from './dto/res/application-sensible-res.dto';
 
 @Controller('auth/application')
+@ApiTags('Application')
 export default class ApplicationController {
   constructor(private applicationService: ApplicationService) {}
 
   @Get('/of/me')
   @ApiOperation({ description: 'Get the applications of the user issuing the request.' })
   async getMyApplications(@GetUser('id') userId: string): Promise<ApplicationResDto[]> {
-    return this.getApplicationsOf(userId, new PermissionManager({ [Permission.USER_SEE_DETAILS]: [userId] }));
+    return this.getApplicationsOf(userId, new PermissionManager().with(Permission.USER_SEE_DETAILS, userId));
   }
 
   @Get('/of/:userId')
@@ -84,12 +85,12 @@ export default class ApplicationController {
   async generateToken(
     @GetUser('id') userId: string,
     @Param('applicationId') applicationId: string,
-    @Body() dto: UpdateTokenReqDto,
+    @Body() dto?: UpdateTokenReqDto,
   ): Promise<AuthTokenResDto> {
     const application = await this.applicationService.get(applicationId);
     if (!application) throw new AppException(ERROR_CODE.NO_SUCH_APPLICATION, applicationId);
     if (application.owner.id !== userId) throw new AppException(ERROR_CODE.APPLICATION_NOT_OWNED, applicationId);
-    const token = await this.applicationService.regenerateApiKeyToken(userId, applicationId, dto.expiresIn);
+    const token = await this.applicationService.regenerateApiKeyToken(userId, applicationId, dto?.expiresIn);
     return { token };
   }
 
