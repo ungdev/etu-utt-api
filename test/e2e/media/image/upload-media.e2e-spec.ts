@@ -1,17 +1,19 @@
+import { ImageMediaPreset } from '@prisma/client';
 import { mkdirSync, rmSync } from 'fs';
 import { ERROR_CODE } from '../../../../src/exceptions';
 import { createUser } from '../../../utils/fakedb';
 import { e2eSuite, JsonLike } from '../../../utils/test_utils';
 import { ConfigModule } from '../../../../src/config/config.module';
+import { PermissionManager } from '../../../../src/utils';
 import * as pactum from 'pactum';
 
 export const UploadMediaE2ESpec = e2eSuite('POST /media/image', (app) => {
-  const user = createUser(app, { permissions: ['API_UPLOAD_MEDIA'] });
+  const user = createUser(app, { permissions: new PermissionManager().with('API_UPLOAD_MEDIA') });
   const unauthorizedUser = createUser(app);
 
   const params = {
     public: true,
-    preset: 'AVATAR',
+    preset: ImageMediaPreset.AVATAR,
     rotation: 1,
     effort: 2,
     quality: 100,
