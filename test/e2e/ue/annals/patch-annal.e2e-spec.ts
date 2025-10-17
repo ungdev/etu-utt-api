@@ -13,11 +13,15 @@ import {
 import { Dummies, JsonLike, e2eSuite } from '../../../utils/test_utils';
 import { ERROR_CODE } from '../../../../src/exceptions';
 import { CommentStatus } from 'src/ue/comments/interfaces/comment.interface';
-import { pick } from '../../../../src/utils';
+import { PermissionManager, pick } from '../../../../src/utils';
 
 const EditAnnal = e2eSuite('PATCH /ue/annals/{annalId}', (app) => {
-  const senderUser = createUser(app, { permissions: ['API_UPLOAD_ANNALS'] });
-  const nonUeUser = createUser(app, { login: 'user2', studentId: 2, permissions: ['API_UPLOAD_ANNALS'] });
+  const senderUser = createUser(app, { permissions: new PermissionManager().with('API_UPLOAD_ANNALS') });
+  const nonUeUser = createUser(app, {
+    login: 'user2',
+    studentId: 2,
+    permissions: new PermissionManager().with('API_UPLOAD_ANNALS'),
+  });
   const userNoPermission = createUser(app);
   const annalType = createAnnalType(app);
   const semester = createSemester(app);

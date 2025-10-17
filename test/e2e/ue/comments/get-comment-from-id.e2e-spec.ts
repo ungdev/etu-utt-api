@@ -3,12 +3,15 @@ import * as fakedb from '../../../utils/fakedb';
 import { e2eSuite } from '../../../utils/test_utils';
 import { ERROR_CODE } from 'src/exceptions';
 import { faker } from '@faker-js/faker';
-import { omit } from '../../../../src/utils';
+import { omit, PermissionManager } from '../../../../src/utils';
 import { FakeComment } from '../../../utils/fakedb';
 
 const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) => {
-  const user = fakedb.createUser(app, { permissions: ['API_SEE_OPINIONS_UE'] });
-  const userNotAuthor = fakedb.createUser(app, { login: 'user2', permissions: ['API_SEE_OPINIONS_UE'] });
+  const user = fakedb.createUser(app, { permissions: new PermissionManager().with('API_SEE_OPINIONS_UE') });
+  const userNotAuthor = fakedb.createUser(app, {
+    login: 'user2',
+    permissions: new PermissionManager().with('API_SEE_OPINIONS_UE'),
+  });
   const userNoPermission = fakedb.createUser(app);
   const semester = fakedb.createSemester(app);
   const branch = fakedb.createBranch(app);

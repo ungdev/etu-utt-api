@@ -19,11 +19,12 @@ import {
 import { UeAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
 import { ConfigModule } from '../src/config/config.module';
 import { AppProvider, JsonLike } from './utils/test_utils';
-import { getTranslation, omit, pick } from '../src/utils';
+import { getTranslation, omit, PermissionManager, pick } from '../src/utils';
 import { regex, string, uuid } from 'pactum-matchers';
 import { Language } from '@prisma/client';
 import { DEFAULT_APPLICATION } from '../prisma/seed/utils';
 import ApplicationResDto from '../src/auth/application/dto/res/application-res.dto';
+import PermissionsResDto from '../src/auth/permissions/dto/res/permissions.dto';
 
 function expect<T>(this: Spec, obj: JsonLikeVariant<T>) {
   return this.expectStatus(HttpStatus.OK).$expectRegexableJson(obj);
@@ -303,6 +304,17 @@ Spec.prototype.expectApplication = function (application: FakeApiApplication) {
     owner: pick(application.owner, 'id', 'firstName', 'lastName'),
   } satisfies ApplicationResDto);
 };
+Spec.prototype.expectPermissions = function (permissions: PermissionManager) {
+  return (<Spec>this).expectStatus(HttpStatus.OK).expectJson({
+    hardPermissions: permissions.hardPermissions.sort(),
+    softPermissions: Object.entries(permissions.softPermissions)
+      .map(([permission, users]) => ({
+        permission,
+        users,
+      }))
+      .mappedSort((permission) => permission.permission),
+  } satisfies PermissionsResDto);
+};
 
 export { Spec, JsonLikeVariant, FakeUeWithOfs };
 
@@ -322,7 +334,9 @@ Spec.prototype.$expectRegexableJson = function <T>(this: Spec, obj: JsonLikeVari
     }
     if (Array.isArray(obj)) return obj.map(wrap);
     if (obj === null || typeof obj !== 'object') return obj;
-    return Object.fromEntries(Object.entries(obj).map(([key, value]) => [key, wrap(value)]));
+    return Object.fromEntries(
+      Object.entries(obj).map(([key, value]) => [key, wrap(value as JsonLikeVariant<T[typeof key]>)]),
+    );
   }
   return this.expectJsonSchema(generateSchema(obj)).expectJsonMatch(wrap(obj));
 };
@@ -343,7 +357,9 @@ function generateSchema<T>(obj: JsonLikeVariant<T>): object {
       type: 'object',
       required: Object.keys(obj).filter((key) => obj[key] !== undefined),
       additionalProperties: false,
-      properties: Object.fromEntries(Object.entries(obj).map(([key, value]) => [key, generateSchema(value)])),
+      properties: Object.fromEntries(
+        Object.entries(obj).map(([key, value]) => [key, generateSchema(value as JsonLikeVariant<T[typeof key]>)]),
+      ),
     };
   if (obj === JsonLike.STRING || obj === JsonLike.UUID) return { type: 'string' };
   switch (typeof obj) {

@@ -13,14 +13,20 @@ import { JsonLike, e2eSuite } from '../../../utils/test_utils';
 import { ERROR_CODE } from '../../../../src/exceptions';
 import { ConfigModule } from '../../../../src/config/config.module';
 import { CommentStatus } from 'src/ue/comments/interfaces/comment.interface';
-import { pick } from '../../../../src/utils';
+import { PermissionManager, pick } from '../../../../src/utils';
 import { mkdirSync, rmSync } from 'fs';
 
 const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
-  const senderUser = createUser(app, { permissions: ['API_UPLOAD_ANNALS'] });
-  const nonUeUser = createUser(app, { login: 'user2', studentId: 2, permissions: ['API_UPLOAD_ANNALS'] });
+  const senderUser = createUser(app, { permissions: new PermissionManager().with('API_UPLOAD_ANNALS') });
+  const nonUeUser = createUser(app, {
+    login: 'user2',
+    studentId: 2,
+    permissions: new PermissionManager().with('API_UPLOAD_ANNALS'),
+  });
   const userNoPermission = createUser(app);
-  const userModerator = createUser(app, { permissions: ['API_UPLOAD_ANNALS', 'API_MODERATE_ANNALS'] });
+  const userModerator = createUser(app, {
+    permissions: new PermissionManager().with('API_UPLOAD_ANNALS').with('API_MODERATE_ANNALS'),
+  });
   const annalType = createAnnalType(app);
   const semester = createSemester(app);
   const otherRandomSemester = createSemester(app);

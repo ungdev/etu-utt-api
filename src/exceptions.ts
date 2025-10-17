@@ -80,9 +80,10 @@ export const enum ERROR_CODE {
   NO_SUCH_ASSO = 4410,
   NO_SUCH_UEOF = 4411,
   NO_SUCH_APPLICATION = 4412,
-  NO_SUCH_UE_AT_SEMESTER = 4413,
-  NO_SUCH_ASSO_ROLE = 4414,
-  NO_SUCH_ASSO_MEMBERSHIP = 4415,
+  NO_SUCH_API_KEY = 4413,
+  NO_SUCH_UE_AT_SEMESTER = 4414,
+  NO_SUCH_ASSO_ROLE = 4415,
+  NO_SUCH_ASSO_MEMBERSHIP = 4416,
   ANNAL_ALREADY_UPLOADED = 4901,
   RESOURCE_UNAVAILABLE = 4902,
   RESOURCE_INVALID_TYPE = 4903,
@@ -363,6 +364,10 @@ export const ErrorData = Object.freeze({
   },
   [ERROR_CODE.NO_SUCH_APPLICATION]: {
     message: 'The application % does not exist',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
+  [ERROR_CODE.NO_SUCH_API_KEY]: {
+    message: 'The api key % does not exist',
     httpCode: HttpStatus.NOT_FOUND,
   },
   [ERROR_CODE.NO_SUCH_UE_AT_SEMESTER]: {
