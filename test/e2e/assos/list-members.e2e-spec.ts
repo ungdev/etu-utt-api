@@ -32,19 +32,28 @@ const GetAssoMembersE2ESpec = e2eSuite('GET /assos/:id/members', (app) => {
       .spec()
       .withBearerToken(user.token)
       .get(`/assos/${asso.id}/members`)
-      .expectAssoMembershipRolesWithMembers(
-        [
-          {
+      .expectAssoMembershipRoles([
+        {
+          role: {
             id: JsonLike.UUID,
             isPresident: true,
             name: 'President',
             position: 0,
           },
-          assoMembershipRole,
-        ],
-        [[], [user]],
-        [[], [permissions]],
-      ));
+          users: [],
+        },
+        {
+          role: {
+            ...assoMembershipRole,
+          },
+          users: [
+            {
+              user,
+              permissions,
+            },
+          ],
+        },
+      ]));
 });
 
 export default GetAssoMembersE2ESpec;

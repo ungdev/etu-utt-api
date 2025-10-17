@@ -93,7 +93,7 @@ const KickAssoMemberE2ESpec = e2eSuite('DELETE /assos/:id/members/:id', (app) =>
         assoId: asso.id,
         userId: userInAsso.id,
         roleId: assoMembershipRole.id,
-        startAt: userInAssoMembershipInAsso.startAt.toISOString(),
+        startAt: userInAssoMembershipInAsso.startAt,
         endAt: JsonLike.DATE,
       }));
 
@@ -120,7 +120,7 @@ const KickAssoMemberE2ESpec = e2eSuite('DELETE /assos/:id/members/:id', (app) =>
         assoId: asso.id,
         userId: otherUserInAsso.id,
         roleId: assoMembershipRole.id,
-        startAt: otherUserInAssoMembershipInAsso.startAt.toISOString(),
+        startAt: otherUserInAssoMembershipInAsso.startAt,
         endAt: JsonLike.DATE,
       });
   });

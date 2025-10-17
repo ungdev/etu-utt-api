@@ -78,8 +78,8 @@ const DeleteCommentReply = e2eSuite('DELETE /ue/comments/reply/{replyId}', (app)
           firstName: user.firstName,
           lastName: user.lastName,
         },
-        createdAt: reply.createdAt.toISOString(),
-        updatedAt: reply.updatedAt.toISOString(),
+        createdAt: reply.createdAt,
+        updatedAt: reply.updatedAt,
         body: reply.body,
         status: CommentStatus.DELETED | CommentStatus.VALIDATED,
       });

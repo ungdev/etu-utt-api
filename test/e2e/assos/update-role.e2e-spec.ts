@@ -108,7 +108,7 @@ const UpdateAssoRoleE2ESpec = e2eSuite('PUT /assos/:id/roles/:id', (app) => {
         name: 'Updated',
         position: 0,
       })
-      .expectAssoMembershipRoles([assoMembershipRole, presRole]);
+      .expectAssoMembershipRolesRaw([assoMembershipRole, presRole]);
   });
 
   it('should update the role with asso account', async () => {
@@ -139,7 +139,7 @@ const UpdateAssoRoleE2ESpec = e2eSuite('PUT /assos/:id/roles/:id', (app) => {
         name: 'Reverted',
         position: 1,
       })
-      .expectAssoMembershipRoles([presRole, assoMembershipRole]);
+      .expectAssoMembershipRolesRaw([presRole, assoMembershipRole]);
   });
 });
 

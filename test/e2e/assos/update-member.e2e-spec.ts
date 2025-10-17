@@ -197,8 +197,8 @@ const UpdateAssoMemberE2ESpec = e2eSuite('PATCH /assos/:id/members/:id', (app) =
         assoId: asso.id,
         userId: userInAsso.id,
         roleId: assoMembershipRoleInAsso.id,
-        startAt: userInAssoMembershipInAsso.startAt.toISOString(),
-        endAt: userInAssoMembershipInAsso.endAt.toISOString(),
+        startAt: userInAssoMembershipInAsso.startAt,
+        endAt: userInAssoMembershipInAsso.endAt,
       });
   });
 
@@ -230,8 +230,8 @@ const UpdateAssoMemberE2ESpec = e2eSuite('PATCH /assos/:id/members/:id', (app) =
         assoId: asso.id,
         userId: otherUserInAsso.id,
         roleId: assoMembershipRoleInAsso.id,
-        startAt: otherUserInAssoMembershipInAsso.startAt.toISOString(),
-        endAt: otherUserInAssoMembershipInAsso.endAt.toISOString(),
+        startAt: otherUserInAssoMembershipInAsso.startAt,
+        endAt: otherUserInAssoMembershipInAsso.endAt,
       });
   });
 });

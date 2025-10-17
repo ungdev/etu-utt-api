@@ -74,8 +74,8 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
               firstName: user.firstName,
               lastName: user.lastName,
             },
-            createdAt: reply.createdAt.toISOString(),
-            updatedAt: reply.updatedAt.toISOString(),
+            createdAt: reply.createdAt,
+            updatedAt: reply.updatedAt,
           },
         ],
         author: {
@@ -84,8 +84,8 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
           lastName: user.lastName,
           studentId: user.studentId,
         },
-        updatedAt: comment.updatedAt.toISOString(),
-        createdAt: comment.createdAt.toISOString(),
+        updatedAt: comment.updatedAt,
+        createdAt: comment.createdAt,
         semester: semester.code,
         upvotes: 1,
         upvoted: false,
@@ -109,8 +109,8 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
         answers: [
           {
             ...omit(reply, 'authorId', 'deletedAt', 'commentId'),
-            createdAt: reply.createdAt.toISOString(),
-            updatedAt: reply.updatedAt.toISOString(),
+            createdAt: reply.createdAt,
+            updatedAt: reply.updatedAt,
             author: {
               id: user.id,
               firstName: user.firstName,
@@ -118,8 +118,8 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
             },
           },
         ],
-        updatedAt: comment.updatedAt.toISOString(),
-        createdAt: comment.createdAt.toISOString(),
+        updatedAt: comment.updatedAt,
+        createdAt: comment.createdAt,
         semester: semester.code,
         upvotes: 1,
         upvoted: true,

@@ -19,12 +19,20 @@ import { Language } from '@prisma/client';
 
 type JsonLikeVariant<T> = Partial<{
   [K in keyof T]: T[K] extends string | Date
-    ? string | symbol | RegExp
+    ? symbol | RegExp | T[K]
     : T[K] extends (infer R)[]
       ? JsonLikeVariant<R>[]
       : JsonLikeVariant<T[K]>;
 }>;
 type FakeUeWithOfs = FakeUe & { ueofs: FakeUeof[] };
+
+type FakeAssoMembers = {
+  role: FakeRole;
+  users: {
+    user: FakeUser;
+    permissions: FakeAssoMembershipPermission[];
+  }[];
+}[];
 
 /**
  * Overwrites the declarations in pactum/src/models/Spec
@@ -88,12 +96,8 @@ declare module './declarations' {
     expectAsso(asso: FakeAsso): this;
     expectAssoMembershipRole(role: FakeAssoMembershipRole): this;
     expectAssoMembershipRoleCreated(role: JsonLikeVariant<FakeAssoMembershipRole>): this;
-    expectAssoMembershipRoles(roles: JsonLikeVariant<FakeAssoMembershipRole>[]): this;
-    expectAssoMembershipRolesWithMembers(
-      roles: JsonLikeVariant<FakeAssoMembershipRole>[],
-      users: FakeUser[][],
-      permissions: FakeAssoMembershipPermission[][][],
-    ): this;
+    expectAssoMembershipRoles(roles: JsonLikeVariant<FakeAssoMembers>): this;
+    expectAssoMembershipRolesRaw(roles: JsonLikeVariant<FakeAssoMembershipRole>[]): this;
     expectAssoMembership(membership: JsonLikeVariant<FakeAssoMembership>): this;
     expectAssoMembershipCreated(membership: JsonLikeVariant<FakeAssoMembership>): this;
     expectCreditCategories(categories: JsonLikeVariant<FakeUeCreditCategory[]>): this;
@@ -105,7 +109,7 @@ declare module './declarations' {
     withApplication(application: string): this;
     application: string;
 
-    /** Internal use only (use it in declarations.ts) as it does NOT check HTTP status */
+    /** Does NOT check HTTP status */
     $expectRegexableJson<T>(obj: JsonLikeVariant<T>): this;
   }
 }

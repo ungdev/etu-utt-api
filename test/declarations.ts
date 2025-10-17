@@ -1,6 +1,6 @@
 import { HttpStatus } from '@nestjs/common';
 import Spec from 'pactum/src/models/Spec';
-import { FakeUeWithOfs, JsonLikeVariant } from './declarations.d';
+import { FakeAssoMembers, FakeUeWithOfs, JsonLikeVariant } from './declarations.d';
 import { ERROR_CODE, ErrorData, ExtrasTypeBuilder } from '../src/exceptions';
 import { UeComment } from '../src/ue/comments/interfaces/comment.interface';
 import { UeCommentReply } from '../src/ue/comments/interfaces/comment-reply.interface';
@@ -15,7 +15,6 @@ import {
   FakeApiApplication,
   FakeAssoMembershipRole,
   FakeAssoMembership,
-  FakeAssoMembershipPermission,
 } from './utils/fakedb';
 import { UeAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
 import { ConfigModule } from '../src/config/config.module';
@@ -52,8 +51,8 @@ function ueOverviewExpectation(ue: FakeUeWithOfs, spec: Spec) {
     },
     openSemester: ue.ueofs[0].openSemester.map((semester) => ({
       ...semester,
-      start: semester.start.toISOString(),
-      end: semester.end.toISOString(),
+      start: semester.start,
+      end: semester.end,
     })),
   };
 }
@@ -111,11 +110,11 @@ Spec.prototype.expectUe = function (
         minors: ueof.info.minors?.split(',') ?? [],
       },
       openSemester: ueof.openSemester
-        .mappedSort((semester) => semester.start.toISOString())
+        .mappedSort((semester) => semester.start)
         .map((semester) => ({
           ...semester,
-          start: semester.start.toISOString(),
-          end: semester.end.toISOString(),
+          start: semester.start,
+          end: semester.end,
         })),
       workTime: omit(ueof.workTime, 'id', 'ueofCode'),
       ...(rates
@@ -189,12 +188,12 @@ Spec.prototype.expectUeComments = function (this: Spec, obj) {
           language: comment.ueof.info.language,
         },
       },
-      createdAt: comment.createdAt.toISOString(),
-      updatedAt: comment.updatedAt.toISOString(),
+      createdAt: comment.createdAt,
+      updatedAt: comment.updatedAt,
       answers: comment.answers.map((answer) => ({
         ...pick(answer, 'author', 'body', 'id', 'status'),
-        createdAt: answer.createdAt.toISOString(),
-        updatedAt: answer.updatedAt.toISOString(),
+        createdAt: answer.createdAt,
+        updatedAt: answer.updatedAt,
       })),
     })),
   } satisfies JsonLikeVariant<Pagination<UeComment>>);
@@ -262,26 +261,22 @@ Spec.prototype.expectAssoMembershipRoleCreated = function (role: FakeAssoMembers
     .expectStatus(HttpStatus.CREATED)
     .$expectRegexableJson(pick(role, 'id', 'name', 'position', 'isPresident'));
 };
-Spec.prototype.expectAssoMembershipRoles = function (roles: FakeAssoMembershipRole[]) {
+Spec.prototype.expectAssoMembershipRolesRaw = function (roles: FakeAssoMembershipRole[]) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJson({
     roles: roles.map((role) => pick(role, 'id', 'name', 'position', 'isPresident')),
   });
 };
-Spec.prototype.expectAssoMembershipRolesWithMembers = function (
-  roles: JsonLikeVariant<FakeAssoMembershipRole>[],
-  users: FakeUser[][],
-  permissions: FakeAssoMembershipPermission[][][],
-) {
+Spec.prototype.expectAssoMembershipRoles = function (members: JsonLikeVariant<FakeAssoMembers>) {
   return (<Spec>this).expectStatus(HttpStatus.OK).$expectRegexableJson({
-    roles: roles.map((role, i) => ({
-      ...pick(role, 'id', 'name', 'position', 'isPresident'),
-      members: users[i].map((user, j) => ({
-        ...pick(user, 'firstName', 'lastName'),
+    roles: members.map((roleEntry) => ({
+      ...pick(roleEntry.role, 'id', 'name', 'position', 'isPresident'),
+      members: roleEntry.users.map((userEntry) => ({
+        ...pick(userEntry.user, 'firstName', 'lastName'),
         id: JsonLike.UUID,
-        userId: user.id,
+        userId: userEntry.user.id,
         startAt: JsonLike.DATE,
         endAt: JsonLike.DATE,
-        permissions: permissions[i][j].map((p) => p.id),
+        permissions: userEntry.permissions.map((p) => p.id),
       })),
     })),
   });
