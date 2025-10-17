@@ -13,10 +13,14 @@ import { ERROR_CODE } from '../../../../src/exceptions';
 import { Dummies, e2eSuite, JsonLike } from '../../../utils/test_utils';
 import { PrismaService } from '../../../../src/prisma/prisma.service';
 import { CommentStatus } from 'src/ue/comments/interfaces/comment.interface';
+import { PermissionManager } from '../../../../src/utils';
 
 const UpdateCommentReply = e2eSuite('PATCH /ue/comments/reply/{replyId}', (app) => {
-  const user = createUser(app, { permissions: ['API_GIVE_OPINIONS_UE'] });
-  const userNotAuthor = createUser(app, { login: 'user2', permissions: ['API_GIVE_OPINIONS_UE'] });
+  const user = createUser(app, { permissions: new PermissionManager().with('API_GIVE_OPINIONS_UE') });
+  const userNotAuthor = createUser(app, {
+    login: 'user2',
+    permissions: new PermissionManager().with('API_GIVE_OPINIONS_UE'),
+  });
   const userNoPermission = createUser(app);
   const semester = createSemester(app);
   const branch = createBranch(app);

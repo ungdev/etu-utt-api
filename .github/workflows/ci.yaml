@@ -21,7 +21,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
-          cache: 'pnpm'        
+          cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       - run: pnpm prisma generate
       - run: pnpm lint
@@ -38,7 +38,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
-          cache: 'pnpm'        
+          cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       - run: pnpm prisma generate
       - run: pnpm build
@@ -72,7 +72,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
-          cache: 'pnpm'        
+          cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       - run: cp .env.test.dist .env.test
       - run: pnpm test:db:reset
