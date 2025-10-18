@@ -2,6 +2,7 @@ import {
   RawAsso,
   RawAssoMembership,
   RawAssoMembershipRole,
+  RawAssoMembershipPermission,
   RawBranch,
   RawBranchOption,
   RawCreditCategory,
@@ -75,6 +76,7 @@ export type FakeAssoMembershipRole = Partial<RawAssoMembershipRole>;
 export type FakeAssoMembership = Partial<RawAssoMembership> & {
   role?: Partial<RawAssoMembershipRole>;
 };
+export type FakeAssoMembershipPermission = RawAssoMembershipPermission;
 export type FakeAsso = Partial<
   RawAsso & {
     descriptionShortTranslation: Partial<Translation>;
@@ -121,7 +123,16 @@ export interface FakeEntityMap {
   assoMembership: {
     entity: FakeAssoMembership;
     params: CreateAssoMembershipParameters;
-    deps: { asso: FakeAsso; user: FakeUser; role: FakeAssoMembershipRole };
+    deps: {
+      asso: FakeAsso;
+      user: FakeUser;
+      role: FakeAssoMembershipRole;
+      permissions?: FakeAssoMembershipPermission[];
+    };
+  };
+  assoMembershipPermission: {
+    entity: FakeAssoMembershipPermission;
+    params: { id: string };
   };
   assoMembershipRole: {
     entity: FakeAssoMembershipRole;
@@ -413,7 +424,7 @@ export const createAssoMembership = entityFaker(
   'assoMembership',
   {
     startAt: new Date(0),
-    endAt: new Date(0),
+    endAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // One year from now
     createdAt: new Date(0),
   },
   async (app, dependencies, params) =>
@@ -437,11 +448,23 @@ export const createAssoMembership = entityFaker(
               id: dependencies.role.id,
             },
           },
+          permissions: {
+            connect: dependencies.permissions,
+          },
         },
         include: {
           role: true,
         },
       }),
+);
+
+export const createAssoMembershipPermission = entityFaker(
+  'assoMembershipPermission',
+  { id: faker.word.noun },
+  (app, { id }) =>
+    app().get(PrismaService).assoMembershipPermission.create({
+      data: { id },
+    }),
 );
 
 export type CreateAssoParameters = FakeAsso;
@@ -509,8 +532,8 @@ export const createAsso = entityFaker(
               preference: { create: {} },
               infos: { create: {} },
               privacy: { create: {} },
-            }
-          }
+            },
+          },
         },
       });
     const presidentRole = await app()

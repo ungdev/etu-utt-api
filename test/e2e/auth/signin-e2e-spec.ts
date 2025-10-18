@@ -1,9 +1,8 @@
 import AuthSignInDto from '../../../src/auth/dto/req/auth-sign-in-req.dto';
 import * as pactum from 'pactum';
-import { e2eSuite } from '../../utils/test_utils';
+import { e2eSuite, JsonLike } from '../../utils/test_utils';
 import * as fakedb from '../../utils/fakedb';
 import { ERROR_CODE } from '../../../src/exceptions';
-import { string } from 'pactum-matchers';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { DEFAULT_APPLICATION } from '../../../prisma/seed/utils';
@@ -50,9 +49,9 @@ const SignInE2ESpec = e2eSuite('POST /auth/signin', (app) => {
       .post('/auth/signin')
       .withBody(dto)
       .expectStatus(200)
-      .expectJsonMatch({
+      .$expectRegexableJson({
         signedIn: true,
-        token: string(),
+        token: JsonLike.STRING,
         redirectUrl: null,
       })
       .expect(async (ctx) => {
@@ -81,10 +80,10 @@ const SignInE2ESpec = e2eSuite('POST /auth/signin', (app) => {
       .withApplication(application.id)
       .withBody({ login: userWithApplication.login, password: 'etuutt', tokenExpiresIn: 99999 })
       .expectStatus(200)
-      .expectJsonMatch({
+      .$expectRegexableJson({
         signedIn: true,
         token: null,
-        redirectUrl: string(),
+        redirectUrl: JsonLike.STRING,
       })
       .expect(async (ctx) => {
         const redirectUrl = ctx.res.json['redirectUrl'] as string;
@@ -104,9 +103,9 @@ const SignInE2ESpec = e2eSuite('POST /auth/signin', (app) => {
       .withApplication(application.id)
       .withBody(dto)
       .expectStatus(200)
-      .expectJsonMatch({
+      .$expectRegexableJson({
         signedIn: false,
-        token: string(),
+        token: JsonLike.STRING,
         redirectUrl: null,
       })
       .expect(async (ctx) => {

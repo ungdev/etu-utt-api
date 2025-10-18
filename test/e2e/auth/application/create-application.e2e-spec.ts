@@ -1,9 +1,8 @@
-import { e2eSuite } from '../../../utils/test_utils';
+import { e2eSuite, JsonLike } from '../../../utils/test_utils';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../../src/exceptions';
 import * as fakedb from '../../../utils/fakedb';
 import { HttpStatus } from '@nestjs/common';
-import { string } from 'pactum-matchers';
 
 const CreateApplicationE2ESpec = e2eSuite('POST /auth/application', (app) => {
   const user = fakedb.createUser(app);
@@ -23,8 +22,8 @@ const CreateApplicationE2ESpec = e2eSuite('POST /auth/application', (app) => {
       .withBearerToken(user.token)
       .withJson(body)
       .expectStatus(HttpStatus.CREATED)
-      .expectJsonMatch({
-        id: string(),
+      .$expectRegexableJson({
+        id: JsonLike.UUID,
         name: body.name,
         owner: {
           id: user.id,
@@ -32,7 +31,7 @@ const CreateApplicationE2ESpec = e2eSuite('POST /auth/application', (app) => {
           lastName: user.lastName,
         },
         redirectUrl: body.redirectUrl,
-        clientSecret: string(),
+        clientSecret: JsonLike.STRING,
       }));
 });
 

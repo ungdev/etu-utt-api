@@ -12,7 +12,11 @@ const GetHomepageWidgetsE2ESpec = e2eSuite('GET /profile/homepage', (app) => {
   });
 
   it('should return a 200 with the widgets if we are logged in', async () => {
-    return pactum.spec().withBearerToken(user.token).get('/profile/homepage').expectHomepageWidgets(widgets);
+    return pactum
+      .spec()
+      .withBearerToken(user.token)
+      .get('/profile/homepage')
+      .expectHomepageWidgets(widgets.mappedSort((w) => w.x));
   });
 });
 

@@ -1,9 +1,8 @@
 import * as pactum from 'pactum';
-import { e2eSuite } from '../../utils/test_utils';
+import { e2eSuite, JsonLike } from '../../utils/test_utils';
 import { AuthService } from '../../../src/auth/auth.service';
 import { ERROR_CODE } from '../../../src/exceptions';
 import * as fakedb from '../../utils/fakedb';
-import { string } from 'pactum-matchers';
 import { HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { DEFAULT_APPLICATION } from '../../../prisma/seed/utils';
@@ -51,7 +50,7 @@ const ValidateLoginE2ESpec = e2eSuite('POST /auth/login/validate', (app) => {
         clientSecret: DEFAULT_APPLICATION.clientSecret,
       })
       .expectStatus(HttpStatus.OK)
-      .expectJsonMatch({ token: string() })
+      .$expectRegexableJson({ token: JsonLike.STRING })
       .expect(async (ctx) => {
         const body = ctx.res.json as { token: string };
         const registerData = app().get(JwtService).decode(body.token);

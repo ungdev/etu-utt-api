@@ -109,8 +109,8 @@ const EditAnnal = e2eSuite('PATCH /ue/annals/{annalId}', (app) => {
         status: CommentStatus.VALIDATED,
         sender: pick(senderUser, 'id', 'firstName', 'lastName'),
         id: annal_validated.id,
-        createdAt: annal_validated.createdAt.toISOString(),
-        updatedAt: JsonLike.ANY_DATE,
+        createdAt: annal_validated.createdAt,
+        updatedAt: JsonLike.DATE,
       });
   });
 });

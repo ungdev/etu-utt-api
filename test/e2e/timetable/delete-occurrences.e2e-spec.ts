@@ -98,12 +98,12 @@ const DeleteEntryE2ESpec = e2eSuite('DELETE /timetable/current/:entryId', (app) 
         for: [userGroup.id, userOtherGroup.id],
       })
       .expectStatus(HttpStatus.OK)
-      .expectJsonMatchStrict({
+      .$expectRegexableJson({
         id: entry.id,
         location: entry.location,
         duration: entry.occurrenceDuration,
-        firstRepetitionDate: new Date(0).toISOString(),
-        lastRepetitionDate: new Date(20).toISOString(),
+        firstRepetitionDate: new Date(0),
+        lastRepetitionDate: new Date(20),
         repetitionFrequency: 10,
         repetitions: 3,
         groups: [userOtherGroup.id, userGroup.id],
@@ -111,8 +111,8 @@ const DeleteEntryE2ESpec = e2eSuite('DELETE /timetable/current/:entryId', (app) 
           {
             id: override.id,
             location: override.location,
-            firstRepetitionDate: new Date(10).toISOString(),
-            lastRepetitionDate: new Date(20).toISOString(),
+            firstRepetitionDate: new Date(10),
+            lastRepetitionDate: new Date(20),
             firstOccurrenceOverride: 1,
             lastOccurrenceOverride: 2,
             overrideFrequency: 1,
@@ -142,20 +142,20 @@ const DeleteEntryE2ESpec = e2eSuite('DELETE /timetable/current/:entryId', (app) 
         for: [userGroup.id, userOtherGroup.id],
       })
       .expectStatus(HttpStatus.OK)
-      .expectJsonMatchStrict({
+      .$expectRegexableJson({
         id: entry.id,
         location: entry.location,
         duration: entry.occurrenceDuration,
-        firstRepetitionDate: new Date(0).toISOString(),
-        lastRepetitionDate: new Date(20).toISOString(),
+        firstRepetitionDate: new Date(0),
+        lastRepetitionDate: new Date(20),
         repetitionFrequency: 10,
         repetitions: 3,
         groups: [userOtherGroup.id, userGroup.id],
         overrides: [
           {
             id: override.id,
-            firstRepetitionDate: new Date(10).toISOString(),
-            lastRepetitionDate: new Date(20).toISOString(),
+            firstRepetitionDate: new Date(10),
+            lastRepetitionDate: new Date(20),
             firstOccurrenceOverride: 1,
             lastOccurrenceOverride: 2,
             overrideFrequency: 1,
@@ -182,12 +182,12 @@ const DeleteEntryE2ESpec = e2eSuite('DELETE /timetable/current/:entryId', (app) 
         for: [userGroup.id, userOtherGroup.id],
       })
       .expectStatus(HttpStatus.OK)
-      .expectJsonMatchStrict({
+      .$expectRegexableJson({
         id: entry.id,
         location: entry.location,
         duration: entry.occurrenceDuration,
-        firstRepetitionDate: new Date(0).toISOString(),
-        lastRepetitionDate: new Date(20).toISOString(),
+        firstRepetitionDate: new Date(0),
+        lastRepetitionDate: new Date(20),
         repetitionFrequency: 10,
         repetitions: 3,
         groups: [userOtherGroup.id, userGroup.id],
@@ -195,8 +195,8 @@ const DeleteEntryE2ESpec = e2eSuite('DELETE /timetable/current/:entryId', (app) 
           {
             id: uuid(),
             location: null,
-            firstRepetitionDate: new Date(0).toISOString(),
-            lastRepetitionDate: new Date(10).toISOString(),
+            firstRepetitionDate: new Date(0),
+            lastRepetitionDate: new Date(10),
             firstOccurrenceOverride: 0,
             lastOccurrenceOverride: 1,
             overrideFrequency: 1,
@@ -206,8 +206,8 @@ const DeleteEntryE2ESpec = e2eSuite('DELETE /timetable/current/:entryId', (app) 
           {
             id: override.id,
             location: override.location,
-            firstRepetitionDate: new Date(10).toISOString(),
-            lastRepetitionDate: new Date(20).toISOString(),
+            firstRepetitionDate: new Date(10),
+            lastRepetitionDate: new Date(20),
             firstOccurrenceOverride: 1,
             lastOccurrenceOverride: 2,
             overrideFrequency: 1,
@@ -233,12 +233,12 @@ const DeleteEntryE2ESpec = e2eSuite('DELETE /timetable/current/:entryId', (app) 
         for: [userGroup.id],
       })
       .expectStatus(HttpStatus.OK)
-      .expectJsonMatchStrict({
+      .$expectRegexableJson({
         id: entry.id,
         location: entry.location,
         duration: entry.occurrenceDuration,
-        firstRepetitionDate: new Date(0).toISOString(),
-        lastRepetitionDate: new Date(20).toISOString(),
+        firstRepetitionDate: new Date(0),
+        lastRepetitionDate: new Date(20),
         repetitionFrequency: 10,
         repetitions: 3,
         groups: [userOtherGroup.id, userGroup.id],
@@ -246,8 +246,8 @@ const DeleteEntryE2ESpec = e2eSuite('DELETE /timetable/current/:entryId', (app) 
           {
             id: override.id,
             location: override.location,
-            firstRepetitionDate: new Date(10).toISOString(),
-            lastRepetitionDate: new Date(20).toISOString(),
+            firstRepetitionDate: new Date(10),
+            lastRepetitionDate: new Date(20),
             firstOccurrenceOverride: 1,
             lastOccurrenceOverride: 2,
             overrideFrequency: 1,
@@ -257,8 +257,8 @@ const DeleteEntryE2ESpec = e2eSuite('DELETE /timetable/current/:entryId', (app) 
           {
             id: uuid(),
             location: null,
-            firstRepetitionDate: new Date(10).toISOString(),
-            lastRepetitionDate: new Date(20).toISOString(),
+            firstRepetitionDate: new Date(10),
+            lastRepetitionDate: new Date(20),
             firstOccurrenceOverride: 1,
             lastOccurrenceOverride: 2,
             overrideFrequency: 1,
