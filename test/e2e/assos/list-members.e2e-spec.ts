@@ -43,9 +43,7 @@ const GetAssoMembersE2ESpec = e2eSuite('GET /assos/:id/members', (app) => {
           users: [],
         },
         {
-          role: {
-            ...assoMembershipRole,
-          },
+          role: assoMembershipRole,
           users: [
             {
               user,
