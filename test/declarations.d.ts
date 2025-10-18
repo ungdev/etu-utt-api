@@ -2,7 +2,14 @@ import { ERROR_CODE, ErrorData, ExtrasTypeBuilder } from '../src/exceptions';
 import { UeComment } from 'src/ue/comments/interfaces/comment.interface';
 import { UeCommentReply } from 'src/ue/comments/interfaces/comment-reply.interface';
 import { UeRating } from 'src/ue/interfaces/rate.interface';
-import { FakeApiApplication, FakeUeAnnalType, FakeUeof } from './utils/fakedb';
+import {
+  FakeApiApplication,
+  FakeAssoMembership,
+  FakeAssoMembershipPermission,
+  FakeAssoMembershipRole,
+  FakeUeAnnalType,
+  FakeUeof,
+} from './utils/fakedb';
 import { UeAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { UeRating } from 'src/ue/interfaces/rate.interface';
@@ -13,12 +20,20 @@ import { PermissionManager } from '../src/utils';
 
 type JsonLikeVariant<T> = Partial<{
   [K in keyof T]: T[K] extends string | Date
-    ? string | RegExp
+    ? symbol | RegExp | T[K]
     : T[K] extends (infer R)[]
       ? JsonLikeVariant<R>[]
       : JsonLikeVariant<T[K]>;
 }>;
 type FakeUeWithOfs = FakeUe & { ueofs: FakeUeof[] };
+
+type FakeAssoMembers = {
+  role: FakeRole;
+  users: {
+    user: FakeUser;
+    permissions: FakeAssoMembershipPermission[];
+  }[];
+}[];
 
 /**
  * Overwrites the declarations in pactum/src/models/Spec
@@ -80,6 +95,12 @@ declare module './declarations' {
     expectAssos(app: AppProvider, assos: FakeAsso[], count: number): this;
     /** expects to return the given {@link asso} */
     expectAsso(asso: FakeAsso): this;
+    expectAssoMembershipRole(role: FakeAssoMembershipRole): this;
+    expectAssoMembershipRoleCreated(role: JsonLikeVariant<FakeAssoMembershipRole>): this;
+    expectAssoMembershipRoles(roles: JsonLikeVariant<FakeAssoMembers>): this;
+    expectAssoMembershipRolesRaw(roles: JsonLikeVariant<FakeAssoMembershipRole>[]): this;
+    expectAssoMembership(membership: JsonLikeVariant<FakeAssoMembership>): this;
+    expectAssoMembershipCreated(membership: JsonLikeVariant<FakeAssoMembership>): this;
     expectCreditCategories(categories: JsonLikeVariant<FakeUeCreditCategory[]>): this;
     expectApplications(applications: FakeApiApplication[]): this;
     expectApplication(application: FakeApiApplication): this;
@@ -90,5 +111,8 @@ declare module './declarations' {
     language: Language;
     withApplication(application: string): this;
     application: string;
+
+    /** Does NOT check HTTP status */
+    $expectRegexableJson<T>(obj: JsonLikeVariant<T>): this;
   }
 }

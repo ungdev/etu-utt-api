@@ -79,13 +79,17 @@ export type UEExtraArgs = {
 };
 
 export type UnformattedUEComment = Prisma.UeCommentGetPayload<typeof COMMENT_SELECT_FILTER>;
-export type UeComment = Omit<UnformattedUEComment, 'upvotes' | 'deletedAt' | 'validatedAt' | 'answers' | 'semester'> & {
+export type UeComment = Omit<
+  UnformattedUEComment,
+  'upvotes' | 'deletedAt' | 'validatedAt' | 'answers' | 'semester' | 'author'
+> & {
   upvotes: number;
   upvoted: boolean;
   status: CommentStatus;
   answers: UeCommentReply[];
   lastValidatedBody?: string | undefined;
   semester: string;
+  author?: UnformattedUEComment['author'];
 };
 
 export function generateCustomCommentModel(prisma: PrismaClient) {
@@ -120,7 +124,16 @@ export function generateCustomCommentModel(prisma: PrismaClient) {
 
 export function formatComment(prisma: PrismaClient, comment: UnformattedUEComment, args: UEExtraArgs): UeComment {
   return {
-    ...omit(comment, 'deletedAt', 'validatedAt'),
+    ...omit(
+      comment,
+      'deletedAt',
+      'validatedAt',
+      comment.isAnonymous &&
+        comment.author.id !== args.userId &&
+        !(args.includeDeletedReplied && args.includeLastValidatedBody)
+        ? 'author'
+        : undefined,
+    ),
     answers: comment.answers.map((answer) => formatReply(prisma, answer)),
     status: (comment.deletedAt && CommentStatus.DELETED) | (comment.validatedAt && CommentStatus.VALIDATED),
     upvotes: comment.upvotes.length,

@@ -119,10 +119,7 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
             : b.upvotes - a.upvotes,
         )
         .slice(0, app().get(ConfigModule).PAGINATION_PAGE_SIZE)
-        .map((comment) => {
-          if (comment.isAnonymous && comment.author.id !== user.id) delete comment.author;
-          return { ...comment, ue };
-        }),
+        .map((comment) => ({ ...comment, ue })),
       itemCount: comments.length,
       itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
     };
@@ -162,10 +159,7 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
               : b.upvotes - a.upvotes,
           )
           .slice(app().get(ConfigModule).PAGINATION_PAGE_SIZE, app().get(ConfigModule).PAGINATION_PAGE_SIZE * 2)
-          .map((comment) => {
-            if (comment.isAnonymous && comment.author.id !== user.id) delete comment.author;
-            return { ...comment, ue };
-          }),
+          .map((comment) => ({ ...comment, ue })),
         itemCount: comments.length,
         itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
       });
@@ -184,7 +178,7 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
       .normalize.ueComment.findMany({
         args: {
           userId: user.id,
-          includeDeletedReplied: false,
+          includeDeletedReplied: true,
           includeLastValidatedBody: true,
         },
       });

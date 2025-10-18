@@ -37,11 +37,11 @@ model ApiKeyPermission {
   apiKeyId   String
   userId     String? // The user targetted by the permission. If null, this is a hard grant. It must thus be null if this is an api permission.
   granterId  String? // Null if granter was deleted
-  createdAt  DateTime @default(now())
+  createdAt  DateTime   @default(now())
 
   apiKey  ApiKey @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
   user    User?  @relation(name: "target", fields: [userId], references: [id], onDelete: Cascade)
-  granter User?   @relation(name: "granter", fields: [granterId], references: [id], onDelete: SetNull)
+  granter User?  @relation(name: "granter", fields: [granterId], references: [id], onDelete: SetNull)
 
   @@unique([apiKeyId, userId, permission])
 }
@@ -80,12 +80,12 @@ model AssoMembership {
 
   user        User                       @relation(fields: [userId], references: [id])
   asso        Asso                       @relation(fields: [assoId], references: [id])
-  role        AssoMembershipRole         @relation(fields: [roleId], references: [id])
+  role        AssoMembershipRole         @relation(fields: [roleId], references: [id], onDelete: Cascade)
   permissions AssoMembershipPermission[]
 }
 
 model AssoMembershipPermission {
-  id String @id @default(uuid())
+  id String @id
 
   assoMembership AssoMembership[]
 }
@@ -97,8 +97,8 @@ model AssoMembershipRole {
   isPresident Boolean
   assoId      String
 
-  assoMembership AssoMembership[]
-  asso           Asso             @relation(fields: [assoId], references: [id])
+  assoMemberships AssoMembership[]
+  asso            Asso             @relation(fields: [assoId], references: [id])
 }
 
 model AssoMessage {
@@ -433,7 +433,7 @@ model UeCourse {
   createdAt   DateTime   @default(now())
   semesterId  String
   timetableId String     @unique()
-  ueofCode   String
+  ueofCode    String
 
   courseExchangesFrom UeCourseExchange[] @relation(name: "courseFrom")
   courseExchangesTo   UeCourseExchange[] @relation(name: "courseTo")
@@ -589,8 +589,8 @@ model User {
   privacy               UserPrivacy              @relation(fields: [privacyId], references: [id])
   apiApplications       ApiApplication[]
   apiKeys               ApiKey[]
-  apiPermissionsTarget  ApiKeyPermission[] @relation(name: "target")
-  apiPermissionsGrants  ApiKeyPermission[] @relation(name: "granter")
+  apiPermissionsTarget  ApiKeyPermission[]       @relation(name: "target")
+  apiPermissionsGrants  ApiKeyPermission[]       @relation(name: "granter")
   asso                  Asso?
 }
 

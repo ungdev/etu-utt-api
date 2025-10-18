@@ -1,8 +1,7 @@
-import { Dummies, e2eSuite } from '../../utils/test_utils';
+import { Dummies, e2eSuite, JsonLike } from '../../utils/test_utils';
 import * as fakedb from '../../utils/fakedb';
 import * as pactum from 'pactum';
 import { HttpStatus } from '@nestjs/common';
-import { uuid } from 'pactum-matchers';
 import { ERROR_CODE } from '../../../src/exceptions';
 
 const CreateEntryE2ESpec = e2eSuite('POST /timetable/current', (app) => {
@@ -28,7 +27,7 @@ const CreateEntryE2ESpec = e2eSuite('POST /timetable/current', (app) => {
       .withJson({
         location: 'In the test ig ?',
         duration: 3,
-        firstRepetitionDate: new Date(0).toISOString(),
+        firstRepetitionDate: new Date(0),
         repetitionFrequency: 10,
         repetitions: 4,
         groups: [],
@@ -43,7 +42,7 @@ const CreateEntryE2ESpec = e2eSuite('POST /timetable/current', (app) => {
       .withJson({
         location: 'In the test ig ?',
         duration: 3,
-        firstRepetitionDate: new Date(0).toISOString(),
+        firstRepetitionDate: new Date(0),
         repetitionFrequency: 10,
         repetitions: 4,
         groups: ['abcdef'],
@@ -58,7 +57,7 @@ const CreateEntryE2ESpec = e2eSuite('POST /timetable/current', (app) => {
       .withJson({
         location: 'In the test ig ?',
         duration: 3,
-        firstRepetitionDate: new Date(0).toISOString(),
+        firstRepetitionDate: new Date(0),
         repetitionFrequency: 10,
         repetitions: 4,
         groups: [Dummies.UUID],
@@ -73,7 +72,7 @@ const CreateEntryE2ESpec = e2eSuite('POST /timetable/current', (app) => {
       .withJson({
         location: 'In the test ig ?',
         duration: 3,
-        firstRepetitionDate: new Date(0).toISOString(),
+        firstRepetitionDate: new Date(0),
         repetitionFrequency: 10,
         repetitions: 4,
         groups: [randomGroup.id],
@@ -88,18 +87,18 @@ const CreateEntryE2ESpec = e2eSuite('POST /timetable/current', (app) => {
       .withJson({
         location: 'In the test ig ?',
         duration: 3,
-        firstRepetitionDate: new Date(0).toISOString(),
+        firstRepetitionDate: new Date(0),
         repetitionFrequency: 10,
         repetitions: 4,
         groups: [userGroup.id],
       })
       .expectStatus(HttpStatus.CREATED)
-      .expectJsonMatchStrict({
-        id: uuid(),
+      .$expectRegexableJson({
+        id: JsonLike.UUID,
         location: 'In the test ig ?',
         duration: 3,
-        firstRepetitionDate: new Date(0).toISOString(),
-        lastRepetitionDate: new Date(30).toISOString(),
+        firstRepetitionDate: new Date(0),
+        lastRepetitionDate: new Date(30),
         repetitionFrequency: 10,
         repetitions: 4,
         groups: [userGroup.id],

@@ -1,8 +1,7 @@
-import { e2eSuite } from '../../utils/test_utils';
+import { e2eSuite, JsonLike } from '../../utils/test_utils';
 import * as cas from '../../external_services/cas';
 import * as fakedb from '../../utils/fakedb';
 import * as pactum from 'pactum';
-import { string } from 'pactum-matchers';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import AuthCasSignInReqDto from '../../../src/auth/dto/req/auth-cas-sign-in-req.dto';
@@ -21,7 +20,7 @@ const CasSignInE2ESpec = e2eSuite('POST /auth/signin/cas', (app) => {
       .post('/auth/signin/cas')
       .withBody(body)
       .expectStatus(HttpStatus.OK)
-      .expectJsonMatch({ status: 'no_account', token: string() })
+      .$expectRegexableJson({ status: 'no_account', token: JsonLike.STRING, redirectUrl: null })
       .expect((res) => {
         const jwt = app().get(JwtService);
         const data = jwt.decode((res.res.json as { token: string }).token);
@@ -37,7 +36,7 @@ const CasSignInE2ESpec = e2eSuite('POST /auth/signin/cas', (app) => {
       .spec()
       .post('/auth/signin/cas')
       .withBody(body)
-      .expectJsonMatch({ status: 'no_api_key', token: string() })
+      .$expectRegexableJson({ status: 'no_api_key', token: JsonLike.STRING, redirectUrl: null })
       .expect((res) => {
         const jwt = app().get(JwtService);
         const data = jwt.decode((res.res.json as { token: string }).token);
@@ -54,7 +53,7 @@ const CasSignInE2ESpec = e2eSuite('POST /auth/signin/cas', (app) => {
       .spec()
       .post('/auth/signin/cas')
       .withBody(body)
-      .expectJsonMatch({ status: 'ok', token: string() })
+      .$expectRegexableJson({ status: 'ok', token: JsonLike.STRING, redirectUrl: null })
       .expect(async (res) => {
         const jwt = app().get(JwtService);
         const data = jwt.decode((res.res.json as { token: string }).token);

@@ -116,14 +116,14 @@ const UpdateCommentReply = e2eSuite('PATCH /ue/comments/reply/{replyId}', (app) 
         body: "Je m'appelle Alban Ichou et j'approuve ce commentaire",
       })
       .expectUeCommentReply({
-        id: JsonLike.ANY_UUID,
+        id: JsonLike.UUID,
         author: {
           id: user.id,
           firstName: user.firstName,
           lastName: user.lastName,
         },
-        createdAt: JsonLike.ANY_DATE,
-        updatedAt: JsonLike.ANY_DATE,
+        createdAt: JsonLike.DATE,
+        updatedAt: JsonLike.DATE,
         body: "Je m'appelle Alban Ichou et j'approuve ce commentaire",
         status: CommentStatus.VALIDATED,
       });

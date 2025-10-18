@@ -1,8 +1,14 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { ConfigModule } from '../config/config.module';
 import { PrismaService } from '../prisma/prisma.service';
-import AssosSearchReqDto from './dto/req/assos-search-req.dto';
+import { RawAssoMembershipRole } from '../prisma/types';
 import { Asso } from './interfaces/asso.interface';
+import { AssoMembership } from './interfaces/membership.interface';
+import { AssoMembershipRole } from './interfaces/membership-role.interface';
+import AssosSearchReqDto from './dto/req/assos-search-req.dto';
+import AssosMemberUpdateReqDto from './dto/req/assos-member-update.dto';
+import { AppException, ERROR_CODE } from '../exceptions';
 
 @Injectable()
 export class AssosService {
@@ -75,18 +81,208 @@ export class AssosService {
     });
   }
 
-  /**
-   * Checks whether an asso exists
-   * @param assoId the id of the asso to check
-   * @returns whether the asso exists
-   */
-  async doesAssoExist(assoId: string) {
-    return (
-      (await this.prisma.asso.count({
-        where: {
-          id: assoId,
-        },
-      })) != 0
+  async getAssoMembers(assoId: string): Promise<AssoMembershipRole[]> {
+    return this.prisma.normalize.assoMembershipRole.findMany({
+      where: {
+        assoId,
+      },
+    });
+  }
+
+  private async getAssoPermissions(assoId: string, userId: string, ...perms: string[]) {
+    return new Set(
+      (
+        await this.prisma.normalize.assoMembership.findMany({
+          where: {
+            asso: { id: assoId },
+            user: { id: userId },
+            endAt: { gte: new Date() },
+            permissions: { some: { id: { in: perms } } },
+          },
+        })
+      ).flatMap((m) => m.permissions.map((p) => p.id)),
     );
+  }
+
+  /** Checks whether the user has at least one of the given permissions. Includes asso account check */
+  async hasSomeAssoPermission(asso: Asso, userId: string, ...perms: string[]): Promise<boolean> {
+    if (asso.assoAccountId === userId) return true;
+    const permissions = await this.getAssoPermissions(asso.id, userId, ...perms);
+    return perms.some((p) => permissions.has(p));
+  }
+
+  /** Checks whether the user has all given permissions. Includes asso account check */
+  async hasEveryAssoPermission(asso: Asso, userId: string, ...perms: string[]): Promise<boolean> {
+    if (asso.assoAccountId === userId) return true;
+    const permissions = await this.getAssoPermissions(asso.id, userId, ...perms);
+    return perms.every((p) => permissions.has(p));
+  }
+
+  async createAssoRole(assoId: string, roleName: string): Promise<RawAssoMembershipRole> {
+    const lastPosition =
+      (
+        await this.prisma.assoMembershipRole.findFirst({
+          where: { assoId },
+          orderBy: { position: 'desc' },
+          take: 1,
+        })
+      )?.position ?? -1;
+    return this.prisma.assoMembershipRole.create({
+      data: {
+        assoId,
+        name: roleName,
+        position: lastPosition + 1,
+        isPresident: false,
+      },
+    });
+  }
+
+  async getRoleRange(assoId: string): Promise<number> {
+    return this.prisma.assoMembershipRole
+      .findFirst({
+        where: { assoId },
+        orderBy: { position: 'desc' },
+        take: 1,
+      })
+      .then((r) => (r ? r.position : 0));
+  }
+
+  async getAssoRole(roleId: string, assoId: string): Promise<RawAssoMembershipRole> {
+    return this.prisma.assoMembershipRole.findUnique({
+      where: { id: roleId, assoId },
+    });
+  }
+
+  async deleteAssoRole(roleId: string): Promise<RawAssoMembershipRole> {
+    const deletedRole = await this.prisma.assoMembershipRole.delete({
+      where: { id: roleId },
+    });
+    await this.prisma.assoMembershipRole.updateMany({
+      where: {
+        assoId: deletedRole.assoId,
+        position: {
+          gte: deletedRole.position,
+        },
+      },
+      data: {
+        position: {
+          decrement: 1,
+        },
+      },
+    });
+    return deletedRole;
+  }
+
+  async updateAssoRole(
+    roleId: string,
+    assoId: string,
+    newData: Partial<Pick<AssoMembershipRole, 'name' | 'position'>>,
+  ): Promise<RawAssoMembershipRole[]> {
+    // This poll must be performed the closest possible to the transaction
+    try {
+      const [{ position }, { count }] = await this.prisma.$transaction([
+        this.prisma.assoMembershipRole.findFirstOrThrow({
+          where: { id: roleId, assoId, position: { gte: 0 } },
+          select: { position: true },
+        }),
+        this.prisma.assoMembershipRole.updateMany({
+          where: { id: roleId, position: { gte: 0 } },
+          data: { position: -1 },
+        }),
+      ]);
+      if (count < 1) throw new AppException(ERROR_CODE.ASSO_ROLE_ALREADY_MOVED);
+      await this.prisma.$transaction([
+        this.prisma.assoMembershipRole.updateMany({
+          where: {
+            position: {
+              gte: Math.min(position, newData.position),
+              lte: Math.max(position, newData.position),
+            },
+          },
+          data: {
+            position: {
+              increment: newData.position !== position ? (newData.position > position ? -1 : 1) : 0,
+            },
+          },
+        }),
+        this.prisma.assoMembershipRole.update({
+          where: { id: roleId },
+          data: {
+            position: newData.position,
+            name: newData.name,
+          },
+        }),
+      ]);
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2025')
+        throw new AppException(ERROR_CODE.ASSO_ROLE_ALREADY_MOVED);
+      throw e;
+    }
+    return this.prisma.assoMembershipRole.findMany({
+      where: { assoId },
+      orderBy: { position: 'asc' },
+    });
+  }
+
+  async hasRole(roleId: string, userId: string): Promise<boolean> {
+    return (
+      (await this.prisma.assoMembership.count({
+        where: {
+          roleId,
+          user: {
+            id: userId,
+          },
+          endAt: {
+            gte: new Date(),
+          },
+        },
+      })) > 0
+    );
+  }
+
+  async addAssoMembership(
+    assoId: string,
+    userId: string,
+    roleId: string,
+    permissions: string[],
+    end?: Date,
+  ): Promise<AssoMembership> {
+    return this.prisma.normalize.assoMembership.create({
+      data: {
+        asso: { connect: { id: assoId } },
+        user: { connect: { id: userId } },
+        role: { connect: { id: roleId } },
+        permissions: {
+          connect: permissions.map((p) => ({ id: p })),
+        },
+        startAt: new Date(),
+        endAt: end ?? new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+      },
+    });
+  }
+
+  async getMembership(memberId: string): Promise<AssoMembership> {
+    return this.prisma.normalize.assoMembership.findUnique({
+      where: {
+        id: memberId,
+      },
+    });
+  }
+
+  async updateAssoMember(memberId: string, update: AssosMemberUpdateReqDto): Promise<AssoMembership> {
+    return this.prisma.normalize.assoMembership.update({
+      where: { id: memberId },
+      data: {
+        ...(update.endAt ? { endAt: update.endAt } : {}),
+        ...(update.roleId ? { role: { connect: { id: update.roleId } } } : {}),
+        ...(update.permissions
+          ? {
+              permissions: {
+                set: update.permissions.map((p) => ({ id: p })),
+              },
+            }
+          : {}),
+      },
+    });
   }
 }

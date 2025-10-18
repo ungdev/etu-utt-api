@@ -1,9 +1,8 @@
-import { e2eSuite } from '../../../utils/test_utils';
+import { e2eSuite, JsonLike } from '../../../utils/test_utils';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../../src/exceptions';
 import * as fakedb from '../../../utils/fakedb';
 import { HttpStatus } from '@nestjs/common';
-import { string } from 'pactum-matchers';
 
 const UpdateClientSecretE2ESpec = e2eSuite('PATCH /auth/application/:applicationId/client-secret', (app) => {
   const user = fakedb.createUser(app);
@@ -33,8 +32,8 @@ const UpdateClientSecretE2ESpec = e2eSuite('PATCH /auth/application/:application
       .patch(`/auth/application/${application.id}/client-secret`)
       .withBearerToken(user.token)
       .expectStatus(HttpStatus.OK)
-      .expectJsonMatch({
-        clientSecret: string(),
+      .$expectRegexableJson({
+        clientSecret: JsonLike.STRING,
       }));
 });
 

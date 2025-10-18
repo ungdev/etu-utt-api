@@ -118,14 +118,15 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/:commentId', (app) => {
       })
       .expectUeComment({
         ueof,
-        id: JsonLike.ANY_UUID,
+        id: JsonLike.UUID,
         author: {
           id: user.id,
           firstName: user.firstName,
           lastName: user.lastName,
+          studentId: user.studentId,
         },
-        createdAt: JsonLike.ANY_DATE,
-        updatedAt: JsonLike.ANY_DATE,
+        createdAt: JsonLike.DATE,
+        updatedAt: JsonLike.DATE,
         semester: semester.code,
         isAnonymous: true,
         body: 'Cette  UE est troooop bien',
@@ -133,6 +134,7 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/:commentId', (app) => {
         upvotes: 1,
         upvoted: false,
         status: CommentStatus.UNVERIFIED,
+        lastValidatedBody: comment.body,
       });
     await app().get(PrismaService).ueComment.deleteMany();
     await createComment(app, { ueof, user, semester }, comment, true);
@@ -149,14 +151,15 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/:commentId', (app) => {
       })
       .expectUeComment({
         ueof,
-        id: JsonLike.ANY_UUID,
+        id: JsonLike.UUID,
         author: {
           id: user.id,
           firstName: user.firstName,
           lastName: user.lastName,
+          studentId: user.studentId,
         },
-        createdAt: JsonLike.ANY_DATE,
-        updatedAt: JsonLike.ANY_DATE,
+        createdAt: JsonLike.DATE,
+        updatedAt: JsonLike.DATE,
         semester: semester.code,
         isAnonymous: false,
         body: comment.body,
@@ -164,6 +167,7 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/:commentId', (app) => {
         upvotes: 1,
         upvoted: false,
         status: CommentStatus.VALIDATED,
+        lastValidatedBody: null,
       });
     await app().get(PrismaService).ueComment.deleteMany();
     await createComment(app, { ueof, user, semester }, comment, true);

@@ -137,9 +137,9 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
             })
             .expectUeAnnal(
               {
-                id: JsonLike.ANY_UUID,
-                createdAt: JsonLike.ANY_DATE,
-                updatedAt: JsonLike.ANY_DATE,
+                id: JsonLike.UUID,
+                createdAt: JsonLike.DATE,
+                updatedAt: JsonLike.DATE,
                 semesterId: semester.code,
                 type: annalType,
                 status: CommentStatus.PROCESSING,
@@ -154,7 +154,7 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
           .put(`/ue/annals/${ueAnnalFile.id}?rotate=${rotation}`)
           .withFile('file', `test/e2e/ue/annals/artifacts/annal.${fileExt}`)
           .expectUeAnnal({
-            ...pick(ueAnnalFile, 'id', 'semesterId', 'type', 'status', 'sender', 'createdAt', 'createdAt'),
+            ...pick(ueAnnalFile, 'id', 'semesterId', 'type', 'status', 'sender', 'createdAt', 'updatedAt'),
           });
       };
     it('from a pdf', testFunction('pdf', 0));
@@ -175,9 +175,9 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
           })
           .expectUeAnnal(
             {
-              id: JsonLike.ANY_UUID,
-              createdAt: JsonLike.ANY_DATE,
-              updatedAt: JsonLike.ANY_DATE,
+              id: JsonLike.UUID,
+              createdAt: JsonLike.DATE,
+              updatedAt: JsonLike.DATE,
               semesterId: semester.code,
               type: annalType,
               status: CommentStatus.PROCESSING,
@@ -209,9 +209,9 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
           })
           .expectUeAnnal(
             {
-              id: JsonLike.ANY_UUID,
-              createdAt: JsonLike.ANY_DATE,
-              updatedAt: JsonLike.ANY_DATE,
+              id: JsonLike.UUID,
+              createdAt: JsonLike.DATE,
+              updatedAt: JsonLike.DATE,
               semesterId: semester.code,
               type: annalType,
               status: CommentStatus.PROCESSING,
@@ -243,9 +243,9 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
           })
           .expectUeAnnal(
             {
-              id: JsonLike.ANY_UUID,
-              createdAt: JsonLike.ANY_DATE,
-              updatedAt: JsonLike.ANY_DATE,
+              id: JsonLike.UUID,
+              createdAt: JsonLike.DATE,
+              updatedAt: JsonLike.DATE,
               semesterId: semester.code,
               type: annalType,
               status: CommentStatus.PROCESSING,
@@ -273,9 +273,9 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
           })
           .expectUeAnnal(
             {
-              id: JsonLike.ANY_UUID,
-              createdAt: JsonLike.ANY_DATE,
-              updatedAt: JsonLike.ANY_DATE,
+              id: JsonLike.UUID,
+              createdAt: JsonLike.DATE,
+              updatedAt: JsonLike.DATE,
               semesterId: semester.code,
               type: annalType,
               status: CommentStatus.PROCESSING,

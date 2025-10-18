@@ -109,8 +109,8 @@ const GetAnnal = e2eSuite('GET /ue/annals', (app) => {
   const formatAnnalFile = (from: Partial<UeAnnalFile>): JsonLikeVariant<UeAnnalFile> => {
     return {
       ...pick(from, 'id', 'semesterId', 'status', 'sender', 'type', 'ueof'),
-      createdAt: from.createdAt?.toISOString(),
-      updatedAt: from.updatedAt?.toISOString(),
+      createdAt: from.createdAt,
+      updatedAt: from.updatedAt,
     };
   };
 });
