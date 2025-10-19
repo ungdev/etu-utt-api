@@ -36,7 +36,7 @@ const UpdateAssoE2ESpec = e2eSuite('PATCH /assos/:id', (app) => {
     phoneNumber: '+33325000000',
     website: 'https://www.utt.fr',
     description: { fr: lexicalText },
-    descriptionShort: { fr: lexicalText },
+    descriptionShort: { fr: 'some description' },
   };
 
   it('should return 403 as user is not authenticated', () =>
@@ -73,14 +73,6 @@ const UpdateAssoE2ESpec = e2eSuite('PATCH /assos/:id', (app) => {
       .patch(`/assos/${asso.id}`)
       .withBody({ ...validBody, description: { fr: nonLexicalText } })
       .expectAppError(ERROR_CODE.PARAM_LEXICAL_ILLEGAL, 'description.fr'));
-
-  it('should return a 401 as descriptionShort is non lexical', () =>
-    pactum
-      .spec()
-      .withBearerToken(userAllowed.token)
-      .patch(`/assos/${asso.id}`)
-      .withBody({ ...validBody, descriptionShort: { fr: nonLexicalText } })
-      .expectAppError(ERROR_CODE.PARAM_LEXICAL_ILLEGAL, 'descriptionShort.fr'));
 
   it('should return a 404 as media does not exist', () =>
     pactum

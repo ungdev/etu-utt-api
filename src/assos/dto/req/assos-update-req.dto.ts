@@ -24,13 +24,13 @@ export default class AssosUpdateReqDto {
   logo?: string;
 
   @IsOptional()
-  @ValidateNested()
   @Type(() => TranslatedTextDto)
+  @ValidateNested()
   descriptionShort?: TranslatedTextDto;
 
   @IsOptional()
-  @ValidateNested()
   @Type(() => TranslatedTextDto)
+  @ValidateNested()
   description?: TranslatedTextDto;
 
   @IsOptional()
