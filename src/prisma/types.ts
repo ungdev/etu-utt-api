@@ -37,6 +37,7 @@ export {
   UserPrivacy as RawUserPrivacy,
   ApiApplication as RawApiApplication,
   ApiKey as RawApiKey,
+  AssoDaymail as RawAssoDaymail,
 } from '@prisma/client';
 
 export { RawTranslation };

@@ -23,6 +23,8 @@ import AssosMemberCreateReqDto from './dto/req/assos-member-create.dto';
 import AssosMemberUpdateReqDto from './dto/req/assos-member-update.dto';
 import AssoMembershipResDto from './dto/res/assos-membership-res.dto';
 import UsersService from '../users/users.service';
+import AssosPostDaymailReqDto from './dto/req/assos-post-daymail-req.dto';
+import DaymailResDto from './dto/res/daymail-res.dto';
 
 @Controller('assos')
 @ApiTags('Assos')
@@ -214,6 +216,14 @@ export class AssosController {
       throw new AppException(ERROR_CODE.PARAM_TOO_HIGH, 'position');
     const updatedRoles = await this.assosService.updateAssoRole(role.id, asso.id, pick(body, 'name', 'position'));
     return { roles: updatedRoles.map(this.formatPartialAssoMembershipRole) };
+  }
+
+  @Post('/:assoId/daymail')
+  @ApiOperation({ description: 'Create a message for the given association' })
+  async createDaymail(@ParamAsso() asso: Asso, @Body() dto: AssosPostDaymailReqDto, @GetUser() user: User): Promise<DaymailResDto> {
+    if (!(await this.assosService.hasSomeAssoPermission(asso, user.id, 'manage_asso')))
+      throw new AppException(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, 'manage_asso');
+    return this.assosService.addDaymail(asso.id, dto.title, dto.message, dto.dates);
   }
 
   formatAssoOverview(asso: Asso): AssoOverviewResDto {

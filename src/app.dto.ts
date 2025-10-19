@@ -3,6 +3,8 @@ import { applyDecorators, HttpStatus, Injectable } from '@nestjs/common';
 import * as ApiResponses from '@nestjs/swagger';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from '@nestjs/common/interfaces/type.interface';
+import { IsOptional, IsString, registerDecorator, ValidationArguments, ValidationOptions } from 'class-validator';
+import { HasSomeAmong } from './validation';
 
 // Redefine the mixin function in node_modules/.pnpm/@nestjs+common@<version>_class-transformer@<version>_class-validator@<version>_reflect-metadata@<version>_rxjs@<version>/node_modules/@nestjs/common/decorators/core/injectable.decorator.js
 // This implementation allows to give a name to the class
@@ -44,3 +46,47 @@ export function paginatedResponseDto<TBase extends Constructor>(Base: TBase) {
   }
   return mixin(ResponseDto, `${Base.name}$Paginated`); // This is important otherwise you will get always the same instance
 }
+
+/*export function AtLeastOneTranslation(validationOptions?: ValidationOptions) {
+  return function (constructor: Function) {
+    registerDecorator({
+      name: 'atLeastOneTranslation',
+      target: constructor,
+      propertyName: propertyName,
+      options: validationOptions,
+      validator: {
+        validate(value: any, args: ValidationArguments) {
+          if (!value || typeof value !== 'object') return false;
+
+          return Object.values(value).some(v => typeof v === 'string' && v.trim().length > 0);
+        },
+        defaultMessage(args: ValidationArguments) {
+          return 'At least one translation must be provided';
+        },
+      },
+    });
+  };
+}*/
+@HasSomeAmong('fr', 'en', 'es', 'de', 'zh')
+export class TranslationReqDto {
+  @IsString()
+  @IsOptional()
+  fr?: string;
+
+  @IsString()
+  @IsOptional()
+  en?: string;
+
+  @IsString()
+  @IsOptional()
+  es?: string;
+
+  @IsString()
+  @IsOptional()
+  de?: string;
+
+  @IsString()
+  @IsOptional()
+  zh?: string;
+}
+
