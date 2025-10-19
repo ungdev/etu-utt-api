@@ -83,9 +83,6 @@ export class AssosController {
     for (const key in body.description)
       if (body.description[key] && !isValidLexicalContent(body.description[key]))
         throw new AppException(ERROR_CODE.PARAM_LEXICAL_ILLEGAL, `description.${key}`);
-    for (const key in body.descriptionShort)
-      if (body.descriptionShort[key] && !isValidLexicalContent(body.descriptionShort[key]))
-        throw new AppException(ERROR_CODE.PARAM_LEXICAL_ILLEGAL, `descriptionShort.${key}`);
     if (body.logo) {
       const media = await this.mediaService.getMedia(body.logo);
       if (!media) throw new AppException(ERROR_CODE.NO_SUCH_MEDIA, body.logo);

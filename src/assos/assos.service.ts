@@ -95,14 +95,12 @@ export class AssosService {
         ...(update.website ? { website: update.website } : {}),
       },
     });
-    if (update.description || update.descriptionShort) {
+    if (update.description) {
       // Cleanup unused images
       const regex = /"src":"https:\/\/[^"]+\/media\/image\/([^/]+)\.webp"/g;
       const imagesInUse = new Set<string>();
       for (const field in updated.descriptionTranslation)
-        for (const match of (<string>updated.descriptionTranslation[field]).matchAll(regex)) imagesInUse.add(match[1]);
-      for (const field in updated.descriptionShortTranslation)
-        for (const match of (<string>updated.descriptionShortTranslation[field]).matchAll(regex))
+        for (const match of (<string>updated.descriptionTranslation[field])?.matchAll(regex) ?? [])
           imagesInUse.add(match[1]);
       const currentImages = new Set(
         (
