@@ -63,7 +63,7 @@ model Asso {
   descriptionShortTranslation Translation?         @relation(name: "descriptionShortTranslation", fields: [descriptionShortTranslationId], references: [id], onDelete: Cascade)
   descriptionTranslation      Translation?         @relation(name: "descriptionTranslation", fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
   assoMemberships             AssoMembership[]
-  assoMessages                AssoMessage[]
+  daymails                    AssoDaymail[]
   events                      Event[]
   assoMembershipRoles         AssoMembershipRole[]
   assoAccount                 User                 @relation(fields: [assoAccountId], references: [id], onDelete: Cascade)
@@ -101,11 +101,8 @@ model AssoMembershipRole {
   asso            Asso             @relation(fields: [assoId], references: [id])
 }
 
-model AssoMessage {
+model AssoDaymail {
   id                 String   @id @default(uuid())
-  date               DateTime
-  sendToMobile       Boolean
-  sendAsDaymail      Boolean
   createdAt          DateTime @default(now())
   assoId             String
   titleTranslationId String   @unique
@@ -114,6 +111,16 @@ model AssoMessage {
   asso             Asso        @relation(fields: [assoId], references: [id])
   titleTranslation Translation @relation(name: "titleTranslation", fields: [titleTranslationId], references: [id], onDelete: Cascade)
   bodyTranslation  Translation @relation(name: "bodyTranslation", fields: [bodyTranslationId], references: [id], onDelete: Cascade)
+  sendDates        AssoDaymailSendDate[]
+}
+
+model AssoDaymailSendDate {
+  daymailId String
+  date DateTime
+
+  daymail AssoDaymail @relation(fields: [daymailId], references: [id], onDelete: Cascade)
+
+  @@id([daymailId, date])
 }
 
 model Event {
@@ -231,8 +238,8 @@ model Translation {
 
   assoDescription                      Asso?                        @relation("descriptionTranslation")
   assoDescriptionShort                 Asso?                        @relation("descriptionShortTranslation")
-  assoMessageTitle                     AssoMessage?                 @relation("titleTranslation")
-  assoMessageTitleBody                 AssoMessage?                 @relation("bodyTranslation")
+  assoDaymailTitle                     AssoDaymail?                 @relation("titleTranslation")
+  assoDaymailTitleBody                 AssoDaymail?                 @relation("bodyTranslation")
   eventDescription                     Event?                       @relation("descriptionTranslation")
   eventTitle                           Event?                       @relation("titleTranslation")
   ueofInfo                             UeofInfo?                    @relation("ueofInfoObjectivesTranslation")

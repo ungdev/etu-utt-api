@@ -2,13 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { ConfigModule } from '../config/config.module';
 import { PrismaService } from '../prisma/prisma.service';
-import { RawAssoMembershipRole } from '../prisma/types';
+import { RawAssoMembershipRole, Translation } from '../prisma/types';
 import { Asso } from './interfaces/asso.interface';
 import { AssoMembership } from './interfaces/membership.interface';
 import { AssoMembershipRole } from './interfaces/membership-role.interface';
 import AssosSearchReqDto from './dto/req/assos-search-req.dto';
 import AssosMemberUpdateReqDto from './dto/req/assos-member-update.dto';
 import { AppException, ERROR_CODE } from '../exceptions';
+import { pick } from '../utils';
+import { AssoDaymail } from './interfaces/daymail.interface';
 
 @Injectable()
 export class AssosService {
@@ -283,6 +285,17 @@ export class AssosService {
             }
           : {}),
       },
+    });
+  }
+
+  async addDaymail(assoId: string, title: Translation, message: Translation, dates: Date[]): Promise<AssoDaymail> {
+    return this.prisma.normalize.assoDaymail.create({
+      data: {
+        asso: { connect: { id: assoId } },
+        titleTranslation: { create: pick(title, 'fr', 'en', 'es', 'de', 'zh') },
+        bodyTranslation: { create: pick(message, 'fr', 'en', 'es', 'de', 'zh') },
+        sendDates: { createMany: { data: dates.map((date) => ({ date })) } },
+      }
     });
   }
 }

@@ -44,6 +44,7 @@ import { CommentStatus } from '../../src/ue/comments/interfaces/comment.interfac
 import { UeAnnalFile } from '../../src/ue/annals/interfaces/annal.interface';
 import { omit, PermissionManager, pick, translationSelect } from '../../src/utils';
 import { DEFAULT_APPLICATION } from '../../prisma/seed/utils';
+import { AssoDaymail } from '../../src/assos/interfaces/daymail.interface';
 
 /**
  * The fake entities can be used like normal entities in the <code>it(string, () => void)</code> functions.
@@ -118,6 +119,7 @@ export type FakeHomepageWidget = Partial<RawHomepageWidget>;
 export type FakeApiApplication = Partial<Omit<RawApiApplication, 'ownerId'>> & {
   owner: { id: string; firstName: string; lastName: string };
 };
+export type FakeAssoDaymail = Partial<Pick<AssoDaymail, 'id' | 'assoId' | 'sendDates' | 'createdAt'> & { title: string, message: string }>;
 
 export interface FakeEntityMap {
   assoMembership: {

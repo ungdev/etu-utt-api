@@ -14,7 +14,7 @@ import {
   FakeUeCreditCategory,
   FakeApiApplication,
   FakeAssoMembershipRole,
-  FakeAssoMembership,
+  FakeAssoMembership, FakeAssoDaymail,
 } from './utils/fakedb';
 import { UeAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
 import { ConfigModule } from '../src/config/config.module';
@@ -314,6 +314,9 @@ Spec.prototype.expectPermissions = function (permissions: PermissionManager) {
       }))
       .mappedSort((permission) => permission.permission),
   } satisfies PermissionsResDto);
+};
+Spec.prototype.expectAssoDaymail = function (this: Spec, daymail: JsonLikeVariant<FakeAssoDaymail>, created = false) {
+  return this.expectStatus(created ? HttpStatus.CREATED : HttpStatus.OK).$expectRegexableJson({...pick(daymail, 'id', 'assoId', 'createdAt', 'title', 'message', 'sendDates')})
 };
 
 export { Spec, JsonLikeVariant, FakeUeWithOfs };

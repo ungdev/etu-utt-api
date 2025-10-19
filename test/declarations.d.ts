@@ -3,7 +3,7 @@ import { UeComment } from 'src/ue/comments/interfaces/comment.interface';
 import { UeCommentReply } from 'src/ue/comments/interfaces/comment-reply.interface';
 import { UeRating } from 'src/ue/interfaces/rate.interface';
 import {
-  FakeApiApplication,
+  FakeApiApplication, FakeAssoDaymail,
   FakeAssoMembership,
   FakeAssoMembershipPermission,
   FakeAssoMembershipRole,
@@ -106,6 +106,7 @@ declare module './declarations' {
     expectApplication(application: FakeApiApplication): this;
 
     expectPermissions(permissions: PermissionManager): this;
+    expectAssoDaymail(daymail: JsonLikeVariant<FakeAssoDaymail>, created = false): this;
 
     withLanguage(language: Language): this;
     language: Language;
