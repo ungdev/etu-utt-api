@@ -9,5 +9,5 @@
   },
   "collectCoverageFrom": ["**/*.ts", "!main.ts"],
   "coverageDirectory": "coverage",
-  "coverageReporters": ["html", "text-summary"]
+  "coverageReporters": ["html", "lcov", "text-summary"]
 }
