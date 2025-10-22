@@ -71,6 +71,15 @@ export class LexicalModule {
             strikethrough: 'editor-strikethrough',
             code: 'editor-code',
           },
+          paragraph: 'editor-no-margin',
+          heading: {
+            h1: 'editor-h1',
+            h2: 'editor-h2',
+            h3: 'editor-no-margin',
+            h4: 'editor-no-margin',
+            h5: 'editor-no-margin',
+            h6: 'editor-no-margin',
+          },
           quote: 'editor-quote',
           hr: 'editor-horizontal-rule',
           list: {
@@ -80,6 +89,9 @@ export class LexicalModule {
             listitemUnchecked: 'editor-list-item-unchecked',
             ol: 'editor-ordered-list',
             ul: 'editor-unordered-list',
+            nested: {
+              listitem: 'editor-list-item-nested',
+            },
           },
           table: 'editor-table',
           tableCell: 'editor-table-cell',
@@ -91,6 +103,8 @@ export class LexicalModule {
       editor.setEditorState(editor.parseEditorState(parsed));
       editor.read(() => (html = $generateHtmlFromNodes(editor)));
     });
-    return html;
+    return html
+      .replaceAll('class=""', '')
+      .replaceAll(/(?<=<[^>]+)(?<!\w|")\s+(?=[^>]*>)|(?<=<[^>]*(?:\w|"))\s+(?=>)/g, '');
   }
 }

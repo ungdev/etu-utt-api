@@ -6,7 +6,6 @@ function applyStylesToElement(element: HTMLElement, index: number) {
     (cName) =>
       cName in CustomStyles &&
       (cName !== 'editor-table-row' || !(index % 2)) &&
-      (cName !== 'editor-list-item-nested' || element.querySelector('.editor-ordered-list,.editor-unordered-list')) &&
       Object.assign(cName === 'editor-image' ? element.querySelector('img').style : element.style, CustomStyles[cName]),
   );
   if (!element.className.includes('editor-ordered-list') && !element.className.includes('editor-unordered-list'))

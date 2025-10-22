@@ -4,8 +4,12 @@ export { ImageNode } from './ImageNode';
 import './NodeStyleInjector';
 
 export type RegisteredStyleMap = {
-  [K1 in keyof EditorThemeClasses]: EditorThemeClasses[K1] extends Record<string, any>
-    ? { [K2 in keyof EditorThemeClasses[K1]]: keyof typeof CustomStyles }
+  [K1 in keyof EditorThemeClasses]: EditorThemeClasses[K1] extends Record<string, unknown>
+    ? {
+        [K2 in keyof EditorThemeClasses[K1]]: EditorThemeClasses[K1][K2] extends Record<string, unknown>
+          ? { [K3 in keyof EditorThemeClasses[K1][K2]]: keyof typeof CustomStyles }
+          : keyof typeof CustomStyles;
+      }
     : keyof typeof CustomStyles;
 };
 
@@ -49,6 +53,18 @@ export const CustomStyles = {
     borderTop: '2px solid #2e3442',
     margin: '1em 0',
   },
+  'editor-no-margin': {
+    margin: '0',
+  },
+  'editor-h1': {
+    textTransform: 'uppercase',
+    fontWeight: '900',
+    margin: '0',
+  },
+  'editor-h2': {
+    fontWeight: 'bold',
+    margin: '0',
+  },
   'editor-checklist': {}, // TODO: implement these styles without after or before pseudo-elements
   'editor-list-item': {
     position: 'relative',
@@ -58,8 +74,12 @@ export const CustomStyles = {
   },
   'editor-list-item-checked': {}, // TODO: implement these styles without after or before pseudo-elements
   'editor-list-item-unchecked': {}, // TODO: implement these styles without after or before pseudo-elements
-  'editor-ordered-list': {},
-  'editor-unordered-list': {},
+  'editor-ordered-list': {
+    paddingTop: '0',
+  },
+  'editor-unordered-list': {
+    paddingTop: '0',
+  },
   'editor-table': {
     borderCollapse: 'collapse',
   },
