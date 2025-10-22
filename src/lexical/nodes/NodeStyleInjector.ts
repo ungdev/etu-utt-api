@@ -20,16 +20,17 @@ export function patchNodeExportDOM<T extends LexicalNode[]>(
 
   NodeClass.prototype.exportDOM = function (this: LexicalNode, ...args: unknown[]) {
     const result = original.apply(this, args);
-
-    if (result?.element) {
-      const element = result.element as HTMLElement;
-      applyStylesToElement(element, this.getIndexWithinParent());
-      element
+    const originalAfterFunction = result?.after;
+    result.after = (element: HTMLElement | null) => {
+      let updatedElement = element;
+      if (originalAfterFunction) updatedElement = originalAfterFunction(element);
+      applyStylesToElement(updatedElement, this.getIndexWithinParent());
+      updatedElement
         .querySelectorAll('[class]')
         .forEach((element: HTMLElement) =>
           applyStylesToElement(element, Array.prototype.indexOf.call(element.parentElement.children, element)),
         );
-    }
+    };
 
     return result;
   };
