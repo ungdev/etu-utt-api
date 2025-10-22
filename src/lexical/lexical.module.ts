@@ -44,6 +44,7 @@ export class LexicalModule {
     try {
       const editor = createHeadlessEditor({
         nodes: BUNDLES[bundle],
+        onError: () => {},
       });
       const parsed = JSON.parse(userInput);
       const editorState = editor.parseEditorState(parsed);

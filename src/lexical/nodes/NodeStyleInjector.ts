@@ -1,3 +1,4 @@
+import { CodeHighlightNode } from '@lexical/code';
 import { TableCellNode } from '@lexical/table';
 import { LexicalNode } from 'lexical';
 import { CustomStyles } from '.';
@@ -47,4 +48,10 @@ export function patchNodeExportDOM<T extends LexicalNode[]>(
 
     return result;
   };
+
+  if ((NodeClass as unknown) === CodeHighlightNode) {
+    Object.defineProperty(NodeClass, 'importDOM', {
+      value: () => null,
+    });
+  }
 }
