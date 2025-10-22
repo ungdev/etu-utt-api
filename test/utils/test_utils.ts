@@ -39,9 +39,9 @@ export type AppProvider = E2EAppProvider | UnitAppProvider;
  *   it('should have created a user', async () => expect(user.id).not.toBeUndefined());
  * });
  */
-function suite<T extends AppProvider>(name: string, func: (app: T) => void) {
+function suite<T extends AppProvider>(name: string, func: (app: T) => void, skip = false) {
   return (app: T) =>
-    describe(name, () => {
+    (skip ? describe.skip : describe)(name, () => {
       beforeAll(async () => {
         const prisma = app().get(PrismaService);
         await cleanDb(prisma);
