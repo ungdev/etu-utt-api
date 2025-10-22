@@ -85,7 +85,3 @@ export function $createImageNode(
 ): ImageNode {
   return new ImageNode(src, altText, width, height, nodeKey);
 }
-
-export function $isImageNode(node: unknown): node is ImageNode {
-  return node instanceof ImageNode;
-}

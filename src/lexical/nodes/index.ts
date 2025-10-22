@@ -17,6 +17,7 @@ export const CustomStyles = {
   'editor-image': {
     maxWidth: '100%',
     maxHeight: '100%',
+    height: 'auto',
     borderRadius: '3px',
     backgroundColor: 'rgba(68, 76, 95, 0.5)',
   },
