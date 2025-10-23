@@ -7,6 +7,8 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "npx nest build",
+    "build:docs": "python3 -m sphinx -W -T -b html -d docs/build/doctrees -D language=fr docs docs/build/html",
+    "build:docs:configure": "pip install --upgrade pip setuptools sphinx readthedocs-sphinx-ext && pip install -r docs/requirements.txt",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "NODE_ENV=development npx nest start",
     "start:dev": "NODE_ENV=development npx nest start --watch",

@@ -10,6 +10,11 @@ setup.md
 nestjs.md
 conventions.md
 test.md
+documentation.md
+errors.md
+permissions.md
+lexical.md
 ues.md
 timetables.md
+scripts.md
 ```
