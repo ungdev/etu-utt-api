@@ -39,9 +39,9 @@ export type AppProvider = E2EAppProvider | UnitAppProvider;
  *   it('should have created a user', async () => expect(user.id).not.toBeUndefined());
  * });
  */
-function suite<T extends AppProvider>(name: string, func: (app: T) => void, skip = false) {
+function suite<T extends AppProvider>(name: string, func: (app: T) => void) {
   return (app: T) =>
-    (skip ? describe.skip : describe)(name, () => {
+    describe(name, () => {
       beforeAll(async () => {
         const prisma = app().get(PrismaService);
         await cleanDb(prisma);
@@ -51,6 +51,12 @@ function suite<T extends AppProvider>(name: string, func: (app: T) => void, skip
       func(app);
     });
 }
+suite.skip =
+  <T extends AppProvider>(name: string, func: (app: T) => void) =>
+  (app: T) =>
+    describe.skip(name, () => {
+      func(app);
+    });
 
 /**
  * Creates a suite for e2e testing. It works the same as {@link describe}, but it cleans the database before each suite.
