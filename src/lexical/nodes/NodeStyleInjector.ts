@@ -3,6 +3,7 @@ import { TableCellNode } from '@lexical/table';
 import { LexicalNode } from 'lexical';
 import { CustomStyles } from '.';
 
+/** Applies style to a specific Node */
 function applyStylesToElement(element: HTMLElement, index: number, node?: LexicalNode) {
   element.classList.forEach((cName) => {
     if (!(cName in CustomStyles)) return;
@@ -27,6 +28,9 @@ function applyStylesToElement(element: HTMLElement, index: number, node?: Lexica
     element.className = '';
 }
 
+/**
+ * Patches the exportDOM method of a Lexical Node to inject inline styles based on class names.
+ */
 export function patchNodeExportDOM<T extends LexicalNode[]>(
   NodeClass: new (...args: unknown[]) => T extends (infer U)[] ? U : never,
 ) {
@@ -48,7 +52,7 @@ export function patchNodeExportDOM<T extends LexicalNode[]>(
 
     return result;
   };
-
+  // Remove warning of having no importDOM method
   if ((NodeClass as unknown) === CodeHighlightNode) {
     Object.defineProperty(NodeClass, 'importDOM', {
       value: () => null,

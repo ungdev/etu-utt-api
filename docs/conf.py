@@ -65,3 +65,4 @@ source_suffix = {
 }
 
 myst_enable_extensions = ["attrs_inline"]
+myst_heading_anchors = 4
