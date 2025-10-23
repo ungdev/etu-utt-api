@@ -53,6 +53,13 @@ exclude_patterns = ['build', 'Thumbs.db', '.DS_Store']
 # a list of builtin themes.
 #
 html_theme = 'shibuya'
+html_theme_options = {
+    "accent_color": "blue",
+    "github_url": "https://github.com/ungdev/etu-utt-api",
+    "announcement": "<center>Le site étu est toujours en cours de développement : la documentation est en cours d'écriture et peux être incomplète/incorrecte.</center>",
+}
+html_favicon = "logo.svg"
+html_logo = "logo.svg"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
