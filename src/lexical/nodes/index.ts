@@ -13,6 +13,10 @@ export type RegisteredStyleMap = {
     : keyof typeof CustomStyles;
 };
 
+/**
+ * Style to apply to elements of lexical content during HTML export.
+ * Every key represents a class name that can be applied to lexical nodes.
+ */
 export const CustomStyles = {
   'editor-image': {
     maxWidth: '100%',

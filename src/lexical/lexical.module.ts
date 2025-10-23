@@ -40,6 +40,18 @@ export class LexicalModule {
     [TextNode, ParagraphNode, ...BUNDLES['@etuutt/full']].forEach(patchNodeExportDOM);
   }
 
+  /**
+   * Validates the user-provided string as valid Lexical content. Checks both structure and content.
+   *
+   * Checks that the content only contains nodes from the provided bundle (you can define custom bundles in {@link BUNDLES}).
+   * This check is performed by parsing the content and re-serializing it, then comparing the result to the original input.
+   * This forbids the use of unknown nodes as well as unknown properties. However, the client implementation is supposed to
+   * serialize nodes the same way as the API does so that properties are in the same order.
+   *
+   * @param userInput the string provided by the user
+   * @param bundle the bundle of allowed nodes (default: full bundle)
+   * @returns true if the content is valid, false otherwise
+   */
   isValidLexicalContent(userInput: string, bundle: keyof typeof BUNDLES = '@etuutt/full') {
     try {
       const editor = createHeadlessEditor({
@@ -54,6 +66,16 @@ export class LexicalModule {
     }
   }
 
+  /**
+   * Generates HTML from lexical content. Nodes not in included the bundle are ignored. The output is sanitized (by happy-dom) and
+   * contains inline-styles instead of classes, for email use. Inline style is defined in the {@link CustomStyles} (./nodes/index.ts).
+   *
+   * This function can not be used in a jest context as it relies on happy-dom to provide a DOM implementation.
+   *
+   * @param lexicalContent the lexical content to convert
+   * @param bundle the bundle of allowed nodes (default: full bundle)
+   * @returns the generated HTML
+   */
   async generateHTML(lexicalContent: string, bundle: keyof typeof BUNDLES = '@etuutt/full'): Promise<string> {
     let html = '';
     const { withDOM } = (await new Function(
