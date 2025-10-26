@@ -1,7 +1,5 @@
-import { faker } from '@faker-js/faker';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from 'src/exceptions';
-import { ConfigModule } from '../../../../src/config/config.module';
 import { PrismaService } from '../../../../src/prisma/prisma.service';
 import {
   createBranch,
@@ -13,7 +11,6 @@ import {
   createUe,
   createUeof,
   createUser,
-  FakeComment,
 } from '../../../utils/fakedb';
 import { Dummies, e2eSuite } from '../../../utils/test_utils';
 
@@ -67,7 +64,7 @@ const UpdateCommentReport = e2eSuite('PATCH /ue/comments/:commentId/:reportId', 
       .expectAppError(ERROR_CODE.NO_SUCH_REPORT);
   });
 
-  it('should return the updated report',async ()=> {
+  it('should return the updated report', async () => {
     await pactum
       .spec()
       .withBearerToken(user.token)
@@ -77,14 +74,16 @@ const UpdateCommentReport = e2eSuite('PATCH /ue/comments/:commentId/:reportId', 
         mitigated: true,
         createdAt: report.createdAt.toISOString(),
       });
-    await app().get(PrismaService).ueCommentReport.update({
-      where: {
-        id: report.id
-      },
-      data: {
-        mitigated: false
-      }
-    });
+    await app()
+      .get(PrismaService)
+      .ueCommentReport.update({
+        where: {
+          id: report.id,
+        },
+        data: {
+          mitigated: false,
+        },
+      });
   });
 });
 

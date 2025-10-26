@@ -2,16 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RawUserUeSubscription } from 'src/prisma/types';
 import UeCommentPostReqDto from './dto/req/ue-comment-post-req.dto';
-import CommentReplyReqDto from './dto/req/ue-comment-reply-req.dto';
+import UeCommentReplyReqDto from './dto/req/ue-comment-reply-req.dto';
 import UeCommentUpdateReqDto from './dto/req/ue-comment-update-req.dto';
 import GetUeCommentsReqDto from './dto/req/ue-get-comments-req.dto';
 import { UeCommentReply } from './interfaces/comment-reply.interface';
 import { UeComment } from './interfaces/comment.interface';
 import { ConfigModule } from '../../config/config.module';
-import CommentReportReqDto from './dto/req/ue-comment-report-req.dto';
+import UeCommentReportReqDto from './dto/req/ue-comment-report-req.dto';
 import GetReportedCommentsReqDto from './dto/req/ue-get-reported-comments-req.dto';
 import UeCommentReportResDto from './dto/res/ue-comment-report-res.dto';
-import { omit } from '../../utils';
+import { omit, pick } from '../../utils';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
@@ -71,9 +71,9 @@ export class CommentsService {
   /**
    * Retrieves a single {@link UeComment} from a comment UUID
    * @param commentId the UUID of the comment
-   * @param userId the user fetching the comments. Used to determine if an anonymous comment should include its author
+   * @param userId the user fetching the comment. Used to determine if an anonymous comment should include its author
    * @param isModerator if true the user is a moderator
-   * @returns a page of {@link UeComment} matching the user query
+   * @returns a single {@link UeComment} matching the provided UUID
    */
   async getCommentFromId(commentId: string, userId: string, isModerator: boolean): Promise<UeComment> {
     const comment = await this.prisma.normalize.ueComment.findUnique({
@@ -90,6 +90,21 @@ export class CommentsService {
     });
     return comment;
   }
+
+    /**
+   * Retrieves a single {@link UeCommentReply} from a reply UUID
+   * @param replyId the UUID of the comment reply
+   * @returns a single {@link UeCommentReply} matching the provided UUID
+   */
+  async getReplyFromId(replyId: string): Promise<UeCommentReply> {
+    const comment = await this.prisma.normalize.ueCommentReply.findUnique({
+      where: {
+        id: replyId,
+      },
+    });
+    return comment;
+  }
+
 
   /**
    * Checks whether a user is the author of a comment
@@ -296,7 +311,7 @@ export class CommentsService {
    * @param reply the reply to post
    * @returns the created {@link UeCommentReply}
    */
-  async replyComment(userId: string, commentId: string, reply: CommentReplyReqDto): Promise<UeCommentReply> {
+  async replyComment(userId: string, commentId: string, reply: UeCommentReplyReqDto): Promise<UeCommentReply> {
     return this.prisma.normalize.ueCommentReply.create({
       data: {
         body: reply.body,
@@ -313,7 +328,7 @@ export class CommentsService {
    * @param reply the modifications to apply to the reply
    * @returns the updated {@link UeCommentReply}
    */
-  async editReply(replyId: string, reply: CommentReplyReqDto): Promise<UeCommentReply> {
+  async editReply(replyId: string, reply: UeCommentReplyReqDto): Promise<UeCommentReply> {
     return this.prisma.normalize.ueCommentReply.update({
       data: {
         body: reply.body,
@@ -419,7 +434,7 @@ export class CommentsService {
    * Retrieves a page of {@link UeComment} having at least one non mitigated report
    * @returns a page of {@link UeComment} matching the user query
    */
-  async getReportedComments(userId: string, dto: GetReportedCommentsReqDto): Promise<Pagination<UeComment>> {
+  async getCommentsWithReports(userId: string, dto: GetReportedCommentsReqDto): Promise<Pagination<UeComment>> {
     // We fetch a page of comments matching our filters and retrieve the total count of comments matching our filters
     const comments = await this.prisma.normalize.ueComment.findMany({
       args: {
@@ -430,11 +445,26 @@ export class CommentsService {
         bypassAnonymousData: true,
       },
       where: {
-        reports: {
-          some: {
-            mitigated: false,
+        OR: [
+          {
+            reports: {
+              some: {
+                mitigated: false,
+              },
+            },
           },
-        },
+          {
+            answers: {
+              some: {
+                reports: {
+                  some: {
+                    mitigated: false,
+                  },
+                },
+              },
+            },
+          },
+        ],
       },
       take: this.config.PAGINATION_PAGE_SIZE,
       skip: ((dto.page ?? 1) - 1) * this.config.PAGINATION_PAGE_SIZE,
@@ -482,7 +512,7 @@ export class CommentsService {
    */
   async reportComment(
     userId: string,
-    body: CommentReportReqDto,
+    body: UeCommentReportReqDto,
     commentId: string,
     isModerator: boolean,
   ): Promise<UeCommentReportResDto> {
@@ -517,19 +547,62 @@ export class CommentsService {
     return {
       ...omit(report, 'reason', 'reasonId', 'userId', 'user'),
       reason: report.reason.name,
-      user: {
-        firstName: report.user.firstName,
-        id: report.user.id,
-        lastName: report.user.lastName,
-        studentId: report.user.studentId,
-      },
+      user: pick(report.user,'firstName','id','lastName','studentId'),
     };
   }
 
-  async mitigateReport(commentId: string, reportId: string) {
+  async reportCommentReply(userId: string,body: UeCommentReportReqDto,replyId: string,isModerator:boolean): Promise<UeCommentReportResDto>{
+    const reply = await this.getReplyFromId(replyId);
+    const report = await this.prisma.ueCommentReplyReport.create({
+      data: {
+        body: body.body,
+        mitigated: false,
+        reason: {
+          connect: {
+            name: body.reason
+          }
+        },
+        reply: {
+          connect: {
+            id: replyId
+          }
+        },
+        user: {
+          connect: {
+            id: userId
+          }
+        },
+        reportedBody: reply.body,
+
+      },
+      include: {
+        user: true,
+        reason: true
+      }
+    })
+    return {
+      ...omit(report,'user'),
+      user: pick(report.user,'firstName','id','lastName','studentId'),
+      reason: report.reason.name,
+    };
+  }
+
+  async mitigateCommentReport(commentId: string, reportId: string) {
     return this.prisma.ueCommentReport.update({
       where: {
         commentId,
+        id: reportId,
+      },
+      data: {
+        mitigated: true,
+      },
+    });
+  }
+
+    async mitigateCommentReplyReport(replyId: string, reportId: string) {
+    return this.prisma.ueCommentReplyReport.update({
+      where: {
+        replyId,
         id: reportId,
       },
       data: {
