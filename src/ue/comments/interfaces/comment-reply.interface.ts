@@ -43,7 +43,7 @@ export const REPLY_SELECT_FILTER = {
   },
 } as const;
 
-export type UeCommentReplyReport = Omit<RawUeCommentReplyReport,'reasonId'|'userId'|'replyId'> & {
+export type UeCommentReplyReport = Omit<RawUeCommentReplyReport, 'reasonId' | 'userId' | 'replyId'> & {
   reason: string;
   user: {
     id: string;
@@ -51,14 +51,14 @@ export type UeCommentReplyReport = Omit<RawUeCommentReplyReport,'reasonId'|'user
     firstName: string;
     lastName: string;
   };
-}
+};
 type UnformattedUeCommentReply = Prisma.UeCommentGetPayload<typeof REPLY_SELECT_FILTER>;
 export type UeCommentReply = Omit<
   Prisma.UeCommentReplyGetPayload<typeof REPLY_SELECT_FILTER>,
-  'deletedAt'|'reports'
+  'deletedAt' | 'reports'
 > & {
   status: CommentStatus;
-  reports: UeCommentReplyReport[]
+  reports: UeCommentReplyReport[];
 };
 
 export function generateCustomUeCommentReplyModel(prisma: PrismaClient) {
@@ -67,8 +67,11 @@ export function generateCustomUeCommentReplyModel(prisma: PrismaClient) {
 
 export function formatReply(_: PrismaClient, reply: UnformattedUeCommentReply): UeCommentReply {
   return {
-    ...omit(reply, 'deletedAt','reports'),
-    reports: reply.reports.map((r)=> {return {...r, reason:r.reason.name}}),
-    status: (reply.reports.some((r)=> !r.mitigated) && CommentStatus.HIDDEN) | (reply.deletedAt && CommentStatus.DELETED),
+    ...omit(reply, 'deletedAt', 'reports'),
+    reports: reply.reports.map((r) => {
+      return { ...r, reason: r.reason.name };
+    }),
+    status:
+      (reply.reports.some((r) => !r.mitigated) && CommentStatus.HIDDEN) | (reply.deletedAt && CommentStatus.DELETED),
   };
 }
