@@ -9,9 +9,11 @@ import PostUpvote from './post-upvote.e2e-spec';
 import UpdateComment from './update-comment.e2e-spec';
 import UpdateCommentReply from './update-reply.e2e-spec';
 import GetCommentFromIdE2ESpec from './get-comment-from-id.e2e-spec';
-import ReportComment from './post-comment-report';
+import ReportComment from './post-comment-report.e2e-spec';
 import GetReportedComments from './get-reported-comments.e2e-spec';
 import UpdateCommentReport from './update-comment-report.e2e-spec';
+import ReportCommentReply from './post-comment-reply-report.e2e-spec';
+import UpdateCommentReplyReport from './update-comment-reply-report.e2e-spec';
 
 export default function CommentsE2ESpec(app: () => INestApplication) {
   describe('Comments', () => {
@@ -26,7 +28,9 @@ export default function CommentsE2ESpec(app: () => INestApplication) {
     DeleteUpvote(app);
     GetCommentFromIdE2ESpec(app);
     ReportComment(app);
+    ReportCommentReply(app)
     GetReportedComments(app);
     UpdateCommentReport(app);
+    UpdateCommentReplyReport(app);
   });
 }

@@ -132,7 +132,7 @@ export function generateCustomCommentModel(prisma: PrismaClient) {
         Object.assign(query, { ...query, where: {} });
       }
       if (!includeDeleted) {
-        Object.assign(query.where, { ...query.where, deletedAt: null, answers: { every: { deletedAt: null } } });
+        Object.assign(query.where, { ...query.where, deletedAt: null });
       }
       if (!includeHiddenComments) {
         Object.assign(query.where, { ...query.where, reports: { none: { mitigated: false } } });
@@ -148,7 +148,9 @@ export function formatComment(prisma: PrismaClient, comment: UnformattedUeCommen
   return {
     ...omit(comment, 'deletedAt'),
     author: !comment.isAnonymous || bypassAnonymousData || args.userId == comment.author.id ? comment.author : null,
-    answers: comment.answers.map((answer) => {
+    answers: comment.answers
+    .filter((answer) => args.includeDeleted || answer.deletedAt === null)
+    .map((answer) => {
       let anwser = formatReply(prisma, answer);
       if (!includeReports) anwser.reports = null;
       return anwser;
