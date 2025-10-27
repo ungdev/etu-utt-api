@@ -149,12 +149,12 @@ export function formatComment(prisma: PrismaClient, comment: UnformattedUeCommen
     ...omit(comment, 'deletedAt'),
     author: !comment.isAnonymous || bypassAnonymousData || args.userId == comment.author.id ? comment.author : null,
     answers: comment.answers
-    .filter((answer) => args.includeDeleted || answer.deletedAt === null)
-    .map((answer) => {
-      let anwser = formatReply(prisma, answer);
-      if (!includeReports) anwser.reports = null;
-      return anwser;
-    }),
+      .filter((answer) => args.includeDeleted || answer.deletedAt === null)
+      .map((answer) => {
+        let anwser = formatReply(prisma, answer);
+        if (!includeReports) anwser.reports = null;
+        return anwser;
+      }),
     status:
       (comment.reports.some((r) => !r.mitigated) && CommentStatus.HIDDEN) |
       (comment.deletedAt && CommentStatus.DELETED),

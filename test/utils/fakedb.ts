@@ -1127,7 +1127,11 @@ export const createCommentReportReason = entityFaker(
           descriptionTranslation: {
             create: {
               id: params.descriptionTranslationId,
-              fr: 'TODO : implement this value',
+              fr: 'bonjour',
+              en: null,
+              de: null,
+              es: null,
+              zh: null,
             },
           },
         },

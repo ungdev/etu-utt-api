@@ -1,18 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 import { RawUserUeSubscription } from 'src/prisma/types';
+import { ConfigModule } from '../../config/config.module';
+import { PrismaService } from '../../prisma/prisma.service';
+import { omit, pick } from '../../utils';
 import UeCommentPostReqDto from './dto/req/ue-comment-post-req.dto';
 import UeCommentReplyReqDto from './dto/req/ue-comment-reply-req.dto';
+import UeCommentReportReqDto from './dto/req/ue-comment-report-req.dto';
 import UeCommentUpdateReqDto from './dto/req/ue-comment-update-req.dto';
 import GetUeCommentsReqDto from './dto/req/ue-get-comments-req.dto';
-import { UeCommentReply } from './interfaces/comment-reply.interface';
-import { UeComment } from './interfaces/comment.interface';
-import { ConfigModule } from '../../config/config.module';
-import UeCommentReportReqDto from './dto/req/ue-comment-report-req.dto';
 import GetReportedCommentsReqDto from './dto/req/ue-get-reported-comments-req.dto';
 import UeCommentReportResDto from './dto/res/ue-comment-report-res.dto';
-import { omit, pick } from '../../utils';
-import { Prisma } from '@prisma/client';
+import { UeCommentReply } from './interfaces/comment-reply.interface';
+import { UeComment } from './interfaces/comment.interface';
 
 @Injectable()
 export class CommentsService {
@@ -522,8 +522,6 @@ export class CommentsService {
     commentId: string,
     isModerator: boolean,
   ): Promise<UeCommentReportResDto> {
-    // How are reasons handled by the front ?
-    // Do we need another route to load reasons ?
     const comment = await this.getCommentFromId(commentId, userId, isModerator);
     const report = await this.prisma.ueCommentReport.create({
       data: {
@@ -598,7 +596,7 @@ export class CommentsService {
   }
 
   async mitigateCommentReport(commentId: string, reportId: string) {
-    return this.prisma.ueCommentReport.update({
+    return await this.prisma.ueCommentReport.update({
       where: {
         commentId,
         id: reportId,
@@ -610,7 +608,7 @@ export class CommentsService {
   }
 
   async mitigateCommentReplyReport(replyId: string, reportId: string) {
-    return this.prisma.ueCommentReplyReport.update({
+    return await this.prisma.ueCommentReplyReport.update({
       where: {
         reply: {
           id: replyId,
@@ -621,5 +619,16 @@ export class CommentsService {
         mitigated: true,
       },
     });
+  }
+
+  async getCommentReportReason() {
+    return (await this.prisma.ueCommentReportReason.findMany({ include: { descriptionTranslation: true } })).map(
+      (rr) => {
+        return {
+          name: rr.name,
+          descriptionTranslation: omit(rr.descriptionTranslation, 'id'),
+        };
+      },
+    );
   }
 }
