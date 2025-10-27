@@ -328,7 +328,7 @@ export class CommentsController {
   ) {
     if (!(await this.commentsService.doesCommentExist(commentId, user.id, true)))
       throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
-    if (!(await this.commentsService.doesReportExist(reportId))) throw new AppException(ERROR_CODE.NO_SUCH_REPORT);
+    if (!(await this.commentsService.doesCommentReportExist(reportId))) throw new AppException(ERROR_CODE.NO_SUCH_REPORT);
     return await this.commentsService.mitigateCommentReport(commentId, reportId);
   }
 
@@ -337,13 +337,12 @@ export class CommentsController {
   @ApiOperation({description: 'Mitigate a comment reply report'})
   @ApiOkResponse({type: UeCommentReportResDto})
   async mitigateCommentReplyReport(
-    @GetUser() user: User,
     @UUIDParam('replyId') replyId: string,
     @UUIDParam('reportId') reportId: string,
   ) {
     if (!(await this.commentsService.doesReplyExist(replyId)))
       throw new AppException(ERROR_CODE.NO_SUCH_REPLY);
-    if (!(await this.commentsService.doesReportExist(reportId))) throw new AppException(ERROR_CODE.NO_SUCH_REPORT);
+    if (!(await this.commentsService.doesCommentReplyReportExist(reportId))) throw new AppException(ERROR_CODE.NO_SUCH_REPORT);
     return await this.commentsService.mitigateCommentReplyReport(replyId, reportId);
   }
 }

@@ -91,7 +91,7 @@ export class CommentsService {
     return comment;
   }
 
-    /**
+  /**
    * Retrieves a single {@link UeCommentReply} from a reply UUID
    * @param replyId the UUID of the comment reply
    * @returns a single {@link UeCommentReply} matching the provided UUID
@@ -104,7 +104,6 @@ export class CommentsService {
     });
     return comment;
   }
-
 
   /**
    * Checks whether a user is the author of a comment
@@ -436,6 +435,28 @@ export class CommentsService {
    */
   async getCommentsWithReports(userId: string, dto: GetReportedCommentsReqDto): Promise<Pagination<UeComment>> {
     // We fetch a page of comments matching our filters and retrieve the total count of comments matching our filters
+    const whereClause: Prisma.UeCommentWhereInput = {
+      OR: [
+        {
+          reports: {
+            some: {
+              mitigated: false,
+            },
+          },
+        },
+        {
+          answers: {
+            some: {
+              reports: {
+                some: {
+                  mitigated: false,
+                },
+              },
+            },
+          },
+        },
+      ],
+    };
     const comments = await this.prisma.normalize.ueComment.findMany({
       args: {
         userId: userId,
@@ -444,38 +465,14 @@ export class CommentsService {
         includeReports: true,
         bypassAnonymousData: true,
       },
-      where: {
-        OR: [
-          {
-            reports: {
-              some: {
-                mitigated: false,
-              },
-            },
-          },
-          {
-            answers: {
-              some: {
-                reports: {
-                  some: {
-                    mitigated: false,
-                  },
-                },
-              },
-            },
-          },
-        ],
-      },
+      where: whereClause,
       take: this.config.PAGINATION_PAGE_SIZE,
       skip: ((dto.page ?? 1) - 1) * this.config.PAGINATION_PAGE_SIZE,
     });
     const commentCount = await this.prisma.ueComment.count({
       where: {
-        reports: {
-          some: {
-            mitigated: false,
-          },
-        },
+        ...whereClause,
+        deletedAt: null,
       },
     });
 
@@ -492,8 +489,17 @@ export class CommentsService {
    * @param reportId the id of the report
    * @returns true if it exists
    */
-  async doesReportExist(reportId: string): Promise<Boolean> {
+  async doesCommentReportExist(reportId: string): Promise<Boolean> {
     return (await this.prisma.ueCommentReport.count({ where: { id: reportId } })) == 1;
+  }
+
+  /**
+   * Check if a report  exist
+   * @param reportId the id of the report
+   * @returns true if it exists
+   */
+  async doesCommentReplyReportExist(reportId: string): Promise<Boolean> {
+    return (await this.prisma.ueCommentReplyReport.count({ where: { id: reportId } })) == 1;
   }
 
   /**
@@ -547,11 +553,16 @@ export class CommentsService {
     return {
       ...omit(report, 'reason', 'reasonId', 'userId', 'user'),
       reason: report.reason.name,
-      user: pick(report.user,'firstName','id','lastName','studentId'),
+      user: pick(report.user, 'firstName', 'id', 'lastName', 'studentId'),
     };
   }
 
-  async reportCommentReply(userId: string,body: UeCommentReportReqDto,replyId: string,isModerator:boolean): Promise<UeCommentReportResDto>{
+  async reportCommentReply(
+    userId: string,
+    body: UeCommentReportReqDto,
+    replyId: string,
+    isModerator: boolean,
+  ): Promise<UeCommentReportResDto> {
     const reply = await this.getReplyFromId(replyId);
     const report = await this.prisma.ueCommentReplyReport.create({
       data: {
@@ -559,30 +570,29 @@ export class CommentsService {
         mitigated: false,
         reason: {
           connect: {
-            name: body.reason
-          }
+            name: body.reason,
+          },
         },
         reply: {
           connect: {
-            id: replyId
-          }
+            id: replyId,
+          },
         },
         user: {
           connect: {
-            id: userId
-          }
+            id: userId,
+          },
         },
         reportedBody: reply.body,
-
       },
       include: {
         user: true,
-        reason: true
-      }
-    })
+        reason: true,
+      },
+    });
     return {
-      ...omit(report,'user'),
-      user: pick(report.user,'firstName','id','lastName','studentId'),
+      ...omit(report, 'user'),
+      user: pick(report.user, 'firstName', 'id', 'lastName', 'studentId'),
       reason: report.reason.name,
     };
   }
@@ -599,10 +609,12 @@ export class CommentsService {
     });
   }
 
-    async mitigateCommentReplyReport(replyId: string, reportId: string) {
+  async mitigateCommentReplyReport(replyId: string, reportId: string) {
     return this.prisma.ueCommentReplyReport.update({
       where: {
-        replyId,
+        reply: {
+          id: replyId,
+        },
         id: reportId,
       },
       data: {
