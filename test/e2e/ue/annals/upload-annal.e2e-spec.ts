@@ -12,15 +12,21 @@ import {
 import { JsonLike, e2eSuite } from '../../../utils/test_utils';
 import { ERROR_CODE } from '../../../../src/exceptions';
 import { ConfigModule } from '../../../../src/config/config.module';
-import { pick } from '../../../../src/utils';
+import { PermissionManager, pick } from '../../../../src/utils';
 import { mkdirSync, rmSync } from 'fs';
 import { AnnalStatus } from 'src/ue/annals/interfaces/annal.interface';
 
 const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
-  const senderUser = createUser(app, { permissions: ['API_UPLOAD_ANNALS'] });
-  const nonUeUser = createUser(app, { login: 'user2', studentId: 2, permissions: ['API_UPLOAD_ANNALS'] });
+  const senderUser = createUser(app, { permissions: new PermissionManager().with('API_UPLOAD_ANNALS') });
+  const nonUeUser = createUser(app, {
+    login: 'user2',
+    studentId: 2,
+    permissions: new PermissionManager().with('API_UPLOAD_ANNALS'),
+  });
   const userNoPermission = createUser(app);
-  const userModerator = createUser(app, { permissions: ['API_UPLOAD_ANNALS', 'API_MODERATE_ANNALS'] });
+  const userModerator = createUser(app, {
+    permissions: new PermissionManager().with('API_UPLOAD_ANNALS').with('API_MODERATE_ANNALS'),
+  });
   const annalType = createAnnalType(app);
   const semester = createSemester(app);
   const otherRandomSemester = createSemester(app);
@@ -131,9 +137,9 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
             })
             .expectUeAnnal(
               {
-                id: JsonLike.ANY_UUID,
-                createdAt: JsonLike.ANY_DATE,
-                updatedAt: JsonLike.ANY_DATE,
+                id: JsonLike.UUID,
+                createdAt: JsonLike.DATE,
+                updatedAt: JsonLike.DATE,
                 semesterId: semester.code,
                 type: annalType,
                 status: AnnalStatus.PROCESSING,
@@ -148,7 +154,7 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
           .put(`/ue/annals/${ueAnnalFile.id}?rotate=${rotation}`)
           .withFile('file', `test/e2e/ue/annals/artifacts/annal.${fileExt}`)
           .expectUeAnnal({
-            ...pick(ueAnnalFile, 'id', 'semesterId', 'type', 'status', 'sender', 'createdAt', 'createdAt'),
+            ...pick(ueAnnalFile, 'id', 'semesterId', 'type', 'status', 'sender', 'createdAt', 'updatedAt'),
           });
       };
     it('from a pdf', testFunction('pdf', 0));
@@ -169,9 +175,9 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
           })
           .expectUeAnnal(
             {
-              id: JsonLike.ANY_UUID,
-              createdAt: JsonLike.ANY_DATE,
-              updatedAt: JsonLike.ANY_DATE,
+              id: JsonLike.UUID,
+              createdAt: JsonLike.DATE,
+              updatedAt: JsonLike.DATE,
               semesterId: semester.code,
               type: annalType,
               status: AnnalStatus.PROCESSING,
@@ -203,9 +209,9 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
           })
           .expectUeAnnal(
             {
-              id: JsonLike.ANY_UUID,
-              createdAt: JsonLike.ANY_DATE,
-              updatedAt: JsonLike.ANY_DATE,
+              id: JsonLike.UUID,
+              createdAt: JsonLike.DATE,
+              updatedAt: JsonLike.DATE,
               semesterId: semester.code,
               type: annalType,
               status: AnnalStatus.PROCESSING,
@@ -237,9 +243,9 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
           })
           .expectUeAnnal(
             {
-              id: JsonLike.ANY_UUID,
-              createdAt: JsonLike.ANY_DATE,
-              updatedAt: JsonLike.ANY_DATE,
+              id: JsonLike.UUID,
+              createdAt: JsonLike.DATE,
+              updatedAt: JsonLike.DATE,
               semesterId: semester.code,
               type: annalType,
               status: AnnalStatus.PROCESSING,
@@ -267,9 +273,9 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
           })
           .expectUeAnnal(
             {
-              id: JsonLike.ANY_UUID,
-              createdAt: JsonLike.ANY_DATE,
-              updatedAt: JsonLike.ANY_DATE,
+              id: JsonLike.UUID,
+              createdAt: JsonLike.DATE,
+              updatedAt: JsonLike.DATE,
               semesterId: semester.code,
               type: annalType,
               status: AnnalStatus.PROCESSING,

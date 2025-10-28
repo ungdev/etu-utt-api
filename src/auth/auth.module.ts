@@ -8,12 +8,14 @@ import { LdapModule } from '../ldap/ldap.module';
 import { UeService } from '../ue/ue.service';
 import ApplicationController from './application/application.controller';
 import ApplicationService from './application/application.service';
+import PermissionsController from './permissions/permissions.controller';
+import PermissionsService from './permissions/permissions.service';
 
 @Global()
 @Module({
   imports: [JwtModule.register({}), UsersModule],
-  controllers: [AuthController, ApplicationController],
-  providers: [AuthService, JwtStrategy, ApplicationService, LdapModule, UeService],
+  controllers: [AuthController, ApplicationController, PermissionsController],
+  providers: [AuthService, JwtStrategy, ApplicationService, LdapModule, UeService, PermissionsService],
   exports: [],
 })
 export class AuthModule {}

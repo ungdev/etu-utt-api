@@ -4,7 +4,6 @@ import * as pactum from 'pactum';
 import { HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { pick } from '../../../src/utils';
-import { deepDateToString } from '../../declarations';
 
 const GetCurrentUserE2ESpec = e2eSuite('GET /users/current', (app) => {
   const user = createUser(app);
@@ -22,7 +21,7 @@ const GetCurrentUserE2ESpec = e2eSuite('GET /users/current', (app) => {
     const branch = userFromDb.branchSubscriptions.find(
       (branch) => branch.semester.start >= new Date() && branch.semester.end <= new Date(),
     );
-    const expectedBody = deepDateToString({
+    const expectedBody = {
       id: userFromDb.id,
       firstName: userFromDb.firstName,
       lastName: userFromDb.lastName,
@@ -57,14 +56,14 @@ const GetCurrentUserE2ESpec = e2eSuite('GET /users/current', (app) => {
         displayDiscord: userFromDb.privacy.discord,
         displayTimetable: userFromDb.privacy.timetable,
       },
-    });
+    };
 
     return pactum
       .spec()
       .get(`/users/current`)
       .withBearerToken(user.token)
       .expectStatus(HttpStatus.OK)
-      .expectJsonMatchStrict(
+      .$expectRegexableJson(
         Object.fromEntries(Object.entries(expectedBody).filter(([, value]) => value !== undefined)),
       );
   });

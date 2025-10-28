@@ -11,11 +11,15 @@ import {
 import * as pactum from 'pactum';
 import { ERROR_CODE } from 'src/exceptions';
 import { e2eSuite } from '../../utils/test_utils';
+import { PermissionManager } from '../../../src/utils';
 
 const GetRateE2ESpec = e2eSuite('GET /ue/:ueCode/rate', (app) => {
   const userNoPermission = createUser(app);
-  const userFullRating = createUser(app, { permissions: ['API_GIVE_OPINIONS_UE'] });
-  const userPartialRating = createUser(app, { login: 'user2', permissions: ['API_GIVE_OPINIONS_UE'] });
+  const userFullRating = createUser(app, { permissions: new PermissionManager().with('API_GIVE_OPINIONS_UE') });
+  const userPartialRating = createUser(app, {
+    login: 'user2',
+    permissions: new PermissionManager().with('API_GIVE_OPINIONS_UE'),
+  });
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });

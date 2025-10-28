@@ -12,6 +12,9 @@ export class ProfileService {
       where: {
         userId,
       },
+      orderBy: {
+        x: 'asc',
+      },
     });
   }
 
@@ -20,7 +23,13 @@ export class ProfileService {
       await this.prisma.user.update({
         where: { id: userId },
         data: { homepageWidgets: { deleteMany: {}, createMany: { data: widgets } } },
-        select: { homepageWidgets: true },
+        select: {
+          homepageWidgets: {
+            orderBy: {
+              x: 'asc',
+            },
+          },
+        },
       })
     ).homepageWidgets;
   }

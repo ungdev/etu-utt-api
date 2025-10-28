@@ -14,16 +14,20 @@ import { e2eSuite } from '../../../utils/test_utils';
 import { ERROR_CODE } from '../../../../src/exceptions';
 import { AnnalStatus, UeAnnalFile } from '../../../../src/ue/annals/interfaces/annal.interface';
 import { JsonLikeVariant } from 'test/declarations';
-import { pick } from '../../../../src/utils';
+import { PermissionManager, pick } from '../../../../src/utils';
 import { CommentStatus } from '../../../../src/ue/comments/interfaces/comment.interface';
 
 const GetAnnal = e2eSuite('GET /ue/annals', (app) => {
-  const senderUser = createUser(app, { permissions: ['API_SEE_ANNALS'] });
-  const nonUeUser = createUser(app, { login: 'user2', studentId: 2, permissions: ['API_SEE_ANNALS'] });
+  const senderUser = createUser(app, { permissions: new PermissionManager().with('API_SEE_ANNALS') });
+  const nonUeUser = createUser(app, {
+    login: 'user2',
+    studentId: 2,
+    permissions: new PermissionManager().with('API_SEE_ANNALS'),
+  });
   const moderator = createUser(app, {
     login: 'user3',
     studentId: 3,
-    permissions: ['API_SEE_ANNALS', 'API_MODERATE_ANNALS'],
+    permissions: new PermissionManager().with('API_SEE_ANNALS').with('API_MODERATE_ANNALS'),
   });
   const userNoPermission = createUser(app);
   const annalType = createAnnalType(app);
@@ -113,8 +117,8 @@ const GetAnnal = e2eSuite('GET /ue/annals', (app) => {
   const formatAnnalFile = (from: Partial<UeAnnalFile>): JsonLikeVariant<UeAnnalFile> => {
     return {
       ...pick(from, 'id', 'semesterId', 'status', 'sender', 'type', 'ueof'),
-      createdAt: from.createdAt?.toISOString(),
-      updatedAt: from.updatedAt?.toISOString(),
+      createdAt: from.createdAt,
+      updatedAt: from.updatedAt,
     };
   };
 });

@@ -7,10 +7,11 @@ import {
   Length,
   MaxLength,
   MinLength,
-  ValidateIf,
 } from 'class-validator';
+import { HasSomeAmong } from '../../../../validation';
 
 export class CreateAnnalReqDto {
+  @HasSomeAmong('ueCode', 'ueof')
   @IsString()
   @IsNotEmpty()
   @Length(3)
@@ -21,13 +22,13 @@ export class CreateAnnalReqDto {
   @IsUUID()
   typeId: string;
 
+  @IsOptional()
   @IsString()
-  @ValidateIf((obj: CreateAnnalReqDto) => !!obj.ueCode || !!obj.ueof)
   @IsNotEmpty()
   @IsAlphanumeric()
   @MinLength(3)
   @MaxLength(5)
-  ueCode: string;
+  ueCode?: string;
 
   @IsOptional()
   @IsString()

@@ -13,9 +13,10 @@ import {
   createUser,
 } from '../../../utils/fakedb';
 import { Dummies, e2eSuite } from '../../../utils/test_utils';
+import { PermissionManager } from '../../../../src/utils';
 
 const UpdateCommentReport = e2eSuite('PATCH /ue/comments/:commentId/:reportId', (app) => {
-  const user = createUser(app, { permissions: ['API_MODERATE_COMMENTS'] });
+  const user = createUser(app, { permissions: new PermissionManager().with('API_MODERATE_COMMENTS')});
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
@@ -33,7 +34,7 @@ const UpdateCommentReport = e2eSuite('PATCH /ue/comments/:commentId/:reportId', 
     const userNoPermission = await createUser(app, {}, true);
     const userNotModerator = await createUser(
       app,
-      { permissions: ['API_SEE_OPINIONS_UE', 'API_GIVE_OPINIONS_UE'] },
+      { permissions: new PermissionManager().with('API_SEE_OPINIONS_UE').with('API_GIVE_OPINIONS_UE') },
       true,
     );
     await pactum
@@ -72,7 +73,6 @@ const UpdateCommentReport = e2eSuite('PATCH /ue/comments/:commentId/:reportId', 
       .expectUeCommentReport({
         ...report,
         mitigated: true,
-        createdAt: report.createdAt.toISOString(),
       });
     await app()
       .get(PrismaService)

@@ -549,9 +549,9 @@ export class CommentsService {
       },
     });
     return {
-      ...omit(report, 'reason', 'reasonId', 'userId', 'user'),
+      ...omit(report, 'reason', 'reasonId', 'userId', 'user', 'commentId'),
       reason: report.reason.name,
-      user: pick(report.user, 'firstName', 'id', 'lastName', 'studentId'),
+      user: pick(report.user, 'firstName', 'id', 'lastName'),
     };
   }
 
@@ -589,8 +589,8 @@ export class CommentsService {
       },
     });
     return {
-      ...omit(report, 'user'),
-      user: pick(report.user, 'firstName', 'id', 'lastName', 'studentId'),
+      ...omit(report, 'user', 'replyId', 'reasonId', 'userId'),
+      user: pick(report.user, 'firstName', 'id', 'lastName'),
       reason: report.reason.name,
     };
   }

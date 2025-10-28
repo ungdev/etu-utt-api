@@ -22,10 +22,8 @@ const GetEntryDetailsE2ESpec = e2eSuite('GET /timetable/:entryId', (app) => {
       id: entry.id,
       location: entry.location,
       duration: entry.occurrenceDuration,
-      firstRepetitionDate: entry.eventStart.toISOString(),
-      lastRepetitionDate: new Date(
-        entry.eventStart.getTime() + (entry.occurrencesCount - 1) * entry.repeatEvery,
-      ).toISOString(),
+      firstRepetitionDate: entry.eventStart,
+      lastRepetitionDate: new Date(entry.eventStart.getTime() + (entry.occurrencesCount - 1) * entry.repeatEvery),
       repetitionFrequency: entry.repeatEvery,
       repetitions: entry.occurrencesCount,
       groups: [user1Group.id],
@@ -33,8 +31,8 @@ const GetEntryDetailsE2ESpec = e2eSuite('GET /timetable/:entryId', (app) => {
         {
           id: override2.id,
           location: override2.location,
-          firstRepetitionDate: entry.eventStart.toISOString(),
-          lastRepetitionDate: entry.eventStart.toISOString(),
+          firstRepetitionDate: entry.eventStart,
+          lastRepetitionDate: entry.eventStart,
           firstOccurrenceOverride: override2.applyFrom,
           lastOccurrenceOverride: override2.applyUntil,
           overrideFrequency: override2.repeatEvery,
@@ -44,8 +42,8 @@ const GetEntryDetailsE2ESpec = e2eSuite('GET /timetable/:entryId', (app) => {
         {
           id: override1.id,
           location: override1.location,
-          firstRepetitionDate: entry.eventStart.toISOString(),
-          lastRepetitionDate: entry.eventStart.toISOString(),
+          firstRepetitionDate: entry.eventStart,
+          lastRepetitionDate: entry.eventStart,
           firstOccurrenceOverride: override1.applyFrom,
           lastOccurrenceOverride: override1.applyUntil,
           overrideFrequency: override1.repeatEvery,
@@ -81,7 +79,7 @@ const GetEntryDetailsE2ESpec = e2eSuite('GET /timetable/:entryId', (app) => {
       .get(`/timetable/0@${entry.id}`)
       .withBearerToken(user1.token)
       .expectStatus(HttpStatus.OK)
-      .expectJsonMatchStrict(entryDetails));
+      .$expectRegexableJson(entryDetails));
 
   it('should return the details of the entry, which is an override', () =>
     pactum
@@ -89,7 +87,7 @@ const GetEntryDetailsE2ESpec = e2eSuite('GET /timetable/:entryId', (app) => {
       .get(`/timetable/0@${override1.id}`)
       .withBearerToken(user1.token)
       .expectStatus(HttpStatus.OK)
-      .expectJsonMatchStrict(entryDetails));
+      .$expectRegexableJson(entryDetails));
 });
 
 export default GetEntryDetailsE2ESpec;

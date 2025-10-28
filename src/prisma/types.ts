@@ -34,6 +34,7 @@ export {
   Asso as RawAsso,
   AssoMembershipRole as RawAssoMembershipRole,
   AssoMembership as RawAssoMembership,
+  AssoMembershipPermission as RawAssoMembershipPermission,
   UserHomepageWidget as RawHomepageWidget,
   UserPrivacy as RawUserPrivacy,
   ApiApplication as RawApiApplication,

@@ -15,14 +15,15 @@ import { e2eSuite } from '../../../utils/test_utils';
 import { ConfigModule } from '../../../../src/config/config.module';
 import { ERROR_CODE } from 'src/exceptions';
 import { PrismaService } from '../../../../src/prisma/prisma.service';
+import { PermissionManager } from '../../../../src/utils';
 
 const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
-  const user = createUser(app, { permissions: ['API_SEE_OPINIONS_UE'] });
+  const user = createUser(app, { permissions: new PermissionManager().with('API_SEE_OPINIONS_UE') });
   const userNoPermission = createUser(app, { login: 'user2', studentId: 2 });
   const moderator = createUser(app, {
     login: 'user3',
     studentId: 3,
-    permissions: ['API_MODERATE_COMMENTS', 'API_SEE_OPINIONS_UE'],
+    permissions: new PermissionManager().with('API_MODERATE_COMMENTS').with('API_SEE_OPINIONS_UE'),
   });
   const semester = createSemester(app);
   const branch = createBranch(app);
@@ -176,7 +177,7 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
             ? (<Date>b.createdAt).getTime() - (<Date>a.createdAt).getTime()
             : b.upvotes - a.upvotes,
         )
-        .map((comment) => ({ ...comment, ue }))
+        .map((comment) => ({ ...comment, ue, }))
         .slice(0, app().get(ConfigModule).PAGINATION_PAGE_SIZE),
       itemCount: comments.length,
       itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,

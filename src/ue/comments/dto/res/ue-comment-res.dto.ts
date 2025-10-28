@@ -3,7 +3,7 @@ import UeCommentReportResDto from './ue-comment-report-res.dto';
 
 export default class UeCommentResDto {
   id: string;
-  author: UeCommentAuthorResDto;
+  author?: UeCommentAuthorResDto;
   createdAt: Date;
   updatedAt: Date;
   semester: string;

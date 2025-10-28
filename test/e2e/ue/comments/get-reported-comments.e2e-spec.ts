@@ -19,11 +19,12 @@ import {
 } from '../../../utils/fakedb';
 import { e2eSuite } from '../../../utils/test_utils';
 import { Prisma } from '@prisma/client';
+import { PermissionManager } from '../../../../src/utils';
 
 const GetReportedComments = e2eSuite('GET /ue/comments/reports', (app) => {
   const userModerator = createUser(app, {
     login: 'user2',
-    permissions: ['API_SEE_OPINIONS_UE', 'API_GIVE_OPINIONS_UE', 'API_MODERATE_COMMENTS'],
+    permissions: new PermissionManager().with('API_SEE_OPINIONS_UE').with('API_GIVE_OPINIONS_UE').with('API_MODERATE_COMMENTS'),
   });
   const semester = createSemester(app);
   const branch = createBranch(app);
@@ -69,7 +70,7 @@ const GetReportedComments = e2eSuite('GET /ue/comments/reports', (app) => {
     const userNoPermission = await createUser(app, {}, true);
     const userNotModerator = await createUser(
       app,
-      { permissions: ['API_SEE_OPINIONS_UE', 'API_GIVE_OPINIONS_UE'] },
+      { permissions: new PermissionManager().with('API_SEE_OPINIONS_UE').with('API_GIVE_OPINIONS_UE') },
       true,
     );
     await pactum

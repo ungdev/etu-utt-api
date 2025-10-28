@@ -1,4 +1,4 @@
-import { omit } from '../../../src/utils';
+import { omit, PermissionManager } from '../../../src/utils';
 import { createUser, createCriterion, FakeUeStarCriterion } from '../../utils/fakedb';
 import { e2eSuite } from '../../utils/test_utils';
 import * as pactum from 'pactum';
@@ -6,7 +6,7 @@ import { ERROR_CODE } from '../../../src/exceptions';
 
 const GetRateCriteria = e2eSuite('GET /ue/rate/criteria', (app) => {
   const userNoPermission = createUser(app);
-  const user = createUser(app, { permissions: ['API_SEE_OPINIONS_UE'] });
+  const user = createUser(app, { permissions: new PermissionManager().with('API_SEE_OPINIONS_UE') });
   const criteria: FakeUeStarCriterion[] = [];
   for (let i = 0; i < 30; i++) criteria.push(createCriterion(app));
 

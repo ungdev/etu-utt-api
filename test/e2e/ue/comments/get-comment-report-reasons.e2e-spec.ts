@@ -2,9 +2,10 @@ import * as pactum from 'pactum';
 import { ERROR_CODE } from 'src/exceptions';
 import { createCommentReportReason, createUser } from '../../../../test/utils/fakedb';
 import { e2eSuite } from '../../../../test/utils/test_utils';
+import { PermissionManager } from '../../../../src/utils';
 
 const GetCommentReportReason = e2eSuite('GET /ue/comments/reports/reasons', (app) => {
-  const user = createUser(app, { permissions: ['API_SEE_OPINIONS_UE'] });
+  const user = createUser(app, { permissions: new PermissionManager().with('API_SEE_OPINIONS_UE') });
   const userNoPermission = createUser(app);
   createCommentReportReason(app, { name: 'meh' });
   createCommentReportReason(app, { name: 'bad' });
