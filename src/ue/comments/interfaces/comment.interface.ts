@@ -153,7 +153,7 @@ export function formatComment(prisma: PrismaClient, comment: UnformattedUeCommen
     answers: comment.answers
       .filter((answer) => args.includeDeleted || answer.deletedAt === null)
       .map((answer) => {
-        let anwser = formatReply(prisma, answer);
+        const anwser = formatReply(prisma, answer);
         if (!includeReports) anwser.reports = [];
         return anwser;
       }),

@@ -257,7 +257,7 @@ export class CommentsService {
     userId: string,
     isModerator: boolean,
   ): Promise<UeComment> {
-    const previousComment = await this.prisma.normalize.ueComment.findUnique({
+    await this.prisma.normalize.ueComment.findUnique({
       args: {
         userId,
         includeHiddenComments: isModerator,
@@ -489,7 +489,7 @@ export class CommentsService {
    * @param reportId the id of the report
    * @returns true if it exists
    */
-  async doesCommentReportExist(reportId: string): Promise<Boolean> {
+  async doesCommentReportExist(reportId: string): Promise<boolean> {
     return (await this.prisma.ueCommentReport.count({ where: { id: reportId } })) == 1;
   }
 
@@ -498,7 +498,7 @@ export class CommentsService {
    * @param reportId the id of the report
    * @returns true if it exists
    */
-  async doesCommentReplyReportExist(reportId: string): Promise<Boolean> {
+  async doesCommentReplyReportExist(reportId: string): Promise<boolean> {
     return (await this.prisma.ueCommentReplyReport.count({ where: { id: reportId } })) == 1;
   }
 
@@ -507,7 +507,7 @@ export class CommentsService {
    * @param reasonName the name of the report reason
    * @returns true if it exists
    */
-  async doesReportReasonExist(reasonName: string): Promise<Boolean> {
+  async doesReportReasonExist(reasonName: string): Promise<boolean> {
     return (await this.prisma.ueCommentReportReason.count({ where: { name: reasonName } })) == 1;
   }
 
@@ -559,7 +559,6 @@ export class CommentsService {
     userId: string,
     body: UeCommentReportReqDto,
     replyId: string,
-    isModerator: boolean,
   ): Promise<UeCommentReportResDto> {
     const reply = await this.getReplyFromId(replyId);
     const report = await this.prisma.ueCommentReplyReport.create({

@@ -323,15 +323,13 @@ export class CommentsController {
     @GetUser() user: User,
     @UUIDParam('replyId') replyId: string,
     @Body() body: UeCommentReportReqDto,
-    @GetPermissions() permissions: PermissionManager,
   ) {
-    const commentModerator = permissions.can('API_MODERATE_COMMENTS');
     if (!(await this.commentsService.doesReplyExist(replyId))) throw new AppException(ERROR_CODE.NO_SUCH_REPLY);
     if (await this.commentsService.isUserCommentReplyAuthor(user.id, replyId))
       throw new AppException(ERROR_CODE.IS_COMMENT_AUTHOR);
     if (!(await this.commentsService.doesReportReasonExist(body.reason)))
       throw new AppException(ERROR_CODE.NO_SUCH_REPORT_REASON);
-    return this.commentsService.reportCommentReply(user.id, body, replyId, commentModerator);
+    return this.commentsService.reportCommentReply(user.id, body, replyId);
   }
 
   @Patch(':commentId/:reportId')
