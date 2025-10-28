@@ -58,7 +58,6 @@ const COMMENT_SELECT_FILTER = {
             id: true,
             firstName: true,
             lastName: true,
-            studentId: true,
           },
         },
       },
@@ -100,7 +99,6 @@ export type UeCommentReport = Omit<RawUeCommentReport, 'reason' | 'reasonId' | '
   reason: string;
   user: {
     id: string;
-    studentId: number;
     firstName: string;
     lastName: string;
   };
@@ -152,7 +150,7 @@ export function formatComment(prisma: PrismaClient, comment: UnformattedUeCommen
       .filter((answer) => args.includeDeleted || answer.deletedAt === null)
       .map((answer) => {
         let anwser = formatReply(prisma, answer);
-        if (!includeReports) anwser.reports = null;
+        if (!includeReports) anwser.reports = [];
         return anwser;
       }),
     status:
@@ -161,7 +159,7 @@ export function formatComment(prisma: PrismaClient, comment: UnformattedUeCommen
     upvotes: comment.upvotes.length,
     upvoted: comment.upvotes.some((upvote) => upvote.userId == args.userId),
     semester: comment.semester.code,
-    reports: includeReports ? comment.reports.map((r) => ({ ...r, reason: r.reason.name })) : null,
+    reports: includeReports ? comment.reports.map((r) => ({ ...r, reason: r.reason.name })) : [],
   };
 }
 

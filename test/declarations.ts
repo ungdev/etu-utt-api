@@ -166,14 +166,14 @@ Spec.prototype.expectUesWithPagination = function (app: AppProvider, ues: FakeUe
 };
 Spec.prototype.expectUeComment = function expect(this: Spec, obj, created = false) {
   return this.expectStatus(created ? HttpStatus.CREATED : HttpStatus.OK).expectJsonLike({
-    ...omit(obj as any, 'ueof','reports'),
+    ...omit(obj as any, 'ueof'),
     ueof: {
       code: obj.ueof.code,
       info: {
         language: obj.ueof.info.language,
       },
     },
-  });
+  } satisfies JsonLikeVariant<UeComment>);
 };
 Spec.prototype.expectUeComments = function expect(obj) {
   return (<Spec>this).expectStatus(HttpStatus.OK).expectJsonMatch({
@@ -189,6 +189,9 @@ Spec.prototype.expectUeComments = function expect(obj) {
       },
       createdAt: comment.createdAt.toISOString(),
       updatedAt: comment.updatedAt.toISOString(),
+      reports: comment.reports.map((c) => {
+        return { ...c, createdAt: c.createdAt.toISOString() };
+      }),
       answers: comment.answers.map((answer) => ({
         ...pick(answer, 'author', 'body', 'id', 'status'),
         createdAt: answer.createdAt.toISOString(),

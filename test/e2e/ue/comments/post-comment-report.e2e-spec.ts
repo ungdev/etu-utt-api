@@ -103,7 +103,6 @@ const ReportComment = e2eSuite('POST /ue/comments/{commentId}/report', (app) => 
             id: userNotAuthor.id,
             firstName: userNotAuthor.firstName,
             lastName: userNotAuthor.lastName,
-            studentId: userNotAuthor.studentId
         }
       })
   })
