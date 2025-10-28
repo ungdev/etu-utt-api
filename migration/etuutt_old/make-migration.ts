@@ -289,7 +289,6 @@ const prisma = _prisma.$extends({
         body,
         createdAt,
         updatedAt,
-        isValid,
         ue,
         semesterCode,
       }: {

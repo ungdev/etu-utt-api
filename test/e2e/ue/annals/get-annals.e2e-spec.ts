@@ -15,7 +15,6 @@ import { ERROR_CODE } from '../../../../src/exceptions';
 import { AnnalStatus, UeAnnalFile } from '../../../../src/ue/annals/interfaces/annal.interface';
 import { JsonLikeVariant } from 'test/declarations';
 import { PermissionManager, pick } from '../../../../src/utils';
-import { CommentStatus } from '../../../../src/ue/comments/interfaces/comment.interface';
 
 const GetAnnal = e2eSuite('GET /ue/annals', (app) => {
   const senderUser = createUser(app, { permissions: new PermissionManager().with('API_SEE_ANNALS') });
