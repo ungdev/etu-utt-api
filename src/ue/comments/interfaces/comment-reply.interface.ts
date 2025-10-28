@@ -35,7 +35,6 @@ export const REPLY_SELECT_FILTER = {
             id: true,
             firstName: true,
             lastName: true,
-            studentId: true,
           },
         },
       },
@@ -47,7 +46,6 @@ export type UeCommentReplyReport = Omit<RawUeCommentReplyReport, 'reasonId' | 'u
   reason: string;
   user: {
     id: string;
-    studentId: number;
     firstName: string;
     lastName: string;
   };

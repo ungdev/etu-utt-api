@@ -6,6 +6,6 @@ export default class UeCommentReportResDto {
     createdAt: Date;
     mitigated: boolean;
     reportedBody: string;
-    user: UeCommentAuthorResDto & {studentId: number};
+    user: UeCommentAuthorResDto;
     reason: string;
 }

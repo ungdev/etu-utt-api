@@ -122,6 +122,7 @@ const UpdateCommentReply = e2eSuite('PATCH /ue/comments/reply/{replyId}', (app) 
         updatedAt: JsonLike.ANY_DATE,
         body: "Je m'appelle Alban Ichou et j'approuve ce commentaire",
         status: CommentStatus.ACTIVE,
+        reports: []
       });
     return app().get(PrismaService).ueCommentReply.deleteMany();
   });

@@ -112,7 +112,6 @@ const ReportCommentReply = e2eSuite('POST /ue/comments/reply/{replyId}/report', 
           id: userNotAuthor.id,
           firstName: userNotAuthor.firstName,
           lastName: userNotAuthor.lastName,
-          studentId: userNotAuthor.studentId,
         },
       });
   });

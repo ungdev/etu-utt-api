@@ -13,7 +13,7 @@ export default class UeCommentResDto {
   upvoted: boolean;
   status: number;
   answers: CommentResDto_Answer[];
-  reports?: UeCommentReportResDto[];
+  reports: UeCommentReportResDto[];
 }
 
 class CommentResDto_Answer {
@@ -23,4 +23,5 @@ class CommentResDto_Answer {
   createdAt: Date;
   updatedAt: Date;
   status: number;
+  reports: UeCommentReportResDto[];
 }
