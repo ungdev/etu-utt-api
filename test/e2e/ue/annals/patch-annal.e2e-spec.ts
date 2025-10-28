@@ -12,12 +12,16 @@ import {
 } from '../../../utils/fakedb';
 import { Dummies, JsonLike, e2eSuite } from '../../../utils/test_utils';
 import { ERROR_CODE } from '../../../../src/exceptions';
-import { pick } from '../../../../src/utils';
+import { PermissionManager, pick } from '../../../../src/utils';
 import { AnnalStatus } from 'src/ue/annals/interfaces/annal.interface';
 
 const EditAnnal = e2eSuite('PATCH /ue/annals/{annalId}', (app) => {
-  const senderUser = createUser(app, { permissions: ['API_UPLOAD_ANNALS'] });
-  const nonUeUser = createUser(app, { login: 'user2', studentId: 2, permissions: ['API_UPLOAD_ANNALS'] });
+  const senderUser = createUser(app, { permissions: new PermissionManager().with('API_UPLOAD_ANNALS') });
+  const nonUeUser = createUser(app, {
+    login: 'user2',
+    studentId: 2,
+    permissions: new PermissionManager().with('API_UPLOAD_ANNALS'),
+  });
   const userNoPermission = createUser(app);
   const annalType = createAnnalType(app);
   const semester = createSemester(app);
@@ -105,8 +109,8 @@ const EditAnnal = e2eSuite('PATCH /ue/annals/{annalId}', (app) => {
         status: AnnalStatus.VALIDATED,
         sender: pick(senderUser, 'id', 'firstName', 'lastName'),
         id: annal_validated.id,
-        createdAt: annal_validated.createdAt.toISOString(),
-        updatedAt: JsonLike.ANY_DATE,
+        createdAt: annal_validated.createdAt,
+        updatedAt: JsonLike.DATE,
       });
   });
 });

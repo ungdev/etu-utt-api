@@ -38,6 +38,8 @@ export const enum ERROR_CODE {
   NO_FILE_PROVIDED = 2020,
   PARAM_NOT_URL = 2021,
   BODY_MISSING = 2022,
+  PARAM_PAST_DATE = 2023,
+  PARAM_MISSING_EITHER = 2024,
   PARAM_DOES_NOT_MATCH_REGEX = 2102,
   NO_FIELD_PROVIDED = 2201,
   WIDGET_OVERLAPPING = 2301,
@@ -53,6 +55,8 @@ export const enum ERROR_CODE {
   FORBIDDEN_ALREADY_COMMENTED = 3101,
   FORBIDDEN_ALREADY_UPVOTED = 3102,
   FORBIDDEN_NOT_UPVOTED = 3103,
+  FORBIDDEN_ASSOS_PERMISSIONS = 3201,
+  FORBIDDEN_ASSOS_ROLE_PERMANENT = 3202,
   NOT_COMMENT_AUTHOR = 4221,
   NOT_ALREADY_DONE_UE = 4222,
   NOT_REPLY_AUTHOR = 4223,
@@ -63,6 +67,7 @@ export const enum ERROR_CODE {
   NOT_ANNAL_SENDER = 4228,
   NOT_ALREADY_DONE_UEOF = 4229,
   APPLICATION_NOT_OWNED = 4230,
+  USER_ALREADY_ASSO_ROLE_MEMBER = 4231,
   NO_SUCH_UE = 4401,
   NO_SUCH_COMMENT = 4402,
   NO_SUCH_REPLY = 4403,
@@ -75,12 +80,16 @@ export const enum ERROR_CODE {
   NO_SUCH_ASSO = 4410,
   NO_SUCH_UEOF = 4411,
   NO_SUCH_APPLICATION = 4412,
-  NO_SUCH_UE_AT_SEMESTER = 4413,
-  NO_SUCH_REPORT = 4414,
-  NO_SUCH_REPORT_REASON = 4415,
+  NO_SUCH_API_KEY = 4413,
+  NO_SUCH_UE_AT_SEMESTER = 4414,
+  NO_SUCH_ASSO_ROLE = 4415,
+  NO_SUCH_ASSO_MEMBERSHIP = 4416,
+  NO_SUCH_REPORT = 4417,
+  NO_SUCH_REPORT_REASON = 4418,
   ANNAL_ALREADY_UPLOADED = 4901,
   RESOURCE_UNAVAILABLE = 4902,
   RESOURCE_INVALID_TYPE = 4903,
+  ASSO_ROLE_ALREADY_MOVED = 4904,
   CREDENTIALS_ALREADY_TAKEN = 5001,
   HIDDEN_DUCK = 9999,
 }
@@ -191,6 +200,14 @@ export const ErrorData = Object.freeze({
     message: 'This method requires a body',
     httpCode: HttpStatus.BAD_REQUEST,
   },
+  [ERROR_CODE.PARAM_PAST_DATE]: {
+    message: 'The date provided must be in the future: %',
+    httpCode: HttpStatus.BAD_REQUEST,
+  },
+  [ERROR_CODE.PARAM_MISSING_EITHER]: {
+    message: 'One of these parameters must be provided: %',
+    httpCode: HttpStatus.BAD_REQUEST,
+  },
   [ERROR_CODE.PARAM_DOES_NOT_MATCH_REGEX]: {
     message: 'The following parameters must match the regex "%": %',
     httpCode: HttpStatus.BAD_REQUEST,
@@ -251,6 +268,14 @@ export const ErrorData = Object.freeze({
     message: 'You must upvote this comment before un-upvoting it',
     httpCode: HttpStatus.FORBIDDEN,
   },
+  [ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS]: {
+    message: 'Missing permission on asso %: %',
+    httpCode: HttpStatus.FORBIDDEN,
+  },
+  [ERROR_CODE.FORBIDDEN_ASSOS_ROLE_PERMANENT]: {
+    message: 'The following role is not deletable: %',
+    httpCode: HttpStatus.FORBIDDEN,
+  },
   [ERROR_CODE.NOT_COMMENT_AUTHOR]: {
     message: 'You are not the author of this comment',
     httpCode: HttpStatus.FORBIDDEN,
@@ -290,6 +315,10 @@ export const ErrorData = Object.freeze({
   [ERROR_CODE.APPLICATION_NOT_OWNED]: {
     message: 'Application % is not owned by you',
     httpCode: HttpStatus.UNAUTHORIZED,
+  },
+  [ERROR_CODE.USER_ALREADY_ASSO_ROLE_MEMBER]: {
+    message: 'User is already member of this role: %',
+    httpCode: HttpStatus.CONFLICT,
   },
   [ERROR_CODE.NO_SUCH_UE]: {
     message: 'The UE % does not exist',
@@ -339,8 +368,20 @@ export const ErrorData = Object.freeze({
     message: 'The application % does not exist',
     httpCode: HttpStatus.NOT_FOUND,
   },
+  [ERROR_CODE.NO_SUCH_API_KEY]: {
+    message: 'The api key % does not exist',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
   [ERROR_CODE.NO_SUCH_UE_AT_SEMESTER]: {
     message: 'UE % does not exist for semester %',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
+  [ERROR_CODE.NO_SUCH_ASSO_ROLE]: {
+    message: 'No such role in asso %',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
+  [ERROR_CODE.NO_SUCH_ASSO_MEMBERSHIP]: {
+    message: 'No such membership in asso: %',
     httpCode: HttpStatus.NOT_FOUND,
   },
   [ERROR_CODE.NO_SUCH_REPORT]: {
@@ -365,6 +406,10 @@ export const ErrorData = Object.freeze({
   },
   [ERROR_CODE.CREDENTIALS_ALREADY_TAKEN]: {
     message: 'The given credentials are already taken',
+    httpCode: HttpStatus.CONFLICT,
+  },
+  [ERROR_CODE.ASSO_ROLE_ALREADY_MOVED]: {
+    message: 'You should not try to update role position simultaneously',
     httpCode: HttpStatus.CONFLICT,
   },
   [ERROR_CODE.HIDDEN_DUCK]: {

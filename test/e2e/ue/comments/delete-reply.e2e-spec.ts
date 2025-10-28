@@ -13,10 +13,14 @@ import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../../src/exceptions';
 import { CommentStatus } from 'src/ue/comments/interfaces/comment.interface';
 import { PrismaService } from '../../../../src/prisma/prisma.service';
+import { PermissionManager } from '../../../../src/utils';
 
 const DeleteCommentReply = e2eSuite('DELETE /ue/comments/reply/{replyId}', (app) => {
-  const user = createUser(app, { permissions: ['API_GIVE_OPINIONS_UE'] });
-  const userNotAuthor = createUser(app, { login: 'user2', permissions: ['API_GIVE_OPINIONS_UE'] });
+  const user = createUser(app, { permissions: new PermissionManager().with('API_GIVE_OPINIONS_UE') });
+  const userNotAuthor = createUser(app, {
+    login: 'user2',
+    permissions: new PermissionManager().with('API_GIVE_OPINIONS_UE'),
+  });
   const userNoPermission = createUser(app);
   const semester = createSemester(app);
   const branch = createBranch(app);
@@ -78,10 +82,11 @@ const DeleteCommentReply = e2eSuite('DELETE /ue/comments/reply/{replyId}', (app)
           firstName: user.firstName,
           lastName: user.lastName,
         },
-        createdAt: reply.createdAt.toISOString(),
-        updatedAt: reply.updatedAt.toISOString(),
+        createdAt: reply.createdAt,
+        updatedAt: reply.updatedAt,
         body: reply.body,
         status: CommentStatus.DELETED,
+        reports: []
       });
     await app()
       .get(PrismaService)

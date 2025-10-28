@@ -13,10 +13,14 @@ import { ERROR_CODE } from '../../../../src/exceptions';
 import { HttpStatus } from '@nestjs/common';
 import { Dummies, e2eSuite } from '../../../utils/test_utils';
 import { PrismaService } from '../../../../src/prisma/prisma.service';
+import { PermissionManager } from '../../../../src/utils';
 
 const DeleteUpvote = e2eSuite('DELETE /ue/comments/{commentId}/upvote', (app) => {
-  const user = createUser(app, { permissions: ['API_GIVE_OPINIONS_UE'] });
-  const userNotAuthor = createUser(app, { login: 'user2', permissions: ['API_GIVE_OPINIONS_UE'] });
+  const user = createUser(app, { permissions: new PermissionManager().with('API_GIVE_OPINIONS_UE') });
+  const userNotAuthor = createUser(app, {
+    login: 'user2',
+    permissions: new PermissionManager().with('API_GIVE_OPINIONS_UE'),
+  });
   const userNoPermission = createUser(app);
   const semester = createSemester(app);
   const branch = createBranch(app);
@@ -72,7 +76,7 @@ const DeleteUpvote = e2eSuite('DELETE /ue/comments/{commentId}/upvote', (app) =>
       .withBearerToken(userNotAuthor.token)
       .delete(`/ue/comments/${comment1.id}/upvote`)
       .expectStatus(HttpStatus.OK)
-      .expectJsonMatchStrict({ upvoted: false });
+      .$expectRegexableJson({ upvoted: false });
     return createCommentUpvote(app, { user: userNotAuthor, comment: comment1 }, upvote, true);
   });
 

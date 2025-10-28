@@ -12,14 +12,19 @@ import {
 import { e2eSuite } from '../../../utils/test_utils';
 import { ERROR_CODE } from '../../../../src/exceptions';
 import { Permission } from '@prisma/client';
+import { PermissionManager } from '../../../../src/utils';
 
 const GetAnnalMetadata = e2eSuite('GET /ue/annals/metadata', (app) => {
-  const ueUser = createUser(app, { permissions: [Permission.API_SEE_ANNALS] });
-  const nonUeUser = createUser(app, { login: 'user2', studentId: 3, permissions: [Permission.API_SEE_ANNALS] });
+  const ueUser = createUser(app, { permissions: new PermissionManager().with(Permission.API_SEE_ANNALS) });
+  const nonUeUser = createUser(app, {
+    login: 'user2',
+    studentId: 3,
+    permissions: new PermissionManager().with(Permission.API_SEE_ANNALS),
+  });
   const uploader = createUser(app, {
     login: 'user3',
     studentId: 4,
-    permissions: [Permission.API_SEE_ANNALS, Permission.API_UPLOAD_ANNALS],
+    permissions: new PermissionManager().with(Permission.API_SEE_ANNALS).with(Permission.API_UPLOAD_ANNALS),
   });
   const userNoPermission = createUser(app);
   const annalType = createAnnalType(app);

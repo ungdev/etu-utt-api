@@ -1,11 +1,10 @@
-import { e2eSuite } from '../../utils/test_utils';
+import { e2eSuite, JsonLike } from '../../utils/test_utils';
 import * as pactum from 'pactum';
 import { faker } from '@faker-js/faker';
 import { JwtService } from '@nestjs/jwt';
 import * as fakedb from '../../utils/fakedb';
 import { AuthService } from '../../../src/auth/auth.service';
 import { PrismaService } from '../../../src/prisma/prisma.service';
-import { string } from 'pactum-matchers';
 import { ERROR_CODE } from '../../../src/exceptions';
 import { ConfigModule } from '../../../src/config/config.module';
 import { LdapUser } from 'ldap-server-mock';
@@ -83,7 +82,7 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
       jpegPhoto: `http://localhost/${login}.jpg`,
       gidNumber: type === 'student' ? '10000' : type === 'faculty' ? '5000' : '9999',
       uv: ['PETM6', 'SY16', 'LO17', 'RE02', 'IF03', 'CTC1', 'LG11', 'PEICT', ue.code],
-    }
+    };
   };
   const executeValidSignupRequest = async (personAttributes) => {
     const firstName = faker.person.firstName();
@@ -95,30 +94,32 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
       dn: `uid=${login},ou=people,dc=utt,dc=fr`,
       attributes: personAttributes,
     });
-    const authService = app()
-      .get(AuthService);
+    const authService = app().get(AuthService);
     await pactum
       .spec()
       .post('/auth/signup/cas')
       .withJson({
-        registerToken: await authService
-          .signRegisterUserToken(login, mail, firstName, lastName, tokenExpiresIn),
+        registerToken: await authService.signRegisterUserToken(login, mail, firstName, lastName, tokenExpiresIn),
       })
       .expectStatus(HttpStatus.CREATED)
-      .expectJsonMatch({ token: string() });
+      .$expectRegexableJson({ token: JsonLike.STRING });
     expect(await app().get(PrismaService).user.count({ where: { login } })).toEqual(1);
   };
 
   it('should successfully create the user and return a token', async () => {
     const personAttribute = getPersonAttributes('student');
     await executeValidSignupRequest(personAttribute);
-    await app().get(PrismaService).user.deleteMany({where: {login: personAttribute.uid}});
+    await app()
+      .get(PrismaService)
+      .user.deleteMany({ where: { login: personAttribute.uid } });
   });
 
   it('should successfully create the user and return a token (as a teacher)', async () => {
     const personAttribute = getPersonAttributes('faculty');
     await executeValidSignupRequest(personAttribute);
-    await app().get(PrismaService).user.deleteMany({where: {login: personAttribute.uid}});
+    await app()
+      .get(PrismaService)
+      .user.deleteMany({ where: { login: personAttribute.uid } });
   });
   // Can this happen ? If it does, should we throw an error instead ?
   // it('should successfully create the user and return a token (as other)', () => executeValidSignupRequest(getPersonAttributes('other')));
@@ -133,7 +134,11 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
       mail,
       gidNumber: '6000',
     });
-    expect(await app().get(PrismaService).asso.count({ where: { name: assoName } })).toEqual(1);
+    expect(
+      await app()
+        .get(PrismaService)
+        .asso.count({ where: { name: assoName } }),
+    ).toEqual(1);
     await app().get(PrismaService).user.deleteMany({ where: { login } });
   });
 });

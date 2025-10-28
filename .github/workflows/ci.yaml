@@ -10,35 +10,42 @@ jobs:
     runs-on: self-hosted
     strategy:
       matrix:
-        node-version: [18]
-    steps: 
-      - uses: actions/checkout@v4
+        node-version: [22]
+        pnpm-version: [10]
+    steps:
+      - uses: actions/checkout@v5
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: ${{ matrix.pnpm-version }}
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '20.x'
-          cache: 'pnpm'        
+          package-manager-cache: false
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       - run: pnpm prisma generate
       - run: pnpm lint
 
   build:
     runs-on: self-hosted
-    steps: 
-      - uses: actions/checkout@v4
+    strategy:
+      matrix:
+        node-version: [22]
+        pnpm-version: [10]
+    steps:
+      - uses: actions/checkout@v5
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: ${{ matrix.pnpm-version }}
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '20.x'
-          cache: 'pnpm'        
+          package-manager-cache: false
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       - run: pnpm prisma generate
       - run: pnpm build
@@ -47,7 +54,8 @@ jobs:
     runs-on: self-hosted
     strategy:
       matrix:
-        node-version: [18]
+        node-version: [22]
+        pnpm-version: [10]
     env:
       DATABASE_URL: mysql://dev:dev@localhost:3306/etuutt_test
     services:
@@ -60,19 +68,26 @@ jobs:
           MYSQL_RANDOM_ROOT_PASSWORD: yes
         ports:
           - 3306:3306
-        options: --name mariadb --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=30s --health-retries=5
+        options: >-
+          --name mariadb
+          --health-cmd="mysqladmin ping"
+          --health-interval=2s
+          --health-timeout=2s
+          --health-retries=10
+          --tmpfs /var/lib/mysql:rw
 
-    steps: 
-      - uses: actions/checkout@v4
+    steps:
+      - uses: actions/checkout@v5
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: ${{ matrix.pnpm-version }}
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '20.x'
-          cache: 'pnpm'        
+          package-manager-cache: false
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       - run: cp .env.test.dist .env.test
       - run: pnpm test:db:reset
@@ -89,7 +104,7 @@ jobs:
       - build
       - test
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install docker
         uses: docker/setup-buildx-action@v3
       - name: Login to registry
@@ -100,7 +115,7 @@ jobs:
           password: ${{ secrets.REGISTRY_TOKEN }}
       - name: Build and push
         uses: docker/build-push-action@v6
-        with: 
+        with:
           push: true
           tags: |
             ${{ secrets.REGISTRY_URL }}/etuutt/api:${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}

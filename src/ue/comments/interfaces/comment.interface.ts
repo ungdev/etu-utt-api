@@ -104,13 +104,17 @@ export type UeCommentReport = Omit<RawUeCommentReport, 'reason' | 'reasonId' | '
   };
 };
 export type UnformattedUeComment = Prisma.UeCommentGetPayload<typeof COMMENT_SELECT_FILTER>;
-export type UeComment = Omit<UnformattedUeComment, 'upvotes' | 'deletedAt' | 'answers' | 'semester' | 'reports'> & {
+export type UeComment = Omit<
+  UnformattedUeComment,
+  'upvotes' | 'deletedAt' | 'answers' | 'semester' | 'reports' | 'author'
+> & {
   upvotes: number;
   upvoted: boolean;
   status: CommentStatus;
   answers: UeCommentReply[];
   semester: string;
   reports: UeCommentReport[];
+  author?: UnformattedUeComment['author'];
 };
 
 export function generateCustomCommentModel(prisma: PrismaClient) {

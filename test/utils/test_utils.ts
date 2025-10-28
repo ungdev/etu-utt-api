@@ -65,11 +65,11 @@ export const e2eSuite = suite<E2EAppProvider>;
  */
 export const unitSuite = suite<UnitAppProvider>;
 
-/** Utilities to use in {@link Spec.expectJsonLike} to match database-generated values */
+/** Utilities to use in {@link Spec.$expectJsonRegexable} to match database-generated values */
 export const JsonLike = {
-  STRING: "typeof $V === 'string'",
-  ANY_UUID: /[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}/,
-  ANY_DATE: /\d{4}-\d{2}-\d{2}T(\d{2}:){2}\d{2}.\d{3}Z/,
+  STRING: Symbol('string'),
+  UUID: Symbol('uuid'),
+  DATE: /^\d{4}-[01]\d-[0-3]\d(?:T[0-2]\d:[0-5]\d:[0-5]\d[.,]\d+Z)?$/, // dateTime from pactum-matchers doesn't ms
 };
 
 export const Dummies = {

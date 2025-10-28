@@ -13,10 +13,14 @@ import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../../src/exceptions';
 import { CommentStatus } from 'src/ue/comments/interfaces/comment.interface';
 import { PrismaService } from '../../../../src/prisma/prisma.service';
+import { PermissionManager } from '../../../../src/utils';
 
 const DeleteComment = e2eSuite('DELETE /ue/comments/:commentId', (app) => {
-  const user = createUser(app, { permissions: ['API_GIVE_OPINIONS_UE'] });
-  const userNotAuthor = createUser(app, { login: 'user2', permissions: ['API_GIVE_OPINIONS_UE'] });
+  const user = createUser(app, { permissions: new PermissionManager().with('API_GIVE_OPINIONS_UE') });
+  const userNotAuthor = createUser(app, {
+    login: 'user2',
+    permissions: new PermissionManager().with('API_GIVE_OPINIONS_UE'),
+  });
   const userNoPermission = createUser(app);
   const semester = createSemester(app);
   const branch = createBranch(app);
@@ -73,13 +77,15 @@ const DeleteComment = e2eSuite('DELETE /ue/comments/:commentId', (app) => {
           id: user.id,
           firstName: user.firstName,
           lastName: user.lastName,
+          studentId: user.studentId,
         },
-        createdAt: comment1.createdAt.toISOString(),
-        updatedAt: comment1.updatedAt.toISOString(),
+        createdAt: comment1.createdAt,
+        updatedAt: comment1.updatedAt,
         semester: semester.code,
         isAnonymous: comment1.isAnonymous,
         body: comment1.body,
         answers: [],
+        reports: [],
         upvotes: 1,
         upvoted: true,
         status: CommentStatus.DELETED,

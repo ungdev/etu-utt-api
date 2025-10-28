@@ -102,12 +102,12 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
         for: [userGroup.id, userOtherGroup.id],
       })
       .expectStatus(HttpStatus.OK)
-      .expectJsonMatchStrict({
+      .$expectRegexableJson({
         id: entry.id,
         location: newLocation,
         duration: 100,
-        firstRepetitionDate: new Date(1000).toISOString(),
-        lastRepetitionDate: new Date(20 + 1000).toISOString(),
+        firstRepetitionDate: new Date(1000),
+        lastRepetitionDate: new Date(20 + 1000),
         repetitionFrequency: 10,
         repetitions: 3,
         groups: [userOtherGroup.id, userGroup.id],
@@ -115,8 +115,8 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
           {
             id: override.id,
             location: override.location,
-            firstRepetitionDate: new Date(10 + 1000).toISOString(),
-            lastRepetitionDate: new Date(20 + 1000).toISOString(),
+            firstRepetitionDate: new Date(10 + 1000),
+            lastRepetitionDate: new Date(20 + 1000),
             firstOccurrenceOverride: 1,
             lastOccurrenceOverride: 2,
             overrideFrequency: 1,
@@ -147,12 +147,12 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
         for: [userGroup.id, userOtherGroup.id],
       })
       .expectStatus(HttpStatus.OK)
-      .expectJsonMatchStrict({
+      .$expectRegexableJson({
         id: entry.id,
         location: entry.location,
         duration: entry.occurrenceDuration,
-        firstRepetitionDate: new Date(0).toISOString(),
-        lastRepetitionDate: new Date(20).toISOString(),
+        firstRepetitionDate: new Date(0),
+        lastRepetitionDate: new Date(20),
         repetitionFrequency: 10,
         repetitions: 3,
         groups: [userOtherGroup.id, userGroup.id],
@@ -160,8 +160,8 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
           {
             id: uuid(),
             location: 'Somewhere else',
-            firstRepetitionDate: new Date(0).toISOString(),
-            lastRepetitionDate: new Date(10).toISOString(),
+            firstRepetitionDate: new Date(0),
+            lastRepetitionDate: new Date(10),
             firstOccurrenceOverride: 0,
             lastOccurrenceOverride: 1,
             overrideFrequency: 1,
@@ -171,8 +171,8 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
           {
             id: override.id,
             location: override.location,
-            firstRepetitionDate: new Date(10).toISOString(),
-            lastRepetitionDate: new Date(20).toISOString(),
+            firstRepetitionDate: new Date(10),
+            lastRepetitionDate: new Date(20),
             firstOccurrenceOverride: 1,
             lastOccurrenceOverride: 2,
             overrideFrequency: 1,
@@ -200,12 +200,12 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
         for: [userGroup.id, userOtherGroup.id],
       })
       .expectStatus(HttpStatus.OK)
-      .expectJsonMatchStrict({
+      .$expectRegexableJson({
         id: entry.id,
         location: entry.location,
         duration: entry.occurrenceDuration,
-        firstRepetitionDate: new Date(0).toISOString(),
-        lastRepetitionDate: new Date(20).toISOString(),
+        firstRepetitionDate: new Date(0),
+        lastRepetitionDate: new Date(20),
         repetitionFrequency: 10,
         repetitions: 3,
         groups: [userOtherGroup.id, userGroup.id],
@@ -213,8 +213,8 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
           {
             id: override.id,
             location: newLocation,
-            firstRepetitionDate: new Date(10).toISOString(),
-            lastRepetitionDate: new Date(20).toISOString(),
+            firstRepetitionDate: new Date(10),
+            lastRepetitionDate: new Date(20),
             firstOccurrenceOverride: 1,
             lastOccurrenceOverride: 2,
             overrideFrequency: 1,
@@ -240,12 +240,12 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
         for: [userGroup.id],
       })
       .expectStatus(HttpStatus.OK)
-      .expectJsonMatchStrict({
+      .$expectRegexableJson({
         id: entry.id,
         location: entry.location,
         duration: entry.occurrenceDuration,
-        firstRepetitionDate: new Date(0).toISOString(),
-        lastRepetitionDate: new Date(20).toISOString(),
+        firstRepetitionDate: new Date(0),
+        lastRepetitionDate: new Date(20),
         repetitionFrequency: 10,
         repetitions: 3,
         groups: [userOtherGroup.id, userGroup.id],
@@ -253,8 +253,8 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
           {
             id: override.id,
             location: override.location,
-            firstRepetitionDate: new Date(10).toISOString(),
-            lastRepetitionDate: new Date(20).toISOString(),
+            firstRepetitionDate: new Date(10),
+            lastRepetitionDate: new Date(20),
             firstOccurrenceOverride: 1,
             lastOccurrenceOverride: 2,
             overrideFrequency: 1,
@@ -264,8 +264,8 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
           {
             id: uuid(),
             location: newLocation,
-            firstRepetitionDate: new Date(10).toISOString(),
-            lastRepetitionDate: new Date(20).toISOString(),
+            firstRepetitionDate: new Date(10),
+            lastRepetitionDate: new Date(20),
             firstOccurrenceOverride: 1,
             lastOccurrenceOverride: 2,
             overrideFrequency: 1,

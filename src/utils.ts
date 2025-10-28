@@ -1,11 +1,6 @@
 import { Language, Permission } from '@prisma/client';
 import { Translation } from './prisma/types';
-import {
-  ALL_PERMISSIONS,
-  ApiPermission,
-  UserPermission,
-  PermissionsDescriptor,
-} from './auth/interfaces/permissions.interface';
+import { ApiPermission, UserPermission } from './auth/interfaces/permissions.interface';
 
 /**
  * Returns a new object built from the given object with only the specified keys.
@@ -63,18 +58,41 @@ export const translationSelect = {
 };
 
 export class PermissionManager {
-  private readonly permissions: PermissionsDescriptor;
+  public readonly hardPermissions: Permission[];
+  public readonly softPermissions: {
+    [k in UserPermission]?: string[];
+  };
 
-  constructor(permissions: PermissionsDescriptor) {
-    this.permissions = permissions;
+  constructor() {
+    this.hardPermissions = [];
+    this.softPermissions = {};
   }
 
   can(permission: ApiPermission): boolean;
+  can(permission: UserPermission): boolean;
   can(permission: UserPermission, userId: string): boolean;
   can(permission: Permission, userId?: string) {
-    return (
-      this.permissions[permission] &&
-      (this.permissions[permission] === ALL_PERMISSIONS || this.permissions[permission].includes(userId))
-    );
+    return this.hardPermissions.includes(permission) || (userId && this.softPermissions[permission]?.includes(userId));
+  }
+
+  with(permission: ApiPermission): PermissionManager;
+  with(permission: UserPermission): PermissionManager;
+  with(permission: UserPermission, userId: string): PermissionManager;
+  with(permission: Permission, userId?: string): PermissionManager {
+    if (!userId) {
+      if (!this.hardPermissions.includes(permission)) {
+        this.hardPermissions.push(permission);
+      }
+      if (this.softPermissions[permission]) {
+        delete this.softPermissions[permission];
+      }
+    } else if (!this.hardPermissions.includes(permission)) {
+      if (!this.softPermissions[permission]) {
+        this.softPermissions[permission] = [userId];
+      } else {
+        this.softPermissions[permission].push(userId);
+      }
+    }
+    return this;
   }
 }

@@ -2,6 +2,7 @@ import {
   RawAsso,
   RawAssoMembership,
   RawAssoMembershipRole,
+  RawAssoMembershipPermission,
   RawBranch,
   RawBranchOption,
   RawCreditCategory,
@@ -43,7 +44,7 @@ import { AppProvider } from './test_utils';
 import { Permission, Sex, TimetableEntryType, UeCommentReportReason, UserType } from '@prisma/client';
 import { CommentStatus } from '../../src/ue/comments/interfaces/comment.interface';
 import { AnnalStatus, UeAnnalFile } from '../../src/ue/annals/interfaces/annal.interface';
-import { omit, pick, translationSelect } from '../../src/utils';
+import { omit, PermissionManager, pick, translationSelect } from '../../src/utils';
 import { DEFAULT_APPLICATION } from '../../prisma/seed/utils';
 
 /**
@@ -52,7 +53,7 @@ import { DEFAULT_APPLICATION } from '../../prisma/seed/utils';
  */
 export type FakeUser = Partial<RawUser> & {
   infos?: Partial<RawUserInfos>;
-  permissions?: Permission[];
+  permissions?: PermissionManager;
   mailsPhones?: Partial<RawUserMailsPhones>;
   addresses?: Array<Partial<RawUserAddress>>;
   socialNetwork?: Partial<RawUserSocialNetwork>;
@@ -77,6 +78,7 @@ export type FakeAssoMembershipRole = Partial<RawAssoMembershipRole>;
 export type FakeAssoMembership = Partial<RawAssoMembership> & {
   role?: Partial<RawAssoMembershipRole>;
 };
+export type FakeAssoMembershipPermission = RawAssoMembershipPermission;
 export type FakeAsso = Partial<
   RawAsso & {
     descriptionShortTranslation: Partial<Translation>;
@@ -129,7 +131,16 @@ export interface FakeEntityMap {
   assoMembership: {
     entity: FakeAssoMembership;
     params: CreateAssoMembershipParameters;
-    deps: { asso: FakeAsso; user: FakeUser; role: FakeAssoMembershipRole };
+    deps: {
+      asso: FakeAsso;
+      user: FakeUser;
+      role: FakeAssoMembershipRole;
+      permissions?: FakeAssoMembershipPermission[];
+    };
+  };
+  assoMembershipPermission: {
+    entity: FakeAssoMembershipPermission;
+    params: { id: string };
   };
   assoMembershipRole: {
     entity: FakeAssoMembershipRole;
@@ -288,7 +299,7 @@ export const createUser = entityFaker(
       },
     ],
     branchSubscriptions: [],
-    permissions: [],
+    permissions: () => new PermissionManager(),
     privacy: {},
   },
   async (app, params) => {
@@ -355,6 +366,7 @@ export const createUser = entityFaker(
           privacy: true,
         },
       });
+    params.permissions.with(Permission.USER_SEE_DETAILS, user.id).with(Permission.USER_UPDATE_DETAILS, user.id);
     const apiKey = await app()
       .get(PrismaService)
       .apiKey.create({
@@ -364,35 +376,28 @@ export const createUser = entityFaker(
           application: { connect: { id: DEFAULT_APPLICATION.id } },
           apiKeyPermissions: {
             create: [
-              ...(params.permissions.includes(Permission.USER_SEE_DETAILS)
-                ? []
-                : [
-                    {
-                      permission: Permission.USER_SEE_DETAILS,
-                      user: { connect: { id: user.id } },
-                      granter: { connect: { id: user.id } },
-                    },
-                  ]),
-              ...(params.permissions.includes(Permission.USER_UPDATE_DETAILS)
-                ? []
-                : [
-                    {
-                      permission: Permission.USER_UPDATE_DETAILS,
-                      user: { connect: { id: user.id } },
-                      granter: { connect: { id: user.id } },
-                    },
-                  ]),
-              ...params.permissions.map((permission) => ({
+              ...params.permissions.hardPermissions.map((permission) => ({
                 permission,
                 granter: { connect: { id: user.id } },
               })),
+              ...Object.entries(params.permissions.softPermissions).reduce(
+                (previous, [permission, users]) => [
+                  ...previous,
+                  ...users.map((permissionUser) => ({
+                    permission,
+                    user: { connect: { id: permissionUser } },
+                    granter: { connect: { id: user.id } },
+                  })),
+                ],
+                [],
+              ),
             ],
           },
         },
       });
     return {
       ...user,
-      permissions: [],
+      permissions: params.permissions,
       token: await app().get(AuthService).signAuthenticationToken(apiKey.token),
       apiKey,
     };
@@ -441,7 +446,7 @@ export const createAssoMembership = entityFaker(
   'assoMembership',
   {
     startAt: new Date(0),
-    endAt: new Date(0),
+    endAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // One year from now
     createdAt: new Date(0),
   },
   async (app, dependencies, params) =>
@@ -465,11 +470,23 @@ export const createAssoMembership = entityFaker(
               id: dependencies.role.id,
             },
           },
+          permissions: {
+            connect: dependencies.permissions,
+          },
         },
         include: {
           role: true,
         },
       }),
+);
+
+export const createAssoMembershipPermission = entityFaker(
+  'assoMembershipPermission',
+  { id: faker.word.noun },
+  (app, { id }) =>
+    app().get(PrismaService).assoMembershipPermission.create({
+      data: { id },
+    }),
 );
 
 export type CreateAssoParameters = FakeAsso;

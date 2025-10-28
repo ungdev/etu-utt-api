@@ -3,19 +3,22 @@ import * as fakedb from '../../../utils/fakedb';
 import { e2eSuite } from '../../../utils/test_utils';
 import { ERROR_CODE } from 'src/exceptions';
 import { faker } from '@faker-js/faker';
-import { omit } from '../../../../src/utils';
+import { omit, PermissionManager } from '../../../../src/utils';
 import { FakeComment } from '../../../utils/fakedb';
 
 const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) => {
-  const user = fakedb.createUser(app, { permissions: ['API_SEE_OPINIONS_UE'] });
-  const userNotAuthor = fakedb.createUser(app, { login: 'user2', permissions: ['API_SEE_OPINIONS_UE'] });
+  const user = fakedb.createUser(app, { permissions: new PermissionManager().with('API_SEE_OPINIONS_UE') });
+  const userNotAuthor = fakedb.createUser(app, {
+    login: 'user2',
+    permissions: new PermissionManager().with('API_SEE_OPINIONS_UE'),
+  });
   const userNoPermission = fakedb.createUser(app);
   const semester = fakedb.createSemester(app);
   const branch = fakedb.createBranch(app);
   const branchOption = fakedb.createBranchOption(app, { branch });
   const ue = fakedb.createUe(app);
   const ueof = fakedb.createUeof(app, { branchOptions: [branchOption], semesters: [semester], ue });
-  const comment = fakedb.createComment(app, { user, ueof, semester });
+  const comment = fakedb.createComment(app, { user, ueof, semester }, { isAnonymous: true });
   fakedb.createCommentUpvote(app, { user: userNotAuthor, comment });
   const reply = fakedb.createCommentReply(app, { user, comment }, { body: 'HelloWorld' });
 
@@ -72,12 +75,19 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
               firstName: user.firstName,
               lastName: user.lastName,
             },
-            createdAt: reply.createdAt.toISOString(),
-            updatedAt: reply.updatedAt.toISOString(),
+            createdAt: reply.createdAt,
+            updatedAt: reply.updatedAt,
+            reports: []
           },
         ],
-        updatedAt: comment.updatedAt.toISOString(),
-        createdAt: comment.createdAt.toISOString(),
+        author: {
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          studentId: user.studentId,
+        },
+        updatedAt: comment.updatedAt,
+        createdAt: comment.createdAt,
         semester: semester.code,
         upvotes: 1,
         reports: [],
@@ -100,12 +110,19 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
         answers: [
           {
             ...omit(reply, 'authorId', 'deletedAt', 'commentId'),
-            createdAt: reply.createdAt.toISOString(),
-            updatedAt: reply.updatedAt.toISOString(),
+            createdAt: reply.createdAt,
+            updatedAt: reply.updatedAt,
+            author: {
+              id: user.id,
+              firstName: user.firstName,
+              lastName: user.lastName,
+            },
+            reports: [],
           },
         ],
-        updatedAt: comment.updatedAt.toISOString(),
-        createdAt: comment.createdAt.toISOString(),
+        author: null,
+        updatedAt: comment.updatedAt,
+        createdAt: comment.createdAt,
         semester: semester.code,
         upvotes: 1,
         reports: [],

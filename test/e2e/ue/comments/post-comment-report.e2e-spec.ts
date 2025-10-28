@@ -1,3 +1,4 @@
+import { PermissionManager } from '../../../../src/utils';
 import {
   createBranch,
   createBranchOption,
@@ -8,13 +9,13 @@ import {
   createUeof,
   createUser,
 } from '../../../utils/fakedb';
-import { Dummies, e2eSuite } from '../../../utils/test_utils';
+import { Dummies, e2eSuite, JsonLike } from '../../../utils/test_utils';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from 'src/exceptions';
 
 const ReportComment = e2eSuite('POST /ue/comments/{commentId}/report', (app) => {
-  const user = createUser(app, { permissions: ['API_SEE_OPINIONS_UE','API_GIVE_OPINIONS_UE'] });
-  const userNotAuthor = createUser(app, { login: 'user2', permissions: ['API_SEE_OPINIONS_UE','API_GIVE_OPINIONS_UE'] });
+  const user = createUser(app, { permissions: new PermissionManager().with('API_SEE_OPINIONS_UE').with('API_GIVE_OPINIONS_UE') });
+  const userNotAuthor = createUser(app, { login: 'user2', permissions: new PermissionManager().with('API_SEE_OPINIONS_UE').with('API_GIVE_OPINIONS_UE') });
   const userNoPermission = createUser(app);
   const semester = createSemester(app);
   const branch = createBranch(app);
@@ -95,9 +96,11 @@ const ReportComment = e2eSuite('POST /ue/comments/{commentId}/report', (app) => 
         body: "it's offensive",
         reason: reportReason.name,
       }).expectUeCommentReport({
+        id: JsonLike.UUID,
         body: "it's offensive",
         reason: reportReason.name,
         reportedBody: comment.body,
+        createdAt: JsonLike.DATE,
         mitigated: false,
         user: {
             id: userNotAuthor.id,

@@ -7,7 +7,6 @@ import {
   createComment,
   createCommentReply,
   createCommentReplyReport,
-  createCommentReport,
   createCommentReportReason,
   createSemester,
   createUe,
@@ -15,11 +14,12 @@ import {
   createUser,
 } from '../../../utils/fakedb';
 import { Dummies, e2eSuite } from '../../../utils/test_utils';
+import { PermissionManager } from '../../../../src/utils';
 
 const UpdateCommentReplyReport = e2eSuite('PATCH /ue/comments/reply/{replyId}/{reportId}', (app) => {
-  const commentAuthor = createUser(app, { permissions: ['API_SEE_OPINIONS_UE', 'API_GIVE_OPINIONS_UE'] });
-  const replyAuthor = createUser(app, { permissions: ['API_SEE_OPINIONS_UE', 'API_GIVE_OPINIONS_UE'] });
-  const moderator = createUser(app, { permissions: ['API_MODERATE_COMMENTS'] });
+  const commentAuthor = createUser(app, { permissions: new PermissionManager().with('API_SEE_OPINIONS_UE').with('API_GIVE_OPINIONS_UE')});
+  const replyAuthor = createUser(app, { permissions: new PermissionManager().with('API_SEE_OPINIONS_UE').with('API_GIVE_OPINIONS_UE') });
+  const moderator = createUser(app, { permissions: new PermissionManager().with('API_MODERATE_COMMENTS')});
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
@@ -38,7 +38,7 @@ const UpdateCommentReplyReport = e2eSuite('PATCH /ue/comments/reply/{replyId}/{r
     const userNoPermission = await createUser(app, {}, true);
     const userNotModerator = await createUser(
       app,
-      { permissions: ['API_SEE_OPINIONS_UE', 'API_GIVE_OPINIONS_UE'] },
+      { permissions: new PermissionManager().with('API_SEE_OPINIONS_UE').with('API_GIVE_OPINIONS_UE') },
       true,
     );
     await pactum
@@ -77,7 +77,7 @@ const UpdateCommentReplyReport = e2eSuite('PATCH /ue/comments/reply/{replyId}/{r
       .expectUeCommentReport({
         ...report,
         mitigated: true,
-        createdAt: report.createdAt.toISOString(),
+        createdAt: report.createdAt,
       });
     await app()
       .get(PrismaService)

@@ -31,9 +31,9 @@ const UpdateProfile = e2eSuite('PATCH /users/current', (app) => {
         facebook: 'fbProfile',
         displayAddress: 'ALL_PUBLIC',
       })
-      .expectJsonMatchStrict({
+      .$expectRegexableJson({
         avatar: user.infos.avatar,
-        birthday: user.infos.birthday.toISOString(),
+        birthday: user.infos.birthday,
         discord: user.socialNetwork.discord,
         facebook: 'fbProfile',
         firstName: user.firstName,
