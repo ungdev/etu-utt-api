@@ -45,6 +45,7 @@ import { UeAnnalFile } from '../../src/ue/annals/interfaces/annal.interface';
 import { omit, PermissionManager, pick, translationSelect } from '../../src/utils';
 import { DEFAULT_APPLICATION } from '../../prisma/seed/utils';
 import { AssoDaymail } from '../../src/assos/interfaces/daymail.interface';
+import { isDate } from 'node:util/types';
 
 /**
  * The fake entities can be used like normal entities in the <code>it(string, () => void)</code> functions.
@@ -119,7 +120,7 @@ export type FakeHomepageWidget = Partial<RawHomepageWidget>;
 export type FakeApiApplication = Partial<Omit<RawApiApplication, 'ownerId'>> & {
   owner: { id: string; firstName: string; lastName: string };
 };
-export type FakeAssoDaymail = Partial<Pick<AssoDaymail, 'id' | 'assoId' | 'sendDates' | 'createdAt'> & { title: string, message: string }>;
+export type FakeAssoDaymail = Partial<Pick<AssoDaymail, 'id' | 'assoId' | 'sendDates' | 'createdAt' | 'title' | 'message'>>;
 
 export interface FakeEntityMap {
   assoMembership: {
@@ -145,6 +146,11 @@ export interface FakeEntityMap {
     entity: FakeAsso;
     params: CreateAssoParameters;
   };
+  assoDaymail: {
+    entity: FakeAssoDaymail;
+    params: CreateAssoDaymailParameters;
+    deps: { asso: FakeAsso };
+  }
   timetableEntryOverride: {
     entity: Partial<FakeTimetableEntryOverride>;
     params: CreateTimetableEntryOverrideParameters;
@@ -543,6 +549,43 @@ export const createAsso = entityFaker(
       .assoMembershipRole.findFirst({ where: { assoId: asso.id } });
     return { ...asso, president: null, presidentRole: presidentRole };
   },
+);
+
+export type CreateAssoDaymailParameters = FakeAssoDaymail;
+export const createAssoDaymail = entityFaker(
+  'assoDaymail',
+  {
+    sendDates: [new Date()],
+    title: {
+      fr: faker.company.catchPhrase,
+      en: faker.company.catchPhrase,
+      es: faker.company.catchPhrase,
+      de: faker.company.catchPhrase,
+      zh: faker.company.catchPhrase,
+    },
+    message: {
+      fr: faker.company.catchPhrase,
+      en: faker.company.catchPhrase,
+      es: faker.company.catchPhrase,
+      de: faker.company.catchPhrase,
+      zh: faker.company.catchPhrase,
+    }
+  },
+  async (app, deps, params) => {
+    return app().get(PrismaService).normalize.assoDaymail.create({
+      data: {
+        id: params.id,
+        titleTranslation: { create: params.title },
+        bodyTranslation: { create: params.message },
+        asso: { connect: { id: deps.asso.id } },
+        sendDates: {
+          createMany: {
+            data: params.sendDates.map((date) => ({ date: date.toISOString() }))
+          },
+        },
+      },
+    })
+  }
 );
 
 export type CreateTimetableGroupParams = { users?: Array<{ user: FakeUser; priority: number }> };
@@ -1148,7 +1191,7 @@ function deeplyCallFunctions<T>(params: T) {
     for (const key in params) {
       if (typeof params[key] === 'function') {
         params[key] = (params[key] as () => T[Extract<keyof T, string>])();
-      } else if (typeof params[key] === 'object') {
+      } else if (((typeof params[key]) === 'object') && !isDate(params[key])) {
         deeplyCallFunctions(params[key]);
       }
     }

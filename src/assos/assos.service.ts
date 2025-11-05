@@ -288,6 +288,26 @@ export class AssosService {
     });
   }
 
+  async getDaymails(assoId: string, from: Date, to: Date): Promise<AssoDaymail[]> {
+    const daymails = await this.prisma.normalize.assoDaymail.findMany({
+      where: {
+        assoId,
+        sendDates: {
+          some: {
+            date: {
+              gte: from,
+              lte: to,
+            }
+          }
+        }
+      }
+    });
+    for (const daymail of daymails) {
+      daymail.sendDates = daymail.sendDates.filter((date) => from <= date && date <= to);
+    }
+    return daymails;
+  }
+
   async addDaymail(assoId: string, title: Translation, message: Translation, dates: Date[]): Promise<AssoDaymail> {
     return this.prisma.normalize.assoDaymail.create({
       data: {
@@ -297,5 +317,27 @@ export class AssosService {
         sendDates: { createMany: { data: dates.map((date) => ({ date })) } },
       }
     });
+  }
+
+  async doesDaymailExist(daymailId: string, assoId?: string): Promise<boolean> {
+    return (await this.prisma.assoDaymail.count({ where: { id: daymailId, assoId } })) > 0;
+  }
+
+  async updateDaymail(daymailId: string, fields: { title: Translation, message: Translation, dates: Date[] }): Promise<AssoDaymail> {
+    return this.prisma.normalize.assoDaymail.update({
+      where: { id: daymailId },
+      data: {
+        titleTranslation: { update: fields.title },
+        bodyTranslation: { update: fields.message },
+        sendDates: fields.dates ? {
+          deleteMany: {},
+          createMany: { data: fields.dates.map((date) => ({ date })) }
+        } : {},
+      },
+    });
+  }
+
+  async deleteDaymail(daymailId: string): Promise<AssoDaymail> {
+    return this.prisma.normalize.assoDaymail.delete({ where: { id: daymailId } });
   }
 }

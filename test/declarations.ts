@@ -316,7 +316,14 @@ Spec.prototype.expectPermissions = function (permissions: PermissionManager) {
   } satisfies PermissionsResDto);
 };
 Spec.prototype.expectAssoDaymail = function (this: Spec, daymail: JsonLikeVariant<FakeAssoDaymail>, created = false) {
-  return this.expectStatus(created ? HttpStatus.CREATED : HttpStatus.OK).$expectRegexableJson({...pick(daymail, 'id', 'assoId', 'createdAt', 'title', 'message', 'sendDates')})
+  return this.expectStatus(created ? HttpStatus.CREATED : HttpStatus.OK).$expectRegexableJson({...pick(daymail, 'id', 'assoId', 'createdAt', 'sendDates'), title: daymail.title[this.language], message: daymail.message[this.language]});
+};
+Spec.prototype.expectAssoDaymails = function (this: Spec, daymails: JsonLikeVariant<FakeAssoDaymail>[]) {
+  return this.expectStatus(HttpStatus.OK).$expectRegexableJson(daymails.map((daymail) => ({
+    ...pick(daymail, 'id', 'assoId', 'createdAt', 'sendDates'),
+    title: daymail.title[this.language],
+    message: daymail.message[this.language]
+  })));
 };
 
 export { Spec, JsonLikeVariant, FakeUeWithOfs };

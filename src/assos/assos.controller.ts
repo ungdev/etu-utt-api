@@ -1,5 +1,5 @@
-import { Body, Controller, Delete, Get, Patch, Post, Put, Query } from '@nestjs/common';
-import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, ParseDatePipe, Patch, Post, Put, Query } from '@nestjs/common';
+import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { ApiAppErrorResponse, paginatedResponseDto } from '../app.dto';
 import { AssoMembershipRole } from './interfaces/membership-role.interface';
 import { AssoMembership } from './interfaces/membership.interface';
@@ -25,6 +25,7 @@ import AssoMembershipResDto from './dto/res/assos-membership-res.dto';
 import UsersService from '../users/users.service';
 import AssosPostDaymailReqDto from './dto/req/assos-post-daymail-req.dto';
 import DaymailResDto from './dto/res/daymail-res.dto';
+import { ConfigModule } from '../config/config.module';
 
 @Controller('assos')
 @ApiTags('Assos')
@@ -32,6 +33,7 @@ export class AssosController {
   constructor(
     readonly assosService: AssosService,
     readonly userService: UsersService,
+    readonly config: ConfigModule,
   ) {}
 
   @Get()
@@ -218,12 +220,85 @@ export class AssosController {
     return { roles: updatedRoles.map(this.formatPartialAssoMembershipRole) };
   }
 
+  @Get('/:assoId/daymail')
+  @ApiOperation({ description: 'Get daymails from query parameter `from` to query parameter `to`.' })
+  @ApiQuery({ name: 'from', type: String, default: 'Today' })
+  @ApiQuery({ name: 'to', type: String, default: `\`from\` + env.PAGINATION_PAGE_SIZE days` })
+  @ApiOkResponse({ type: DaymailResDto, isArray: true })
+  @ApiAppErrorResponse(ERROR_CODE.TOO_MANY_DAYS, "API can't return more than env.PAGINATION_PAGE_SIZE days of daymail")
+  @ApiAppErrorResponse(
+    ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS,
+    'The user issuing the request does not have the permission manage_asso',
+  )
+  async getPlannedDaymails(
+    @ParamAsso() asso: Asso,
+    @Query('from', new ParseDatePipe({ optional: true })) from: Date,
+    @Query('to', new ParseDatePipe({ optional: true })) to: Date,
+    @GetUser() user: User,
+  ): Promise<DaymailResDto[]> {
+    if (!from) from = new Date();
+    from = from.dropTime();
+    to = to ? to.dropTime() : from.add({ days: this.config.PAGINATION_PAGE_SIZE - 1 });
+    const daysCount = Math.floor((to.getTime() - from.getTime()) / (1000 * 3600 * 24)) + 1; // Add 1 to include both `from` and `to`
+    if (daysCount > this.config.PAGINATION_PAGE_SIZE)
+      throw new AppException(ERROR_CODE.TOO_MANY_DAYS, `${daysCount}`, `${this.config.PAGINATION_PAGE_SIZE}`);
+    if (!(await this.assosService.hasSomeAssoPermission(asso, user.id, 'manage_asso')))
+      throw new AppException(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, 'manage_asso');
+    return (await this.assosService.getDaymails(asso.id, from, to)).mappedSort((daymail) => [daymail.sendDates[0]]);
+  }
+
   @Post('/:assoId/daymail')
-  @ApiOperation({ description: 'Create a message for the given association' })
-  async createDaymail(@ParamAsso() asso: Asso, @Body() dto: AssosPostDaymailReqDto, @GetUser() user: User): Promise<DaymailResDto> {
+  @ApiOperation({ description: 'Create a daymail for the given association.' })
+  @ApiCreatedResponse({ type: DaymailResDto })
+  @ApiAppErrorResponse(
+    ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS,
+    'The user issuing the request does not have the permission manage_asso',
+  )
+  async createDaymail(
+    @ParamAsso() asso: Asso,
+    @Body() dto: AssosPostDaymailReqDto,
+    @GetUser() user: User,
+  ): Promise<DaymailResDto> {
     if (!(await this.assosService.hasSomeAssoPermission(asso, user.id, 'manage_asso')))
       throw new AppException(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, 'manage_asso');
     return this.assosService.addDaymail(asso.id, dto.title, dto.message, dto.dates);
+  }
+
+  @Patch('/:assoId/daymail/:daymailId')
+  @ApiOperation({ description: 'Update a daymail for the given association.' })
+  @ApiOkResponse({ type: DaymailResDto })
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_DAYMAIL)
+  @ApiAppErrorResponse(
+    ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS,
+    'The user issuing the request does not have the permission manage_asso',
+  )
+  async updateDaymail(
+    @ParamAsso() asso: Asso,
+    @UUIDParam('daymailId') daymailId,
+    @Body() dto: AssosPostDaymailReqDto,
+    @GetUser() user: User,
+  ): Promise<DaymailResDto> {
+    if (!(await this.assosService.doesDaymailExist(asso.id, daymailId)))
+      throw new AppException(ERROR_CODE.NO_SUCH_DAYMAIL, 'daymailId');
+    if (!(await this.assosService.hasSomeAssoPermission(asso, user.id, 'manage_asso')))
+      throw new AppException(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, 'manage_asso');
+    return this.assosService.updateDaymail(daymailId, pick(dto, 'title', 'message', 'dates'));
+  }
+
+  @Delete('/:assoId/daymail/:daymailId')
+  @ApiOperation({ description: 'Delete a daymail for the given association.' })
+  @ApiOkResponse({ type: DaymailResDto })
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_DAYMAIL)
+  @ApiAppErrorResponse(
+    ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS,
+    'The user issuing the request does not have the permission manage_asso',
+  )
+  async deleteDaymail(@ParamAsso() asso: Asso, @UUIDParam('daymailId') daymailId, @GetUser() user: User): Promise<DaymailResDto> {
+    if (!(await this.assosService.doesDaymailExist(asso.id, daymailId)))
+      throw new AppException(ERROR_CODE.NO_SUCH_DAYMAIL, 'daymailId');
+    if (!(await this.assosService.hasSomeAssoPermission(asso, user.id, 'manage_asso')))
+      throw new AppException(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, 'manage_asso');
+    return this.assosService.deleteDaymail(daymailId);
   }
 
   formatAssoOverview(asso: Asso): AssoOverviewResDto {
