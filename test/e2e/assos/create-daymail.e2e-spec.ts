@@ -21,7 +21,7 @@ const CreateDaymailE2ESpec = e2eSuite('POST /assos/:assoId/daymail', (app) => {
   const body: AssosPostDaymailReqDto = {title: {fr: "The title"}, message: {fr: "The message"}, dates: [new Date(Date.now() + 1e6), new Date(Date.now() + 2e6)]}
 
   it('should return 403 as user is not authenticated', () =>
-    pactum.spec().post(`/assos/${asso.id}/members`).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
+    pactum.spec().post(`/assos/${asso.id}/daymail`).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
 
   it('should return a 400 as the assoId param is not valid', () =>
     pactum
@@ -72,8 +72,8 @@ const CreateDaymailE2ESpec = e2eSuite('POST /assos/:assoId/daymail', (app) => {
           id: JsonLike.UUID,
           assoId: asso.id,
           createdAt: JsonLike.DATE,
-          title: body.title.fr,
-          message: body.message.fr,
+          title: body.title,
+          message: body.message,
           sendDates: body.dates,
         },
         true,
