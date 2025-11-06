@@ -1,6 +1,3 @@
-import { Reflector } from '@nestjs/core';
-import { AppException } from './exceptions';
-
 declare global {
   interface Array<T> {
     /**
@@ -48,7 +45,19 @@ declare global {
   }
 
   interface Date {
+    /**
+     * Removes the UTC time part of the date.
+     * @returns Date A new date without the UTC time.
+     */
     dropTime(): Date;
+
+    /**
+     * Adds the number of UTC years, months and days to the Date.
+     * @param years Number of UTC years to add.
+     * @param months Number of UTC months to add.
+     * @param days Number of UTC days to add.
+     * @returns A new Date offset by the specified number of UTC years, months and days.
+     */
     add({ years, months, days }: { years?: number, months?: number, days?: number }): Date;
   }
 }

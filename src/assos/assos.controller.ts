@@ -239,6 +239,7 @@ export class AssosController {
     if (!from) from = new Date();
     from = from.dropTime();
     to = to ? to.dropTime() : from.add({ days: this.config.PAGINATION_PAGE_SIZE - 1 });
+    if (from > to) throw new AppException(ERROR_CODE.PARAM_DATE_MUST_BE_AFTER, to.toISOString(), from.toISOString());
     const daysCount = Math.floor((to.getTime() - from.getTime()) / (1000 * 3600 * 24)) + 1; // Add 1 to include both `from` and `to`
     if (daysCount > this.config.PAGINATION_PAGE_SIZE)
       throw new AppException(ERROR_CODE.TOO_MANY_DAYS, `${daysCount}`, `${this.config.PAGINATION_PAGE_SIZE}`);
@@ -267,6 +268,7 @@ export class AssosController {
   @Patch('/:assoId/daymail/:daymailId')
   @ApiOperation({ description: 'Update a daymail for the given association.' })
   @ApiOkResponse({ type: DaymailResDto })
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_ASSO)
   @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_DAYMAIL)
   @ApiAppErrorResponse(
     ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS,
@@ -278,8 +280,8 @@ export class AssosController {
     @Body() dto: AssosPostDaymailReqDto,
     @GetUser() user: User,
   ): Promise<DaymailResDto> {
-    if (!(await this.assosService.doesDaymailExist(asso.id, daymailId)))
-      throw new AppException(ERROR_CODE.NO_SUCH_DAYMAIL, 'daymailId');
+    if (!(await this.assosService.doesDaymailExist(daymailId, asso.id)))
+      throw new AppException(ERROR_CODE.NO_SUCH_DAYMAIL, daymailId);
     if (!(await this.assosService.hasSomeAssoPermission(asso, user.id, 'manage_asso')))
       throw new AppException(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, 'manage_asso');
     return this.assosService.updateDaymail(daymailId, pick(dto, 'title', 'message', 'dates'));
@@ -294,8 +296,8 @@ export class AssosController {
     'The user issuing the request does not have the permission manage_asso',
   )
   async deleteDaymail(@ParamAsso() asso: Asso, @UUIDParam('daymailId') daymailId, @GetUser() user: User): Promise<DaymailResDto> {
-    if (!(await this.assosService.doesDaymailExist(asso.id, daymailId)))
-      throw new AppException(ERROR_CODE.NO_SUCH_DAYMAIL, 'daymailId');
+    if (!(await this.assosService.doesDaymailExist(daymailId, asso.id)))
+      throw new AppException(ERROR_CODE.NO_SUCH_DAYMAIL, daymailId);
     if (!(await this.assosService.hasSomeAssoPermission(asso, user.id, 'manage_asso')))
       throw new AppException(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, 'manage_asso');
     return this.assosService.deleteDaymail(daymailId);

@@ -54,6 +54,14 @@ const GetDaymailsE2ESpec = e2eSuite('GET /assos/:assoId/daymail', (app) => {
       .withQueryParams({ from: '2025-10-01T00:00:00Z', to: '2025-10-10T00:00:00Z' })
       .expectAppError(ERROR_CODE.NO_SUCH_ASSO, Dummies.UUID));
 
+  it('should return a 400 as the `to` parameter comes before the `from` parameter', () =>
+    pactum
+      .spec()
+      .withBearerToken(userWithPermission.token)
+      .get(`/assos/${asso.id}/daymail`)
+      .withQueryParams({ from: '2025-10-10T00:00:00Z', to: '2025-10-01T00:00:00Z' })
+      .expectAppError(ERROR_CODE.PARAM_DATE_MUST_BE_AFTER, '2025-10-01T00:00:00.000Z', '2025-10-10T00:00:00.000Z'));
+
   it('should return a 403 as user does not have the permission to see the daymails', () => pactum
     .spec()
     .withBearerToken(userWithoutPermission.token)
@@ -69,8 +77,7 @@ const GetDaymailsE2ESpec = e2eSuite('GET /assos/:assoId/daymail', (app) => {
       .withQueryParams({ from: '2024-10-01T00:00:00Z', to: '2026-10-01T00:00:00Z' })
       .expectAppError(ERROR_CODE.TOO_MANY_DAYS, `${2 * 365 + 1}`, `${app().get(ConfigModule).PAGINATION_PAGE_SIZE}`));
 
-  it('should return daymails for `asso` between October, 1st and October, 10th', () => {
-    return pactum
+  it('should return daymails for `asso` between October, 1st and October, 10th', () => pactum
       .spec()
       .withBearerToken(userWithPermission.token)
       .get(`/assos/${asso.id}/daymail`)
@@ -78,8 +85,7 @@ const GetDaymailsE2ESpec = e2eSuite('GET /assos/:assoId/daymail', (app) => {
       .expectAssoDaymails([
         { ...daymailAsso1, sendDates: [new Date(Date.UTC(2025, 9, 1)), new Date(Date.UTC(2025, 9, 2)), new Date(Date.UTC(2025, 9, 10))] },
         { ...daymailAsso2, sendDates: [new Date(Date.UTC(2025, 9, 5))] },
-      ]);
-  });
+      ]));
 });
 
 export default GetDaymailsE2ESpec;
