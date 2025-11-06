@@ -385,7 +385,7 @@ export const ErrorData = Object.freeze({
     httpCode: HttpStatus.NOT_FOUND,
   },
   [ERROR_CODE.NO_SUCH_REPORT]: {
-    message: 'The report does not exist', 
+    message: 'The report does not exist',
     httpCode: HttpStatus.NOT_FOUND,
   },
   [ERROR_CODE.NO_SUCH_REPORT_REASON]: {

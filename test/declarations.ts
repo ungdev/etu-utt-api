@@ -171,7 +171,7 @@ Spec.prototype.expectUeComments = function (this: Spec, obj) {
     itemCount: obj.itemCount,
     itemsPerPage: obj.itemsPerPage,
     items: obj.items.map((comment) => ({
-      ...omit(comment, 'ueof','ue'),
+      ...omit(comment, 'ueof', 'ue'),
       ueof: {
         code: comment.ueof.code,
         info: {

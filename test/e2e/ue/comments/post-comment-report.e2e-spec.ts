@@ -14,8 +14,13 @@ import * as pactum from 'pactum';
 import { ERROR_CODE } from 'src/exceptions';
 
 const ReportComment = e2eSuite('POST /ue/comments/{commentId}/report', (app) => {
-  const user = createUser(app, { permissions: new PermissionManager().with('API_SEE_OPINIONS_UE').with('API_GIVE_OPINIONS_UE') });
-  const userNotAuthor = createUser(app, { login: 'user2', permissions: new PermissionManager().with('API_SEE_OPINIONS_UE').with('API_GIVE_OPINIONS_UE') });
+  const user = createUser(app, {
+    permissions: new PermissionManager().with('API_SEE_OPINIONS_UE').with('API_GIVE_OPINIONS_UE'),
+  });
+  const userNotAuthor = createUser(app, {
+    login: 'user2',
+    permissions: new PermissionManager().with('API_SEE_OPINIONS_UE').with('API_GIVE_OPINIONS_UE'),
+  });
   const userNoPermission = createUser(app);
   const semester = createSemester(app);
   const branch = createBranch(app);
@@ -45,18 +50,20 @@ const ReportComment = e2eSuite('POST /ue/comments/{commentId}/report', (app) => 
     return await pactum
       .spec()
       .withBearerToken(userNotAuthor.token)
-      .post(`/ue/comments/notauuid/report`).withBody({
+      .post(`/ue/comments/notauuid/report`)
+      .withBody({
         body: "it's offensive",
         reason: reportReason.name,
       })
-      .expectAppError(ERROR_CODE.PARAM_NOT_UUID,'commentId');
+      .expectAppError(ERROR_CODE.PARAM_NOT_UUID, 'commentId');
   });
 
   it('should return 404 because comment does not exist', async () => {
     return await pactum
       .spec()
       .withBearerToken(userNotAuthor.token)
-      .post(`/ue/comments/${Dummies.UUID}/report`).withBody({
+      .post(`/ue/comments/${Dummies.UUID}/report`)
+      .withBody({
         body: "it's offensive",
         reason: reportReason.name,
       })
@@ -73,7 +80,7 @@ const ReportComment = e2eSuite('POST /ue/comments/{commentId}/report', (app) => 
         reason: reportReason.name,
       })
       .expectAppError(ERROR_CODE.IS_COMMENT_AUTHOR);
-  })
+  });
 
   it('should return 404 because report reason does not exist', async () => {
     return await pactum
@@ -82,12 +89,12 @@ const ReportComment = e2eSuite('POST /ue/comments/{commentId}/report', (app) => 
       .post(`/ue/comments/${comment.id}/report`)
       .withBody({
         body: "it's offensive",
-        reason: "idontexist",
+        reason: 'idontexist',
       })
       .expectAppError(ERROR_CODE.NO_SUCH_REPORT_REASON);
-  })
+  });
 
-  it('should return a report', async ()=> {
+  it('should return a report', async () => {
     return await pactum
       .spec()
       .withBearerToken(userNotAuthor.token)
@@ -95,7 +102,8 @@ const ReportComment = e2eSuite('POST /ue/comments/{commentId}/report', (app) => 
       .withBody({
         body: "it's offensive",
         reason: reportReason.name,
-      }).expectUeCommentReport({
+      })
+      .expectUeCommentReport({
         id: JsonLike.UUID,
         body: "it's offensive",
         reason: reportReason.name,
@@ -103,12 +111,12 @@ const ReportComment = e2eSuite('POST /ue/comments/{commentId}/report', (app) => 
         createdAt: JsonLike.DATE,
         mitigated: false,
         user: {
-            id: userNotAuthor.id,
-            firstName: userNotAuthor.firstName,
-            lastName: userNotAuthor.lastName,
-        }
-      })
-  })
+          id: userNotAuthor.id,
+          firstName: userNotAuthor.firstName,
+          lastName: userNotAuthor.lastName,
+        },
+      });
+  });
 });
 
 export default ReportComment;

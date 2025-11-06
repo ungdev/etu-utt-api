@@ -61,12 +61,7 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
       .get(`/ue/comments/${comment.id}`)
       .expectUeComment({
         ueof,
-        ...(omit(
-          comment,
-          'semesterId',
-          'authorId',
-          'deletedAt',
-        ) as Required<FakeComment>),
+        ...(omit(comment, 'semesterId', 'authorId', 'deletedAt') as Required<FakeComment>),
         answers: [
           {
             ...omit(reply, 'authorId', 'deletedAt', 'commentId'),
@@ -77,7 +72,7 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
             },
             createdAt: reply.createdAt,
             updatedAt: reply.updatedAt,
-            reports: []
+            reports: [],
           },
         ],
         author: {
@@ -101,12 +96,7 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
       .get(`/ue/comments/${comment.id}`)
       .expectUeComment({
         ueof,
-        ...(omit(
-          comment,
-          'semesterId',
-          'authorId',
-          'deletedAt',
-        ) as Required<FakeComment>),
+        ...(omit(comment, 'semesterId', 'authorId', 'deletedAt') as Required<FakeComment>),
         answers: [
           {
             ...omit(reply, 'authorId', 'deletedAt', 'commentId'),

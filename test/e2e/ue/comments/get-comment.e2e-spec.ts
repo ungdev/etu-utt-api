@@ -167,7 +167,7 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
           includeDeleted: true,
           includeHiddenComments: true,
           includeReports: true,
-          bypassAnonymousData: true
+          bypassAnonymousData: true,
         },
       });
     const commentsFiltered = {
@@ -177,7 +177,7 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
             ? (<Date>b.createdAt).getTime() - (<Date>a.createdAt).getTime()
             : b.upvotes - a.upvotes,
         )
-        .map((comment) => ({ ...comment, ue, }))
+        .map((comment) => ({ ...comment, ue }))
         .slice(0, app().get(ConfigModule).PAGINATION_PAGE_SIZE),
       itemCount: comments.length,
       itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,

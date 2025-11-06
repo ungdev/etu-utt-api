@@ -15,8 +15,12 @@ import * as pactum from 'pactum';
 import { ERROR_CODE } from 'src/exceptions';
 
 const ReportCommentReply = e2eSuite('POST /ue/comments/reply/{replyId}/report', (app) => {
-  const commentAuthor = createUser(app, { permissions: new PermissionManager().with('API_SEE_OPINIONS_UE').with('API_GIVE_OPINIONS_UE') });
-  const replyAuthor = createUser(app, { permissions: new PermissionManager().with('API_SEE_OPINIONS_UE').with('API_GIVE_OPINIONS_UE') });
+  const commentAuthor = createUser(app, {
+    permissions: new PermissionManager().with('API_SEE_OPINIONS_UE').with('API_GIVE_OPINIONS_UE'),
+  });
+  const replyAuthor = createUser(app, {
+    permissions: new PermissionManager().with('API_SEE_OPINIONS_UE').with('API_GIVE_OPINIONS_UE'),
+  });
   const userNotAuthor = createUser(app, {
     login: 'user2',
     permissions: new PermissionManager().with('API_SEE_OPINIONS_UE').with('API_GIVE_OPINIONS_UE'),
