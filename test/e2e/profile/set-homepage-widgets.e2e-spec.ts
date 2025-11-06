@@ -26,8 +26,8 @@ const SetHomepageWidgetsE2ESpec = e2eSuite('PUT /profile/homepage', (app) => {
     },
   ] as HomepageWidgetsUpdateElement[];
 
-  it('should fail as user is not connected', async () =>
-    await pactum.spec().put('/profile/homepage').withJson(body).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
+  it('should fail as user is not connected', () =>
+    pactum.spec().put('/profile/homepage').withJson(body).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
 
   it('should fail as body is not valid', async () => {
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -91,8 +91,8 @@ const SetHomepageWidgetsE2ESpec = e2eSuite('PUT /profile/homepage', (app) => {
       .expectAppError(ERROR_CODE.PARAM_NOT_POSITIVE, 'height');
   });
 
-  it('should fail as the widgets are overlapping', async () =>
-    await pactum
+  it('should fail as the widgets are overlapping', () =>
+    pactum
       .spec()
       .put('/profile/homepage')
       .withBearerToken(user.token)

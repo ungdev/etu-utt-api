@@ -1,8 +1,8 @@
 import { IsNotEmpty, IsString, MinLength } from 'class-validator';
 
 /**
- * Query parameters to get reported comments.
- * @property body The user message associated with the report
+ * Body data required to report a comment
+ * @property body The user message associated with the report. Must be at least 5 characters long
  * @property reason The report reason
  */
 export default class UeCommentReportReqDto {
