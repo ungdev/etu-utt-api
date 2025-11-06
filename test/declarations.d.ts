@@ -76,7 +76,7 @@ declare module './declarations' {
      */
     expectUeCommentReply(reply: JsonLikeVariant<UeCommentReply>, created = false): this;
     /** expects to return the given {@link UeCommentReport} */
-    expectUeCommentReport(report: JsonLikeVariant<UeCommentReport>): this;
+    expectUeCommentReport(report: JsonLikeVariant<UeCommentReport>, created = false): this;
     /** expects to return the given {@link criterion} list */
     expectUeCriteria(criterion: JsonLikeVariant<Criterion[]>): this;
     /** expects to return the given {@link rate} */

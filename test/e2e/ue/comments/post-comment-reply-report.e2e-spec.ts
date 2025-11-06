@@ -114,7 +114,7 @@ const ReportCommentReply = e2eSuite('POST /ue/comments/reply/{replyId}/report', 
           firstName: userNotAuthor.firstName,
           lastName: userNotAuthor.lastName,
         },
-      }));
+      }, true));
 });
 
 export default ReportCommentReply;
