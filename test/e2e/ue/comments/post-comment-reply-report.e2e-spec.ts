@@ -35,12 +35,11 @@ const ReportCommentReply = e2eSuite('POST /ue/comments/reply/{replyId}/report', 
   const reply = createCommentReply(app, { user: replyAuthor, comment });
   const reportReason = createCommentReportReason(app, { name: 'meh' });
 
-  it('should return a 401 as user is not authenticated', async () => {
-    return await pactum.spec().post(`/ue/comments/reply/${reply.id}/report`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
-  });
+  it('should return a 401 as user is not authenticated', () =>
+    pactum.spec().post(`/ue/comments/reply/${reply.id}/report`).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
 
-  it('should fail as the user does not have the required permissions', async () => {
-    return await pactum
+  it('should fail as the user does not have the required permissions', () =>
+    pactum
       .spec()
       .withBearerToken(userNoPermission.token)
       .post(`/ue/comments/reply/${reply.id}/report`)
@@ -48,11 +47,10 @@ const ReportCommentReply = e2eSuite('POST /ue/comments/reply/{replyId}/report', 
         body: "it's offensive",
         reason: reportReason.name,
       })
-      .expectAppError(ERROR_CODE.FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS, 'API_SEE_OPINIONS_UE');
-  });
+      .expectAppError(ERROR_CODE.FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS, 'API_SEE_OPINIONS_UE'));
 
-  it('should return 400 because reply id is not a valid UUID', async () => {
-    return await pactum
+  it('should return 400 because reply id is not a valid UUID', async () =>
+    pactum
       .spec()
       .withBearerToken(userNotAuthor.token)
       .post(`/ue/comments/reply/notauuid/report`)
@@ -60,11 +58,10 @@ const ReportCommentReply = e2eSuite('POST /ue/comments/reply/{replyId}/report', 
         body: "it's offensive",
         reason: reportReason.name,
       })
-      .expectAppError(ERROR_CODE.PARAM_NOT_UUID, 'replyId');
-  });
+      .expectAppError(ERROR_CODE.PARAM_NOT_UUID, 'replyId'));
 
-  it('should return 404 because reply does not exist', async () => {
-    return await pactum
+  it('should return 404 because reply does not exist', () =>
+    pactum
       .spec()
       .withBearerToken(userNotAuthor.token)
       .post(`/ue/comments/reply/${Dummies.UUID}/report`)
@@ -72,11 +69,10 @@ const ReportCommentReply = e2eSuite('POST /ue/comments/reply/{replyId}/report', 
         body: "it's offensive",
         reason: reportReason.name,
       })
-      .expectAppError(ERROR_CODE.NO_SUCH_REPLY);
-  });
+      .expectAppError(ERROR_CODE.NO_SUCH_REPLY));
 
-  it('should return 403 because user is reply author', async () => {
-    return await pactum
+  it('should return 403 because user is reply author', () =>
+    pactum
       .spec()
       .withBearerToken(replyAuthor.token)
       .post(`/ue/comments/reply/${reply.id}/report`)
@@ -84,11 +80,10 @@ const ReportCommentReply = e2eSuite('POST /ue/comments/reply/{replyId}/report', 
         body: "it's offensive",
         reason: reportReason.name,
       })
-      .expectAppError(ERROR_CODE.IS_COMMENT_AUTHOR);
-  });
+      .expectAppError(ERROR_CODE.IS_COMMENT_AUTHOR));
 
-  it('should return 404 because report reason does not exist', async () => {
-    return await pactum
+  it('should return 404 because report reason does not exist', () =>
+    pactum
       .spec()
       .withBearerToken(userNotAuthor.token)
       .post(`/ue/comments/reply/${reply.id}/report`)
@@ -96,11 +91,10 @@ const ReportCommentReply = e2eSuite('POST /ue/comments/reply/{replyId}/report', 
         body: "it's offensive",
         reason: 'idontexist',
       })
-      .expectAppError(ERROR_CODE.NO_SUCH_REPORT_REASON);
-  });
+      .expectAppError(ERROR_CODE.NO_SUCH_REPORT_REASON));
 
-  it('should return a report', async () => {
-    return await pactum
+  it('should return a report', () =>
+    pactum
       .spec()
       .withBearerToken(userNotAuthor.token)
       .post(`/ue/comments/reply/${reply.id}/report`)
@@ -120,8 +114,7 @@ const ReportCommentReply = e2eSuite('POST /ue/comments/reply/{replyId}/report', 
           firstName: userNotAuthor.firstName,
           lastName: userNotAuthor.lastName,
         },
-      });
-  });
+      }));
 });
 
 export default ReportCommentReply;

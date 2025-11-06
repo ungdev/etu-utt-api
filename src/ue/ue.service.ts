@@ -8,6 +8,7 @@ import { UeRating } from './interfaces/rate.interface';
 import { ConfigModule } from '../config/config.module';
 import { Language, Prisma } from '@prisma/client';
 import { SemesterService } from '../semester/semester.service';
+import { RawUserUeSubscription } from 'src/prisma/types';
 
 @Injectable()
 export class UeService {
@@ -219,6 +220,29 @@ export class UeService {
         semesterId: semester || undefined, // This filter should be applied only if semester is not null
         ueof: {
           OR: [{ code: ueCodeOrUeofCode }, { ueId: ueCodeOrUeofCode }],
+        },
+      },
+    });
+  }
+
+  /**
+   * Retrieves the last semester done by a user for a given ue
+   * @remarks The user must not be null
+   * @param userId the user to retrieve semesters of
+   * @param ueCode the code of the UE
+   * @returns the last semester done by the {@link user} for the {@link ueCode | ue}
+   */
+  async getLastUserSubscription(userId: string, ueCode: string): Promise<RawUserUeSubscription> {
+    return this.prisma.userUeSubscription.findFirst({
+      where: {
+        ueof: {
+          ueId: ueCode,
+        },
+        userId,
+      },
+      orderBy: {
+        semester: {
+          end: 'desc',
         },
       },
     });

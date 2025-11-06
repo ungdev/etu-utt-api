@@ -110,7 +110,6 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
             reports: [],
           },
         ],
-        author: null,
         updatedAt: comment.updatedAt,
         createdAt: comment.createdAt,
         semester: semester.code,

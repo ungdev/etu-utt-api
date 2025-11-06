@@ -30,12 +30,11 @@ const ReportComment = e2eSuite('POST /ue/comments/{commentId}/report', (app) => 
   const comment = createComment(app, { ueof, user, semester });
   const reportReason = createCommentReportReason(app, { name: 'meh' });
 
-  it('should return a 401 as user is not authenticated', async () => {
-    return await pactum.spec().post(`/ue/comments/${comment.id}/report`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
-  });
+  it('should return a 401 as user is not authenticated', () =>
+    pactum.spec().post(`/ue/comments/${comment.id}/report`).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
 
-  it('should fail as the user does not have the required permissions', async () => {
-    return await pactum
+  it('should fail as the user does not have the required permissions', () =>
+    pactum
       .spec()
       .withBearerToken(userNoPermission.token)
       .post(`/ue/comments/${comment.id}/report`)
@@ -43,11 +42,10 @@ const ReportComment = e2eSuite('POST /ue/comments/{commentId}/report', (app) => 
         body: "it's offensive",
         reason: reportReason.name,
       })
-      .expectAppError(ERROR_CODE.FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS, 'API_SEE_OPINIONS_UE');
-  });
+      .expectAppError(ERROR_CODE.FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS, 'API_SEE_OPINIONS_UE'));
 
-  it('should return 400 because comment id is not a valid UUID', async () => {
-    return await pactum
+  it('should return 400 because comment id is not a valid UUID', () =>
+    pactum
       .spec()
       .withBearerToken(userNotAuthor.token)
       .post(`/ue/comments/notauuid/report`)
@@ -55,11 +53,10 @@ const ReportComment = e2eSuite('POST /ue/comments/{commentId}/report', (app) => 
         body: "it's offensive",
         reason: reportReason.name,
       })
-      .expectAppError(ERROR_CODE.PARAM_NOT_UUID, 'commentId');
-  });
+      .expectAppError(ERROR_CODE.PARAM_NOT_UUID, 'commentId'));
 
-  it('should return 404 because comment does not exist', async () => {
-    return await pactum
+  it('should return 404 because comment does not exist', () =>
+    pactum
       .spec()
       .withBearerToken(userNotAuthor.token)
       .post(`/ue/comments/${Dummies.UUID}/report`)
@@ -67,11 +64,10 @@ const ReportComment = e2eSuite('POST /ue/comments/{commentId}/report', (app) => 
         body: "it's offensive",
         reason: reportReason.name,
       })
-      .expectAppError(ERROR_CODE.NO_SUCH_COMMENT);
-  });
+      .expectAppError(ERROR_CODE.NO_SUCH_COMMENT));
 
-  it('should return 403 because user is comment author', async () => {
-    return await pactum
+  it('should return 403 because user is comment author', () =>
+    pactum
       .spec()
       .withBearerToken(user.token)
       .post(`/ue/comments/${comment.id}/report`)
@@ -79,11 +75,10 @@ const ReportComment = e2eSuite('POST /ue/comments/{commentId}/report', (app) => 
         body: "it's offensive",
         reason: reportReason.name,
       })
-      .expectAppError(ERROR_CODE.IS_COMMENT_AUTHOR);
-  });
+      .expectAppError(ERROR_CODE.IS_COMMENT_AUTHOR));
 
-  it('should return 404 because report reason does not exist', async () => {
-    return await pactum
+  it('should return 404 because report reason does not exist', () =>
+    pactum
       .spec()
       .withBearerToken(userNotAuthor.token)
       .post(`/ue/comments/${comment.id}/report`)
@@ -91,11 +86,10 @@ const ReportComment = e2eSuite('POST /ue/comments/{commentId}/report', (app) => 
         body: "it's offensive",
         reason: 'idontexist',
       })
-      .expectAppError(ERROR_CODE.NO_SUCH_REPORT_REASON);
-  });
+      .expectAppError(ERROR_CODE.NO_SUCH_REPORT_REASON));
 
-  it('should return a report', async () => {
-    return await pactum
+  it('should return a report', () =>
+    pactum
       .spec()
       .withBearerToken(userNotAuthor.token)
       .post(`/ue/comments/${comment.id}/report`)
@@ -115,8 +109,7 @@ const ReportComment = e2eSuite('POST /ue/comments/{commentId}/report', (app) => 
           firstName: userNotAuthor.firstName,
           lastName: userNotAuthor.lastName,
         },
-      });
-  });
+      }));
 });
 
 export default ReportComment;

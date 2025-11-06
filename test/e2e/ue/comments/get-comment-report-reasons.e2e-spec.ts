@@ -29,11 +29,11 @@ const GetCommentReportReason = e2eSuite('GET /ue/comments/reports/reasons', (app
       .expectJsonLike([
         {
           name: 'bad',
-          descriptionTranslation: 'bonjour',
+          description: 'bonjour',
         },
         {
           name: 'meh',
-          descriptionTranslation: 'bonjour',
+          description: 'bonjour',
         },
       ]));
 });
