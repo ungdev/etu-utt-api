@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { RawUserUeSubscription } from 'src/prisma/types';
 import { ConfigModule } from '../../config/config.module';
 import { PrismaService } from '../../prisma/prisma.service';
 import { omit, pick } from '../../utils';
