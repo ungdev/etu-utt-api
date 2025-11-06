@@ -1,7 +1,7 @@
 import { Prisma, PrismaClient } from '@prisma/client';
 import { generateCustomModel } from '../../prisma/prisma.service';
 import { pick, translationSelect } from '../../utils';
-import { RawAssoDaymail, Translation } from '../../prisma/types';
+import { Translation } from '../../prisma/types';
 
 const ASSO_DAYMAIL_SELECT_FILTER = {
   select: {

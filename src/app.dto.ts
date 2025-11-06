@@ -3,7 +3,7 @@ import { applyDecorators, HttpStatus, Injectable } from '@nestjs/common';
 import * as ApiResponses from '@nestjs/swagger';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from '@nestjs/common/interfaces/type.interface';
-import { IsOptional, IsString, registerDecorator, ValidationArguments, ValidationOptions } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 import { HasSomeAmong } from './validation';
 
 // Redefine the mixin function in node_modules/.pnpm/@nestjs+common@<version>_class-transformer@<version>_class-validator@<version>_reflect-metadata@<version>_rxjs@<version>/node_modules/@nestjs/common/decorators/core/injectable.decorator.js

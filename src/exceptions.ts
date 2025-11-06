@@ -40,6 +40,7 @@ export const enum ERROR_CODE {
   BODY_MISSING = 2022,
   PARAM_PAST_DATE = 2023,
   PARAM_MISSING_EITHER = 2024,
+  PARAM_DATE_MUST_BE_AFTER = 2025,
   PARAM_DOES_NOT_MATCH_REGEX = 2102,
   NO_FIELD_PROVIDED = 2201,
   WIDGET_OVERLAPPING = 2301,
@@ -206,6 +207,10 @@ export const ErrorData = Object.freeze({
   },
   [ERROR_CODE.PARAM_MISSING_EITHER]: {
     message: 'One of these parameters must be provided: %',
+    httpCode: HttpStatus.BAD_REQUEST,
+  },
+  [ERROR_CODE.PARAM_DATE_MUST_BE_AFTER]: {
+    message: 'Date % come after date %',
     httpCode: HttpStatus.BAD_REQUEST,
   },
   [ERROR_CODE.PARAM_DOES_NOT_MATCH_REGEX]: {
