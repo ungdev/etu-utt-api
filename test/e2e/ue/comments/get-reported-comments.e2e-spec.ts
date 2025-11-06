@@ -65,9 +65,8 @@ const GetReportedComments = e2eSuite('GET /ue/comments/reports', (app) => {
     ],
   };
 
-  it('should return a 401 as user is not authenticated', () => {
-    return pactum.spec().get('/ue/comments/reports').expectAppError(ERROR_CODE.NOT_LOGGED_IN);
-  });
+  it('should return a 401 as user is not authenticated', () =>
+    pactum.spec().get('/ue/comments/reports').expectAppError(ERROR_CODE.NOT_LOGGED_IN));
 
   it('should return a 403 as user does not have permission to moderate comments', async () => {
     const userNoPermission = await createUser(app, {}, true);
@@ -88,16 +87,15 @@ const GetReportedComments = e2eSuite('GET /ue/comments/reports', (app) => {
       .expectAppError(ERROR_CODE.FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS, 'API_MODERATE_COMMENTS');
   });
 
-  it('should return a 403 as user uses a wrong page', () => {
-    return pactum
+  it('should return a 403 as user uses a wrong page', () =>
+    pactum
       .spec()
       .withBearerToken(userModerator.token)
       .get('/ue/comments/reports')
       .withQueryParams({
         page: -1,
       })
-      .expectAppError(ERROR_CODE.PARAM_NOT_POSITIVE, 'page');
-  });
+      .expectAppError(ERROR_CODE.PARAM_NOT_POSITIVE, 'page'));
 
   it('should return the first page of reported comments', async () => {
     const comments = await app()

@@ -1,6 +1,6 @@
 export default class UeCommentReportReasonResDto {
   name: string;
-  descriptionTranslation: {
+  description: {
     fr: string;
     en: string;
     es: string;

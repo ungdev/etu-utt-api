@@ -13,12 +13,14 @@ import GetReportedCommentsReqDto from './dto/req/ue-get-reported-comments-req.dt
 import UeCommentReportResDto from './dto/res/ue-comment-report-res.dto';
 import { UeCommentReply } from './interfaces/comment-reply.interface';
 import { UeComment } from './interfaces/comment.interface';
+import { UeService } from '../ue.service';
 
 @Injectable()
 export class CommentsService {
   constructor(
     readonly prisma: PrismaService,
     readonly config: ConfigModule,
+    readonly ueService: UeService,
   ) {}
 
   /**
@@ -153,30 +155,6 @@ export class CommentsService {
     );
   }
 
-  //TODO: This function may belongs to another service (users or ue)
-  /**
-   * Retrieves the last semester done by a user for a given ue
-   * @remarks The user must not be null
-   * @param userId the user to retrieve semesters of
-   * @param ueCode the code of the UE
-   * @returns the last semester done by the {@link user} for the {@link ueCode | ue}
-   */
-  private async getLastUserSubscription(userId: string, ueCode: string): Promise<RawUserUeSubscription> {
-    return this.prisma.userUeSubscription.findFirst({
-      where: {
-        ueof: {
-          ueId: ueCode,
-        },
-        userId,
-      },
-      orderBy: {
-        semester: {
-          end: 'desc',
-        },
-      },
-    });
-  }
-
   /**
    * Checks whether a user has already posted a comment for an ue
    * @remarks The user must not be null and UE must exist
@@ -215,7 +193,7 @@ export class CommentsService {
    */
   async createComment(body: UeCommentPostReqDto, userId: string): Promise<UeComment> {
     // Use last semester done when creating the comment
-    const lastSemester = await this.getLastUserSubscription(userId, body.ueCode);
+    const lastSemester = await this.ueService.getLastUserSubscription(userId, body.ueCode);
     return this.prisma.normalize.ueComment.create({
       args: {
         userId,
@@ -485,7 +463,7 @@ export class CommentsService {
   }
 
   /**
-   * Check if a report  exist
+   * Check if a comment report exists
    * @param reportId the id of the report
    * @returns true if it exists
    */
@@ -494,7 +472,7 @@ export class CommentsService {
   }
 
   /**
-   * Check if a report  exist
+   * Check if a comment reply report exists
    * @param reportId the id of the report
    * @returns true if it exists
    */
@@ -625,7 +603,7 @@ export class CommentsService {
       (rr) => {
         return {
           name: rr.name,
-          descriptionTranslation: omit(rr.descriptionTranslation, 'id'),
+          description: omit(rr.descriptionTranslation, 'id'),
         };
       },
     );

@@ -34,9 +34,8 @@ const UpdateCommentReplyReport = e2eSuite('PATCH /ue/comments/reply/{replyId}/{r
   const reply = createCommentReply(app, { user: replyAuthor, comment });
   const report = createCommentReplyReport(app, { reply, reason, user: commentAuthor });
 
-  it('should return a 401 as user is not authenticated', () => {
-    return pactum.spec().patch(`/ue/comments/reply/${reply.id}/${report.id}`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
-  });
+  it('should return a 401 as user is not authenticated', () =>
+    pactum.spec().patch(`/ue/comments/reply/${reply.id}/${report.id}`).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
 
   it('should return a 403 as user does not have permission to moderate comments', async () => {
     const userNoPermission = await createUser(app, {}, true);
@@ -57,21 +56,19 @@ const UpdateCommentReplyReport = e2eSuite('PATCH /ue/comments/reply/{replyId}/{r
       .expectAppError(ERROR_CODE.FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS, 'API_MODERATE_COMMENTS');
   });
 
-  it('should return 404 as replyId is invalid', async () => {
-    await pactum
+  it('should return 404 as replyId is invalid', () =>
+    pactum
       .spec()
       .withBearerToken(moderator.token)
       .patch(`/ue/comments/reply/${Dummies.UUID}/${report.id}`)
-      .expectAppError(ERROR_CODE.NO_SUCH_REPLY);
-  });
+      .expectAppError(ERROR_CODE.NO_SUCH_REPLY));
 
-  it('should return 404 as reportId is invalid', async () => {
-    await pactum
+  it('should return 404 as reportId is invalid', () =>
+    pactum
       .spec()
       .withBearerToken(moderator.token)
       .patch(`/ue/comments/reply/${reply.id}/${Dummies.UUID}`)
-      .expectAppError(ERROR_CODE.NO_SUCH_REPORT);
-  });
+      .expectAppError(ERROR_CODE.NO_SUCH_REPORT));
 
   it('should return the updated report', async () => {
     await pactum

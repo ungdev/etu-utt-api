@@ -148,8 +148,11 @@ export function formatComment(prisma: PrismaClient, comment: UnformattedUeCommen
   const bypassAnonymousData = !!args.bypassAnonymousData;
   const includeReports = !!args.includeReports;
   return {
-    ...omit(comment, 'deletedAt'),
-    author: !comment.isAnonymous || bypassAnonymousData || args.userId == comment.author.id ? comment.author : null,
+    ...omit(
+      comment,
+      'deletedAt',
+      !comment.isAnonymous || bypassAnonymousData || args.userId == comment.author.id ? undefined : 'author',
+    ),
     answers: comment.answers
       .filter((answer) => args.includeDeleted || answer.deletedAt === null)
       .map((answer) => {
