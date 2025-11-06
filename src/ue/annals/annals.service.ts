@@ -9,7 +9,7 @@ import { CreateAnnalReqDto } from './dto/req/create-annal-req.dto';
 import { UpdateAnnalReqDto } from './dto/req/update-annal-req.dto';
 import { ConfigModule } from '../../config/config.module';
 import { User } from '../../users/interfaces/user.interface';
-import { Semester } from '@prisma/client';
+import { RawSemester } from '../../prisma/types';
 
 @Injectable()
 export class AnnalsService {
@@ -39,7 +39,7 @@ export class AnnalsService {
             },
           })
         ).map((subscription) => subscription.semesterId)
-      : [...ueof.reduce((prev, nxt) => new Set([...prev, ...nxt.openSemester]), new Set<Semester>())].map(
+      : [...ueof.reduce((prev, nxt) => new Set([...prev, ...nxt.openSemester]), new Set<RawSemester>())].map(
           (semester) => semester.code,
         );
     const annalType = await this.prisma.ueAnnalType.findMany();

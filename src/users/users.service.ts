@@ -5,7 +5,7 @@ import UsersSearchReqDto from './dto/req/users-search-req.dto';
 import { UserUpdateReqDto } from './dto/req/users-update-req.dto';
 import { omit, translationSelect } from '../utils';
 import { ConfigModule } from '../config/config.module';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '../prisma/types';
 
 @Injectable()
 export default class UsersService {

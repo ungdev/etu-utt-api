@@ -1,0 +1,108 @@
+model Asso {
+  id                            String    @id @default(uuid())
+  name                          String    @unique @db.VarChar(100)
+  mail                          String    @unique @db.VarChar(100)
+  phoneNumber                   String?   @db.VarChar(30)
+  website                       String?   @db.VarChar(100)
+  logoMediaId                   String?   @db.Char(36)
+  createdAt                     DateTime  @default(now())
+  updatedAt                     DateTime  @updatedAt
+  deletedAt                     DateTime?
+  descriptionShortTranslationId String?   @unique
+  descriptionTranslationId      String?   @unique
+  assoAccountId                 String    @unique // User account of the asso
+
+  logo                        ImageMedia?          @relation("logo", fields: [logoMediaId], references: [id], onDelete: SetNull)
+  descriptionImages           ImageMedia[]         @relation("descriptionImages")
+  descriptionShortTranslation Translation?         @relation(name: "descriptionShortTranslation", fields: [descriptionShortTranslationId], references: [id], onDelete: Cascade)
+  descriptionTranslation      Translation?         @relation(name: "descriptionTranslation", fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
+  assoMemberships             AssoMembership[]
+  assoMessages                AssoMessage[]
+  events                      Event[]
+  assoMembershipRoles         AssoMembershipRole[]
+  assoAccount                 User                 @relation(fields: [assoAccountId], references: [id], onDelete: Cascade)
+}
+
+model AssoMembership {
+  id        String   @id @default(uuid())
+  startAt   DateTime
+  endAt     DateTime
+  createdAt DateTime @default(now())
+  userId    String
+  assoId    String
+  roleId    String
+
+  user        User                       @relation(fields: [userId], references: [id])
+  asso        Asso                       @relation(fields: [assoId], references: [id])
+  role        AssoMembershipRole         @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permissions AssoMembershipPermission[]
+}
+
+model AssoMembershipPermission {
+  id String @id
+
+  assoMembership AssoMembership[]
+}
+
+model AssoMembershipRole {
+  id          String  @id @default(uuid())
+  name        String
+  position    Int
+  isPresident Boolean
+  assoId      String
+
+  assoMemberships AssoMembership[]
+  asso            Asso             @relation(fields: [assoId], references: [id])
+}
+
+model AssoMessage {
+  id                 String   @id @default(uuid())
+  date               DateTime
+  sendToMobile       Boolean
+  sendAsDaymail      Boolean
+  createdAt          DateTime @default(now())
+  assoId             String
+  titleTranslationId String   @unique
+  bodyTranslationId  String   @unique
+
+  asso             Asso        @relation(fields: [assoId], references: [id])
+  titleTranslation Translation @relation(name: "titleTranslation", fields: [titleTranslationId], references: [id], onDelete: Cascade)
+  bodyTranslation  Translation @relation(name: "bodyTranslation", fields: [bodyTranslationId], references: [id], onDelete: Cascade)
+}
+
+model Event {
+  id                       String   @id @default(uuid())
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+  deletedAt                DateTime
+  titleTranslationId       String   @unique
+  descriptionTranslationId String   @unique
+
+  titleTranslation       Translation      @relation(name: "titleTranslation", fields: [titleTranslationId], references: [id], onDelete: Cascade)
+  descriptionTranslation Translation      @relation(name: "descriptionTranslation", fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
+  timetableEntries       TimetableEntry[]
+  assos                  Asso[]
+  categories             EventCategory[]
+  eventAnswers           EventAnswer[]
+}
+
+model EventAnswer {
+  id        String   @id @default(uuid())
+  answer    String   @db.VarChar(20)
+  comment   String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime
+  eventId   String   @default(uuid())
+  userId    String   @default(uuid())
+
+  event Event @relation(fields: [eventId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+}
+
+model EventCategory {
+  id   String @id @default(uuid())
+  name String @unique @db.VarChar(100)
+
+  events Event[]
+}

@@ -21,7 +21,7 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
     end: new Date(),
   });
   const ue = fakedb.createUe(app);
-  fakedb.createUeof(app, { branchOptions: [branchOption], semesters: [semester], ue });
+  const ueof = fakedb.createUeof(app, { branchOptions: [branchOption], semesters: [semester], ue });
 
   mockLdapServer(list);
 
@@ -81,7 +81,7 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
       datefin: 20240930,
       jpegPhoto: `http://localhost/${login}.jpg`,
       gidNumber: type === 'student' ? '10000' : type === 'faculty' ? '5000' : '9999',
-      uv: ['PETM6', 'SY16', 'LO17', 'RE02', 'IF03', 'CTC1', 'LG11', 'PEICT', ue.code],
+      uv: [ueof.code],
     };
   };
   const executeValidSignupRequest = async (personAttributes) => {

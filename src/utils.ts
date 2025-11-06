@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { Language, Permission } from '@prisma/client';
+import { Language, Permission } from './prisma/types';
 import { Translation } from './prisma/types';
 import { ApiPermission, UserPermission } from './auth/interfaces/permissions.interface';
 

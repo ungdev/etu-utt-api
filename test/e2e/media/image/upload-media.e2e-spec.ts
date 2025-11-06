@@ -1,4 +1,4 @@
-import { ImageMediaPreset } from '@prisma/client';
+import { ImageMediaPreset } from '../../../../src/prisma/types';
 import { mkdirSync, rmSync } from 'fs';
 import { ERROR_CODE } from '../../../../src/exceptions';
 import { createUser } from '../../../utils/fakedb';

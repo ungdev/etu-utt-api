@@ -1,4 +1,4 @@
-import { Permission } from '@prisma/client';
+import { Permission } from '../../prisma/types';
 
 export type ApiPermission = Permission & `API_${string}`;
 export type UserPermission = Permission & `USER_${string}`;

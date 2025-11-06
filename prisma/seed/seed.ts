@@ -1,4 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaMariaDb } from '@prisma/adapter-mariadb';
+import { PrismaClient } from '../../src/prisma/types';
 import ueSeed from './modules/ue.seed';
 import { userSeed } from './modules/user.seed';
 import { faker } from '@faker-js/faker';
@@ -16,7 +17,7 @@ import assoMembershipRoleSeed from './modules/assoMembershipRole.seed';
 import assoMembershipSeed from './modules/assoMembership.seed';
 import { generateDefaultApplication } from './utils';
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({ adapter: new PrismaMariaDb(process.env.DATABASE_URL) });
 async function main() {
   console.log('Flushing database...');
   await cleanDb(prisma);

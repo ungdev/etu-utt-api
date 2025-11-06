@@ -6,7 +6,7 @@ import { Ue } from './interfaces/ue.interface';
 import { Criterion } from './interfaces/criterion.interface';
 import { UeRating } from './interfaces/rate.interface';
 import { ConfigModule } from '../config/config.module';
-import { Language, Prisma } from '@prisma/client';
+import { Language, Prisma } from '../prisma/types';
 import { SemesterService } from '../semester/semester.service';
 
 @Injectable()
