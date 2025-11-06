@@ -81,11 +81,11 @@ export class CommentsController {
     ERROR_CODE.FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS,
     "Thrown when the user doesn't have enough permissions",
   )
-  async getReportedComments(
+  getReportedComments(
     @GetUser() user: User,
     @Query() dto: GetReportedCommentsReqDto,
   ): Promise<Pagination<UeCommentResDto>> {
-    return await this.commentsService.getCommentsWithReports(user.id, dto);
+    return this.commentsService.getCommentsWithReports(user.id, dto);
   }
 
   @Get('/reports/reasons')
@@ -96,8 +96,8 @@ export class CommentsController {
     ERROR_CODE.FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS,
     "Thrown when the user doesn't have enough permissions",
   )
-  async getReportReasons(): Promise<UeCommentReportReasonResDto[]> {
-    return await this.commentsService.getCommentReportReason();
+  getReportReasons(): Promise<UeCommentReportReasonResDto[]> {
+    return this.commentsService.getCommentReportReason();
   }
 
   // TODO : en vrai la route GET /ue/comments renvoie les mêmes infos nan ? :sweat_smile:
@@ -343,7 +343,7 @@ export class CommentsController {
       throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
     if (!(await this.commentsService.doesCommentReportExist(reportId)))
       throw new AppException(ERROR_CODE.NO_SUCH_REPORT);
-    return await this.commentsService.mitigateCommentReport(commentId, reportId);
+    return this.commentsService.mitigateCommentReport(commentId, reportId);
   }
 
   @Patch('/reply/:replyId/:reportId')
@@ -356,6 +356,6 @@ export class CommentsController {
     if (!(await this.commentsService.doesReplyExist(replyId))) throw new AppException(ERROR_CODE.NO_SUCH_REPLY);
     if (!(await this.commentsService.doesCommentReplyReportExist(reportId)))
       throw new AppException(ERROR_CODE.NO_SUCH_REPORT);
-    return await this.commentsService.mitigateCommentReplyReport(replyId, reportId);
+    return this.commentsService.mitigateCommentReplyReport(replyId, reportId);
   }
 }
