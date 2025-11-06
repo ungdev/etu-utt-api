@@ -16,7 +16,7 @@ import { Dummies, e2eSuite } from '../../../utils/test_utils';
 import { PermissionManager } from '../../../../src/utils';
 
 const UpdateCommentReport = e2eSuite('PATCH /ue/comments/:commentId/:reportId', (app) => {
-  const user = createUser(app, { permissions: new PermissionManager().with('API_MODERATE_COMMENTS')});
+  const user = createUser(app, { permissions: new PermissionManager().with('API_MODERATE_COMMENTS') });
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });

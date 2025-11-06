@@ -24,7 +24,10 @@ import { PermissionManager } from '../../../../src/utils';
 const GetReportedComments = e2eSuite('GET /ue/comments/reports', (app) => {
   const userModerator = createUser(app, {
     login: 'user2',
-    permissions: new PermissionManager().with('API_SEE_OPINIONS_UE').with('API_GIVE_OPINIONS_UE').with('API_MODERATE_COMMENTS'),
+    permissions: new PermissionManager()
+      .with('API_SEE_OPINIONS_UE')
+      .with('API_GIVE_OPINIONS_UE')
+      .with('API_MODERATE_COMMENTS'),
   });
   const semester = createSemester(app);
   const branch = createBranch(app);
@@ -180,7 +183,7 @@ const GetReportedComments = e2eSuite('GET /ue/comments/reports', (app) => {
       });
     const PAGINATION_PAGE_SIZE = app().get(ConfigModule).PAGINATION_PAGE_SIZE;
     const commentsFiltered = {
-      items: JSON.parse(JSON.stringify(comments)).slice(0,PAGINATION_PAGE_SIZE),
+      items: JSON.parse(JSON.stringify(comments)).slice(0, PAGINATION_PAGE_SIZE),
       itemCount: comments.length,
       itemsPerPage: PAGINATION_PAGE_SIZE,
     };

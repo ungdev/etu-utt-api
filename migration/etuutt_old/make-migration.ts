@@ -322,14 +322,11 @@ const prisma = _prisma.$extends({
             operation: 'created',
           };
         }
-        if (
-          comment.body !== body ||
-          comment.updatedAt !== updatedAt
-        ) {
+        if (comment.body !== body || comment.updatedAt !== updatedAt) {
           return {
             data: await _prisma.ueComment.update({
               where: { id: comment.id },
-              data: { body, updatedAt},
+              data: { body, updatedAt },
             }),
             operation: 'updated',
           };

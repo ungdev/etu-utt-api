@@ -1,9 +1,5 @@
 import { Type } from 'class-transformer';
-import {
-  IsInt,
-  IsOptional,
-  IsPositive,
-} from 'class-validator';
+import { IsInt, IsOptional, IsPositive } from 'class-validator';
 
 /**
  * Query parameters to get reported comments.

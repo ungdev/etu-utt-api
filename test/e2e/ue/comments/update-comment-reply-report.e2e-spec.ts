@@ -17,9 +17,13 @@ import { Dummies, e2eSuite } from '../../../utils/test_utils';
 import { PermissionManager } from '../../../../src/utils';
 
 const UpdateCommentReplyReport = e2eSuite('PATCH /ue/comments/reply/{replyId}/{reportId}', (app) => {
-  const commentAuthor = createUser(app, { permissions: new PermissionManager().with('API_SEE_OPINIONS_UE').with('API_GIVE_OPINIONS_UE')});
-  const replyAuthor = createUser(app, { permissions: new PermissionManager().with('API_SEE_OPINIONS_UE').with('API_GIVE_OPINIONS_UE') });
-  const moderator = createUser(app, { permissions: new PermissionManager().with('API_MODERATE_COMMENTS')});
+  const commentAuthor = createUser(app, {
+    permissions: new PermissionManager().with('API_SEE_OPINIONS_UE').with('API_GIVE_OPINIONS_UE'),
+  });
+  const replyAuthor = createUser(app, {
+    permissions: new PermissionManager().with('API_SEE_OPINIONS_UE').with('API_GIVE_OPINIONS_UE'),
+  });
+  const moderator = createUser(app, { permissions: new PermissionManager().with('API_MODERATE_COMMENTS') });
   const semester = createSemester(app);
   const branch = createBranch(app);
   const branchOption = createBranchOption(app, { branch });
