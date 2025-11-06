@@ -109,7 +109,7 @@ const ReportComment = e2eSuite('POST /ue/comments/{commentId}/report', (app) => 
           firstName: userNotAuthor.firstName,
           lastName: userNotAuthor.lastName,
         },
-      }));
+      },true));
 });
 
 export default ReportComment;

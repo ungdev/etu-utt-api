@@ -112,7 +112,7 @@ const GetReportedComments = e2eSuite('GET /ue/comments/reports', (app) => {
       });
 
     const commentsFiltered = {
-      items: JSON.parse(JSON.stringify(comments)).slice(0, app().get(ConfigModule).PAGINATION_PAGE_SIZE),
+      items: comments.slice(0, app().get(ConfigModule).PAGINATION_PAGE_SIZE),
       itemCount: comments.length,
       itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
     };
@@ -120,7 +120,7 @@ const GetReportedComments = e2eSuite('GET /ue/comments/reports', (app) => {
       .spec()
       .withBearerToken(userModerator.token)
       .get('/ue/comments/reports')
-      .expectJsonMatch(commentsFiltered);
+      .$expectRegexableJson(commentsFiltered);
   });
 
   it('should return the second page of reported comments', async () => {
@@ -138,7 +138,7 @@ const GetReportedComments = e2eSuite('GET /ue/comments/reports', (app) => {
       });
     const PAGINATION_PAGE_SIZE = app().get(ConfigModule).PAGINATION_PAGE_SIZE;
     const commentsFiltered = {
-      items: JSON.parse(JSON.stringify(comments)).slice(PAGINATION_PAGE_SIZE, 2 * PAGINATION_PAGE_SIZE),
+      items: comments.slice(PAGINATION_PAGE_SIZE, 2 * PAGINATION_PAGE_SIZE),
       itemCount: comments.length,
       itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
     };
@@ -147,7 +147,7 @@ const GetReportedComments = e2eSuite('GET /ue/comments/reports', (app) => {
       .withBearerToken(userModerator.token)
       .get('/ue/comments/reports')
       .withQueryParams({ page: 2 })
-      .expectJsonMatch(commentsFiltered);
+      .$expectRegexableJson(commentsFiltered);
   });
 
   it('should include comments with reported replies', async () => {
@@ -181,7 +181,7 @@ const GetReportedComments = e2eSuite('GET /ue/comments/reports', (app) => {
       });
     const PAGINATION_PAGE_SIZE = app().get(ConfigModule).PAGINATION_PAGE_SIZE;
     const commentsFiltered = {
-      items: JSON.parse(JSON.stringify(comments)).slice(0, PAGINATION_PAGE_SIZE),
+      items: comments.slice(0, PAGINATION_PAGE_SIZE),
       itemCount: comments.length,
       itemsPerPage: PAGINATION_PAGE_SIZE,
     };
@@ -192,7 +192,7 @@ const GetReportedComments = e2eSuite('GET /ue/comments/reports', (app) => {
       .spec()
       .withBearerToken(userModerator.token)
       .get('/ue/comments/reports')
-      .expectJsonMatch(commentsFiltered);
+      .$expectRegexableJson(commentsFiltered);
   });
 });
 
