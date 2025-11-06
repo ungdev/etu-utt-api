@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '../../../prisma/types';
 import { RequestType, generateCustomModel } from '../../../prisma/prisma.service';
 import { UeCommentReply, formatReply } from './comment-reply.interface';
 import { omit } from '../../../utils';

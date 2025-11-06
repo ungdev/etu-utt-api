@@ -1,4 +1,4 @@
-import { ImageMediaPreset } from '@prisma/client';
+import { ImageMediaPreset } from '../../../../prisma/types';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 

@@ -1,0 +1,49 @@
+model TimetableGroup {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+
+  userTimetableGroups     UserTimetableGroup[]
+  timetableEntries        TimetableEntry[]
+  timetableEntryOverrides TimetableEntryOverride[]
+}
+
+model TimetableEntry {
+  id                 String             @id @default(uuid())
+  eventStart         DateTime           @db.DateTime
+  occurrencesCount   Int?               @db.UnsignedInt // The number of occurrences, if null, it will be considered infinite
+  repeatEvery        Int?               @db.UnsignedInt // In milliseconds
+  occurrenceDuration Int                @db.UnsignedInt // In milliseconds
+  type               TimetableEntryType
+  location           String
+  eventId            String?
+  createdAt          DateTime           @default(now())
+
+  ueCourse        UeCourse?
+  event           Event?                   @relation(fields: [eventId], references: [id])
+  overwrittenBy   TimetableEntryOverride[] @relation(name: "overrideTimetableEntry")
+  timetableGroups TimetableGroup[]
+}
+
+model TimetableEntryOverride {
+  id                       String   @id @default(uuid())
+  applyFrom                Int // The index of the first occurrence of the event to apply the override to
+  applyUntil               Int // The index of the last occurrence of the event to apply the override to
+  repeatEvery              Int      @default(1) @db.UnsignedInt // In number of occurrences of parent entry
+  occurrenceRelativeStart  Int      @default(0) @db.UnsignedInt // How many milliseconds after the default beginning of the event should this override start at ?
+  occurrenceDuration       Int?     @db.UnsignedInt
+  delete                   Boolean  @default(false)
+  location                 String?
+  createdAt                DateTime @default(now())
+  overrideTimetableEntryId String
+
+  overrideTimetableEntry TimetableEntry   @relation(name: "overrideTimetableEntry", fields: [overrideTimetableEntryId], references: [id], onDelete: Cascade)
+  timetableGroups        TimetableGroup[]
+}
+
+enum TimetableEntryType {
+  COURSE
+  ASSO
+  DELETE
+  CUSTOM
+}

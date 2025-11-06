@@ -22,7 +22,7 @@ import { ConfigModule } from '../src/config/config.module';
 import { AppProvider, JsonLike } from './utils/test_utils';
 import { getTranslation, omit, PermissionManager, pick } from '../src/utils';
 import { regex, string, uuid, int } from 'pactum-matchers';
-import { Language } from '@prisma/client';
+import { Language } from '../src/prisma/types';
 import { DEFAULT_APPLICATION } from '../prisma/seed/utils';
 import ApplicationResDto from '../src/auth/application/dto/res/application-res.dto';
 import PermissionsResDto from '../src/auth/permissions/dto/res/permissions.dto';

@@ -1,0 +1,298 @@
+model Ue {
+  code      String   @id @db.VarChar(8)
+  createdAt DateTime @default(now())
+
+  subsequentUes Ueof[]    @relation("ueRequirements")
+  aliases       UeAlias[]
+  ueofs         Ueof[]
+}
+
+model UeAlias {
+  code      String  @id @db.VarChar(8)
+  standsFor String? @db.VarChar(8)
+
+  alias Ue? @relation(fields: [standsFor], references: [code])
+}
+
+model Ueof {
+  code   String @id @db.VarChar(20)
+  siepId Int    @unique
+
+  available         Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  nameTranslationId String   @unique
+  ueId              String
+  ueofInfoId        String   @unique
+  updatedAt         DateTime @updatedAt
+
+  info               UeofInfo             @relation(fields: [ueofInfoId], references: [id], onDelete: Cascade)
+  name               Translation          @relation(fields: [nameTranslationId], references: [id], onDelete: Cascade)
+  requirements       Ue[]                 @relation(name: "ueRequirements")
+  ue                 Ue                   @relation(fields: [ueId], references: [code])
+  annals             UeAnnal[]
+  comments           UeComment[]
+  courses            UeCourse[]
+  credits            UeCredit[]
+  openSemester       Semester[]
+  starVotes          UeStarVote[]
+  usersSubscriptions UserUeSubscription[]
+  workTime           UeWorkTime?
+}
+
+model UeAnnal {
+  id             String    @id @default(uuid())
+  // The filename is not stored in the database because it is computed from the annal id
+  uploadComplete Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+  semesterId     String
+  senderId       String?
+  typeId         String
+  ueofCode       String
+  validatedAt    DateTime?
+
+  semester Semester        @relation(fields: [semesterId], references: [code])
+  sender   User?           @relation(fields: [senderId], references: [id], onDelete: SetNull)
+  type     UeAnnalType     @relation(fields: [typeId], references: [id])
+  ueof     Ueof            @relation(fields: [ueofCode], references: [code], onDelete: Cascade)
+  reports  UeAnnalReport[]
+}
+
+model UeAnnalType {
+  id   String @id @default(uuid())
+  name String @db.VarChar(255)
+
+  annals UeAnnal[]
+}
+
+model UeAnnalReport {
+  id        String   @id @default(uuid())
+  annalId   String
+  body      String?  @db.Text
+  createdAt DateTime @default(now())
+  mitigated Boolean  @default(false)
+  reasonId  String
+  userId    String?
+
+  annal  UeAnnal             @relation(fields: [annalId], references: [id], onDelete: Cascade)
+  reason UeAnnalReportReason @relation(fields: [reasonId], references: [name])
+  user   User?               @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, annalId, reasonId]) // Prevent from spams
+}
+
+model UeAnnalReportReason {
+  name                     String @id @db.VarChar(100)
+  descriptionTranslationId String @unique
+
+  descriptionTranslation Translation     @relation(fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
+  reports                UeAnnalReport[]
+}
+
+model UeComment {
+  id                String    @id @default(uuid())
+  body              String    @db.Text
+  isAnonymous       Boolean
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @default(now())
+  // Removed @updatedAt because the property is used to display the last datetime the content of the comment was altered on
+  deletedAt         DateTime?
+  validatedAt       DateTime?
+  authorId          String?
+  lastValidatedBody String?
+  semesterId        String
+  ueofCode          String
+
+  author   User?             @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  semester Semester          @relation(fields: [semesterId], references: [code])
+  ueof     Ueof              @relation(fields: [ueofCode], references: [code], onDelete: Cascade)
+  answers  UeCommentReply[]
+  reports  UeCommentReport[]
+  upvotes  UeCommentUpvote[]
+}
+
+model UeCommentReply {
+  id        String    @id @default(uuid())
+  body      String    @db.Text
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now())
+  // Removed @updatedAt because the property is used to display the last datetime the content of the reply was altered on
+  deletedAt DateTime?
+  commentId String
+  authorId  String?
+
+  author  User?                  @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  comment UeComment              @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  reports UeCommentReplyReport[]
+}
+
+model UeCommentReport {
+  id        String   @id @default(uuid())
+  body      String   @db.Text
+  createdAt DateTime @default(now())
+  mitigated Boolean  @default(false)
+  commentId String
+  reasonId  String
+  userId    String
+
+  comment UeComment             @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  reason  UeCommentReportReason @relation(fields: [reasonId], references: [name], onDelete: Cascade)
+  user    User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, commentId, reasonId]) // Prevent from spam
+}
+
+model UeCommentReplyReport {
+  id        String   @id @default(uuid())
+  body      String   @db.Text
+  createdAt DateTime @default(now())
+  mitigated Boolean  @default(false)
+  reasonId  String
+  replyId   String
+  userId    String
+
+  reason UeCommentReportReason @relation(fields: [reasonId], references: [name], onDelete: Cascade)
+  reply  UeCommentReply        @relation(fields: [replyId], references: [id], onDelete: Cascade)
+  user   User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, replyId, reasonId]) // Prevent from spam
+}
+
+model UeCommentReportReason {
+  name                     String @id @db.VarChar(100)
+  descriptionTranslationId String @unique
+
+  descriptionTranslation Translation            @relation(fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
+  replyReports           UeCommentReplyReport[]
+  reports                UeCommentReport[]
+}
+
+model UeCommentUpvote {
+  id        String   @id @default(uuid())
+  commentId String
+  createdAt DateTime @default(now())
+  userId    String?
+
+  comment UeComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+model UeCourse {
+  id          String     @id @default(uuid())
+  type        CourseType
+  createdAt   DateTime   @default(now())
+  semesterId  String
+  timetableId String     @unique()
+  ueofCode    String
+
+  courseExchangesFrom UeCourseExchange[] @relation(name: "courseFrom")
+  courseExchangesTo   UeCourseExchange[] @relation(name: "courseTo")
+  semester            Semester           @relation(fields: [semesterId], references: [code])
+  ueof                Ueof               @relation(fields: [ueofCode], references: [code])
+  students            User[]
+  timetableEntry      TimetableEntry     @relation(fields: [timetableId], references: [id])
+}
+
+model UeCourseExchange {
+  id             String    @id @default(uuid())
+  authorId       String
+  body           String?   @db.Text
+  courseFromId   String
+  courseToId     String
+  createdAt      DateTime  @default(now())
+  deletedAt      DateTime?
+  stillAvailable Boolean
+  updatedAt      DateTime  @updatedAt
+
+  author     User                    @relation(fields: [authorId], references: [id])
+  courseFrom UeCourse                @relation(name: "courseFrom", fields: [courseFromId], references: [id])
+  courseTo   UeCourse                @relation(name: "courseTo", fields: [courseToId], references: [id])
+  responses  UeCourseExchangeReply[]
+}
+
+model UeCourseExchangeReply {
+  id         String    @id @default(uuid())
+  authorId   String
+  body       String    @db.Text
+  createdAt  DateTime  @default(now())
+  deletedAt  DateTime?
+  exchangeId String
+  updatedAt  DateTime  @updatedAt
+
+  author   User             @relation(fields: [authorId], references: [id])
+  exchange UeCourseExchange @relation(fields: [exchangeId], references: [id])
+}
+
+model UeCredit {
+  id         String  @id @default(uuid())
+  categoryId String?
+  credits    Int     @db.SmallInt
+  ueofCode   String
+
+  category      UeCreditCategory? @relation(fields: [categoryId], references: [code])
+  ueof          Ueof              @relation(fields: [ueofCode], references: [code], onDelete: Cascade)
+  branchOptions UTTBranchOption[]
+}
+
+model UeCreditCategory {
+  code String @id @db.Char(2)
+  name String @db.VarChar(255)
+
+  ueCredits UeCredit[]
+}
+
+model UeofInfo {
+  id                      String  @id @default(uuid())
+  minors                  String? @db.Text
+  language                String? @db.Text
+  objectivesTranslationId String? @unique
+  programTranslationId    String? @unique
+
+  objectives Translation? @relation("ueofInfoObjectivesTranslation", fields: [objectivesTranslationId], references: [id], onDelete: Cascade)
+  program    Translation? @relation("ueofInfoProgramTranslation", fields: [programTranslationId], references: [id], onDelete: Cascade)
+  ueof       Ueof?
+}
+
+model UeStarCriterion {
+  id                       String @id @default(uuid())
+  name                     String @unique @db.VarChar(255)
+  descriptionTranslationId String @unique
+
+  descriptionTranslation Translation  @relation(fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
+  starVotes              UeStarVote[]
+}
+
+model UeStarVote {
+  id          String   @id @default(uuid())
+  value       Int      @db.SmallInt
+  createdAt   DateTime @default(now())
+  criterionId String
+  ueofCode    String
+  userId      String?
+
+  criterion UeStarCriterion @relation(fields: [criterionId], references: [id], onDelete: Cascade)
+  ueof      Ueof            @relation(fields: [ueofCode], references: [code], onDelete: Cascade)
+  user      User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([ueofCode, userId, criterionId])
+}
+
+model UeWorkTime {
+  id         String   @id @default(uuid())
+  cm         Int?
+  td         Int?
+  tp         Int?
+  the        Int?
+  project    Boolean?
+  internship Int?
+  ueofCode   String   @unique
+
+  ueof Ueof @relation(fields: [ueofCode], references: [code], onDelete: Cascade)
+}
+
+enum CourseType {
+  CM
+  TD
+  TP
+}

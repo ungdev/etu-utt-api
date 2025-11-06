@@ -10,7 +10,7 @@ import { PermissionManager, pick } from '../../utils';
 import AuthTokenResDto from '../dto/res/auth-token-res.dto';
 import { GetPermissions } from '../decorator/get-permissions.decorator';
 import { AppException, ERROR_CODE } from '../../exceptions';
-import { Permission } from '@prisma/client';
+import { Permission } from '../../prisma/types';
 import ApplicationClientSecretResDto from './dto/res/application-client-secret-res.dto';
 import { ApiAppErrorResponse } from '../../app.dto';
 import ApplicationSensibleResDto from './dto/res/application-sensible-res.dto';

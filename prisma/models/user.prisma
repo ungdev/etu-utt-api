@@ -1,0 +1,279 @@
+model User {
+  id              String  @id @default(uuid())
+  login           String  @unique @db.VarChar(50)
+  hash            String?
+  // TODO : maybe a field accountType (that is either CAS or login-password), but this may be implemented in the centralized authentication
+  studentId       Int?
+  firstName       String
+  lastName        String
+  rgpdId          String  @unique
+  preferenceId    String  @unique
+  infosId         String  @unique
+  mailsPhonesId   String  @unique
+  socialNetworkId String  @unique
+  privacyId       String  @unique
+
+  socialNetwork         UserSocialNetwork        @relation(fields: [socialNetworkId], references: [id])
+  rgpd                  UserRGPD                 @relation(fields: [rgpdId], references: [id])
+  preference            UserPreference           @relation(fields: [preferenceId], references: [id])
+  infos                 UserInfos                @relation(fields: [infosId], references: [id])
+  mailsPhones           UserMailsPhones          @relation(fields: [mailsPhonesId], references: [id])
+  userType              UserType
+  timestamps            UserTimestamps?
+  bans                  UserBan[]
+  bdeContributions      UserBDEContribution[]
+  assoMembership        AssoMembership[]
+  branchSubscriptions   UserBranchSubscription[]
+  formation             UserFormation?
+  addresses             UserAddress[]
+  otherAttributes       UserOtherAttributValue[]
+  uesSubscriptions      UserUeSubscription[]
+  ueStarVotes           UeStarVote[]
+  courses               UeCourse[]
+  eventAnswers          EventAnswer[]
+  annalsSent            UeAnnal[]
+  annalsReported        UeAnnalReport[]
+  comments              UeComment[]
+  commentReplies        UeCommentReply[]
+  commentsReported      UeCommentReport[]
+  repliesReported       UeCommentReplyReport[]
+  gitHubIssues          GitHubIssue[]
+  etuUTTTeam            UserEtuUTTTeam[]
+  courseExchanges       UeCourseExchange[]
+  courseExchangeReplies UeCourseExchangeReply[]
+  commentUpvotes        UeCommentUpvote[]
+  timetableGroups       UserTimetableGroup[]
+  homepageWidgets       UserHomepageWidget[]
+  privacy               UserPrivacy              @relation(fields: [privacyId], references: [id])
+  apiApplications       ApiApplication[]
+  apiKeys               ApiKey[]
+  apiPermissionsTarget  ApiKeyPermission[]       @relation(name: "target")
+  apiPermissionsGrants  ApiKeyPermission[]       @relation(name: "granter")
+  asso                  Asso?
+  uploadedImages        ImageMedia[]
+}
+
+model UserAddress {
+  id         String  @id @default(uuid())
+  street     String? @db.VarChar(255)
+  postalCode String? @db.VarChar(20)
+  city       String? @db.VarChar(255)
+  country    String? @db.VarChar(50)
+  userId     String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserBan {
+  id                 String    @id @default(uuid())
+  readOnlyExpiration DateTime? @db.Date
+  bannedExpiration   DateTime? @db.Date
+  userId             String
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model UserBDEContribution {
+  id              String   @id @default(uuid())
+  start           DateTime @db.Date
+  end             DateTime @db.Date
+  userId          String
+  startSemesterId String
+  endSemesterId   String
+
+  user          User     @relation(fields: [userId], references: [id])
+  startSemester Semester @relation("startSemester", fields: [startSemesterId], references: [code])
+  endSemester   Semester @relation("endSemester", fields: [endSemesterId], references: [code])
+}
+
+model UserBranchSubscription {
+  id             String   @id @default(uuid())
+  userId         String
+  semesterNumber Int      @db.SmallInt
+  createdAt      DateTime @default(now())
+  branchOptionId String
+  semesterCode   String
+
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  branchOption UTTBranchOption @relation(fields: [branchOptionId], references: [id])
+  semester     Semester        @relation(fields: [semesterCode], references: [code])
+}
+
+model UserEtuUTTTeam {
+  id     String @id @default(uuid())
+  role   String @db.Text
+  userId String
+
+  user     User       @relation(fields: [userId], references: [id])
+  semester Semester[]
+}
+
+model UserFormation {
+  id                String   @id @default(uuid())
+  createdAt         DateTime @default(now())
+  userId            String   @unique
+  formationId       String
+  followingMethodId String
+
+  user            User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  formation       UTTFormation                @relation(fields: [formationId], references: [name])
+  followingMethod UTTFormationFollowingMethod @relation(fields: [followingMethodId], references: [name])
+}
+
+model UserInfos {
+  id            String    @id @default(uuid())
+  sex           Sex?
+  nationality   String?   @db.VarChar(50)
+  birthday      DateTime? @db.Date
+  avatarMediaId String?   @db.Char(36)
+  nickname      String?   @db.VarChar(50)
+  passions      String?   @db.Text
+  website       String?   @db.VarChar(255)
+
+  user   User?
+  avatar ImageMedia? @relation(fields: [avatarMediaId], references: [id], onDelete: SetNull)
+}
+
+model UserMailsPhones {
+  id           String  @id @default(uuid())
+  mailUTT      String? @db.VarChar(255)
+  mailPersonal String? @db.VarChar(255)
+  phoneNumber  String? @db.VarChar(100)
+
+  user User?
+}
+
+model UserPrivacy {
+  // For each field, if it is true, it's public. If it is false, it's private.
+  id                     String         @id @default(uuid())
+  mailUTT                Boolean        @default(false)
+  mailPersonal           Boolean        @default(false)
+  phoneNumber            Boolean        @default(false)
+  birthday               Boolean        @default(false)
+  birthdayDisplayOnlyAge Boolean        @default(false)
+  sex                    Boolean        @default(false)
+  nationality            Boolean        @default(false)
+  discord                Boolean        @default(false)
+  address                AddressPrivacy @default(ALL_PRIVATE)
+  timetable              Boolean        @default(false)
+
+  user User?
+}
+
+model UserOtherAttribut {
+  name String        @id @db.VarChar(100)
+  type AttributeType
+
+  values UserOtherAttributValue[]
+}
+
+model UserOtherAttributValue {
+  id         String @id @default(uuid())
+  value      String @db.Text
+  userId     String
+  attributId String
+
+  user     User              @relation(fields: [userId], references: [id])
+  attribut UserOtherAttribut @relation(fields: [attributId], references: [name])
+}
+
+model UserHomepageWidget {
+  id     String @id @default(uuid())
+  widget String @db.VarChar(20)
+  x      Int
+  y      Int
+  width  Int
+  height Int
+  userId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserPreference {
+  id             String   @id @default(uuid())
+  language       Language @default(fr)
+  wantDaymail    Boolean  @default(false)
+  wantDayNotif   Boolean  @default(false)
+  wantDiscordUtt Boolean  @default(false)
+
+  user User?
+}
+
+model UserRGPD {
+  id                   String   @id @default(uuid())
+  isKeepingAccount     Boolean?
+  isDeletingEverything Boolean?
+
+  user User?
+}
+
+model UserSocialNetwork {
+  id        String  @id @default(uuid())
+  facebook  String? @db.VarChar(255)
+  twitter   String? @db.VarChar(255)
+  instagram String? @db.VarChar(255)
+  linkedin  String? @db.VarChar(255)
+  twitch    String? @db.VarChar(255)
+  spotify   String? @db.VarChar(255)
+  discord   String? @db.VarChar(255)
+
+  user User?
+}
+
+model UserTimestamps {
+  id            String    @id @default(uuid())
+  lastLoginDate DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  userId        String    @unique
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserTimetableGroup {
+  id               String @id @default(uuid())
+  timetableGroupId String
+  userId           String
+  priority         Int
+
+  user           User           @relation(fields: [userId], references: [id])
+  timetableGroup TimetableGroup @relation(fields: [timetableGroupId], references: [id])
+
+  @@unique([timetableGroupId, userId])
+}
+
+model UserUeSubscription {
+  id         String   @id @default(uuid())
+  createdAt  DateTime @default(now())
+  userId     String
+  ueofCode   String
+  semesterId String
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ueof     Ueof     @relation(fields: [ueofCode], references: [code])
+  semester Semester @relation(fields: [semesterId], references: [code])
+
+  @@unique([userId, ueofCode, semesterId])
+}
+
+enum UserType {
+  STUDENT
+  FORMER_STUDENT
+  TEACHER
+  EMPLOYEE
+  ASSOCIATION
+  OTHER
+}
+
+enum AddressPrivacy {
+  ALL_PRIVATE
+  CITY_PRIVATE
+  ADDRESS_PRIVATE
+  ALL_PUBLIC
+}
+
+enum Sex {
+  MALE
+  FEMALE
+  OTHER
+}

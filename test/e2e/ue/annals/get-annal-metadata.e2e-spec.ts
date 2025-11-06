@@ -11,7 +11,7 @@ import {
 } from '../../../utils/fakedb';
 import { e2eSuite } from '../../../utils/test_utils';
 import { ERROR_CODE } from '../../../../src/exceptions';
-import { Permission } from '@prisma/client';
+import { Permission } from '../../../../src/prisma/types';
 import { PermissionManager } from '../../../../src/utils';
 
 const GetAnnalMetadata = e2eSuite('GET /ue/annals/metadata', (app) => {

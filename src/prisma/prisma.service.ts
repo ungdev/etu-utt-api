@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { PrismaMariaDb } from '@prisma/adapter-mariadb';
+import { PrismaClient } from './types';
 import { ConfigModule } from '../config/config.module';
 import { generateCustomUserModel } from '../users/interfaces/user.interface';
 import { omit } from '../utils';
@@ -18,6 +19,7 @@ import { generateCustomApplicationModel } from '../auth/application/interfaces/a
 @Injectable()
 export class PrismaService extends PrismaClient<ReturnType<typeof prismaOptions>> {
   readonly normalize: ReturnType<typeof createNormalizedEntitiesUtility>;
+  readonly adapter: Record<'adapter', PrismaMariaDb>;
 
   constructor(config: ConfigModule) {
     super(prismaOptions(config));
@@ -25,16 +27,10 @@ export class PrismaService extends PrismaClient<ReturnType<typeof prismaOptions>
   }
 }
 
-const prismaOptions = (config: ConfigModule) => ({
-  datasources: {
-    db: {
-      url: config.DATABASE_URL,
-    },
-  },
-});
+const prismaOptions = (config: ConfigModule) => ({ adapter: new PrismaMariaDb(config.DATABASE_URL) });
 
 /**
- * @typedef {import('@prisma/client').Prisma.UserDelegate} UserDelegate
+ * @typedef {import('../prisma/types').Prisma.UserDelegate} UserDelegate
  */
 
 function createNormalizedEntitiesUtility(prisma: PrismaClient) {

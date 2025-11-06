@@ -16,7 +16,7 @@ import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { UeRating } from 'src/ue/interfaces/rate.interface';
 import { FakeUe, FakeUser, FakeHomepageWidget, FakeAsso } from './utils/fakedb';
 import { AppProvider } from './utils/test_utils';
-import { Language } from '@prisma/client';
+import { Language } from '../src/prisma/types';
 import { PermissionManager } from '../src/utils';
 
 type JsonLikeVariant<T> = Partial<{

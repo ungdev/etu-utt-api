@@ -1,7 +1,7 @@
 import { createReadStream, ReadStream } from 'fs';
 import { rm, writeFile } from 'fs/promises';
 import { Injectable } from '@nestjs/common';
-import { ImageMedia, ImageMediaPreset } from '@prisma/client';
+import { RawImageMedia, ImageMediaPreset } from '../../prisma/types';
 import { ConfigModule } from '../../config/config.module';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MulterWithMime } from '../../upload.interceptor';
@@ -19,7 +19,7 @@ const presets: PresetStruct = {
   AVATAR: { width: 256, height: 256, quality: 70, effort: 5 },
 };
 
-export type ImageMetadata = Omit<ImageMedia, 'id' | 'uploadedAt' | 'isPublic' | 'uploaderId'>;
+export type ImageMetadata = Omit<RawImageMedia, 'id' | 'uploadedAt' | 'isPublic' | 'uploaderId'>;
 
 @Injectable()
 export class ImageMediaService {
@@ -55,7 +55,7 @@ export class ImageMediaService {
     return { width: metadata.width, height: metadata.height, size: file.multer.buffer.length, preset: options.preset };
   }
 
-  async registerMedia(metaData: ImageMetadata, uploader: User, isPublic: boolean): Promise<ImageMedia> {
+  async registerMedia(metaData: ImageMetadata, uploader: User, isPublic: boolean): Promise<RawImageMedia> {
     const image = await this.prisma.imageMedia.create({
       data: {
         ...metaData,
@@ -68,11 +68,11 @@ export class ImageMediaService {
     return image;
   }
 
-  async rollbackMedia(media: ImageMedia): Promise<void> {
+  async rollbackMedia(media: RawImageMedia): Promise<void> {
     await this.prisma.imageMedia.create({ data: media });
   }
 
-  async unRegisterMedia(mediaId: string): Promise<ImageMedia> {
+  async unRegisterMedia(mediaId: string): Promise<RawImageMedia> {
     return this.prisma.imageMedia.delete({ where: { id: mediaId } });
   }
 
@@ -84,7 +84,7 @@ export class ImageMediaService {
    * Clears unused from the Database. {@link ImageMediaService.deleteMediaFromDisk DeleteMediaFromDisk} must be called
    * with the output of this method to clear data from disk.
    */
-  async clearUnusedMedia(): Promise<ImageMedia[]> {
+  async clearUnusedMedia(): Promise<RawImageMedia[]> {
     const targetMedias = await this.prisma.imageMedia.findMany({
       where: {
         // Filter explanation https://www.prisma.io/docs/orm/prisma-client/queries/relation-queries#filter-on-absence-of--to-many-records

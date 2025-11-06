@@ -26,7 +26,7 @@ import AssoMembershipResDto from './dto/res/assos-membership-res.dto';
 import UsersService from '../users/users.service';
 import AssosUpdateReqDto from './dto/req/assos-update-req.dto';
 import { LexicalModule } from '../lexical/lexical.module';
-import { ImageMediaPreset } from '@prisma/client';
+import { ImageMediaPreset } from '../prisma/types';
 
 @Controller('assos')
 @ApiTags('Assos')
