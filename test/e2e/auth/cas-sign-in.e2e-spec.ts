@@ -6,7 +6,6 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import AuthCasSignInReqDto from '../../../src/auth/dto/req/auth-cas-sign-in-req.dto';
 import { DEFAULT_APPLICATION } from '../../../prisma/seed/utils';
-import { HttpStatus } from '@nestjs/common';
 
 const CasSignInE2ESpec = e2eSuite('POST /auth/signin/cas', (app) => {
   const body: AuthCasSignInReqDto = {
@@ -19,7 +18,7 @@ const CasSignInE2ESpec = e2eSuite('POST /auth/signin/cas', (app) => {
       .spec()
       .post('/auth/signin/cas')
       .withBody(body)
-      .expectStatus(HttpStatus.OK)
+      .expectStatus()
       .$expectRegexableJson({ status: 'no_account', token: JsonLike.STRING, redirectUrl: null })
       .expect((res) => {
         const jwt = app().get(JwtService);

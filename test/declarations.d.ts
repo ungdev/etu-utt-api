@@ -46,6 +46,14 @@ type FakeAssoMembers = {
  */
 declare module './declarations' {
   interface Spec {
+    /** Checks for HTTP 201 Status. If omitted, status check will be 200 */
+    created(): this;
+    /** Checks for HTTP 204 Status. If omitted, status check will be 200 */
+    noContent(): this;
+
+    /** Overrides original expectStatus method, used to be compatible with created() and noContent(). If no method was called, will check for HTTP 200 OK */
+    expectStatus(): this;
+
     /**
      * expects an `AppError`, with the proper {@link ERROR_CODE} and the matching message
      * (this message may have an argument, provided in {@link customMessage})
@@ -63,21 +71,14 @@ declare module './declarations' {
     expectUes(ues: FakeUeWithOfs[]): this;
     /** expects to return the given {@link page | page of UeOverView} */
     expectUesWithPagination(app: AppProvider, ues: FakeUeWithOfs[], count: number): this;
-    /**
-     * expects to return the given {@link comment}. The HTTP Status code may be 200 or 204,
-     * depending on the {@link created} property.
-     */
+    /** expects to return the given {@link comment} */
     expectUeComment(
       comment: JsonLikeVariant<RecursivelySetPartial<UeComment, 'author' | 'answers.author'>> & { ueof: FakeUeof },
-      created = false,
     ): this;
     /** expects to return the given {@link commentPage | page of comments} */
     expectUeComments(commentPage: Pagination<UeComment & { ue: FakeUe }>): this;
-    /**
-     * expects to return the given {@link reply}
-     * The HTTP Status code may be 200 or 204, depending on the {@link created} property.
-     */
-    expectUeCommentReply(reply: JsonLikeVariant<UeCommentReply>, created = false): this;
+    /** expects to return the given {@link reply} */
+    expectUeCommentReply(reply: JsonLikeVariant<UeCommentReply>): this;
     /** expects to return the given {@link criterion} list */
     expectUeCriteria(criterion: JsonLikeVariant<Criterion[]>): this;
     /** expects to return the given {@link rate} */
@@ -90,7 +91,7 @@ declare module './declarations' {
         semesters: string[];
       }>,
     ): this;
-    expectUeAnnal(annals: JsonLikeVariant<UeAnnalFile>, created = false): this;
+    expectUeAnnal(annals: JsonLikeVariant<UeAnnalFile>): this;
     expectUeAnnals(annals: JsonLikeVariant<UeAnnalFile>[]): this;
     /** expects to return the given {@link FakeHomepageWidget}s */
     expectHomepageWidgets(widgets: JsonLikeVariant<FakeHomepageWidget[]>): this;
@@ -98,12 +99,10 @@ declare module './declarations' {
     expectAssos(app: AppProvider, assos: FakeAsso[], count: number): this;
     /** expects to return the given {@link asso} */
     expectAsso(asso: FakeAsso): this;
-    expectAssoMembershipRole(role: FakeAssoMembershipRole): this;
-    expectAssoMembershipRoleCreated(role: JsonLikeVariant<FakeAssoMembershipRole>): this;
+    expectAssoMembershipRole(role: JsonLikeVariant<FakeAssoMembershipRole>): this;
     expectAssoMembershipRoles(roles: JsonLikeVariant<FakeAssoMembers>): this;
     expectAssoMembershipRolesRaw(roles: JsonLikeVariant<FakeAssoMembershipRole>[]): this;
     expectAssoMembership(membership: JsonLikeVariant<FakeAssoMembership>): this;
-    expectAssoMembershipCreated(membership: JsonLikeVariant<FakeAssoMembership>): this;
     expectCreditCategories(categories: JsonLikeVariant<FakeUeCreditCategory[]>): this;
     expectApplications(applications: FakeApiApplication[]): this;
     expectApplication(application: FakeApiApplication): this;

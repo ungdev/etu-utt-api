@@ -24,7 +24,7 @@ const GetGroupsE2ESpec = e2eSuite('GET /timetable/current/groups', (app) => {
       .spec()
       .get('/timetable/current/groups')
       .withBearerToken(user1.token)
-      .expectStatus(HttpStatus.OK)
+      .expectStatus()
       .$expectRegexableJson([
         { id: user1And2Group.id, name: user1And2Group.name, priority: 1 },
         { id: user1Group.id, name: user1Group.name, priority: 2 },

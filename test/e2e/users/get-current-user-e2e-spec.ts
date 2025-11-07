@@ -62,7 +62,7 @@ const GetCurrentUserE2ESpec = e2eSuite('GET /users/current', (app) => {
       .spec()
       .get(`/users/current`)
       .withBearerToken(user.token)
-      .expectStatus(HttpStatus.OK)
+      .expectStatus()
       .$expectRegexableJson(
         Object.fromEntries(Object.entries(expectedBody).filter(([, value]) => value !== undefined)),
       );

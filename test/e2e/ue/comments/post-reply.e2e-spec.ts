@@ -109,21 +109,19 @@ const PostCommmentReply = e2eSuite('POST /ue/comments/{commentId}/reply', (app) 
       .withBody({
         body: 'heyhey',
       })
-      .expectUeCommentReply(
-        {
-          id: JsonLike.UUID,
-          author: {
-            id: user.id,
-            lastName: user.lastName,
-            firstName: user.firstName,
-          },
-          body: 'heyhey',
-          createdAt: JsonLike.DATE,
-          updatedAt: JsonLike.DATE,
-          status: CommentStatus.VALIDATED,
+      .created()
+      .expectUeCommentReply({
+        id: JsonLike.UUID,
+        author: {
+          id: user.id,
+          lastName: user.lastName,
+          firstName: user.firstName,
         },
-        true,
-      );
+        body: 'heyhey',
+        createdAt: JsonLike.DATE,
+        updatedAt: JsonLike.DATE,
+        status: CommentStatus.VALIDATED,
+      });
     return app().get(PrismaService).ueCommentReply.deleteMany();
   });
 });

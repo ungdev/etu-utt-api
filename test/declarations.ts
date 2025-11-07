@@ -28,11 +28,7 @@ import ApplicationResDto from '../src/auth/application/dto/res/application-res.d
 import PermissionsResDto from '../src/auth/permissions/dto/res/permissions.dto';
 
 function expect<T>(this: Spec, obj: JsonLikeVariant<T>) {
-  return this.expectStatus(HttpStatus.OK).$expectRegexableJson(obj);
-}
-
-function expectOkOrCreate<T>(this: Spec, obj: JsonLikeVariant<T>, created = false) {
-  return this.expectStatus(created ? HttpStatus.CREATED : HttpStatus.OK).$expectRegexableJson(obj);
+  return this.expectStatus().$expectRegexableJson(obj);
 }
 
 function ueOverviewExpectation(ue: FakeUeWithOfs, spec: Spec) {
@@ -60,6 +56,24 @@ function ueOverviewExpectation(ue: FakeUeWithOfs, spec: Spec) {
 }
 
 const baseToss = Spec.prototype.toss;
+
+Spec.prototype.created = function () {
+  this.expectedStatus = HttpStatus.CREATED;
+  return <Spec>this;
+};
+
+Spec.prototype.noContent = function () {
+  this.expectedStatus = HttpStatus.NO_CONTENT;
+  return <Spec>this;
+};
+
+const originalExpectStatus = Spec.prototype.expectStatus;
+Spec.prototype.expectStatus = function (code?: number, message?: string) {
+  const status = this.expectedStatus ?? HttpStatus.OK;
+  delete this.expectedStatus;
+  originalExpectStatus.call(this, code ?? status, message);
+  return <Spec>this;
+};
 
 Spec.prototype.language = 'fr';
 Spec.prototype.withLanguage = function (language: Language) {
@@ -91,7 +105,7 @@ Spec.prototype.expectUe = function (
   rates: Array<{ criterionId: string; value: number }>,
   rateCount: number,
 ) {
-  return (<Spec>this).expectStatus(HttpStatus.OK).$expectRegexableJson({
+  return (<Spec>this).expectStatus().$expectRegexableJson({
     code: ue.code,
     creationYear: 2000 + Number(ue.ueofs[0].code.match(/\d+$/)?.[0] ?? 23),
     updateYear: 2000 + Number(ue.ueofs[0].code.match(/\d+$/)?.[0] ?? 23),
@@ -131,7 +145,7 @@ Spec.prototype.expectUe = function (
   });
 };
 Spec.prototype.expectUsers = function (app: AppProvider, users: FakeUser[], count: number) {
-  return (<Spec>this).expectStatus(HttpStatus.OK).$expectRegexableJson({
+  return (<Spec>this).expectStatus().$expectRegexableJson({
     items: users.map((user) => ({
       ...pick(user, 'id', 'firstName', 'lastName', 'login', 'studentId', 'userType'),
       infos: {
@@ -148,19 +162,17 @@ Spec.prototype.expectUsers = function (app: AppProvider, users: FakeUser[], coun
   });
 };
 Spec.prototype.expectUes = function (ues: FakeUeWithOfs[]) {
-  return (<Spec>this)
-    .expectStatus(HttpStatus.OK)
-    .$expectRegexableJson(ues.map((ue) => ueOverviewExpectation(ue, this)));
+  return (<Spec>this).expectStatus().$expectRegexableJson(ues.map((ue) => ueOverviewExpectation(ue, this)));
 };
 Spec.prototype.expectUesWithPagination = function (app: AppProvider, ues: FakeUeWithOfs[], count: number) {
-  return (<Spec>this).expectStatus(HttpStatus.OK).$expectRegexableJson({
+  return (<Spec>this).expectStatus().$expectRegexableJson({
     items: ues.map((ue) => ueOverviewExpectation(ue, this)),
     itemCount: count,
     itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
   });
 };
-Spec.prototype.expectUeComment = function (this: Spec, obj, created = false) {
-  return this.expectStatus(created ? HttpStatus.CREATED : HttpStatus.OK).$expectRegexableJson({
+Spec.prototype.expectUeComment = function (this: Spec, obj) {
+  return this.expectStatus().$expectRegexableJson({
     ...omit(obj as any, 'ueof'),
     ueof: {
       code: obj.ueof.code,
@@ -171,7 +183,7 @@ Spec.prototype.expectUeComment = function (this: Spec, obj, created = false) {
   });
 };
 Spec.prototype.expectUeComments = function (this: Spec, obj) {
-  return this.expectStatus(HttpStatus.OK).$expectRegexableJson({
+  return this.expectStatus().$expectRegexableJson({
     itemCount: obj.itemCount,
     itemsPerPage: obj.itemsPerPage,
     items: obj.items.map((comment) => ({
@@ -203,7 +215,7 @@ Spec.prototype.expectUeComments = function (this: Spec, obj) {
     })),
   } satisfies JsonLikeVariant<Pagination<UeComment>>);
 };
-Spec.prototype.expectUeCommentReply = expectOkOrCreate<UeCommentReply>;
+Spec.prototype.expectUeCommentReply = expect<UeCommentReply>;
 Spec.prototype.expectUeCriteria = expect<Criterion[]>;
 Spec.prototype.expectUeRate = expect<UeRating>;
 Spec.prototype.expectUeRates = expect<{ [criterion: string]: UeRating[] }>;
@@ -211,10 +223,10 @@ Spec.prototype.expectUeAnnalMetadata = expect<{
   types: FakeUeAnnalType[];
   semesters: string[];
 }>;
-Spec.prototype.expectUeAnnal = expectOkOrCreate<UeAnnalFile>;
+Spec.prototype.expectUeAnnal = expect<UeAnnalFile>;
 Spec.prototype.expectUeAnnals = expect<UeAnnalFile[]>;
 Spec.prototype.expectHomepageWidgets = function (this: Spec, widgets: Omit<FakeHomepageWidget, 'id' | 'userId'>[]) {
-  return this.expectStatus(HttpStatus.OK).$expectRegexableJson(
+  return this.expectStatus().$expectRegexableJson(
     widgets.map((widget) => ({
       x: widget.x,
       y: widget.y,
@@ -225,7 +237,7 @@ Spec.prototype.expectHomepageWidgets = function (this: Spec, widgets: Omit<FakeH
   );
 };
 Spec.prototype.expectAssos = function (this: Spec, app: AppProvider, assos: FakeAsso[], count: number) {
-  return this.expectStatus(HttpStatus.OK).expectJson({
+  return this.expectStatus().expectJson({
     items: assos.map((asso) => ({
       ...pick(asso, 'id', 'name'),
       logo: asso.logoMediaId ? `/media/image/${asso.logoMediaId}.webp` : null,
@@ -240,7 +252,7 @@ Spec.prototype.expectAssos = function (this: Spec, app: AppProvider, assos: Fake
   });
 };
 Spec.prototype.expectAsso = function (asso: FakeAsso) {
-  return (<Spec>this).expectStatus(HttpStatus.OK).expectJson({
+  return (<Spec>this).expectStatus().expectJson({
     ...pick(asso, 'id', 'name', 'mail', 'phoneNumber', 'website'),
     logo: asso.logoMediaId ? `/media/image/${asso.logoMediaId}.webp` : null,
     description: getTranslation(asso.descriptionTranslation, (<Spec>this).language),
@@ -251,30 +263,18 @@ Spec.prototype.expectAsso = function (asso: FakeAsso) {
   });
 };
 Spec.prototype.expectAssoMembership = function (member: JsonLikeVariant<FakeAssoMembership>) {
-  return (<Spec>this)
-    .expectStatus(HttpStatus.OK)
-    .$expectRegexableJson(pick(member, 'id', 'roleId', 'userId', 'startAt', 'endAt'));
+  return (<Spec>this).expectStatus().$expectRegexableJson(pick(member, 'id', 'roleId', 'userId', 'startAt', 'endAt'));
 };
-Spec.prototype.expectAssoMembershipCreated = function (member: JsonLikeVariant<FakeAssoMembership>) {
-  return (<Spec>this)
-    .expectStatus(HttpStatus.CREATED)
-    .$expectRegexableJson(pick(member, 'id', 'roleId', 'userId', 'startAt', 'endAt'));
-};
-Spec.prototype.expectAssoMembershipRole = function (role: FakeAssoMembershipRole) {
-  return (<Spec>this).expectStatus(HttpStatus.OK).expectJson(pick(role, 'id', 'name', 'position', 'isPresident'));
-};
-Spec.prototype.expectAssoMembershipRoleCreated = function (role: FakeAssoMembershipRole) {
-  return (<Spec>this)
-    .expectStatus(HttpStatus.CREATED)
-    .$expectRegexableJson(pick(role, 'id', 'name', 'position', 'isPresident'));
+Spec.prototype.expectAssoMembershipRole = function (role: JsonLikeVariant<FakeAssoMembershipRole>) {
+  return (<Spec>this).expectStatus().$expectRegexableJson(pick(role, 'id', 'name', 'position', 'isPresident'));
 };
 Spec.prototype.expectAssoMembershipRolesRaw = function (roles: FakeAssoMembershipRole[]) {
-  return (<Spec>this).expectStatus(HttpStatus.OK).expectJson({
+  return (<Spec>this).expectStatus().expectJson({
     roles: roles.map((role) => pick(role, 'id', 'name', 'position', 'isPresident')),
   });
 };
 Spec.prototype.expectAssoMembershipRoles = function (members: JsonLikeVariant<FakeAssoMembers>) {
-  return (<Spec>this).expectStatus(HttpStatus.OK).$expectRegexableJson({
+  return (<Spec>this).expectStatus().$expectRegexableJson({
     roles: members.map((roleEntry) => ({
       ...pick(roleEntry.role, 'id', 'name', 'position', 'isPresident'),
       members: roleEntry.users.map((userEntry) => ({
@@ -289,10 +289,10 @@ Spec.prototype.expectAssoMembershipRoles = function (members: JsonLikeVariant<Fa
   });
 };
 Spec.prototype.expectCreditCategories = function (creditCategories: FakeUeCreditCategory[]) {
-  return (<Spec>this).expectStatus(HttpStatus.OK).expectJson(creditCategories);
+  return (<Spec>this).expectStatus().expectJson(creditCategories);
 };
 Spec.prototype.expectApplications = function (applications: FakeApiApplication[]) {
-  return (<Spec>this).expectStatus(HttpStatus.OK).expectJson(
+  return (<Spec>this).expectStatus().expectJson(
     [...applications]
       .mappedSort((application) => application.name)
       .map(
@@ -305,13 +305,13 @@ Spec.prototype.expectApplications = function (applications: FakeApiApplication[]
   );
 };
 Spec.prototype.expectApplication = function (application: FakeApiApplication) {
-  return (<Spec>this).expectStatus(HttpStatus.OK).expectJson({
+  return (<Spec>this).expectStatus().expectJson({
     ...pick(application as Required<FakeApiApplication>, 'id', 'name', 'redirectUrl'),
     owner: pick(application.owner, 'id', 'firstName', 'lastName'),
   } satisfies ApplicationResDto);
 };
 Spec.prototype.expectPermissions = function (permissions: PermissionManager) {
-  return (<Spec>this).expectStatus(HttpStatus.OK).expectJson({
+  return (<Spec>this).expectStatus().expectJson({
     hardPermissions: permissions.hardPermissions.sort(),
     softPermissions: Object.entries(permissions.softPermissions)
       .map(([permission, users]) => ({
@@ -322,7 +322,7 @@ Spec.prototype.expectPermissions = function (permissions: PermissionManager) {
   } satisfies PermissionsResDto);
 };
 Spec.prototype.expectImageMedia = function (media: JsonLikeVariant<FakeImageMedia>) {
-  return (<Spec>this).expectStatus(HttpStatus.CREATED).$expectRegexableJson({
+  return (<Spec>this).expectStatus().$expectRegexableJson({
     id: media.id,
     size: media.size,
     width: media.width,
