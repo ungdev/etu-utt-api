@@ -8,7 +8,6 @@ import { PrismaService } from '../../../src/prisma/prisma.service';
 import { ERROR_CODE } from '../../../src/exceptions';
 import { ConfigModule } from '../../../src/config/config.module';
 import { LdapUser } from 'ldap-server-mock';
-import { HttpStatus } from '@nestjs/common';
 import { mockLdapServer } from '../../external_services/ldap';
 
 const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
@@ -101,7 +100,8 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
       .withJson({
         registerToken: await authService.signRegisterUserToken(login, mail, firstName, lastName, tokenExpiresIn),
       })
-      .expectStatus(HttpStatus.CREATED)
+      .created()
+      .expectStatus()
       .$expectRegexableJson({ token: JsonLike.STRING });
     expect(await app().get(PrismaService).user.count({ where: { login } })).toEqual(1);
   };

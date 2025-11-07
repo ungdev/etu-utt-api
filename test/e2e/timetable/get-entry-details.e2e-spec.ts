@@ -78,7 +78,7 @@ const GetEntryDetailsE2ESpec = e2eSuite('GET /timetable/:entryId', (app) => {
       .spec()
       .get(`/timetable/0@${entry.id}`)
       .withBearerToken(user1.token)
-      .expectStatus(HttpStatus.OK)
+      .expectStatus()
       .$expectRegexableJson(entryDetails));
 
   it('should return the details of the entry, which is an override', () =>
@@ -86,7 +86,7 @@ const GetEntryDetailsE2ESpec = e2eSuite('GET /timetable/:entryId', (app) => {
       .spec()
       .get(`/timetable/0@${override1.id}`)
       .withBearerToken(user1.token)
-      .expectStatus(HttpStatus.OK)
+      .expectStatus()
       .$expectRegexableJson(entryDetails));
 });
 

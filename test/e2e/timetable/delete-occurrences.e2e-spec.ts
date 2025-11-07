@@ -1,7 +1,6 @@
 import { Dummies, e2eSuite } from '../../utils/test_utils';
 import * as fakedb from '../../utils/fakedb';
 import * as pactum from 'pactum';
-import { HttpStatus } from '@nestjs/common';
 import { uuid } from 'pactum-matchers';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import TimetableDeleteOccurrencesReqDto from '../../../src/timetable/dto/req/timetable-delete-occurrences-req.dto';
@@ -97,7 +96,7 @@ const DeleteEntryE2ESpec = e2eSuite('DELETE /timetable/current/:entryId', (app) 
         every: 1,
         for: [userGroup.id, userOtherGroup.id],
       })
-      .expectStatus(HttpStatus.OK)
+      .expectStatus()
       .$expectRegexableJson({
         id: entry.id,
         location: entry.location,
@@ -141,7 +140,7 @@ const DeleteEntryE2ESpec = e2eSuite('DELETE /timetable/current/:entryId', (app) 
         every: 1,
         for: [userGroup.id, userOtherGroup.id],
       })
-      .expectStatus(HttpStatus.OK)
+      .expectStatus()
       .$expectRegexableJson({
         id: entry.id,
         location: entry.location,
@@ -181,7 +180,7 @@ const DeleteEntryE2ESpec = e2eSuite('DELETE /timetable/current/:entryId', (app) 
         every: 1,
         for: [userGroup.id, userOtherGroup.id],
       })
-      .expectStatus(HttpStatus.OK)
+      .expectStatus()
       .$expectRegexableJson({
         id: entry.id,
         location: entry.location,
@@ -232,7 +231,7 @@ const DeleteEntryE2ESpec = e2eSuite('DELETE /timetable/current/:entryId', (app) 
         every: 1,
         for: [userGroup.id],
       })
-      .expectStatus(HttpStatus.OK)
+      .expectStatus()
       .$expectRegexableJson({
         id: entry.id,
         location: entry.location,

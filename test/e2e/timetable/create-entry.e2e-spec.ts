@@ -1,7 +1,6 @@
 import { Dummies, e2eSuite, JsonLike } from '../../utils/test_utils';
 import * as fakedb from '../../utils/fakedb';
 import * as pactum from 'pactum';
-import { HttpStatus } from '@nestjs/common';
 import { ERROR_CODE } from '../../../src/exceptions';
 
 const CreateEntryE2ESpec = e2eSuite('POST /timetable/current', (app) => {
@@ -92,7 +91,8 @@ const CreateEntryE2ESpec = e2eSuite('POST /timetable/current', (app) => {
         repetitions: 4,
         groups: [userGroup.id],
       })
-      .expectStatus(HttpStatus.CREATED)
+      .created()
+      .expectStatus()
       .$expectRegexableJson({
         id: JsonLike.UUID,
         location: 'In the test ig ?',

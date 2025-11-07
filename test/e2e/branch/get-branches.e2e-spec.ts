@@ -1,7 +1,6 @@
 import { e2eSuite } from '../../utils/test_utils';
 import * as fakedb from '../../utils/fakedb';
 import * as pactum from 'pactum';
-import { HttpStatus } from '@nestjs/common';
 
 export const GetBranchesE2ESpec = e2eSuite('GET /branch', (app) => {
   const branch1 = fakedb.createBranch(app);
@@ -13,7 +12,7 @@ export const GetBranchesE2ESpec = e2eSuite('GET /branch', (app) => {
     pactum
       .spec()
       .get('/branch')
-      .expectStatus(HttpStatus.OK)
+      .expectStatus()
       .$expectRegexableJson(
         [
           {

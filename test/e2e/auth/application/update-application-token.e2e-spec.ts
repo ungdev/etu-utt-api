@@ -2,7 +2,6 @@ import { e2eSuite } from '../../../utils/test_utils';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../../src/exceptions';
 import * as fakedb from '../../../utils/fakedb';
-import { HttpStatus } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../../../src/prisma/prisma.service';
 
@@ -12,7 +11,11 @@ const UpdateApplicationTokenE2ESpec = e2eSuite('PATCH /auth/application/:applica
   const application = fakedb.createApplication(app, { owner: user });
 
   it('should fail as user is not authenticated', () =>
-    pactum.spec().patch(`/auth/application/${application.id}/token`).withJson({}).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
+    pactum
+      .spec()
+      .patch(`/auth/application/${application.id}/token`)
+      .withJson({})
+      .expectAppError(ERROR_CODE.NOT_LOGGED_IN));
 
   it('should fail as the application does not exist', () =>
     pactum
@@ -36,7 +39,7 @@ const UpdateApplicationTokenE2ESpec = e2eSuite('PATCH /auth/application/:applica
       .patch(`/auth/application/${application.id}/token`)
       .withBearerToken(user.token)
       .withJson({})
-      .expectStatus(HttpStatus.OK)
+      .expectStatus()
       .expect(async (ctx) => {
         expect(ctx.res.json['token']).toBeDefined();
         const token = app().get(JwtService).decode(ctx.res.json['token']).token;
