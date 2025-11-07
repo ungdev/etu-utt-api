@@ -428,7 +428,7 @@ export const ErrorData = Object.freeze({
     httpCode: HttpStatus.SERVICE_UNAVAILABLE,
   },
   [ERROR_CODE.HIDDEN_DUCK]: {
-    message: 'Hey, you found the hidden duck ! Error : %',
+    message: 'Hey, you found the hidden duck ! Error: %',
     httpCode: HttpStatus.I_AM_A_TEAPOT,
   },
 } as const) satisfies Readonly<{

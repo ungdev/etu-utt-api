@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { ImageMediaPreset } from '@prisma/client';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
@@ -31,6 +32,8 @@ export default class ImageMediaUploadReqDto {
   @Type(() => Number)
   effort?: number;
 
+  /** The number of 90° clockwise rotations to be performed. Defaults to 0 */
+  @ApiProperty({ default: 0, enum: [0, 1, 2, 3], required: false })
   @IsOptional()
   @IsInt()
   @Min(0)
