@@ -36,6 +36,8 @@ export class ImageMediaController {
     stream.on('error', () => {
       stream.close();
       const exception = new AppException(ERROR_CODE.SERVER_DISK_ERROR);
+      response.setHeader('Content-Type', 'application/json');
+      response.setHeader('Cache-Control', 'no-cache, no-store');
       response.status(exception.getStatus()).json(exception.getResponse());
     });
   }

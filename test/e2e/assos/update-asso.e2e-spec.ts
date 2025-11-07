@@ -90,15 +90,7 @@ const UpdateAssoE2ESpec = e2eSuite('PATCH /assos/:id', (app) => {
       .withBody({ ...validBody, logo: nonPublicMedia.id })
       .expectAppError(ERROR_CODE.MEDIA_NOT_PUBLIC));
 
-  it('should return a 404 as media is not public', () =>
-    pactum
-      .spec()
-      .withBearerToken(userAllowed.token)
-      .patch(`/assos/${asso.id}`)
-      .withBody({ ...validBody, logo: nonAvatarMedia.id })
-      .expectAppError(ERROR_CODE.MEDIA_PRESET_REQUIRED, 'AVATAR'));
-
-  it('should return a 404 as media is not public', () =>
+  it('should return a 404 as media does not have correct preset', () =>
     pactum
       .spec()
       .withBearerToken(userAllowed.token)
@@ -127,8 +119,8 @@ const UpdateAssoE2ESpec = e2eSuite('PATCH /assos/:id', (app) => {
         data: {
           ...pick(asso, 'name', 'mail', 'phoneNumber', 'website'),
           logo: { disconnect: true },
-          descriptionTranslation: { update: validBody.description },
-          descriptionShortTranslation: { update: validBody.descriptionShort },
+          descriptionTranslation: { update: asso.descriptionTranslation },
+          descriptionShortTranslation: { update: asso.descriptionShortTranslation },
         },
       });
   });
@@ -160,8 +152,8 @@ const UpdateAssoE2ESpec = e2eSuite('PATCH /assos/:id', (app) => {
           ...pick(asso, 'name', 'mail', 'phoneNumber', 'website'),
           logo: { disconnect: true },
           descriptionImages: { disconnect: { id: publicMedia.id } },
-          descriptionTranslation: { update: validBody.description },
-          descriptionShortTranslation: { update: validBody.descriptionShort },
+          descriptionTranslation: { update: asso.descriptionTranslation },
+          descriptionShortTranslation: { update: asso.descriptionShortTranslation },
         },
       });
   });

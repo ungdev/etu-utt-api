@@ -30,7 +30,7 @@ export class ImageMediaService {
 
   async convertMedia(file: MulterWithMime, options: ConversionOptions): Promise<ImageMetadata> {
     if (!(options.preset in presets)) options.preset = ImageMediaPreset.CUSTOM;
-    if (options.preset) Object.assign(options, presets[options.preset]);
+    Object.assign(options, presets[options.preset]);
     let instructions = sharp(file.multer.buffer);
     let metadata = await instructions.metadata();
     const size = [metadata.width, metadata.height];
@@ -55,10 +55,10 @@ export class ImageMediaService {
     return { width: metadata.width, height: metadata.height, size: file.multer.buffer.length, preset: options.preset };
   }
 
-  async registerMedia(metaData: ImageMetadata, uploader: User, isPublic: boolean): Promise<ImageMedia> {
+  async registerMedia(metadata: ImageMetadata, uploader: User, isPublic: boolean): Promise<ImageMedia> {
     const image = await this.prisma.imageMedia.create({
       data: {
-        ...metaData,
+        ...metadata,
         uploader: {
           connect: { id: uploader.id },
         },
@@ -76,28 +76,8 @@ export class ImageMediaService {
     return this.prisma.imageMedia.delete({ where: { id: mediaId } });
   }
 
-  async getMedia(mediaId: string) {
+  async getMedia(mediaId: string): Promise<ImageMedia> {
     return this.prisma.imageMedia.findUnique({ where: { id: mediaId } });
-  }
-
-  /**
-   * Clears unused from the Database. {@link ImageMediaService.deleteMediaFromDisk DeleteMediaFromDisk} must be called
-   * with the output of this method to clear data from disk.
-   */
-  async clearUnusedMedia(): Promise<ImageMedia[]> {
-    const targetMedias = await this.prisma.imageMedia.findMany({
-      where: {
-        // Filter explanation https://www.prisma.io/docs/orm/prisma-client/queries/relation-queries#filter-on-absence-of--to-many-records
-        avatarForUsers: { none: {} },
-        logoForAssos: { none: {} },
-        descriptionForAssos: { none: {} },
-        uploadedAt: { lt: new Date(Date.now() - this.config.MEDIA_DETACHED_LIFESPAN * 3_600_000) },
-      },
-    });
-    await this.prisma.imageMedia.deleteMany({
-      where: { id: { in: targetMedias.map((media) => media.id) } },
-    });
-    return targetMedias;
   }
 
   async writeMediaToDisk(mediaId: string, buffer: Buffer): Promise<void> {
@@ -108,14 +88,34 @@ export class ImageMediaService {
     return createReadStream(`${this.config.MEDIA_UPLOAD_DIR}/image/${mediaId}.webp`);
   }
 
-  async deleteMediaFromDisk(mediaId: string): Promise<void> {
-    await rm(`${this.config.MEDIA_UPLOAD_DIR}/image/${mediaId}.webp`, { force: true });
-  }
-
   async cleanup() {
     const media = await this.clearUnusedMedia();
-    (await Promise.all(media.map((m) => this.deleteMediaFromDisk(m.id).catch(() => m)))).map(
-      (r) => r && this.rollbackMedia(r),
-    );
+    const deletions = media.map((m) => this.deleteMediaFromDisk(m.id).catch(() => m)); // return media on failure
+    const failedDeletions = (await Promise.all(deletions)).filter((r): r is ImageMedia => r !== undefined);
+    failedDeletions.map(this.rollbackMedia); // Restore failed media, no need to wait for completion
+  }
+
+  /**
+   * Clears unused from the Database. {@link ImageMediaService.deleteMediaFromDisk DeleteMediaFromDisk} must be called
+   * with the output of this method to clear data from disk.
+   */
+  private async clearUnusedMedia(): Promise<ImageMedia[]> {
+    const targetMedias = await this.prisma.imageMedia.findMany({
+      where: {
+        // Filter explanation https://www.prisma.io/docs/orm/prisma-client/queries/relation-queries#filter-on-absence-of--to-many-records
+        avatarForUsers: { none: {} },
+        logoForAssos: { none: {} },
+        descriptionForAssos: { none: {} },
+        uploadedAt: { lt: new Date(Date.now() - this.config.MEDIA_DETACHED_LIFESPAN * 86_400_000) },
+      },
+    });
+    await this.prisma.imageMedia.deleteMany({
+      where: { id: { in: targetMedias.map((media) => media.id) } },
+    });
+    return targetMedias;
+  }
+
+  private async deleteMediaFromDisk(mediaId: string): Promise<void> {
+    await rm(`${this.config.MEDIA_UPLOAD_DIR}/image/${mediaId}.webp`, { force: true });
   }
 }

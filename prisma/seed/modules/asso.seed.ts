@@ -8,8 +8,23 @@ export default function assoSeed(prisma: PrismaClient) {
   for (let i = 0; i < fakerRounds; i++) {
     const date: Date = faker.date.past();
     const name = faker.company.name();
-    assos.push(
-      prisma.asso.create({
+    assos.push(async () => {
+      const { id: userId } = await prisma.user.create({
+        data: {
+          login: name,
+          firstName: '',
+          lastName: '',
+          userType: UserType.ASSOCIATION,
+          socialNetwork: { create: {} },
+          mailsPhones: { create: {} },
+          rgpd: { create: {} },
+          preference: { create: {} },
+          infos: { create: {} },
+          privacy: { create: {} },
+        },
+        select: { id: true },
+      });
+      return prisma.asso.create({
         data: {
           name,
           mail: faker.internet.email(),
@@ -23,18 +38,7 @@ export default function assoSeed(prisma: PrismaClient) {
               isPublic: true,
               preset: 'AVATAR',
               uploader: {
-                create: {
-                  login: name,
-                  firstName: '',
-                  lastName: '',
-                  userType: UserType.ASSOCIATION,
-                  socialNetwork: { create: {} },
-                  mailsPhones: { create: {} },
-                  rgpd: { create: {} },
-                  preference: { create: {} },
-                  infos: { create: {} },
-                  privacy: { create: {} },
-                },
+                connect: { id: userId },
               },
             },
           },
@@ -53,22 +57,11 @@ export default function assoSeed(prisma: PrismaClient) {
             },
           },
           assoAccount: {
-            create: {
-              login: name,
-              firstName: '',
-              lastName: '',
-              userType: UserType.ASSOCIATION,
-              socialNetwork: { create: {} },
-              mailsPhones: { create: {} },
-              rgpd: { create: {} },
-              preference: { create: {} },
-              infos: { create: {} },
-              privacy: { create: {} },
-            },
+            connect: { id: userId },
           },
         },
-      }),
-    );
+      });
+    });
   }
   return Promise.all(assos);
 }
