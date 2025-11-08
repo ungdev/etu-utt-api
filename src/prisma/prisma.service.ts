@@ -1,20 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaMariaDb } from '@prisma/adapter-mariadb';
 import { PrismaClient } from './types';
-import { ConfigModule } from '../config/config.module';
-import { generateCustomUserModel } from '../users/interfaces/user.interface';
-import { omit } from '../utils';
-import { generateCustomCommentModel } from '../ue/comments/interfaces/comment.interface';
-import { generateCustomCriterionModel } from '../ue/interfaces/criterion.interface';
-import { generateCustomRateModel } from '../ue/interfaces/rate.interface';
-import { generateCustomUeModel } from '../ue/interfaces/ue.interface';
-import { generateCustomUeAnnalModel } from '../ue/annals/interfaces/annal.interface';
-import { generateCustomUeCommentReplyModel } from '../ue/comments/interfaces/comment-reply.interface';
-import { generateCustomAssoModel } from '../assos/interfaces/asso.interface';
-import { generateCustomAssoMembershipModel } from '../assos/interfaces/membership.interface';
-import { generateCustomAssoMembershipRoleModel } from '../assos/interfaces/membership-role.interface';
-import { generateCustomCreditCategoryModel } from '../ue/credit/interfaces/credit-category.interface';
-import { generateCustomApplicationModel } from '../auth/application/interfaces/application.interface';
+import { ConfigModule } from '@/config/config.module';
+import { generateCustomUserModel } from '@/users/interfaces/user.interface';
+import { omit } from '@/utils';
+import { generateCustomCommentModel } from '@/ue/comments/interfaces/comment.interface';
+import { generateCustomCriterionModel } from '@/ue/interfaces/criterion.interface';
+import { generateCustomRateModel } from '@/ue/interfaces/rate.interface';
+import { generateCustomUeModel } from '@/ue/interfaces/ue.interface';
+import { generateCustomUeAnnalModel } from '@/ue/annals/interfaces/annal.interface';
+import { generateCustomUeCommentReplyModel } from '@/ue/comments/interfaces/comment-reply.interface';
+import { generateCustomAssoModel } from '@/assos/interfaces/asso.interface';
+import { generateCustomAssoMembershipModel } from '@/assos/interfaces/membership.interface';
+import { generateCustomAssoMembershipRoleModel } from '@/assos/interfaces/membership-role.interface';
+import { generateCustomCreditCategoryModel } from '@/ue/credit/interfaces/credit-category.interface';
+import { generateCustomApplicationModel } from '@/auth/application/interfaces/application.interface';
 
 @Injectable()
 export class PrismaService extends PrismaClient<ReturnType<typeof prismaOptions>> {
@@ -30,7 +30,7 @@ export class PrismaService extends PrismaClient<ReturnType<typeof prismaOptions>
 const prismaOptions = (config: ConfigModule) => ({ adapter: new PrismaMariaDb(config.DATABASE_URL) });
 
 /**
- * @typedef {import('../prisma/types').Prisma.UserDelegate} UserDelegate
+ * @typedef {import('@/prisma/types').Prisma.UserDelegate} UserDelegate
  */
 
 function createNormalizedEntitiesUtility(prisma: PrismaClient) {
