@@ -31,9 +31,9 @@
     "seed:base": "env-cmd -f .env.dev -- ts-node -r tsconfig-paths/register scripts/seed/base.ts",
     "seed:ue": "env-cmd -f .env.dev -- ts-node -r tsconfig-paths/register scripts/seed/ue.ts",
     "seed:ue:aliases": "env-cmd -f .env.dev -- ts-node -r tsconfig-paths/register scripts/seed/aliases.ts",
-    "seed:base:prod": "node -r tsconfig-paths/register scripts/seed/base.js",
-    "seed:ue:prod": "node -r tsconfig-paths/register scripts/seed/ue.js",
-    "seed:ue:aliases:prod": "node -r tsconfig-paths/register scripts/seed/aliases.js",
+    "seed:base:prod": "node -r tsconfig-paths/register dist/scripts/seed/base.js",
+    "seed:ue:prod": "node -r tsconfig-paths/register dist/scripts/seed/ue.js",
+    "seed:ue:aliases:prod": "node -r tsconfig-paths/register dist/scripts/seed/aliases.js",
     "script:deps:graph": "ts-node -r tsconfig-paths/register scripts/dependency_graph.ts"
   },
   "dependencies": {
