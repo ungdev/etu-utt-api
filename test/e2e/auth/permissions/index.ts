@@ -1,4 +1,4 @@
-import { E2EAppProvider } from '../../../utils/test_utils';
+import { E2EAppProvider } from '#/utils/test_utils';
 import GetPermissionsE2ESpec from './get-permissions.e2e-spec';
 import GetOwnPermissionsE2ESpec from './get-own-permissions';
 

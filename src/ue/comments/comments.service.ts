@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
-import { RawUserUeSubscription } from 'src/prisma/types';
+import { PrismaService } from '@/prisma/prisma.service';
+import { RawUserUeSubscription } from '@/prisma/types';
 import UeCommentPostReqDto from './dto/req/ue-comment-post-req.dto';
 import CommentReplyReqDto from './dto/req/ue-comment-reply-req.dto';
 import UeCommentUpdateReqDto from './dto/req/ue-comment-update-req.dto';
 import GetUeCommentsReqDto from './dto/req/ue-get-comments-req.dto';
 import { UeCommentReply } from './interfaces/comment-reply.interface';
 import { CommentStatus, UeComment } from './interfaces/comment.interface';
-import { ConfigModule } from '../../config/config.module';
+import { ConfigModule } from '@/config/config.module';
 
 @Injectable()
 export class CommentsService {

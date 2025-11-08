@@ -1,5 +1,5 @@
-import { unitSuite } from '../../utils/test_utils';
-import { BUNDLES, LexicalModule } from '../../../src/lexical/lexical.module';
+import { unitSuite } from '#/utils/test_utils';
+import { BUNDLES, LexicalModule } from '@/lexical/lexical.module';
 import { createHeadlessEditor } from '@lexical/headless';
 import { $createParagraphNode, $createTextNode, $getRoot, LexicalEditor } from 'lexical';
 

@@ -1,7 +1,7 @@
 import SignUpE2ESpec from './signup-e2e-spec';
 import SignInE2ESpec from './signin-e2e-spec';
 import VerifyE2ESpec from './verify-e2e-spec';
-import { E2EAppProvider } from '../../utils/test_utils';
+import { E2EAppProvider } from '#/utils/test_utils';
 import CasSignInE2ESpec from './cas-sign-in.e2e-spec';
 import CasSignUpE2ESpec from './cas-sign-up.e2e-spec';
 import CreateApiKeyE2ESpec from './create-api-key.e2e-spec';

@@ -9,11 +9,11 @@ import {
   createAnnalType,
   createAnnal,
   createUeof,
-} from '../../../utils/fakedb';
-import { Dummies, JsonLike, e2eSuite } from '../../../utils/test_utils';
-import { ERROR_CODE } from '../../../../src/exceptions';
-import { CommentStatus } from 'src/ue/comments/interfaces/comment.interface';
-import { PermissionManager, pick } from '../../../../src/utils';
+} from '#/utils/fakedb';
+import { Dummies, JsonLike, e2eSuite } from '#/utils/test_utils';
+import { ERROR_CODE } from '@/exceptions';
+import { CommentStatus } from '@/ue/comments/interfaces/comment.interface';
+import { PermissionManager, pick } from '@/utils';
 
 const EditAnnal = e2eSuite('PATCH /ue/annals/{annalId}', (app) => {
   const senderUser = createUser(app, { permissions: new PermissionManager().with('API_UPLOAD_ANNALS') });

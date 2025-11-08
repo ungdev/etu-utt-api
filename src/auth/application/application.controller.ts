@@ -2,17 +2,17 @@ import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import ApplicationResDto from './dto/res/application-res.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import ApplicationService from './application.service';
-import { GetUser, IsPublic } from '../decorator';
+import { GetUser, IsPublic } from '@/auth/decorator';
 import { Application } from './interfaces/application.interface';
 import CreateApplicationReqDto from './dto/req/create-application-req.dto';
 import UpdateTokenReqDto from './dto/req/update-token-req.dto';
-import { PermissionManager, pick } from '../../utils';
-import AuthTokenResDto from '../dto/res/auth-token-res.dto';
-import { GetPermissions } from '../decorator/get-permissions.decorator';
-import { AppException, ERROR_CODE } from '../../exceptions';
-import { Permission } from '../../prisma/types';
+import { PermissionManager, pick } from '@/utils';
+import AuthTokenResDto from '@/auth/dto/res/auth-token-res.dto';
+import { GetPermissions } from '@/auth/decorator/get-permissions.decorator';
+import { AppException, ERROR_CODE } from '@/exceptions';
+import { Permission } from '@/prisma/types';
 import ApplicationClientSecretResDto from './dto/res/application-client-secret-res.dto';
-import { ApiAppErrorResponse } from '../../app.dto';
+import { ApiAppErrorResponse } from '@/app.dto';
 import ApplicationSensibleResDto from './dto/res/application-sensible-res.dto';
 
 @Controller('auth/application')

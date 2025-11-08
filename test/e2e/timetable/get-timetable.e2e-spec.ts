@@ -1,8 +1,8 @@
-import { e2eSuite } from '../../utils/test_utils';
-import * as fakedb from '../../utils/fakedb';
+import { e2eSuite } from '#/utils/test_utils';
+import * as fakedb from '#/utils/fakedb';
 import { HttpStatus } from '@nestjs/common';
 import * as pactum from 'pactum';
-import { createTimetableEntry, createTimetableGroup } from '../../utils/fakedb';
+import { createTimetableEntry, createTimetableGroup } from '#/utils/fakedb';
 
 const GetTimetableE2ESpec = e2eSuite('GET /timetable/current/:daysCount/:day/:month/:year', (app) => {
   const user = fakedb.createUser(app);

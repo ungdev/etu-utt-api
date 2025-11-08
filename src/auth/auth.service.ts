@@ -1,20 +1,20 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '@/prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
-import { Prisma, UserType } from '../prisma/types';
+import { Prisma, UserType } from '@/prisma/types';
 import { JwtService } from '@nestjs/jwt';
-import { AppException, ERROR_CODE } from '../exceptions';
-import { ConfigModule } from '../config/config.module';
+import { AppException, ERROR_CODE } from '@/exceptions';
+import { ConfigModule } from '@/config/config.module';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import { XMLParser } from 'fast-xml-parser';
-import { doesEntryIncludeSome, omit } from '../utils';
-import { LdapModule } from '../ldap/ldap.module';
-import { LdapAccountGroup } from '../ldap/ldap.interface';
-import { UeService } from '../ue/ue.service';
-import { SemesterService } from '../semester/semester.service';
+import { doesEntryIncludeSome, omit } from '@/utils';
+import { LdapModule } from '@/ldap/ldap.module';
+import { LdapAccountGroup } from '@/ldap/ldap.interface';
+import { UeService } from '@/ue/ue.service';
+import { SemesterService } from '@/semester/semester.service';
 import AuthSignUpReqDto from './dto/req/auth-sign-up-req.dto';
-import { RawApiKey } from '../prisma/types';
+import { RawApiKey } from '@/prisma/types';
 import crypto from 'crypto';
 
 export type RegisterUserData = {

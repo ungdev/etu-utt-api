@@ -9,7 +9,7 @@ import {
   IsUUID,
   ValidateNested,
 } from 'class-validator';
-import { TranslatedTextDto } from '../../../utils';
+import { TranslatedTextDto } from '@/utils';
 
 export default class AssosUpdateReqDto {
   @IsOptional()

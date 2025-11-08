@@ -1,4 +1,4 @@
-import { E2EAppProvider } from '../../utils/test_utils';
+import { E2EAppProvider } from '#/utils/test_utils';
 import GetDailyTimetableE2ESpec from './get-daily-timetable-e2e-spec';
 import GetTimetableE2ESpec from './get-timetable.e2e-spec';
 import GetGroupsE2ESpec from './get-groups.e2e-spec';

@@ -1,22 +1,22 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Patch, Post, Query } from '@nestjs/common';
-import { UUIDParam } from '../../app.pipe';
-import { GetUser, RequireApiPermission } from '../../auth/decorator';
-import { AppException, ERROR_CODE } from '../../exceptions';
+import { UUIDParam } from '@/app.pipe';
+import { GetUser, RequireApiPermission } from '@/auth/decorator';
+import { AppException, ERROR_CODE } from '@/exceptions';
 import UeCommentPostReqDto from './dto/req/ue-comment-post-req.dto';
 import CommentReplyReqDto from './dto/req/ue-comment-reply-req.dto';
 import UeCommentUpdateReqDto from './dto/req/ue-comment-update-req.dto';
 import GetUeCommentsReqDto from './dto/req/ue-get-comments-req.dto';
-import { UeService } from '../ue.service';
-import { User } from '../../users/interfaces/user.interface';
+import { UeService } from '@/ue/ue.service';
+import { User } from '@/users/interfaces/user.interface';
 import { CommentsService } from './comments.service';
 import UeCommentResDto from './dto/res/ue-comment-res.dto';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ApiAppErrorResponse, paginatedResponseDto } from '../../app.dto';
+import { ApiAppErrorResponse, paginatedResponseDto } from '@/app.dto';
 import { UeCommentUpvoteResDto$False, UeCommentUpvoteResDto$True } from './dto/res/ue-comment-upvote-res.dto';
 import UeCommentReplyResDto from './dto/res/ue-comment-reply-res.dto';
-import { Permission } from '../../prisma/types';
-import { GetPermissions } from '../../auth/decorator/get-permissions.decorator';
-import { PermissionManager } from '../../utils';
+import { Permission } from '@/prisma/types';
+import { GetPermissions } from '@/auth/decorator/get-permissions.decorator';
+import { PermissionManager } from '@/utils';
 
 @Controller('ue/comments')
 @ApiTags('UE Comment')

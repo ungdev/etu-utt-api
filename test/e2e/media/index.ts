@@ -1,4 +1,4 @@
-import { E2EAppProvider } from '../../utils/test_utils';
+import { E2EAppProvider } from '#/utils/test_utils';
 import { GetMediaE2ESpec } from './image/get-media.e2e-spec';
 import { UploadMediaE2ESpec } from './image/upload-media.e2e-spec';
 

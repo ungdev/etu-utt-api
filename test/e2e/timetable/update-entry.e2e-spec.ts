@@ -1,12 +1,12 @@
-import { Dummies, e2eSuite } from '../../utils/test_utils';
-import * as fakedb from '../../utils/fakedb';
+import { Dummies, e2eSuite } from '#/utils/test_utils';
+import * as fakedb from '#/utils/fakedb';
 import * as pactum from 'pactum';
 import { HttpStatus } from '@nestjs/common';
 import { uuid } from 'pactum-matchers';
 import { faker } from '@faker-js/faker';
-import { PrismaService } from '../../../src/prisma/prisma.service';
-import TimetableUpdateEntryReqDto from '../../../src/timetable/dto/req/timetable-update-entry-req.dto';
-import { ERROR_CODE } from '../../../src/exceptions';
+import { PrismaService } from '@/prisma/prisma.service';
+import TimetableUpdateEntryReqDto from '@/timetable/dto/req/timetable-update-entry-req.dto';
+import { ERROR_CODE } from '@/exceptions';
 
 const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) => {
   const user = fakedb.createUser(app);

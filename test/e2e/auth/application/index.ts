@@ -1,4 +1,4 @@
-import { E2EAppProvider } from '../../../utils/test_utils';
+import { E2EAppProvider } from '#/utils/test_utils';
 import GetMyApplicationsE2ESpec from './get-my-applications.e2e-spec';
 import GetApplicationsOfUserE2ESpec from './get-applications-of-user.e2e-spec';
 import GetApplicationE2ESpec from './get-application.e2e-spec';

@@ -12,17 +12,17 @@ import {
   Post,
 } from '@nestjs/common';
 import TimetableService from './timetable.service';
-import { GetUser } from '../auth/decorator';
-import { User } from '../users/interfaces/user.interface';
-import { PositiveNumberValidationPipe, regex, RegexPipe } from '../app.pipe';
+import { GetUser } from '@/auth/decorator';
+import { User } from '@/users/interfaces/user.interface';
+import { PositiveNumberValidationPipe, regex, RegexPipe } from '@/app.pipe';
 import TimetableCreateEntryReqDto from './dto/req/timetable-create-entry-req.dto';
 import TimetableUpdateEntryReqDto from './dto/req/timetable-update-entry-req.dto';
 import { DetailedTimetableEntry, ResponseDetailedTimetableEntry } from './interfaces/timetable.interface';
 import TimetableDeleteOccurrencesReqDto from './dto/req/timetable-delete-occurrences-req.dto';
-import { AppException, ERROR_CODE } from '../exceptions';
-import { CourseService } from '../ue/course/course.service';
-import { UeService } from '../ue/ue.service';
-import { UeCourse } from '../ue/course/interfaces/course.interface';
+import { AppException, ERROR_CODE } from '@/exceptions';
+import { CourseService } from '@/ue/course/course.service';
+import { UeService } from '@/ue/ue.service';
+import { UeCourse } from '@/ue/course/interfaces/course.interface';
 
 @Controller('/timetable')
 export class TimetableController {

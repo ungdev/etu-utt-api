@@ -1,7 +1,7 @@
-import { e2eSuite, JsonLike } from '../../../utils/test_utils';
+import { e2eSuite, JsonLike } from '#/utils/test_utils';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '../../../../src/exceptions';
-import * as fakedb from '../../../utils/fakedb';
+import { ERROR_CODE } from '@/exceptions';
+import * as fakedb from '#/utils/fakedb';
 import { HttpStatus } from '@nestjs/common';
 
 const UpdateClientSecretE2ESpec = e2eSuite('PATCH /auth/application/:applicationId/client-secret', (app) => {

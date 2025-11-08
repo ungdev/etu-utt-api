@@ -35,15 +35,15 @@ import {
   RawApiKey,
   RawApiApplication,
   RawImageMedia,
-} from '../../src/prisma/types';
+} from '@/prisma/types';
 import { faker } from '@faker-js/faker';
-import { AuthService } from '../../src/auth/auth.service';
-import { PrismaService } from '../../src/prisma/prisma.service';
-import { AppProvider } from './test_utils';
-import { ImageMediaPreset, Permission, Sex, TimetableEntryType, UserType } from '../../src/prisma/types';
-import { CommentStatus } from '../../src/ue/comments/interfaces/comment.interface';
-import { UeAnnalFile } from '../../src/ue/annals/interfaces/annal.interface';
-import { omit, PermissionManager, pick, translationSelect } from '../../src/utils';
+import { AuthService } from '@/auth/auth.service';
+import { PrismaService } from '@/prisma/prisma.service';
+import { AppProvider } from '#/utils/test_utils';
+import { ImageMediaPreset, Permission, Sex, TimetableEntryType, UserType } from '@/prisma/types';
+import { CommentStatus } from '@/ue/comments/interfaces/comment.interface';
+import { UeAnnalFile } from '@/ue/annals/interfaces/annal.interface';
+import { omit, PermissionManager, pick, translationSelect } from '@/utils';
 import { DEFAULT_APPLICATION } from '../../prisma/seed/utils';
 
 /**

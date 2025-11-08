@@ -1,11 +1,11 @@
 import * as pactum from 'pactum';
-import { e2eSuite, JsonLike } from '../../utils/test_utils';
-import { AuthService } from '../../../src/auth/auth.service';
-import { ERROR_CODE } from '../../../src/exceptions';
-import * as fakedb from '../../utils/fakedb';
-import { pick } from '../../../src/utils';
+import { e2eSuite, JsonLike } from '#/utils/test_utils';
+import { AuthService } from '@/auth/auth.service';
+import { ERROR_CODE } from '@/exceptions';
+import * as fakedb from '#/utils/fakedb';
+import { pick } from '@/utils';
 import { HttpStatus } from '@nestjs/common';
-import { PrismaService } from '../../../src/prisma/prisma.service';
+import { PrismaService } from '@/prisma/prisma.service';
 
 const CreateApiKeyE2ESpec = e2eSuite('POST /auth/api-key', (app) => {
   const authService = () => app().get(AuthService);

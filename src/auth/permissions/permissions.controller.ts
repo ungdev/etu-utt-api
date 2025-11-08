@@ -1,16 +1,19 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import PermissionsService from './permissions.service';
-import { GetPermissions } from '../decorator/get-permissions.decorator';
-import { PermissionManager } from '../../utils';
+import { GetPermissions } from '@/auth/decorator/get-permissions.decorator';
+import { PermissionManager } from '@/utils';
 import PermissionsResDto from './dto/res/permissions.dto';
-import { AuthService } from '../auth.service';
-import { AppException, ERROR_CODE } from '../../exceptions';
+import { AuthService } from '@/auth/auth.service';
+import { AppException, ERROR_CODE } from '@/exceptions';
 
 @Controller('auth/permissions')
 @ApiTags('Permissions')
 export default class PermissionsController {
-  constructor(private permissionsService: PermissionsService, private authService: AuthService) {}
+  constructor(
+    private permissionsService: PermissionsService,
+    private authService: AuthService,
+  ) {}
 
   @Get('/current')
   @ApiOperation({ description: 'Returns the permission of an application.' })
@@ -31,10 +34,12 @@ export default class PermissionsController {
   private formatPermissions(permissions: PermissionManager): PermissionsResDto {
     return {
       hardPermissions: permissions.hardPermissions.sort(),
-      softPermissions: Object.entries(permissions.softPermissions).map(([permission, users]) => ({
-        permission,
-        users,
-      })).mappedSort((permission) => permission.permission),
+      softPermissions: Object.entries(permissions.softPermissions)
+        .map(([permission, users]) => ({
+          permission,
+          users,
+        }))
+        .mappedSort((permission) => permission.permission),
     };
   }
 }

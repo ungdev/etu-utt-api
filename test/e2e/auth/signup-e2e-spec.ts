@@ -1,10 +1,10 @@
-import AuthSignUpReqDto from '../../../src/auth/dto/req/auth-sign-up-req.dto';
+import AuthSignUpReqDto from '@/auth/dto/req/auth-sign-up-req.dto';
 import * as pactum from 'pactum';
-import { PrismaService } from '../../../src/prisma/prisma.service';
-import { e2eSuite } from '../../utils/test_utils';
-import { ERROR_CODE } from '../../../src/exceptions';
-import { UserType } from '../../../src/prisma/types';
-import { createUser } from '../../utils/fakedb';
+import { PrismaService } from '@/prisma/prisma.service';
+import { e2eSuite } from '#/utils/test_utils';
+import { ERROR_CODE } from '@/exceptions';
+import { UserType } from '@/prisma/types';
+import { createUser } from '#/utils/fakedb';
 import { JwtService } from '@nestjs/jwt';
 
 const SignupE2ESpec = e2eSuite('POST /auth/signup', (app) => {

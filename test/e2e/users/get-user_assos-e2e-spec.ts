@@ -1,9 +1,9 @@
-import { e2eSuite } from '../../utils/test_utils';
-import { createAsso, createAssoMembership, createAssoMembershipRole, createUser } from '../../utils/fakedb';
+import { e2eSuite } from '#/utils/test_utils';
+import { createAsso, createAssoMembership, createAssoMembershipRole, createUser } from '#/utils/fakedb';
 import * as pactum from 'pactum';
 import { HttpStatus } from '@nestjs/common';
-import { PrismaService } from '../../../src/prisma/prisma.service';
-import { omit } from '../../../src/utils';
+import { PrismaService } from '@/prisma/prisma.service';
+import { omit } from '@/utils';
 
 const GetUserAssociationE2ESpec = e2eSuite('GET /users/:userId/associations', (app) => {
   const user = createUser(app);

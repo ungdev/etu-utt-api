@@ -1,7 +1,7 @@
-import { Prisma, PrismaClient } from '../../../prisma/types';
-import { RequestType, generateCustomModel } from '../../../prisma/prisma.service';
+import { Prisma, PrismaClient } from '@/prisma/types';
+import { RequestType, generateCustomModel } from '@/prisma/prisma.service';
 import { UeCommentReply, formatReply } from './comment-reply.interface';
-import { omit } from '../../../utils';
+import { omit } from '@/utils';
 
 const COMMENT_SELECT_FILTER = {
   select: {

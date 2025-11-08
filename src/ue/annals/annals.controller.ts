@@ -1,24 +1,24 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Response } from '@nestjs/common';
 import { AnnalsService } from './annals.service';
-import { UeService } from '../ue.service';
+import { UeService } from '@/ue/ue.service';
 import { Response as ExpressResponse } from 'express';
-import { UUIDParam } from '../../app.pipe';
-import { GetUser, RequireApiPermission } from '../../auth/decorator';
-import { AppException, ERROR_CODE } from '../../exceptions';
-import { FileSize, MulterWithMime, UploadRoute, UserFile } from '../../upload.interceptor';
-import { CommentStatus } from '../comments/interfaces/comment.interface';
+import { UUIDParam } from '@/app.pipe';
+import { GetUser, RequireApiPermission } from '@/auth/decorator';
+import { AppException, ERROR_CODE } from '@/exceptions';
+import { FileSize, MulterWithMime, UploadRoute, UserFile } from '@/upload.interceptor';
+import { CommentStatus } from '@/ue/comments/interfaces/comment.interface';
 import { CreateAnnalReqDto } from './dto/req/create-annal-req.dto';
 import { UpdateAnnalReqDto } from './dto/req/update-annal-req.dto';
-import { User } from '../../users/interfaces/user.interface';
+import { User } from '@/users/interfaces/user.interface';
 import { GetFromUeReqDto } from './dto/req/get-from-ue-req.dto';
 import UploadAnnalReqDto from './dto/req/upload-annal-req.dto';
 import { ApiBody, ApiConsumes, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ApiAppErrorResponse } from '../../app.dto';
+import { ApiAppErrorResponse } from '@/app.dto';
 import UeAnnalResDto from './dto/res/ue-annal-res.dto';
 import UeAnnalMetadataResDto from './dto/res/ue-annal-metadata-res.dto';
-import { GetPermissions } from '../../auth/decorator/get-permissions.decorator';
-import { Permission } from '../../prisma/types';
-import { omit, PermissionManager } from '../../utils';
+import { GetPermissions } from '@/auth/decorator/get-permissions.decorator';
+import { Permission } from '@/prisma/types';
+import { omit, PermissionManager } from '@/utils';
 
 @Controller('ue/annals')
 @ApiTags('Annal')

@@ -1,8 +1,8 @@
 import { HttpStatus } from '@nestjs/common';
-import { e2eSuite } from '../../utils/test_utils';
+import { e2eSuite } from '#/utils/test_utils';
 import * as pactum from 'pactum';
-import { PrismaService } from '../../../src/prisma/prisma.service';
-import { createUser } from '../../utils/fakedb';
+import { PrismaService } from '@/prisma/prisma.service';
+import { createUser } from '#/utils/fakedb';
 
 const UpdateProfile = e2eSuite('PATCH /users/current', (app) => {
   const user = createUser(app);

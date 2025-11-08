@@ -1,6 +1,6 @@
 import { Injectable, Module } from '@nestjs/common';
 import { Client as LdapClient } from 'ldapts';
-import { ConfigModule } from '../config/config.module';
+import { ConfigModule } from '@/config/config.module';
 import { LdapUser } from './ldap.interface';
 
 @Module({

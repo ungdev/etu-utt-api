@@ -8,12 +8,12 @@ import {
   createUeSubscription,
   createAnnalType,
   createUeof,
-} from '../../../utils/fakedb';
-import { JsonLike, e2eSuite } from '../../../utils/test_utils';
-import { ERROR_CODE } from '../../../../src/exceptions';
-import { ConfigModule } from '../../../../src/config/config.module';
-import { CommentStatus } from 'src/ue/comments/interfaces/comment.interface';
-import { PermissionManager, pick } from '../../../../src/utils';
+} from '#/utils/fakedb';
+import { JsonLike, e2eSuite } from '#/utils/test_utils';
+import { ERROR_CODE } from '@/exceptions';
+import { ConfigModule } from '@/config/config.module';
+import { CommentStatus } from '@/ue/comments/interfaces/comment.interface';
+import { PermissionManager, pick } from '@/utils';
 import { mkdirSync, rmSync } from 'fs';
 
 const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {

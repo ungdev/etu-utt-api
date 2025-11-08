@@ -1,8 +1,8 @@
-import { e2eSuite } from '../../utils/test_utils';
-import * as fakedb from '../../utils/fakedb';
+import { e2eSuite } from '#/utils/test_utils';
+import * as fakedb from '#/utils/fakedb';
 import { HttpStatus } from '@nestjs/common';
-import { RawTimetableEntry } from '../../../src/prisma/types';
-import { PrismaService } from '../../../src/prisma/prisma.service';
+import { RawTimetableEntry } from '@/prisma/types';
+import { PrismaService } from '@/prisma/prisma.service';
 import * as pactum from 'pactum';
 
 const GetDailyTimetableE2ESpec = e2eSuite('GET /timetable/current/daily/:day/:month/:year', (app) => {

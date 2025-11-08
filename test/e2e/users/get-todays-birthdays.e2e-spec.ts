@@ -1,7 +1,7 @@
-import { e2eSuite } from '../../utils/test_utils';
+import { e2eSuite } from '#/utils/test_utils';
 import * as pactum from 'pactum';
-import { createUser } from '../../utils/fakedb';
-import { ERROR_CODE } from '../../../src/exceptions';
+import { createUser } from '#/utils/fakedb';
+import { ERROR_CODE } from '@/exceptions';
 
 const GetTodaysBirthdaysE2ESpec = e2eSuite('GET /users/birthday/today', (app) => {
   const now = new Date();

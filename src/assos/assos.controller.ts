@@ -1,18 +1,18 @@
 import { Body, Controller, Delete, Get, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ApiAppErrorResponse, paginatedResponseDto } from '../app.dto';
+import { ApiAppErrorResponse, paginatedResponseDto } from '@/app.dto';
 import { AssoMembershipRole } from './interfaces/membership-role.interface';
-import { ImageMediaService } from '../media/image/imagemedia.service';
+import { ImageMediaService } from '@/media/image/imagemedia.service';
 import { AssoMembership } from './interfaces/membership.interface';
 import { ParamAsso } from './decorator/get-asso';
-import { GetUser, IsPublic } from '../auth/decorator';
+import { GetUser, IsPublic } from '@/auth/decorator';
 import { AssosService } from './assos.service';
-import { AppException, ERROR_CODE } from '../exceptions';
+import { AppException, ERROR_CODE } from '@/exceptions';
 import { ParamMember } from './decorator/get-member';
 import { Asso } from './interfaces/asso.interface';
-import { User } from '../users/interfaces/user.interface';
-import { pick } from '../utils';
-import { UUIDParam } from '../app.pipe';
+import { User } from '@/users/interfaces/user.interface';
+import { pick } from '@/utils';
+import { UUIDParam } from '@/app.pipe';
 import AssosSearchReqDto from './dto/req/assos-search-req.dto';
 import AssoOverviewResDto from './dto/res/asso-overview-res.dto';
 import AssoDetailResDto from './dto/res/asso-detail-res.dto';
@@ -23,10 +23,10 @@ import AssosRoleUpdateReqDto from './dto/req/assos-role-update.dto';
 import AssosMemberCreateReqDto from './dto/req/assos-member-create.dto';
 import AssosMemberUpdateReqDto from './dto/req/assos-member-update.dto';
 import AssoMembershipResDto from './dto/res/assos-membership-res.dto';
-import UsersService from '../users/users.service';
+import UsersService from '@/users/users.service';
 import AssosUpdateReqDto from './dto/req/assos-update-req.dto';
-import { LexicalModule } from '../lexical/lexical.module';
-import { ImageMediaPreset } from '../prisma/types';
+import { LexicalModule } from '@/lexical/lexical.module';
+import { ImageMediaPreset } from '@/prisma/types';
 
 @Controller('assos')
 @ApiTags('Assos')

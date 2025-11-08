@@ -9,13 +9,13 @@ import {
   createUeSubscription,
   createUser,
   FakeUeStarVote,
-} from '../../utils/fakedb';
-import { e2eSuite } from '../../utils/test_utils';
-import { UeController } from '../../../src/ue/ue.controller';
+} from '#/utils/fakedb';
+import { e2eSuite } from '#/utils/test_utils';
+import { UeController } from '@/ue/ue.controller';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '../../../src/exceptions';
-import { UserType } from '../../../src/prisma/types';
-import { FakeUeWithOfs } from 'test/declarations';
+import { ERROR_CODE } from '@/exceptions';
+import { UserType } from '@/prisma/types';
+import { FakeUeWithOfs } from '#/declarations';
 
 const GetE2ESpec = e2eSuite('GET /ue/{ueCode}', (app) => {
   const user = createUser(app);

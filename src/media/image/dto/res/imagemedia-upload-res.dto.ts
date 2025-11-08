@@ -1,4 +1,4 @@
-import { ImageMediaPreset } from '../../../../prisma/types';
+import { ImageMediaPreset } from '@/prisma/types';
 
 export default class ImageMediaUploadResDto {
   id: string;

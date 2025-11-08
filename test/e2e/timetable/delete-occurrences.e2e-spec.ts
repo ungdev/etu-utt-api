@@ -1,11 +1,11 @@
-import { Dummies, e2eSuite } from '../../utils/test_utils';
-import * as fakedb from '../../utils/fakedb';
+import { Dummies, e2eSuite } from '#/utils/test_utils';
+import * as fakedb from '#/utils/fakedb';
 import * as pactum from 'pactum';
 import { HttpStatus } from '@nestjs/common';
 import { uuid } from 'pactum-matchers';
-import { PrismaService } from '../../../src/prisma/prisma.service';
-import TimetableDeleteOccurrencesReqDto from '../../../src/timetable/dto/req/timetable-delete-occurrences-req.dto';
-import { ERROR_CODE } from '../../../src/exceptions';
+import { PrismaService } from '@/prisma/prisma.service';
+import TimetableDeleteOccurrencesReqDto from '@/timetable/dto/req/timetable-delete-occurrences-req.dto';
+import { ERROR_CODE } from '@/exceptions';
 
 const DeleteEntryE2ESpec = e2eSuite('DELETE /timetable/current/:entryId', (app) => {
   const user = fakedb.createUser(app);

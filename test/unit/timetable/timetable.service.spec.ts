@@ -1,5 +1,5 @@
-import TimetableService from '../../../src/timetable/timetable.service';
-import { PrismaService } from '../../../src/prisma/prisma.service';
+import TimetableService from '@/timetable/timetable.service';
+import { PrismaService } from '@/prisma/prisma.service';
 import { unitSuite } from '../../utils/test_utils';
 import * as fakedb from '../../utils/fakedb';
 import { createTimetableEntry, createTimetableEntryOverride } from '../../utils/fakedb';

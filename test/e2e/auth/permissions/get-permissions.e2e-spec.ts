@@ -1,9 +1,9 @@
-import { e2eSuite } from '../../../utils/test_utils';
+import { e2eSuite } from '#/utils/test_utils';
 import * as pactum from 'pactum';
-import * as fakedb from '../../../utils/fakedb';
-import { ERROR_CODE } from '../../../../src/exceptions';
-import { Permission } from '../../../../src/prisma/types';
-import { PermissionManager } from '../../../../src/utils';
+import * as fakedb from '#/utils/fakedb';
+import { ERROR_CODE } from '@/exceptions';
+import { Permission } from '@/prisma/types';
+import { PermissionManager } from '@/utils';
 
 const GetPermissionsE2ESpec = e2eSuite('GET /auth/permissions/:apiKey', (app) => {
   const loggedUser = fakedb.createUser(app);

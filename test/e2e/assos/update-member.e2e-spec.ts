@@ -1,17 +1,17 @@
-import { Dummies, e2eSuite } from '../../utils/test_utils';
+import { Dummies, e2eSuite } from '#/utils/test_utils';
 import {
   createAsso,
   createAssoMembership,
   createAssoMembershipPermission,
   createAssoMembershipRole,
   createUser,
-} from '../../utils/fakedb';
+} from '#/utils/fakedb';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '../../../src/exceptions';
-import { PrismaService } from '../../../src/prisma/prisma.service';
+import { ERROR_CODE } from '@/exceptions';
+import { PrismaService } from '@/prisma/prisma.service';
 import { faker } from '@faker-js/faker';
 import { DEFAULT_APPLICATION } from '../../../prisma/seed/utils';
-import { AuthService } from '../../../src/auth/auth.service';
+import { AuthService } from '@/auth/auth.service';
 
 const UpdateAssoMemberE2ESpec = e2eSuite('PATCH /assos/:id/members/:id', (app) => {
   const userNotAllowed = createUser(app);

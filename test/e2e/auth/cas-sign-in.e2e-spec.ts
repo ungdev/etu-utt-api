@@ -1,10 +1,10 @@
-import { e2eSuite, JsonLike } from '../../utils/test_utils';
-import * as cas from '../../external_services/cas';
-import * as fakedb from '../../utils/fakedb';
+import { e2eSuite, JsonLike } from '#/utils/test_utils';
+import * as cas from '#/external_services/cas';
+import * as fakedb from '#/utils/fakedb';
 import * as pactum from 'pactum';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from '../../../src/prisma/prisma.service';
-import AuthCasSignInReqDto from '../../../src/auth/dto/req/auth-cas-sign-in-req.dto';
+import { PrismaService } from '@/prisma/prisma.service';
+import AuthCasSignInReqDto from '@/auth/dto/req/auth-cas-sign-in-req.dto';
 import { DEFAULT_APPLICATION } from '../../../prisma/seed/utils';
 import { HttpStatus } from '@nestjs/common';
 

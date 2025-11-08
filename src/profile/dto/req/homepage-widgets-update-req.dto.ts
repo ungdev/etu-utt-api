@@ -1,6 +1,6 @@
 import { IsArray, IsInt, IsNumber, IsPositive, IsString, Min, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { ArrayDto } from '../../../app.pipe';
+import { ArrayDto } from '@/app.pipe';
 
 export class HomepageWidgetsUpdateElement {
   @IsNumber()

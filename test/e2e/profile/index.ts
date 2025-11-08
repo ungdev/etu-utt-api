@@ -1,4 +1,4 @@
-import { E2EAppProvider } from '../../utils/test_utils';
+import { E2EAppProvider } from '#/utils/test_utils';
 import GetHomepageE2ESpec from './get-homepage-widgets.e2e.spec';
 import SetHomepageWidgetsE2ESpec from './set-homepage-widgets.e2e-spec';
 

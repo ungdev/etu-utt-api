@@ -1,11 +1,11 @@
 import { createReadStream, ReadStream } from 'fs';
 import { rm, writeFile } from 'fs/promises';
 import { Injectable } from '@nestjs/common';
-import { RawImageMedia, ImageMediaPreset } from '../../prisma/types';
-import { ConfigModule } from '../../config/config.module';
-import { PrismaService } from '../../prisma/prisma.service';
-import { MulterWithMime } from '../../upload.interceptor';
-import { User } from '../../users/interfaces/user.interface';
+import { RawImageMedia, ImageMediaPreset } from '@/prisma/types';
+import { ConfigModule } from '@/config/config.module';
+import { PrismaService } from '@/prisma/prisma.service';
+import { MulterWithMime } from '@/upload.interceptor';
+import { User } from '@/users/interfaces/user.interface';
 import ImageMediaUploadReqDto from './dto/req/imagemedia-upload-req.dto';
 import sharp from 'sharp';
 

@@ -1,10 +1,10 @@
 import * as pactum from 'pactum';
-import { e2eSuite, JsonLike } from '../../utils/test_utils';
-import { AuthService } from '../../../src/auth/auth.service';
-import { ERROR_CODE } from '../../../src/exceptions';
-import * as fakedb from '../../utils/fakedb';
+import { e2eSuite, JsonLike } from '#/utils/test_utils';
+import { AuthService } from '@/auth/auth.service';
+import { ERROR_CODE } from '@/exceptions';
+import * as fakedb from '#/utils/fakedb';
 import { HttpStatus } from '@nestjs/common';
-import { PrismaService } from '../../../src/prisma/prisma.service';
+import { PrismaService } from '@/prisma/prisma.service';
 import { DEFAULT_APPLICATION } from '../../../prisma/seed/utils';
 import { JwtService } from '@nestjs/jwt';
 

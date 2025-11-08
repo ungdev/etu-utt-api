@@ -1,14 +1,14 @@
 import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
 import UsersSearchReqDto from './dto/req/users-search-req.dto';
 import { UserUpdateReqDto } from './dto/req/users-update-req.dto';
-import { GetUser } from '../auth/decorator';
+import { GetUser } from '@/auth/decorator';
 import { User } from './interfaces/user.interface';
 import UsersService from './users.service';
-import { AppException, ERROR_CODE } from '../exceptions';
-import { pick } from '../utils';
+import { AppException, ERROR_CODE } from '@/exceptions';
+import { pick } from '@/utils';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import UserOverviewResDto from './dto/res/user-overview-res.dto';
-import { ApiAppErrorResponse, paginatedResponseDto } from '../app.dto';
+import { ApiAppErrorResponse, paginatedResponseDto } from '@/app.dto';
 import UserDetailResDto from './dto/res/user-detail-res.dto';
 import UserBirthdayResDto from './dto/res/user-birthday-res.dto';
 import UserAssoMembershipResDto from './dto/res/user-asso-membership-res.dto';

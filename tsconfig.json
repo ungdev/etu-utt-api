@@ -10,8 +10,8 @@
     "sourceMap": true,
     "outDir": "./dist",
     "paths": {
-      "src/*": ["./src/*"],
-      "test/*": ["./test/*"]
+      "@/*": ["./src/*"],
+      "#/*": ["./test/*"]
     },
     "incremental": true,
     "skipLibCheck": true,

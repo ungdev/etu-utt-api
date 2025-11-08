@@ -1,11 +1,14 @@
-import { PrismaService } from '../../prisma/prisma.service';
+import { PrismaService } from '@/prisma/prisma.service';
 import { Application } from './interfaces/application.interface';
 import { Injectable } from '@nestjs/common';
-import { AuthService } from '../auth.service';
+import { AuthService } from '@/auth/auth.service';
 
 @Injectable()
 export default class ApplicationService {
-  constructor(private prisma: PrismaService, private authService: AuthService) {}
+  constructor(
+    private prisma: PrismaService,
+    private authService: AuthService,
+  ) {}
 
   getFromUserId(userId: string): Promise<Application[]> {
     return this.prisma.normalize.apiApplication.findMany({ where: { ownerId: userId } });
