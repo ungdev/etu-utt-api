@@ -63,5 +63,5 @@ export default function assoSeed(prisma: PrismaClient) {
       });
     });
   }
-  return Promise.all(assos);
+  return Promise.all(assos.map((assoFn) => assoFn()));
 }
