@@ -28,7 +28,7 @@ export class ImageMediaService {
     readonly config: ConfigModule,
   ) {}
 
-  async convertMedia(file: MulterWithMime, options: ConversionOptions): Promise<ImageMetadata> {
+  async convertMedia(file: MulterWithMime, options: ImageMediaUploadReqDto): Promise<ImageMetadata> {
     if (!(options.preset in presets)) options.preset = ImageMediaPreset.CUSTOM;
     Object.assign(options, presets[options.preset]);
     let instructions = sharp(file.multer.buffer);
