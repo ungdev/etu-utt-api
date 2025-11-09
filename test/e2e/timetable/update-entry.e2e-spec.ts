@@ -100,7 +100,6 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
         applyEvery: 1,
         for: [userGroup.id, userOtherGroup.id],
       })
-      .expectStatus()
       .$expectRegexableJson({
         id: entry.id,
         location: newLocation,
@@ -145,7 +144,6 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
         applyEvery: 1,
         for: [userGroup.id, userOtherGroup.id],
       })
-      .expectStatus()
       .$expectRegexableJson({
         id: entry.id,
         location: entry.location,
@@ -198,7 +196,6 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
         applyEvery: 1,
         for: [userGroup.id, userOtherGroup.id],
       })
-      .expectStatus()
       .$expectRegexableJson({
         id: entry.id,
         location: entry.location,
@@ -238,7 +235,6 @@ const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) =
         applyEvery: 1,
         for: [userGroup.id],
       })
-      .expectStatus()
       .$expectRegexableJson({
         id: entry.id,
         location: entry.location,

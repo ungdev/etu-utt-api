@@ -1,4 +1,3 @@
-import { HttpStatus } from '@nestjs/common';
 import { Dummies, e2eSuite } from '../../utils/test_utils';
 import * as pactum from 'pactum';
 import { PrismaService } from '../../../src/prisma/prisma.service';
@@ -11,7 +10,7 @@ const UpdateProfile = e2eSuite('PATCH /users/current', (app) => {
   const image = createImageMedia(app, { preset: ImageMediaPreset.CUSTOM });
 
   it('should return a 401 as user is not authenticated', () => {
-    return pactum.spec().get('/users/current').expectStatus(HttpStatus.UNAUTHORIZED);
+    return pactum.spec().get('/users/current').expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
   it('should return a 400 as the type of the value is wrong', async () => {
@@ -22,7 +21,7 @@ const UpdateProfile = e2eSuite('PATCH /users/current', (app) => {
       .withBody({
         facebook: true,
       })
-      .expectStatus(HttpStatus.BAD_REQUEST);
+      .expectAppError(ERROR_CODE.PARAM_NOT_STRING, 'facebook');
   });
 
   it('should return a 400 as no field was provided', async () => {

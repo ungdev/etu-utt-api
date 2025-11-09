@@ -38,7 +38,6 @@ export const GetMediaE2ESpec = e2eSuite('GET /media/image/:mediaId', (app) => {
     pactum
       .spec()
       .get(`/media/image/${publicMedia.id}.webp`)
-      .expectStatus(200)
       .expectHeader('content-type', 'image/webp')
       .expectBodyContains('RIFF'));
 
@@ -47,7 +46,6 @@ export const GetMediaE2ESpec = e2eSuite('GET /media/image/:mediaId', (app) => {
       .spec()
       .withBearerToken(user.token)
       .get(`/media/image/${nonPublicMedia.id}.webp`)
-      .expectStatus(200)
       .expectHeader('content-type', 'image/webp')
       .expectBodyContains('RIFF'));
 

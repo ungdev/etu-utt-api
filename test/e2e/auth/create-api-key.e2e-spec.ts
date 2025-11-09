@@ -39,7 +39,6 @@ const CreateApiKeyE2ESpec = e2eSuite('POST /auth/api-key', (app) => {
       .post('/auth/api-key')
       .withJson({ token: await authService().signRegisterApiKeyToken(otherUser.id, application.id, 99999) })
       .created()
-      .expectStatus()
       .$expectRegexableJson({ redirectUrl: JsonLike.STRING })
       .expect((ctx) => {
         const body = ctx.res.json as { redirectUrl: string };

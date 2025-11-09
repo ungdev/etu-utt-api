@@ -1,15 +1,15 @@
 import { e2eSuite } from '../../utils/test_utils';
 import { createUser } from '../../utils/fakedb';
 import * as pactum from 'pactum';
-import { HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { pick } from '../../../src/utils';
+import { ERROR_CODE } from '../../../src/exceptions';
 
 const GetCurrentUserE2ESpec = e2eSuite('GET /users/current', (app) => {
   const user = createUser(app);
 
   it('should return a 401 as user is not authenticated', () => {
-    return pactum.spec().get(`/users/current`).expectStatus(HttpStatus.UNAUTHORIZED);
+    return pactum.spec().get(`/users/current`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
   it('should successfully find the user', async () => {
@@ -62,7 +62,6 @@ const GetCurrentUserE2ESpec = e2eSuite('GET /users/current', (app) => {
       .spec()
       .get(`/users/current`)
       .withBearerToken(user.token)
-      .expectStatus()
       .$expectRegexableJson(
         Object.fromEntries(Object.entries(expectedBody).filter(([, value]) => value !== undefined)),
       );

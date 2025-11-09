@@ -92,7 +92,6 @@ const CreateEntryE2ESpec = e2eSuite('POST /timetable/current', (app) => {
         groups: [userGroup.id],
       })
       .created()
-      .expectStatus()
       .$expectRegexableJson({
         id: JsonLike.UUID,
         location: 'In the test ig ?',

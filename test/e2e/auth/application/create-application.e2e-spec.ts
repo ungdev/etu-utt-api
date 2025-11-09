@@ -21,7 +21,6 @@ const CreateApplicationE2ESpec = e2eSuite('POST /auth/application', (app) => {
       .withBearerToken(user.token)
       .withJson(body)
       .created()
-      .expectStatus()
       .$expectRegexableJson({
         id: JsonLike.UUID,
         name: body.name,

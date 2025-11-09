@@ -18,7 +18,6 @@ const CasSignInE2ESpec = e2eSuite('POST /auth/signin/cas', (app) => {
       .spec()
       .post('/auth/signin/cas')
       .withBody(body)
-      .expectStatus()
       .$expectRegexableJson({ status: 'no_account', token: JsonLike.STRING, redirectUrl: null })
       .expect((res) => {
         const jwt = app().get(JwtService);

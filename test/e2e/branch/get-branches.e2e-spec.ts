@@ -12,7 +12,6 @@ export const GetBranchesE2ESpec = e2eSuite('GET /branch', (app) => {
     pactum
       .spec()
       .get('/branch')
-      .expectStatus()
       .$expectRegexableJson(
         [
           {

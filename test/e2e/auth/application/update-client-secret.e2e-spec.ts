@@ -30,7 +30,6 @@ const UpdateClientSecretE2ESpec = e2eSuite('PATCH /auth/application/:application
       .spec()
       .patch(`/auth/application/${application.id}/client-secret`)
       .withBearerToken(user.token)
-      .expectStatus()
       .$expectRegexableJson({
         clientSecret: JsonLike.STRING,
       }));
