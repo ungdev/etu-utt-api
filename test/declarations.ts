@@ -65,9 +65,9 @@ Spec.prototype.noContent = function () {
 
 const originalExpectStatus = Spec.prototype.expectStatus;
 Spec.prototype.expectStatus = function (code?: number, message?: string) {
-  this.expectedStatus = this.expectedStatus ?? HttpStatus.OK;
+  this.expectedStatus = code ?? this.expectedStatus ?? HttpStatus.OK;
   if (code) return <Spec>this;
-  return originalExpectStatus.call(this, code ?? this.expectedStatus, message);
+  return originalExpectStatus.call(this, this.expectedStatus, message);
 };
 
 Spec.prototype.language = 'fr';
