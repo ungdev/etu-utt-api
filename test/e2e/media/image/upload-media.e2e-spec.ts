@@ -43,7 +43,7 @@ export const UploadMediaE2ESpec = e2eSuite('POST /media/image', (app) => {
       .withFile('file', `test/e2e/media/image/artifacts/image.webp`)
       .expectAppError(ERROR_CODE.SERVER_DISK_ERROR));
 
-  describe('should create the annal', () => {
+  describe('should create the media', () => {
     beforeAll(() => {
       mkdirSync(`${app().get(ConfigModule).MEDIA_UPLOAD_DIR}/image`, { recursive: true });
     });
