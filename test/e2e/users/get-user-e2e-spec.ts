@@ -1,19 +1,23 @@
 import { e2eSuite } from '../../utils/test_utils';
 import { createUser } from '../../utils/fakedb';
 import * as pactum from 'pactum';
-import { HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../../../src/prisma/prisma.service';
+import { ERROR_CODE } from '../../../src/exceptions';
 
 const GetUserE2ESpec = e2eSuite('GET /users/:userId', (app) => {
   const user = createUser(app);
   const userToSearch = createUser(app);
 
   it('should return a 401 as user is not authenticated', () => {
-    return pactum.spec().get(`/users/${userToSearch.id}`).expectStatus(HttpStatus.UNAUTHORIZED);
+    return pactum.spec().get(`/users/${userToSearch.id}`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
   it('should return a 404 as user was not found', () => {
-    return pactum.spec().get('/users/abcdef').withBearerToken(user.token).expectStatus(HttpStatus.NOT_FOUND);
+    return pactum
+      .spec()
+      .get('/users/abcdef')
+      .withBearerToken(user.token)
+      .expectAppError(ERROR_CODE.NO_SUCH_USER, 'abcdef');
   });
 
   it('should successfully find the user', async () => {
@@ -74,7 +78,6 @@ const GetUserE2ESpec = e2eSuite('GET /users/:userId', (app) => {
       .spec()
       .get(`/users/${userFromDb.id}`)
       .withBearerToken(user.token)
-      .expectStatus()
       .$expectRegexableJson(
         Object.fromEntries(Object.entries(expectedBody).filter(([, value]) => value !== undefined)),
       );

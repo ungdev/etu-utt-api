@@ -101,7 +101,6 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
         registerToken: await authService.signRegisterUserToken(login, mail, firstName, lastName, tokenExpiresIn),
       })
       .created()
-      .expectStatus()
       .$expectRegexableJson({ token: JsonLike.STRING });
     expect(await app().get(PrismaService).user.count({ where: { login } })).toEqual(1);
   };

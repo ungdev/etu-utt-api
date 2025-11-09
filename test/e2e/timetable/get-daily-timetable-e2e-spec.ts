@@ -1,9 +1,9 @@
 import { e2eSuite } from '../../utils/test_utils';
 import * as fakedb from '../../utils/fakedb';
-import { HttpStatus } from '@nestjs/common';
 import { RawTimetableEntry } from '../../../src/prisma/types';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import * as pactum from 'pactum';
+import { ERROR_CODE } from 'src/exceptions';
 
 const GetDailyTimetableE2ESpec = e2eSuite('GET /timetable/current/daily/:day/:month/:year', (app) => {
   const user = fakedb.createUser(app);
@@ -28,7 +28,7 @@ const GetDailyTimetableE2ESpec = e2eSuite('GET /timetable/current/daily/:day/:mo
   });
 
   it('should fail as user is not authenticated', () =>
-    pactum.spec().get('/timetable/current/daily/1/2/3').expectStatus(HttpStatus.UNAUTHORIZED));
+    pactum.spec().get('/timetable/current/daily/1/2/3').expectAppError(ERROR_CODE.NOT_LOGGED_IN));
 
   it('should fail as the value passed are not numbers', () =>
     Promise.all([
@@ -36,17 +36,17 @@ const GetDailyTimetableE2ESpec = e2eSuite('GET /timetable/current/daily/:day/:mo
         .spec()
         .get('/timetable/current/daily/unnombre/2/3')
         .withBearerToken(user.token)
-        .expectStatus(HttpStatus.BAD_REQUEST),
+        .expectAppError(ERROR_CODE.PARAM_NOT_NUMBER, 'date'),
       pactum
         .spec()
         .get('/timetable/current/daily/1/unnombre/3')
         .withBearerToken(user.token)
-        .expectStatus(HttpStatus.BAD_REQUEST),
+        .expectAppError(ERROR_CODE.PARAM_NOT_NUMBER, 'month'),
       pactum
         .spec()
         .get('/timetable/current/daily/1/2/unnombre')
         .withBearerToken(user.token)
-        .expectStatus(HttpStatus.BAD_REQUEST),
+        .expectAppError(ERROR_CODE.PARAM_NOT_NUMBER, 'year'),
     ]));
 
   it('should return the events of the day', async () => {
@@ -57,7 +57,6 @@ const GetDailyTimetableE2ESpec = e2eSuite('GET /timetable/current/daily/:day/:mo
       .spec()
       .get(`/timetable/current/daily/${date}/${month}/${year}`)
       .withBearerToken(user.token)
-      .expectStatus()
       .$expectRegexableJson([
         {
           id: `0@${timetableEntry.id}`,

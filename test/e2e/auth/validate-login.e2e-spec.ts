@@ -48,7 +48,6 @@ const ValidateLoginE2ESpec = e2eSuite('POST /auth/login/validate', (app) => {
         token: await authService().signValidationToken(user.apiKey.id, DEFAULT_APPLICATION.id, 9999),
         clientSecret: DEFAULT_APPLICATION.clientSecret,
       })
-      .expectStatus()
       .$expectRegexableJson({ token: JsonLike.STRING })
       .expect(async (ctx) => {
         const body = ctx.res.json as { token: string };

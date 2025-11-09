@@ -39,7 +39,6 @@ const UpdateApplicationTokenE2ESpec = e2eSuite('PATCH /auth/application/:applica
       .patch(`/auth/application/${application.id}/token`)
       .withBearerToken(user.token)
       .withJson({})
-      .expectStatus()
       .expect(async (ctx) => {
         expect(ctx.res.json['token']).toBeDefined();
         const token = app().get(JwtService).decode(ctx.res.json['token']).token;

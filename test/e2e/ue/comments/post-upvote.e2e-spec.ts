@@ -73,7 +73,6 @@ const PostUpvote = e2eSuite('POST /ue/comments/{commentId}/upvote', (app) => {
       .spec()
       .withBearerToken(userNotAuthor.token)
       .post(`/ue/comments/${comment.id}/upvote`)
-      .expectStatus()
       .$expectRegexableJson({ upvoted: true });
     return app().get(PrismaService).ueCommentUpvote.deleteMany();
   });

@@ -96,7 +96,6 @@ const DeleteEntryE2ESpec = e2eSuite('DELETE /timetable/current/:entryId', (app) 
         every: 1,
         for: [userGroup.id, userOtherGroup.id],
       })
-      .expectStatus()
       .$expectRegexableJson({
         id: entry.id,
         location: entry.location,
@@ -140,7 +139,6 @@ const DeleteEntryE2ESpec = e2eSuite('DELETE /timetable/current/:entryId', (app) 
         every: 1,
         for: [userGroup.id, userOtherGroup.id],
       })
-      .expectStatus()
       .$expectRegexableJson({
         id: entry.id,
         location: entry.location,
@@ -180,7 +178,6 @@ const DeleteEntryE2ESpec = e2eSuite('DELETE /timetable/current/:entryId', (app) 
         every: 1,
         for: [userGroup.id, userOtherGroup.id],
       })
-      .expectStatus()
       .$expectRegexableJson({
         id: entry.id,
         location: entry.location,
@@ -231,7 +228,6 @@ const DeleteEntryE2ESpec = e2eSuite('DELETE /timetable/current/:entryId', (app) 
         every: 1,
         for: [userGroup.id],
       })
-      .expectStatus()
       .$expectRegexableJson({
         id: entry.id,
         location: entry.location,
