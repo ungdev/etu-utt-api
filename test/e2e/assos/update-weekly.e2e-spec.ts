@@ -32,7 +32,7 @@ const UpdateWeeklyE2ESpec = e2eSuite('PATCH /assos/:assoId/weekly/:weeklyId', (a
     date: weekly.date.add({ days: 7 }),
   });
 
-  it('should return 403 as user is not authenticated', () =>
+  it('should return 401 as user is not authenticated', () =>
     pactum.spec().patch(`/assos/${asso.id}/weekly/${weekly.id}`).withJson(generateBody()).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
 
   it('should return a 404 as asso is not found', () =>

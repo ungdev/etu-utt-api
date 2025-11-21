@@ -24,7 +24,7 @@ const DeleteWeeklyE2ESpec = e2eSuite('DELETE /assos/:assoId/weekly/:weeklyId', (
   const otherAssoRole = createAssoMembershipRole(app, { asso });
   createAssoMembership(app, { asso: otherAsso, user: userWithPermission, role: otherAssoRole, permissions: [permissionManageAsso] });
 
-  it('should return 403 as user is not authenticated', () =>
+  it('should return 401 as user is not authenticated', () =>
     pactum.spec().delete(`/assos/${asso.id}/weekly/${weekly.id}`).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
 
   it('should return a 404 as asso is not found', () =>

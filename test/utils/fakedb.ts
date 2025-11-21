@@ -45,7 +45,6 @@ import { UeAnnalFile } from '../../src/ue/annals/interfaces/annal.interface';
 import { omit, PermissionManager, pick, translationSelect } from '../../src/utils';
 import { DEFAULT_APPLICATION } from '../../prisma/seed/utils';
 import { AssoWeekly } from '../../src/assos/interfaces/weekly.interface';
-import { isDate } from 'node:util/types';
 
 /**
  * The fake entities can be used like normal entities in the <code>it(string, () => void)</code> functions.
@@ -1187,7 +1186,7 @@ function deeplyCallFunctions<T>(params: T) {
     for (const key in params) {
       if (typeof params[key] === 'function') {
         params[key] = (params[key] as () => T[Extract<keyof T, string>])();
-      } else if (((typeof params[key]) === 'object') && !isDate(params[key])) {
+      } else if (typeof params[key] === 'object' && !(params[key] instanceof Date)) {
         deeplyCallFunctions(params[key]);
       }
     }

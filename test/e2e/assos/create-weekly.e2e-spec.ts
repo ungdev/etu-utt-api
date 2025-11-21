@@ -26,7 +26,7 @@ const CreateWeeklyE2ESpec = e2eSuite('POST /assos/:assoId/weekly', (app) => {
     date: new Date().add({ days: 14 }).getWeekDate(),
   }
 
-  it('should return 403 as user is not authenticated', () =>
+  it('should return 401 as user is not authenticated', () =>
     pactum.spec().post(`/assos/${asso.id}/weekly`).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
 
   it('should return a 400 as the assoId param is not valid', () =>

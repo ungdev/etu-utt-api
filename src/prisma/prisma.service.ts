@@ -119,7 +119,7 @@ export function generateCustomModel<
   ModelName extends ModelNameType,
   Raw,
   Formatted,
-  QueryArgs extends Record<string, any> = object,
+  QueryArgs extends Record<string, any>,
 >(
   prisma: PrismaClient,
   modelName: ModelName,

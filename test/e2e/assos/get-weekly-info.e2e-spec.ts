@@ -7,7 +7,7 @@ import { ConfigModule } from '../../../src/config/config.module';
 const GetWeeklyInfoE2ESpec = e2eSuite('GET /assos/weekly/info', (app) => {
   const user = createUser(app);
 
-  it('should return 403 as user is not authenticated', () =>
+  it('should return 401 as user is not authenticated', () =>
     pactum.spec().get('/assos/weekly/info').expectAppError(ERROR_CODE.NOT_LOGGED_IN));
 
   it('should successfully return information about weeklies', () =>
