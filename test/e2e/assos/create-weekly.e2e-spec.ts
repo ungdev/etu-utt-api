@@ -8,7 +8,7 @@ import {
 } from '../../utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
-import AssosPostWeeklyReqDto from '../../../src/assos/dto/req/assos-post-weekly-req.dto';
+import AssosPostWeeklyReqDto from '../../../src/assos/weekly/dto/req/weekly-req.dto';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 
 const CreateWeeklyE2ESpec = e2eSuite('POST /assos/:assoId/weekly', (app) => {
