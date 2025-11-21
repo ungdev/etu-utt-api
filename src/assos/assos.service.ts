@@ -9,8 +9,8 @@ import { AssoMembershipRole } from './interfaces/membership-role.interface';
 import AssosSearchReqDto from './dto/req/assos-search-req.dto';
 import AssosMemberUpdateReqDto from './dto/req/assos-member-update.dto';
 import { AppException, ERROR_CODE } from '../exceptions';
-import { pick } from '../utils';
 import { AssoDaymail } from './interfaces/daymail.interface';
+import DaymailResDto from './dto/res/daymail-res.dto';
 
 @Injectable()
 export class AssosService {
@@ -288,52 +288,62 @@ export class AssosService {
     });
   }
 
-  async getDaymails(assoId: string, from: Date, to: Date): Promise<AssoDaymail[]> {
-    const daymails = await this.prisma.normalize.assoDaymail.findMany({
-      where: {
-        assoId,
-        sendDates: {
-          some: {
-            date: {
-              gte: from,
-              lte: to,
-            }
-          }
-        }
-      }
-    });
-    for (const daymail of daymails) {
-      daymail.sendDates = daymail.sendDates.filter((date) => from <= date && date <= to);
-    }
-    return daymails;
+  async searchDaymails(assoId: string, from: Date, to: Date, page: number): Promise<{ daymails: AssoDaymail[], count: number }> {
+    const where = {
+      assoId,
+      date: { gte: from, lte: to },
+    } satisfies Prisma.AssoDaymailWhereInput;
+    const count = await this.prisma.assoDaymail.count({ where });
+    const daymails = await this.prisma.normalize.assoDaymail.findMany({ where, skip: (page - 1) * this.config.PAGINATION_PAGE_SIZE, take: this.config.PAGINATION_PAGE_SIZE });
+    return { daymails, count };
   }
 
-  async addDaymail(assoId: string, title: Translation, message: Translation, dates: Date[]): Promise<AssoDaymail> {
+  async addDaymail(assoId: string, title: Translation, message: Translation, date): Promise<AssoDaymail> {
     return this.prisma.normalize.assoDaymail.create({
       data: {
         asso: { connect: { id: assoId } },
-        titleTranslation: { create: pick(title, 'fr', 'en', 'es', 'de', 'zh') },
-        bodyTranslation: { create: pick(message, 'fr', 'en', 'es', 'de', 'zh') },
-        sendDates: { createMany: { data: dates.map((date) => ({ date })) } },
+        titleTranslation: { create: title },
+        bodyTranslation: { create: message },
+        date,
       }
     });
   }
 
-  async doesDaymailExist(daymailId: string, assoId?: string): Promise<boolean> {
-    return (await this.prisma.assoDaymail.count({ where: { id: daymailId, assoId } })) > 0;
+  getSendDate(sendWeek: Date): Date {
+    return new Date(
+      Date.UTC(
+        sendWeek.getUTCFullYear(),
+        sendWeek.getUTCMonth(),
+        sendWeek.getUTCDate() + this.config.DAYMAIL_SEND_DAY,
+        this.config.DAYMAIL_SEND_HOUR,
+        0,
+        -Date.getTimezoneOffset('Europe/Paris')
+      )
+    );
   }
 
-  async updateDaymail(daymailId: string, fields: { title: Translation, message: Translation, dates: Date[] }): Promise<AssoDaymail> {
+  async getDaymail(daymailId: string, assoId?: string): Promise<DaymailResDto> {
+    return this.prisma.normalize.assoDaymail.findUnique({ where: { id: daymailId, assoId } });
+  }
+
+  async hasDaymailForWeek(assoId: string, date: Date, excludeDaymail: string = undefined): Promise<boolean> {
+    return (await this.prisma.assoDaymail.count({
+      where: {
+        assoId,
+        date,
+        ...(excludeDaymail ? { id: { not: excludeDaymail } } : {})
+      }
+    })) > 0;
+  }
+
+  async updateDaymail(daymailId: string, fields: { title: Translation, message: Translation, date: Date }): Promise<AssoDaymail> {
     return this.prisma.normalize.assoDaymail.update({
       where: { id: daymailId },
       data: {
         titleTranslation: { update: fields.title },
         bodyTranslation: { update: fields.message },
-        sendDates: fields.dates ? {
-          deleteMany: {},
-          createMany: { data: fields.dates.map((date) => ({ date })) }
-        } : {},
-      },
+        date: fields.date,
+      }
     });
   }
 

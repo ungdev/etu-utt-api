@@ -107,7 +107,7 @@ declare module './declarations' {
 
     expectPermissions(permissions: PermissionManager): this;
     expectAssoDaymail(daymail: JsonLikeVariant<FakeAssoDaymail>, created = false): this;
-    expectAssoDaymails(daymails: JsonLikeVariant<FakeAssoDaymail>[]): this;
+    expectAssoDaymails(app: AppProvider, daymails: JsonLikeVariant<FakeAssoDaymail>[], count: number): this;
 
     withLanguage(language: Language): this;
     language: Language;

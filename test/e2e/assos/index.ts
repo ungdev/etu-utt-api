@@ -12,6 +12,7 @@ import CreateDaymailE2ESpec from './create-daymail.e2e-spec';
 import GetDaymailsE2ESpec from './get-daymails.e2e-spec';
 import UpdateDaymailE2ESpec from './update-daymail.e2e-spec';
 import DeleteDaymailE2ESpec from './delete-daymail.e2e-spec';
+import GetDaymailInfoE2ESpec from './get-daymail-info.e2e-spec';
 
 export default function AssoE2ESpec(app: () => INestApplication) {
   describe('Assos', () => {
@@ -24,6 +25,7 @@ export default function AssoE2ESpec(app: () => INestApplication) {
     CreateAssoRoleE2ESpec(app);
     DeleteAssoRoleE2ESpec(app);
     UpdateAssoRoleE2ESpec(app);
+    GetDaymailInfoE2ESpec(app);
     GetDaymailsE2ESpec(app);
     CreateDaymailE2ESpec(app);
     UpdateDaymailE2ESpec(app);

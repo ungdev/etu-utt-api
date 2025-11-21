@@ -32,6 +32,8 @@ export class ConfigModule {
   public readonly TIMETABLE_URL: string;
   public readonly ANNAL_UPLOAD_DIR: string;
   public readonly ETUUTT_WEBSITE_APPLICATION_ID: string;
+  public readonly DAYMAIL_SEND_DAY: number;
+  public readonly DAYMAIL_SEND_HOUR: number;
   // DEV ENVIRONMENT ONLY
 
   // TEST ENVIRONMENT ONLY
@@ -51,9 +53,10 @@ export class ConfigModule {
     this.ANNAL_UPLOAD_DIR = config.get<string>('ANNAL_UPLOAD_DIR');
     this.IS_PROD_ENV = isProdEnv;
     this.TIMETABLE_URL = config.get<string>('TIMETABLE_URL');
-
     if (this.ANNAL_UPLOAD_DIR.endsWith('/')) this.ANNAL_UPLOAD_DIR = this.ANNAL_UPLOAD_DIR.slice(0, -1);
     this.ETUUTT_WEBSITE_APPLICATION_ID = config.get('ETUUTT_WEBSITE_APPLICATION_ID');
+    this.DAYMAIL_SEND_DAY = Number.parseInt(config.get('DAYMAIL_SEND_DAY'));
+    this.DAYMAIL_SEND_HOUR = Number.parseInt(config.get('DAYMAIL_SEND_HOUR'));
 
     this._FAKER_SEED = isTestEnv ? Number(config.get('FAKER_SEED')) : undefined;
   }

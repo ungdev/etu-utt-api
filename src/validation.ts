@@ -32,6 +32,7 @@ const mappedErrors = {
   max: ERROR_CODE.PARAM_TOO_HIGH,
   isUrl: ERROR_CODE.PARAM_NOT_URL,
   isFutureDate: ERROR_CODE.PARAM_PAST_DATE,
+  isWeekDate: ERROR_CODE.PARAM_DATE_MUST_BE_A_WEEK_DATE,
 } satisfies {
   [constraint: string]: ERROR_CODE;
 };
@@ -75,6 +76,13 @@ class FutureDate implements ValidatorConstraintInterface {
     return new Date(text).getTime() >= Date.now();
   }
 }
+@ValidatorConstraint({ name: 'isWeekDate', async: false })
+class WeekDate implements ValidatorConstraintInterface {
+  validate(text: string): boolean {
+    const date = new Date(text);
+    return date.getWeekDate().getTime() === date.getTime();
+  }
+}
 @ValidatorConstraint({ name: 'hasEither', async: false })
 class HasEither implements ValidatorConstraintInterface {
   validate(_: string, args: ValidationArguments) {
@@ -94,6 +102,8 @@ class GhostProperty implements ValidatorConstraintInterface {
 
 /** Equivalent to @MinDate(() => Date.now()) with an error message */
 export const IsFutureDate = ({ each = false } = {}) => Validate(FutureDate, { each });
+
+export const IsWeekDate = ({ each = false } = {}) => Validate(WeekDate, { each });
 
 /** Checks whether at least one of the given properties is provided. Use this decorator on any property EXCEPT those contained in the constraint list. */
 export function HasSomeAmong<T>(...fields: ((keyof T) & string)[]) {

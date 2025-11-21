@@ -120,7 +120,7 @@ export type FakeHomepageWidget = Partial<RawHomepageWidget>;
 export type FakeApiApplication = Partial<Omit<RawApiApplication, 'ownerId'>> & {
   owner: { id: string; firstName: string; lastName: string };
 };
-export type FakeAssoDaymail = Partial<Pick<AssoDaymail, 'id' | 'assoId' | 'sendDates' | 'createdAt' | 'title' | 'message'>>;
+export type FakeAssoDaymail = Partial<Pick<AssoDaymail, 'id' | 'assoId' | 'date' | 'createdAt' | 'title' | 'message'>>;
 
 export interface FakeEntityMap {
   assoMembership: {
@@ -555,7 +555,7 @@ export type CreateAssoDaymailParameters = FakeAssoDaymail;
 export const createAssoDaymail = entityFaker(
   'assoDaymail',
   {
-    sendDates: [new Date()],
+    date: new Date,
     title: {
       fr: faker.company.catchPhrase,
       en: faker.company.catchPhrase,
@@ -578,11 +578,7 @@ export const createAssoDaymail = entityFaker(
         titleTranslation: { create: params.title },
         bodyTranslation: { create: params.message },
         asso: { connect: { id: deps.asso.id } },
-        sendDates: {
-          createMany: {
-            data: params.sendDates.map((date) => ({ date: date.toISOString() }))
-          },
-        },
+        date: params.date,
       },
     })
   }

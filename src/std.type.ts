@@ -52,13 +52,23 @@ declare global {
     dropTime(): Date;
 
     /**
-     * Adds the number of UTC years, months and days to the Date.
+     * Adds the number of UTC years, months, days, etc. to the Date.
      * @param years Number of UTC years to add.
      * @param months Number of UTC months to add.
      * @param days Number of UTC days to add.
-     * @returns A new Date offset by the specified number of UTC years, months and days.
+     * @param hours Number of UTC hours to add.
+     * @param minutes Number of UTC minutes to add.
+     * @param seconds Number of UTC seconds to add.
+     * @param milliseconds Number of UTC milliseconds to add.
+     * @returns A new Date offset by the specified number of UTC years, months, days, etc.
      */
-    add({ years, months, days }: { years?: number, months?: number, days?: number }): Date;
+    add({ years, months, days, hours, minutes, seconds, milliseconds }: { years?: number, months?: number, days?: number, hours?: number, minutes?: number, seconds?: number, milliseconds?: number }): Date;
+
+    getWeekDate(): Date;
+  }
+
+  interface DateConstructor {
+    getTimezoneOffset(timezone: string): number;
   }
 }
 
@@ -105,8 +115,20 @@ Date.prototype.dropTime = function (this: Date) {
   return new Date(Date.UTC(this.getUTCFullYear(), this.getUTCMonth(), this.getUTCDate()));
 };
 
-Date.prototype.add = function (this: Date, { years = 0, months = 0, days = 0 } = {}) {
-  return new Date(Date.UTC(this.getUTCFullYear() + years, this.getUTCMonth() + months, this.getUTCDate() + days));
+Date.prototype.add = function (this: Date, { years = 0, months = 0, days = 0, hours = 0, minutes = 0, seconds = 0, milliseconds = 0 } = {}) {
+  return new Date(Date.UTC(this.getUTCFullYear() + years, this.getUTCMonth() + months, this.getUTCDate() + days, this.getUTCHours() + hours, this.getUTCMinutes() + minutes, this.getUTCSeconds() + seconds, this.getUTCMilliseconds() + milliseconds));
+}
+
+Date.prototype.getWeekDate = function (this: Date) {
+  return new Date(Date.UTC(this.getUTCFullYear(), this.getUTCMonth(), this.getUTCDate() - this.getUTCDay()));
+}
+
+Date.getTimezoneOffset = function (timeZone: string) {
+  // https://stackoverflow.com/questions/21327371/get-timezone-offset-from-timezone-name-using-javascript#answer-68593283
+  const date = new Date();
+  const utcDate = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }));
+  const tzDate = new Date(date.toLocaleString('en-US', { timeZone }));
+  return (tzDate.getTime() - utcDate.getTime()) / 1000;
 }
 
 export {};
