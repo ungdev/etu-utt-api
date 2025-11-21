@@ -3,16 +3,17 @@ import { UeComment } from 'src/ue/comments/interfaces/comment.interface';
 import { UeCommentReply } from 'src/ue/comments/interfaces/comment-reply.interface';
 import { UeRating } from 'src/ue/interfaces/rate.interface';
 import {
-  FakeApiApplication, FakeAssoDaymail,
+  FakeApiApplication,
+  FakeAssoWeekly,
   FakeAssoMembership,
   FakeAssoMembershipPermission,
   FakeAssoMembershipRole,
   FakeUeAnnalType,
   FakeUeof,
+  FakeUeCreditCategory,
 } from './utils/fakedb';
 import { UeAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
-import { UeRating } from 'src/ue/interfaces/rate.interface';
 import { FakeUe, FakeUser, FakeHomepageWidget, FakeAsso } from './utils/fakedb';
 import { AppProvider } from './utils/test_utils';
 import { Language } from '@prisma/client';
@@ -106,8 +107,8 @@ declare module './declarations' {
     expectApplication(application: FakeApiApplication): this;
 
     expectPermissions(permissions: PermissionManager): this;
-    expectAssoDaymail(daymail: JsonLikeVariant<FakeAssoDaymail>, created = false): this;
-    expectAssoDaymails(app: AppProvider, daymails: JsonLikeVariant<FakeAssoDaymail>[], count: number): this;
+    expectAssoWeekly(weekly: JsonLikeVariant<FakeAssoWeekly>, created = false): this;
+    expectAssoWeeklies(app: AppProvider, weeklies: JsonLikeVariant<FakeAssoWeekly>[], count: number): this;
 
     withLanguage(language: Language): this;
     language: Language;

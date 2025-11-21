@@ -1,7 +1,7 @@
 import { IsDate, IsInt, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 
-export default class AssoGetDaymailReqDto {
+export default class AssoGetWeeklyReqDto {
   @IsDate()
   @Type(() => Date)
   from?: Date;

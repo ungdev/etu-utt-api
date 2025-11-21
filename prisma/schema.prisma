@@ -63,7 +63,7 @@ model Asso {
   descriptionShortTranslation Translation?         @relation(name: "descriptionShortTranslation", fields: [descriptionShortTranslationId], references: [id], onDelete: Cascade)
   descriptionTranslation      Translation?         @relation(name: "descriptionTranslation", fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
   assoMemberships             AssoMembership[]
-  daymails                    AssoDaymail[]
+  weeklies                    AssoWeekly[]
   events                      Event[]
   assoMembershipRoles         AssoMembershipRole[]
   assoAccount                 User                 @relation(fields: [assoAccountId], references: [id], onDelete: Cascade)
@@ -101,7 +101,7 @@ model AssoMembershipRole {
   asso            Asso             @relation(fields: [assoId], references: [id])
 }
 
-model AssoDaymail {
+model AssoWeekly {
   id                 String   @id @default(uuid())
   createdAt          DateTime @default(now())
   assoId             String
@@ -231,8 +231,8 @@ model Translation {
 
   assoDescription                      Asso?                        @relation("descriptionTranslation")
   assoDescriptionShort                 Asso?                        @relation("descriptionShortTranslation")
-  assoDaymailTitle                     AssoDaymail?                 @relation("titleTranslation")
-  assoDaymailTitleBody                 AssoDaymail?                 @relation("bodyTranslation")
+  assoWeeklyTitle                      AssoWeekly?                  @relation("titleTranslation")
+  assoWeeklyTitleBody                  AssoWeekly?                  @relation("bodyTranslation")
   eventDescription                     Event?                       @relation("descriptionTranslation")
   eventTitle                           Event?                       @relation("titleTranslation")
   ueofInfo                             UeofInfo?                    @relation("ueofInfoObjectivesTranslation")
@@ -732,7 +732,7 @@ model UserHomepageWidget {
 model UserPreference {
   id             String   @id @default(uuid())
   language       Language @default(fr)
-  wantDaymail    Boolean  @default(false)
+  wantWeekly     Boolean  @default(false)
   wantDayNotif   Boolean  @default(false)
   wantDiscordUtt Boolean  @default(false)
 

@@ -14,7 +14,7 @@ import {
   FakeUeCreditCategory,
   FakeApiApplication,
   FakeAssoMembershipRole,
-  FakeAssoMembership, FakeAssoDaymail,
+  FakeAssoMembership, FakeAssoWeekly,
 } from './utils/fakedb';
 import { UeAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
 import { ConfigModule } from '../src/config/config.module';
@@ -315,19 +315,19 @@ Spec.prototype.expectPermissions = function (permissions: PermissionManager) {
       .mappedSort((permission) => permission.permission),
   } satisfies PermissionsResDto);
 };
-Spec.prototype.expectAssoDaymail = function (this: Spec, daymail: JsonLikeVariant<FakeAssoDaymail>, created = false) {
+Spec.prototype.expectAssoWeekly = function (this: Spec, weekly: JsonLikeVariant<FakeAssoWeekly>, created = false) {
   return this.expectStatus(created ? HttpStatus.CREATED : HttpStatus.OK).$expectRegexableJson({
-    ...pick(daymail, 'id', 'assoId', 'createdAt', 'date'),
-    title: daymail.title[this.language],
-    message: daymail.message[this.language]
+    ...pick(weekly, 'id', 'assoId', 'createdAt', 'date'),
+    title: weekly.title[this.language],
+    message: weekly.message[this.language]
   });
 };
-Spec.prototype.expectAssoDaymails = function (this: Spec, app: AppProvider, daymails: JsonLikeVariant<FakeAssoDaymail>[], count: number) {
+Spec.prototype.expectAssoWeeklies = function (this: Spec, app: AppProvider, weeklies: JsonLikeVariant<FakeAssoWeekly>[], count: number) {
   return this.expectStatus(HttpStatus.OK).$expectRegexableJson({
-    items: daymails.map((daymail) => ({
-      ...pick(daymail, 'id', 'assoId', 'createdAt', 'date'),
-      title: daymail.title[this.language],
-      message: daymail.message[this.language]
+    items: weeklies.map((weekly) => ({
+      ...pick(weekly, 'id', 'assoId', 'createdAt', 'date'),
+      title: weekly.title[this.language],
+      message: weekly.message[this.language],
     })),
     itemCount: count,
     itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,

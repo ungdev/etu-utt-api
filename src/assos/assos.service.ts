@@ -9,8 +9,8 @@ import { AssoMembershipRole } from './interfaces/membership-role.interface';
 import AssosSearchReqDto from './dto/req/assos-search-req.dto';
 import AssosMemberUpdateReqDto from './dto/req/assos-member-update.dto';
 import { AppException, ERROR_CODE } from '../exceptions';
-import { AssoDaymail } from './interfaces/daymail.interface';
-import DaymailResDto from './dto/res/daymail-res.dto';
+import { AssoWeekly } from './interfaces/weekly.interface';
+import WeeklyResDto from './dto/res/weekly-res.dto';
 
 @Injectable()
 export class AssosService {
@@ -288,18 +288,18 @@ export class AssosService {
     });
   }
 
-  async searchDaymails(assoId: string, from: Date, to: Date, page: number): Promise<{ daymails: AssoDaymail[], count: number }> {
+  async searchWeeklies(assoId: string, from: Date, to: Date, page: number): Promise<{ weeklies: AssoWeekly[], count: number }> {
     const where = {
       assoId,
       date: { gte: from, lte: to },
-    } satisfies Prisma.AssoDaymailWhereInput;
-    const count = await this.prisma.assoDaymail.count({ where });
-    const daymails = await this.prisma.normalize.assoDaymail.findMany({ where, skip: (page - 1) * this.config.PAGINATION_PAGE_SIZE, take: this.config.PAGINATION_PAGE_SIZE });
-    return { daymails, count };
+    } satisfies Prisma.AssoWeeklyWhereInput;
+    const count = await this.prisma.assoWeekly.count({ where });
+    const weeklies = await this.prisma.normalize.assoWeekly.findMany({ where, skip: (page - 1) * this.config.PAGINATION_PAGE_SIZE, take: this.config.PAGINATION_PAGE_SIZE });
+    return { weeklies, count };
   }
 
-  async addDaymail(assoId: string, title: Translation, message: Translation, date): Promise<AssoDaymail> {
-    return this.prisma.normalize.assoDaymail.create({
+  async addWeekly(assoId: string, title: Translation, message: Translation, date): Promise<AssoWeekly> {
+    return this.prisma.normalize.assoWeekly.create({
       data: {
         asso: { connect: { id: assoId } },
         titleTranslation: { create: title },
@@ -309,36 +309,36 @@ export class AssosService {
     });
   }
 
-  getSendDate(sendWeek: Date): Date {
+  getWeeklySendDate(sendWeek: Date): Date {
     return new Date(
       Date.UTC(
         sendWeek.getUTCFullYear(),
         sendWeek.getUTCMonth(),
-        sendWeek.getUTCDate() + this.config.DAYMAIL_SEND_DAY,
-        this.config.DAYMAIL_SEND_HOUR,
+        sendWeek.getUTCDate() + this.config.WEEKLY_SEND_DAY,
+        this.config.WEEKLY_SEND_HOUR,
         0,
         -Date.getTimezoneOffset('Europe/Paris')
       )
     );
   }
 
-  async getDaymail(daymailId: string, assoId?: string): Promise<DaymailResDto> {
-    return this.prisma.normalize.assoDaymail.findUnique({ where: { id: daymailId, assoId } });
+  async getWeekly(weeklyId: string, assoId?: string): Promise<WeeklyResDto> {
+    return this.prisma.normalize.assoWeekly.findUnique({ where: { id: weeklyId, assoId } });
   }
 
-  async hasDaymailForWeek(assoId: string, date: Date, excludeDaymail: string = undefined): Promise<boolean> {
-    return (await this.prisma.assoDaymail.count({
+  async hasWeekly(assoId: string, date: Date, exclude: string = undefined): Promise<boolean> {
+    return (await this.prisma.assoWeekly.count({
       where: {
         assoId,
         date,
-        ...(excludeDaymail ? { id: { not: excludeDaymail } } : {})
+        ...(exclude ? { id: { not: exclude } } : {})
       }
     })) > 0;
   }
 
-  async updateDaymail(daymailId: string, fields: { title: Translation, message: Translation, date: Date }): Promise<AssoDaymail> {
-    return this.prisma.normalize.assoDaymail.update({
-      where: { id: daymailId },
+  async updateWeekly(weeklyId: string, fields: { title: Translation, message: Translation, date: Date }): Promise<AssoWeekly> {
+    return this.prisma.normalize.assoWeekly.update({
+      where: { id: weeklyId },
       data: {
         titleTranslation: { update: fields.title },
         bodyTranslation: { update: fields.message },
@@ -347,7 +347,7 @@ export class AssosService {
     });
   }
 
-  async deleteDaymail(daymailId: string): Promise<AssoDaymail> {
-    return this.prisma.normalize.assoDaymail.delete({ where: { id: daymailId } });
+  async deleteWeekly(weeklyId: string): Promise<AssoWeekly> {
+    return this.prisma.normalize.assoWeekly.delete({ where: { id: weeklyId } });
   }
 }

@@ -45,9 +45,9 @@ export const enum ERROR_CODE {
   PARAM_DOES_NOT_MATCH_REGEX = 2102,
   NO_FIELD_PROVIDED = 2201,
   WIDGET_OVERLAPPING = 2301,
-  DAYMAIL_ALREADY_SENT = 2302,
-  DAYMAIL_ALREADY_SENT_FOR_WEEK = 2303,
-  DAYMAIL_ALREADY_PLANNED_FOR_WEEK = 2304,
+  WEEKLY_ALREADY_SENT = 2302,
+  WEEKLY_ALREADY_SENT_FOR_WEEK = 2303,
+  WEEKLY_ALREADY_PLANNED_FOR_WEEK = 2304,
   FILE_INVALID_TYPE = 2901,
   FILE_TOO_HEAVY = 2902,
   FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS = 3001,
@@ -89,7 +89,7 @@ export const enum ERROR_CODE {
   NO_SUCH_UE_AT_SEMESTER = 4414,
   NO_SUCH_ASSO_ROLE = 4415,
   NO_SUCH_ASSO_MEMBERSHIP = 4416,
-  NO_SUCH_DAYMAIL = 4417,
+  NO_SUCH_WEEKLY = 4417,
   ANNAL_ALREADY_UPLOADED = 4901,
   RESOURCE_UNAVAILABLE = 4902,
   RESOURCE_INVALID_TYPE = 4903,
@@ -240,16 +240,16 @@ export const ErrorData = Object.freeze({
     message: 'Widgets at index % and % are overlapping',
     httpCode: HttpStatus.BAD_REQUEST,
   },
-  [ERROR_CODE.DAYMAIL_ALREADY_SENT]: {
-    message: 'Daymail is already sent',
+  [ERROR_CODE.WEEKLY_ALREADY_SENT]: {
+    message: 'Weekly is already sent',
     httpCode: HttpStatus.BAD_REQUEST,
   },
-  [ERROR_CODE.DAYMAIL_ALREADY_SENT_FOR_WEEK]: {
-    message: 'Daymail is already sent for the week starting at %',
+  [ERROR_CODE.WEEKLY_ALREADY_SENT_FOR_WEEK]: {
+    message: 'Weekly is already sent for the week starting at %',
     httpCode: HttpStatus.BAD_REQUEST,
   },
-  [ERROR_CODE.DAYMAIL_ALREADY_PLANNED_FOR_WEEK]: {
-    message: 'Asso already has a daymail planned for this week',
+  [ERROR_CODE.WEEKLY_ALREADY_PLANNED_FOR_WEEK]: {
+    message: 'Asso already has a weekly planned for this week',
     httpCode: HttpStatus.CONFLICT,
   },
   [ERROR_CODE.FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS]: {
@@ -408,8 +408,8 @@ export const ErrorData = Object.freeze({
     message: 'No such membership in asso: %',
     httpCode: HttpStatus.NOT_FOUND,
   },
-  [ERROR_CODE.NO_SUCH_DAYMAIL]: {
-    message: 'No such daymail in asso: %',
+  [ERROR_CODE.NO_SUCH_WEEKLY]: {
+    message: 'No such weekly in asso: %',
     httpCode: HttpStatus.NOT_FOUND,
   },
   [ERROR_CODE.ANNAL_ALREADY_UPLOADED]: {
