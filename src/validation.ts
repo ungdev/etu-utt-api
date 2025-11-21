@@ -93,7 +93,12 @@ class HasEither implements ValidatorConstraintInterface {
     return validationArguments.constraints.join(', ');
   }
 }
-@ValidatorConstraint({ name: 'whitelistValidation', async: false })
+
+/**
+ * Used internally by HasEither.
+ * Makes a property invisible to validation.
+ */
+@ValidatorConstraint({ name: 'ghostProperty', async: false })
 class GhostProperty implements ValidatorConstraintInterface {
   validate(_: string, args: ValidationArguments) {
     return args.value === undefined;

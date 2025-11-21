@@ -30,7 +30,7 @@ const AddAssoMemberE2ESpec = e2eSuite('POST /assos/:id/members', (app) => {
     permissions: [manageMembersPermission],
   });
 
-  it('should return 403 as user is not authenticated', () =>
+  it('should return 401 as user is not authenticated', () =>
     pactum.spec().post(`/assos/${asso.id}/members`).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
 
   it('should return a 400 as the id param is not valid', () =>

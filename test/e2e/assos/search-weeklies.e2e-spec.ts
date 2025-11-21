@@ -29,7 +29,7 @@ const SearchWeekliesE2ESpec = e2eSuite('GET /assos/:assoId/weekly', (app) => {
   createAssoMembership(app, { asso: otherAsso, user: userWithPermission, role: roleOtherAsso, permissions: [permissionManageAsso] });
   createAssoWeekly(app, { asso: otherAsso }, { date: new Date(Date.UTC(2025, 9, 6)) });
 
-  it('should return 403 as user is not authenticated', () =>
+  it('should return 401 as user is not authenticated', () =>
     pactum.spec().get(`/assos/${asso.id}/weekly/`).withQueryParams({ from: '2025-10-01T00:00:00Z', to: '2025-10-10T00:00:00Z' }).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
 
   it('should return a 400 as the assoId param is not valid', () =>
