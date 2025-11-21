@@ -12,12 +12,13 @@ import { ERROR_CODE } from '../../../src/exceptions';
 const DeleteDaymailE2ESpec = e2eSuite('DELETE /assos/:assoId/daymail/:daymailId', (app) => {
   const userWithPermission = createUser(app);
   const userWithoutPermission = createUser(app);
-  const permissionManageAsso = createAssoMembershipPermission(app, { id: 'manage_asso' });
+  const permissionManageAsso = createAssoMembershipPermission(app, { id: 'daymail' });
 
   const asso = createAsso(app);
   const role = createAssoMembershipRole(app, { asso });
   createAssoMembership(app, { asso, user: userWithPermission, role, permissions: [permissionManageAsso] });
-  const daymail = createAssoDaymail(app, { asso }, { sendDates: [new Date(Date.UTC(2025, 9, 5))] });
+  const daymail = createAssoDaymail(app, { asso }, { date: new Date().add({ days: 14 }).getWeekDate() });
+  const oldDaymail = createAssoDaymail(app, { asso }, { date: new Date(Date.UTC(2025, 10, 10)) });
 
   const otherAsso = createAsso(app);
   const otherAssoRole = createAssoMembershipRole(app, { asso });
@@ -33,6 +34,12 @@ const DeleteDaymailE2ESpec = e2eSuite('DELETE /assos/:assoId/daymail/:daymailId'
       .delete(`/assos/${Dummies.UUID}/daymail/${daymail.id}`)
       .expectAppError(ERROR_CODE.NO_SUCH_ASSO, Dummies.UUID));
 
+  it('should return a 403 as user does not have the permission to update the daymails', () => pactum
+    .spec()
+    .withBearerToken(userWithoutPermission.token)
+    .delete(`/assos/${asso.id}/daymail/${daymail.id}`)
+    .expectAppError(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, 'daymail'));
+
   it('should return a 404 as daymail is not found', () => pactum
     .spec()
     .withBearerToken(userWithPermission.token)
@@ -45,11 +52,11 @@ const DeleteDaymailE2ESpec = e2eSuite('DELETE /assos/:assoId/daymail/:daymailId'
     .delete(`/assos/${otherAsso.id}/daymail/${daymail.id}`)
     .expectAppError(ERROR_CODE.NO_SUCH_DAYMAIL, daymail.id));
 
-  it('should return a 403 as user does not have the permission to update the daymails', () => pactum
+  it('should return a 400 as the daymail was already sent', () => pactum
     .spec()
-    .withBearerToken(userWithoutPermission.token)
-    .delete(`/assos/${asso.id}/daymail/${daymail.id}`)
-    .expectAppError(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, 'manage_asso'));
+    .withBearerToken(userWithPermission.token)
+    .delete(`/assos/${asso.id}/daymail/${oldDaymail.id}`)
+    .expectAppError(ERROR_CODE.DAYMAIL_ALREADY_SENT));
 
   it('should delete the daymail', async () => {
     await pactum

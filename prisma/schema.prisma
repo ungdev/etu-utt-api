@@ -107,20 +107,13 @@ model AssoDaymail {
   assoId             String
   titleTranslationId String   @unique
   bodyTranslationId  String   @unique
+  date               DateTime
 
   asso             Asso        @relation(fields: [assoId], references: [id])
   titleTranslation Translation @relation(name: "titleTranslation", fields: [titleTranslationId], references: [id], onDelete: Cascade)
   bodyTranslation  Translation @relation(name: "bodyTranslation", fields: [bodyTranslationId], references: [id], onDelete: Cascade)
-  sendDates        AssoDaymailSendDate[]
-}
 
-model AssoDaymailSendDate {
-  daymailId String
-  date DateTime
-
-  daymail AssoDaymail @relation(fields: [daymailId], references: [id], onDelete: Cascade)
-
-  @@id([daymailId, date])
+  @@unique([assoId, date])
 }
 
 model Event {

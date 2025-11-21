@@ -1,10 +1,11 @@
 import { Type } from 'class-transformer';
 import { IsDate, IsNotEmpty, ValidateNested } from 'class-validator';
 import { TranslationReqDto } from '../../../app.dto';
-import { IsFutureDate } from '../../../validation';
+import { IsWeekDate } from '../../../validation';
 
 export default class AssosPostDaymailReqDto {
   @ValidateNested()
+  @IsNotEmpty()
   @Type(() => TranslationReqDto)
   title: TranslationReqDto
 
@@ -13,9 +14,9 @@ export default class AssosPostDaymailReqDto {
   @Type(() => TranslationReqDto)
   message: TranslationReqDto;
 
-  @IsDate({ each: true })
+  @IsDate()
   @IsNotEmpty()
   @Type(() => Date)
-  @IsFutureDate({ each: true })
-  dates: Date[];
+  @IsWeekDate()
+  date: Date;
 }

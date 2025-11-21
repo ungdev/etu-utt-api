@@ -6,5 +6,5 @@ export default class DaymailResDto {
   createdAt: Date;
   title: Translation;
   message: Translation;
-  sendDates: Date[];
+  date: Date;
 }

@@ -57,6 +57,12 @@ export const translationSelect = {
   },
 };
 
+const exhaustiveLanguage = <CheckArray extends readonly Language[]>(array: (
+  [Language] extends [CheckArray[number]]
+    ? CheckArray
+    : 'Missing some values from Language')) => array;
+export const languages = exhaustiveLanguage(['fr', 'en', 'es', 'de', 'zh']);
+
 export class PermissionManager {
   public readonly hardPermissions: Permission[];
   public readonly softPermissions: {

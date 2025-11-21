@@ -8,32 +8,26 @@ import {
 } from '../../utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
-import { ConfigModule } from '../../../src/config/config.module';
 
-const GetDaymailsE2ESpec = e2eSuite('GET /assos/:assoId/daymail', (app) => {
+const SearchDaymailsE2ESpec = e2eSuite('GET /assos/:assoId/daymail', (app) => {
   const userWithPermission = createUser(app);
   const userWithoutPermission = createUser(app);
-  const permissionManageAsso = createAssoMembershipPermission(app, { id: 'manage_asso' });
+  const permissionManageAsso = createAssoMembershipPermission(app, { id: 'daymail' });
 
   const asso = createAsso(app);
   const roleAsso = createAssoMembershipRole(app, { asso });
   createAssoMembership(app, { asso, user: userWithPermission, role: roleAsso, permissions: [permissionManageAsso] });
   // Working request will be between the 1st, October and the 10th of October
-  const daymailAsso1 = createAssoDaymail(app, { asso }, {
-    sendDates: [
-      new Date(Date.UTC(2025, 8, 30)),
-      new Date(Date.UTC(2025, 9, 1)),
-      new Date(Date.UTC(2025, 9, 2)),
-      new Date(Date.UTC(2025, 9, 10)),
-      new Date(Date.UTC(2025, 9, 11))]
-  });
-  const daymailAsso2 = createAssoDaymail(app, { asso }, { sendDates: [new Date(Date.UTC(2025, 9, 5))] });
+  const daymailAssoOctober1 = createAssoDaymail(app, { asso }, { date: new Date(Date.UTC(2025, 9, 1)) });
+  const daymailAssoOctober2 = createAssoDaymail(app, { asso }, { date: new Date(Date.UTC(2025, 9, 2)) });
+  createAssoDaymail(app, { asso }, { date: new Date(Date.UTC(2025, 8, 1)) }); // September
+  createAssoDaymail(app, { asso }, { date: new Date(Date.UTC(2025, 10, 1)) }); // November
 
   // Create a daymail for another asso, that we should not get
   const otherAsso = createAsso(app);
   const roleOtherAsso = createAssoMembershipRole(app, { asso: otherAsso });
   createAssoMembership(app, { asso: otherAsso, user: userWithPermission, role: roleOtherAsso, permissions: [permissionManageAsso] });
-  createAssoDaymail(app, { asso: otherAsso }, { sendDates: [new Date(Date.UTC(2025, 9, 6))] });
+  createAssoDaymail(app, { asso: otherAsso }, { date: new Date(Date.UTC(2025, 9, 6)) });
 
   it('should return 403 as user is not authenticated', () =>
     pactum.spec().get(`/assos/${asso.id}/daymail/`).withQueryParams({ from: '2025-10-01T00:00:00Z', to: '2025-10-10T00:00:00Z' }).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
@@ -67,25 +61,14 @@ const GetDaymailsE2ESpec = e2eSuite('GET /assos/:assoId/daymail', (app) => {
     .withBearerToken(userWithoutPermission.token)
     .get(`/assos/${asso.id}/daymail`)
     .withQueryParams({ from: '2025-10-01T00:00:00Z', to: '2025-10-10T00:00:00Z' })
-    .expectAppError(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, 'manage_asso'));
+    .expectAppError(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, 'daymail'));
 
-  it('should fail as there are too many days requested', () =>
-    pactum
+  it('should return daymails for `asso` between October, 1st and October, 31st', () => pactum
       .spec()
       .withBearerToken(userWithPermission.token)
       .get(`/assos/${asso.id}/daymail`)
-      .withQueryParams({ from: '2024-10-01T00:00:00Z', to: '2026-10-01T00:00:00Z' })
-      .expectAppError(ERROR_CODE.TOO_MANY_DAYS, `${2 * 365 + 1}`, `${app().get(ConfigModule).PAGINATION_PAGE_SIZE}`));
-
-  it('should return daymails for `asso` between October, 1st and October, 10th', () => pactum
-      .spec()
-      .withBearerToken(userWithPermission.token)
-      .get(`/assos/${asso.id}/daymail`)
-      .withQueryParams({ from: '2025-10-01T00:00:00Z', to: '2025-10-10T00:00:00Z' })
-      .expectAssoDaymails([
-        { ...daymailAsso1, sendDates: [new Date(Date.UTC(2025, 9, 1)), new Date(Date.UTC(2025, 9, 2)), new Date(Date.UTC(2025, 9, 10))] },
-        { ...daymailAsso2, sendDates: [new Date(Date.UTC(2025, 9, 5))] },
-      ]));
+      .withQueryParams({ from: '2025-10-01T00:00:00Z', to: '2025-10-31T00:00:00Z' })
+      .expectAssoDaymails(app, [daymailAssoOctober1, daymailAssoOctober2], 2));
 });
 
-export default GetDaymailsE2ESpec;
+export default SearchDaymailsE2ESpec;
