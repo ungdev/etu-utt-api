@@ -23,12 +23,12 @@ import AssosMemberCreateReqDto from './dto/req/assos-member-create.dto';
 import AssosMemberUpdateReqDto from './dto/req/assos-member-update.dto';
 import AssoMembershipResDto from './dto/res/assos-membership-res.dto';
 import UsersService from '../users/users.service';
-import AssosPostDaymailReqDto from './dto/req/assos-post-daymail-req.dto';
-import DaymailResDto from './dto/res/daymail-res.dto';
+import AssosPostWeeklyReqDto from './dto/req/assos-post-weekly-req.dto';
+import WeeklyResDto from './dto/res/weekly-res.dto';
 import { ConfigModule } from '../config/config.module';
-import AssoGetDaymailReqDto from './dto/req/asso-get-daymail-req.dto';
-import { AssoDaymail } from './interfaces/daymail.interface';
-import DaymailInfoResDto from './dto/res/daymail-info-res.dto';
+import AssoGetWeeklyReqDto from './dto/req/asso-get-weekly-req.dto';
+import { AssoWeekly } from './interfaces/weekly.interface';
+import WeeklyInfoResDto from './dto/res/weekly-info-res.dto';
 
 @Controller('assos')
 @ApiTags('Assos')
@@ -223,120 +223,120 @@ export class AssosController {
     return { roles: updatedRoles.map(this.formatPartialAssoMembershipRole) };
   }
 
-  @Get('/daymail/info')
-  @ApiOperation({ description: 'Returns information about daymails.' })
-  @ApiOkResponse({ type: DaymailInfoResDto })
-  getDaymailInfo(): DaymailInfoResDto {
+  @Get('/weekly/info')
+  @ApiOperation({ description: 'Returns information about weeklies.' })
+  @ApiOkResponse({ type: WeeklyInfoResDto })
+  getWeeklyInfo(): WeeklyInfoResDto {
     return {
-      sendDay: this.config.DAYMAIL_SEND_DAY,
-      sendHour: this.config.DAYMAIL_SEND_HOUR,
+      sendDay: this.config.WEEKLY_SEND_DAY,
+      sendHour: this.config.WEEKLY_SEND_HOUR,
     };
   }
 
-  @Get('/:assoId/daymail')
-  @ApiOperation({ description: 'Get daymails from query parameter `from` to query parameter `to`.' })
+  @Get('/:assoId/weekly')
+  @ApiOperation({ description: 'Get weeklies from query parameter `from` to query parameter `to`.' })
   @ApiQuery({ name: 'from', type: String })
   @ApiQuery({ name: 'to', type: String, default: `\`from\` + env.PAGINATION_PAGE_SIZE days`, required: false })
-  @ApiOkResponse({ type: DaymailResDto })
+  @ApiOkResponse({ type: WeeklyResDto })
   @ApiAppErrorResponse(ERROR_CODE.PARAM_DATE_MUST_BE_AFTER, '`to` must come after `from` (or be equal)')
   @ApiAppErrorResponse(
     ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS,
-    'The user issuing the request does not have the permission daymail',
+    'The user issuing the request does not have the permission weekly',
   )
-  async searchDaymails(
+  async searchWeeklies(
     @ParamAsso() asso: Asso,
-    @Query() { from, to, page }: AssoGetDaymailReqDto,
+    @Query() { from, to, page }: AssoGetWeeklyReqDto,
     @GetUser() user: User,
-  ): Promise<Pagination<DaymailResDto>> {
+  ): Promise<Pagination<WeeklyResDto>> {
     from = from.dropTime();
     to = to?.dropTime();
     if (to && from > to)
       throw new AppException(ERROR_CODE.PARAM_DATE_MUST_BE_AFTER, to.toISOString(), from.toISOString());
-    if (!(await this.assosService.hasSomeAssoPermission(asso, user.id, 'daymail')))
-      throw new AppException(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, 'daymail');
-    const { daymails, count } = await this.assosService.searchDaymails(asso.id, from, to, page);
+    if (!(await this.assosService.hasSomeAssoPermission(asso, user.id, 'weekly')))
+      throw new AppException(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, 'weekly');
+    const { weeklies, count } = await this.assosService.searchWeeklies(asso.id, from, to, page);
     return {
-      items: daymails,
+      items: weeklies,
       itemCount: count,
       itemsPerPage: this.config.PAGINATION_PAGE_SIZE,
     };
   }
 
-  @Post('/:assoId/daymail')
-  @ApiOperation({ description: 'Create a daymail for the given association.' })
-  @ApiCreatedResponse({ type: DaymailResDto })
+  @Post('/:assoId/weekly')
+  @ApiOperation({ description: 'Create a weekly for the given association.' })
+  @ApiCreatedResponse({ type: WeeklyResDto })
   @ApiAppErrorResponse(
     ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS,
-    'The user issuing the request does not have the permission daymail',
+    'The user issuing the request does not have the permission weekly',
   )
-  @ApiAppErrorResponse(ERROR_CODE.DAYMAIL_ALREADY_SENT_FOR_WEEK, 'The daymail was already sent for the specified week')
-  @ApiAppErrorResponse(ERROR_CODE.DAYMAIL_ALREADY_PLANNED_FOR_WEEK, 'The asso already has a daymailed planned for the requested new week')
-  async createDaymail(
+  @ApiAppErrorResponse(ERROR_CODE.WEEKLY_ALREADY_SENT_FOR_WEEK, 'The weekly was already sent for the specified week')
+  @ApiAppErrorResponse(ERROR_CODE.WEEKLY_ALREADY_PLANNED_FOR_WEEK, 'The asso already has a weekly planned for the requested week')
+  async createWeekly(
     @ParamAsso() asso: Asso,
-    @Body() dto: AssosPostDaymailReqDto,
+    @Body() dto: AssosPostWeeklyReqDto,
     @GetUser() user: User,
-  ): Promise<DaymailResDto> {
-    if (!(await this.assosService.hasSomeAssoPermission(asso, user.id, 'daymail')))
-      throw new AppException(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, 'daymail');
-    if (this.assosService.getSendDate(dto.date) < new Date())
-      throw new AppException(ERROR_CODE.DAYMAIL_ALREADY_SENT_FOR_WEEK, dto.date.toISOString());
-    if (await this.assosService.hasDaymailForWeek(asso.id, dto.date))
-      throw new AppException(ERROR_CODE.DAYMAIL_ALREADY_PLANNED_FOR_WEEK);
-    return this.assosService.addDaymail(asso.id, dto.title, dto.message, dto.date);
+  ): Promise<WeeklyResDto> {
+    if (!(await this.assosService.hasSomeAssoPermission(asso, user.id, 'weekly')))
+      throw new AppException(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, 'weekly');
+    if (this.assosService.getWeeklySendDate(dto.date) < new Date())
+      throw new AppException(ERROR_CODE.WEEKLY_ALREADY_SENT_FOR_WEEK, dto.date.toISOString());
+    if (await this.assosService.hasWeekly(asso.id, dto.date))
+      throw new AppException(ERROR_CODE.WEEKLY_ALREADY_PLANNED_FOR_WEEK);
+    return this.assosService.addWeekly(asso.id, dto.title, dto.message, dto.date);
   }
 
-  @Patch('/:assoId/daymail/:daymailId')
-  @ApiOperation({ description: 'Update a daymail for the given association.' })
-  @ApiOkResponse({ type: paginatedResponseDto(DaymailResDto) })
+  @Patch('/:assoId/weekly/:weeklyId')
+  @ApiOperation({ description: 'Update a weekly for the given association.' })
+  @ApiOkResponse({ type: paginatedResponseDto(WeeklyResDto) })
   @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_ASSO)
   @ApiAppErrorResponse(
     ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS,
-    'The user issuing the request does not have the permission daymail',
+    'The user issuing the request does not have the permission weekly',
   )
-  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_DAYMAIL, 'The daymail does not exist for the specified asso')
-  @ApiAppErrorResponse(ERROR_CODE.DAYMAIL_ALREADY_SENT, 'The daymail that is beeing modified was already sent')
-  @ApiAppErrorResponse(ERROR_CODE.DAYMAIL_ALREADY_SENT_FOR_WEEK, 'The daymail was already sent for the specified week')
-  @ApiAppErrorResponse(ERROR_CODE.DAYMAIL_ALREADY_PLANNED_FOR_WEEK, 'The asso already has a daymailed planned for the requested new week')
-  async updateDaymail(
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_WEEKLY, 'The weekly does not exist for the specified asso')
+  @ApiAppErrorResponse(ERROR_CODE.WEEKLY_ALREADY_SENT, 'The weekly that is beeing modified was already sent')
+  @ApiAppErrorResponse(ERROR_CODE.WEEKLY_ALREADY_SENT_FOR_WEEK, 'The weekly was already sent for the specified week')
+  @ApiAppErrorResponse(ERROR_CODE.WEEKLY_ALREADY_PLANNED_FOR_WEEK, 'The asso already has a weekly planned for the requested week')
+  async updateWeekly(
     @ParamAsso() asso: Asso,
-    @UUIDParam('daymailId') daymailId: string,
-    @Body() dto: AssosPostDaymailReqDto,
+    @UUIDParam('weeklyId') weeklyId: string,
+    @Body() dto: AssosPostWeeklyReqDto,
     @GetUser() user: User,
-  ): Promise<DaymailResDto> {
-    if (!(await this.assosService.hasSomeAssoPermission(asso, user.id, 'daymail')))
-      throw new AppException(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, 'daymail');
-    const daymail: AssoDaymail = await this.assosService.getDaymail(daymailId, asso.id);
-    if (!daymail) throw new AppException(ERROR_CODE.NO_SUCH_DAYMAIL, daymailId);
-    if (this.assosService.getSendDate(daymail.date) < new Date())
-      throw new AppException(ERROR_CODE.DAYMAIL_ALREADY_SENT);
-    if (this.assosService.getSendDate(dto.date) < new Date())
-      throw new AppException(ERROR_CODE.DAYMAIL_ALREADY_SENT_FOR_WEEK, dto.date.toISOString());
-    if (await this.assosService.hasDaymailForWeek(asso.id, daymail.date, daymail.id))
-      throw new AppException(ERROR_CODE.DAYMAIL_ALREADY_PLANNED_FOR_WEEK);
-    return this.assosService.updateDaymail(daymailId, dto);
+  ): Promise<WeeklyResDto> {
+    if (!(await this.assosService.hasSomeAssoPermission(asso, user.id, 'weekly')))
+      throw new AppException(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, 'weekly');
+    const weekly: AssoWeekly = await this.assosService.getWeekly(weeklyId, asso.id);
+    if (!weekly) throw new AppException(ERROR_CODE.NO_SUCH_WEEKLY, weeklyId);
+    if (this.assosService.getWeeklySendDate(weekly.date) < new Date())
+      throw new AppException(ERROR_CODE.WEEKLY_ALREADY_SENT);
+    if (this.assosService.getWeeklySendDate(dto.date) < new Date())
+      throw new AppException(ERROR_CODE.WEEKLY_ALREADY_SENT_FOR_WEEK, dto.date.toISOString());
+    if (await this.assosService.hasWeekly(asso.id, weekly.date, weekly.id))
+      throw new AppException(ERROR_CODE.WEEKLY_ALREADY_PLANNED_FOR_WEEK);
+    return this.assosService.updateWeekly(weeklyId, dto);
   }
 
-  @Delete('/:assoId/daymail/:daymailId')
-  @ApiOperation({ description: 'Delete a daymail for the given association.' })
-  @ApiOkResponse({ type: DaymailResDto })
+  @Delete('/:assoId/weekly/:weeklyId')
+  @ApiOperation({ description: 'Delete a weekly for the given association.' })
+  @ApiOkResponse({ type: WeeklyResDto })
   @ApiAppErrorResponse(
     ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS,
-    'The user issuing the request does not have the permission daymail',
+    'The user issuing the request does not have the permission weekly',
   )
-  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_DAYMAIL)
-  @ApiAppErrorResponse(ERROR_CODE.DAYMAIL_ALREADY_SENT, 'The daymail that is beeing modified was already sent')
-  async deleteDaymail(
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_WEEKLY)
+  @ApiAppErrorResponse(ERROR_CODE.WEEKLY_ALREADY_SENT, 'The weekly that is beeing modified was already sent')
+  async deleteWeekly(
     @ParamAsso() asso: Asso,
-    @UUIDParam('daymailId') daymailId: string,
+    @UUIDParam('weeklyId') weeklyId: string,
     @GetUser() user: User,
-  ): Promise<DaymailResDto> {
-    if (!(await this.assosService.hasSomeAssoPermission(asso, user.id, 'daymail')))
-      throw new AppException(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, 'daymail');
-    const daymail: AssoDaymail = await this.assosService.getDaymail(daymailId, asso.id);
-    if (!daymail) throw new AppException(ERROR_CODE.NO_SUCH_DAYMAIL, daymailId);
-    if (this.assosService.getSendDate(daymail.date) < new Date())
-      throw new AppException(ERROR_CODE.DAYMAIL_ALREADY_SENT);
-    return this.assosService.deleteDaymail(daymailId);
+  ): Promise<WeeklyResDto> {
+    if (!(await this.assosService.hasSomeAssoPermission(asso, user.id, 'weekly')))
+      throw new AppException(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, 'weekly');
+    const weekly: AssoWeekly = await this.assosService.getWeekly(weeklyId, asso.id);
+    if (!weekly) throw new AppException(ERROR_CODE.NO_SUCH_WEEKLY, weeklyId);
+    if (this.assosService.getWeeklySendDate(weekly.date) < new Date())
+      throw new AppException(ERROR_CODE.WEEKLY_ALREADY_SENT);
+    return this.assosService.deleteWeekly(weeklyId);
   }
 
   formatAssoOverview(asso: Asso): AssoOverviewResDto {

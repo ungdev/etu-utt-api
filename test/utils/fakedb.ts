@@ -44,7 +44,7 @@ import { CommentStatus } from '../../src/ue/comments/interfaces/comment.interfac
 import { UeAnnalFile } from '../../src/ue/annals/interfaces/annal.interface';
 import { omit, PermissionManager, pick, translationSelect } from '../../src/utils';
 import { DEFAULT_APPLICATION } from '../../prisma/seed/utils';
-import { AssoDaymail } from '../../src/assos/interfaces/daymail.interface';
+import { AssoWeekly } from '../../src/assos/interfaces/weekly.interface';
 import { isDate } from 'node:util/types';
 
 /**
@@ -120,7 +120,7 @@ export type FakeHomepageWidget = Partial<RawHomepageWidget>;
 export type FakeApiApplication = Partial<Omit<RawApiApplication, 'ownerId'>> & {
   owner: { id: string; firstName: string; lastName: string };
 };
-export type FakeAssoDaymail = Partial<Pick<AssoDaymail, 'id' | 'assoId' | 'date' | 'createdAt' | 'title' | 'message'>>;
+export type FakeAssoWeekly = Partial<Pick<AssoWeekly, 'id' | 'assoId' | 'date' | 'createdAt' | 'title' | 'message'>>;
 
 export interface FakeEntityMap {
   assoMembership: {
@@ -146,9 +146,9 @@ export interface FakeEntityMap {
     entity: FakeAsso;
     params: CreateAssoParameters;
   };
-  assoDaymail: {
-    entity: FakeAssoDaymail;
-    params: CreateAssoDaymailParameters;
+  assoWeekly: {
+    entity: FakeAssoWeekly;
+    params: CreateAssoWeeklyParameters;
     deps: { asso: FakeAsso };
   }
   timetableEntryOverride: {
@@ -551,9 +551,9 @@ export const createAsso = entityFaker(
   },
 );
 
-export type CreateAssoDaymailParameters = FakeAssoDaymail;
-export const createAssoDaymail = entityFaker(
-  'assoDaymail',
+export type CreateAssoWeeklyParameters = FakeAssoWeekly;
+export const createAssoWeekly = entityFaker(
+  'assoWeekly',
   {
     date: new Date,
     title: {
@@ -572,7 +572,7 @@ export const createAssoDaymail = entityFaker(
     }
   },
   async (app, deps, params) => {
-    return app().get(PrismaService).normalize.assoDaymail.create({
+    return app().get(PrismaService).normalize.assoWeekly.create({
       data: {
         id: params.id,
         titleTranslation: { create: params.title },

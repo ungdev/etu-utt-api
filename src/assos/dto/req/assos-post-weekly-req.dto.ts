@@ -3,7 +3,7 @@ import { IsDate, IsNotEmpty, ValidateNested } from 'class-validator';
 import { TranslationReqDto } from '../../../app.dto';
 import { IsWeekDate } from '../../../validation';
 
-export default class AssosPostDaymailReqDto {
+export default class AssosPostWeeklyReqDto {
   @ValidateNested()
   @IsNotEmpty()
   @Type(() => TranslationReqDto)

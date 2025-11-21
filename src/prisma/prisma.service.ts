@@ -14,7 +14,7 @@ import { generateCustomAssoMembershipModel } from '../assos/interfaces/membershi
 import { generateCustomAssoMembershipRoleModel } from '../assos/interfaces/membership-role.interface';
 import { generateCustomCreditCategoryModel } from '../ue/credit/interfaces/credit-category.interface';
 import { generateCustomApplicationModel } from '../auth/application/interfaces/application.interface';
-import { generateCustomAssoDaymailModel } from '../assos/interfaces/daymail.interface';
+import { generateCustomAssoWeeklyModel } from '../assos/interfaces/weekly.interface';
 
 @Injectable()
 export class PrismaService extends PrismaClient<ReturnType<typeof prismaOptions>> {
@@ -55,7 +55,7 @@ function createNormalizedEntitiesUtility(prisma: PrismaClient) {
     assoMembershipRole: generateCustomAssoMembershipRoleModel(prisma),
     ueCreditCategory: generateCustomCreditCategoryModel(prisma),
     apiApplication: generateCustomApplicationModel(prisma),
-    assoDaymail: generateCustomAssoDaymailModel(prisma),
+    assoWeekly: generateCustomAssoWeeklyModel(prisma),
   };
 }
 
