@@ -1,9 +1,9 @@
 import { Type } from 'class-transformer';
 import { IsDate, IsNotEmpty, ValidateNested } from 'class-validator';
-import { TranslationReqDto } from '../../../app.dto';
-import { IsWeekDate } from '../../../validation';
+import { TranslationReqDto } from '../../../../app.dto';
+import { IsWeekDate } from '../../../../validation';
 
-export default class AssosPostWeeklyReqDto {
+export default class WeeklyReqDto {
   @ValidateNested()
   @IsNotEmpty()
   @Type(() => TranslationReqDto)
