@@ -10,7 +10,10 @@ import { AppException, ERROR_CODE } from '../../exceptions';
 @Controller('auth/permissions')
 @ApiTags('Permissions')
 export default class PermissionsController {
-  constructor(private permissionsService: PermissionsService, private authService: AuthService) {}
+  constructor(
+    private permissionsService: PermissionsService,
+    private authService: AuthService,
+  ) {}
 
   @Get('/current')
   @ApiOperation({ description: 'Returns the permission of an application.' })
@@ -31,10 +34,12 @@ export default class PermissionsController {
   private formatPermissions(permissions: PermissionManager): PermissionsResDto {
     return {
       hardPermissions: permissions.hardPermissions.sort(),
-      softPermissions: Object.entries(permissions.softPermissions).map(([permission, users]) => ({
-        permission,
-        users,
-      })).mappedSort((permission) => permission.permission),
+      softPermissions: Object.entries(permissions.softPermissions)
+        .map(([permission, users]) => ({
+          permission,
+          users,
+        }))
+        .mappedSort((permission) => permission.permission),
     };
   }
 }
