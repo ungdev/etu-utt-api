@@ -1,4 +1,3 @@
-import { INestApplication } from '@nestjs/common';
 import SearchE2ESpec from './search.e2e-spec';
 import GetAssoE2ESpec from './get-asso.e2e-spec';
 import GetAssoMembersE2ESpec from './list-members.e2e-spec';

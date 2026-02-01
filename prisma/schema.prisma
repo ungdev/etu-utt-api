@@ -543,7 +543,6 @@ model UeWorkTime {
 model User {
   id              String  @id @default(uuid())
   login           String  @unique @db.VarChar(50)
-  hash            String?
   // TODO : maybe a field accountType (that is either CAS or login-password), but this may be implemented in the centralized authentication
   studentId       Int?
   firstName       String

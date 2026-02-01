@@ -1,14 +1,10 @@
 import AuthSignUpDebugReqDto from '../../../src/auth/dto/req/auth-sign-up-debug-req.dto';
-import * as pactum from 'pactum';
 import { PrismaService } from '../../../src/prisma/prisma.service';
-import { buildTestApp, E2EApp, E2EAppProvider, e2eSuite } from '../../utils/test_utils';
+import { buildTestApp, E2EApp, e2eSuite } from '../../utils/test_utils';
 import { ERROR_CODE } from '../../../src/exceptions';
 import { UserType } from '@prisma/client';
 import { createUser } from '../../utils/fakedb';
 import { JwtService } from '@nestjs/jwt';
-import { Test } from '@nestjs/testing';
-import { AppModule } from '../../../src/app.module';
-import { INestApplication } from '@nestjs/common';
 
 const DebugSignUpE2ESpec = e2eSuite('POST (/vdev)/auth/signup', (app) => {
   const dto = {
