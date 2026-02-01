@@ -1,11 +1,28 @@
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { INestApplication } from '@nestjs/common';
-import { TestingModule } from '@nestjs/testing';
+import { Test, TestingModule } from '@nestjs/testing';
 import { faker } from '@faker-js/faker';
 import { ConfigModule } from '../../src/config/config.module';
 import { DMMF } from '@prisma/client/runtime/library';
 import { clearUniqueValues, generateDefaultApplication } from '../../prisma/seed/utils';
 import { PrismaClient } from '@prisma/client';
+import Spec from 'pactum/src/models/Spec';
+import { AppModule } from '../../src/app.module';
+import * as pactum from 'pactum';
+
+export async function buildTestApp(port: number): Promise<E2EApp> {
+  const moduleRef = await Test.createTestingModule({
+    imports: [AppModule.register()],
+  }).compile();
+  const nestApp = moduleRef.createNestApplication();
+  AppModule.initApp(nestApp);
+  await nestApp.listen(port);
+
+  nestApp['spec'] = () => pactum.spec().withBaseUrl(
+    `http://localhost:${port}${process.env.API_PREFIX.startsWith('/') ? '' : '/'}${process.env.API_PREFIX.endsWith('/') ? process.env.API_PREFIX.slice(0, -1) : process.env.API_PREFIX}`,
+  );
+  return nestApp as unknown as E2EApp;
+}
 
 /**
  * Initializes this file.
@@ -17,9 +34,14 @@ export function init(app: AppProvider) {
 }
 
 /**
+ * Extended INestApplication, with utility function spec() which sets up a {@link Spec} object for calling a route of the app.
+ */
+export type E2EApp = INestApplication & { spec(): Spec }
+
+/**
  * A function returning the app, for e2e testing ({@link INestApplication}).
  */
-export type E2EAppProvider = () => INestApplication;
+export type E2EAppProvider = () => E2EApp;
 /**
  * A function returning the app, for e2e testing ({@link TestingModule}).
  */

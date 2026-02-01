@@ -11,7 +11,7 @@ import { LdapUser } from 'ldap-server-mock';
 import { HttpStatus } from '@nestjs/common';
 import { mockLdapServer } from '../../external_services/ldap';
 
-const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
+const SignUpE2eSpec = e2eSuite('POST /auth/signup', (app) => {
   const list: LdapUser[] = [];
   const branch = fakedb.createBranch(app);
   const branchOption = fakedb.createBranchOption(app, { branch });
@@ -28,7 +28,7 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
   it('should fail as the provided token is not jwt-generated', () =>
     pactum
       .spec()
-      .post('/auth/signup/cas')
+      .post('/auth/signup')
       .withJson({ registerToken: faker.string.alpha() })
       .expectAppError(ERROR_CODE.INVALID_TOKEN_FORMAT));
 
@@ -38,7 +38,7 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
       .sign({ a: 'b' }, { expiresIn: 60, secret: app().get(ConfigModule).JWT_SECRET });
     pactum
       .spec()
-      .post('/auth/signup/cas')
+      .post('/auth/signup')
       .withJson({ registerToken: token })
       .expectAppError(ERROR_CODE.INVALID_TOKEN_FORMAT);
   });
@@ -47,7 +47,7 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
     const user = await fakedb.createUser(app, {}, true);
     await pactum
       .spec()
-      .post('/auth/signup/cas')
+      .post('/auth/signup')
       .withJson({
         registerToken: await app()
           .get(AuthService)
@@ -97,7 +97,7 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
     const authService = app().get(AuthService);
     await pactum
       .spec()
-      .post('/auth/signup/cas')
+      .post('/auth/signup')
       .withJson({
         registerToken: await authService.signRegisterUserToken(login, mail, firstName, lastName, tokenExpiresIn),
       })
@@ -143,4 +143,4 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
   });
 });
 
-export default CasSignUpE2ESpec;
+export default SignUpE2eSpec;
