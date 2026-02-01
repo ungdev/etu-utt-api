@@ -32,6 +32,10 @@ export class ConfigModule {
   public readonly TIMETABLE_URL: string;
   public readonly ANNAL_UPLOAD_DIR: string;
   public readonly ETUUTT_WEBSITE_APPLICATION_ID: string;
+  public readonly SMTP_HOST: string;
+  public readonly SMTP_PORT: number;
+  public readonly SMTP_USER: string;
+  public readonly SMTP_PASSWORD: string;
   // DEV ENVIRONMENT ONLY
 
   // TEST ENVIRONMENT ONLY
@@ -51,9 +55,13 @@ export class ConfigModule {
     this.ANNAL_UPLOAD_DIR = config.get<string>('ANNAL_UPLOAD_DIR');
     this.IS_PROD_ENV = isProdEnv;
     this.TIMETABLE_URL = config.get<string>('TIMETABLE_URL');
-
+    this.ANNAL_UPLOAD_DIR = config.get<string>('ANNAL_UPLOAD_DIR');
     if (this.ANNAL_UPLOAD_DIR.endsWith('/')) this.ANNAL_UPLOAD_DIR = this.ANNAL_UPLOAD_DIR.slice(0, -1);
     this.ETUUTT_WEBSITE_APPLICATION_ID = config.get('ETUUTT_WEBSITE_APPLICATION_ID');
+    this.SMTP_HOST = config.get<string>('SMTP_HOST');
+    this.SMTP_PORT = config.get<number>('SMTP_PORT');
+    this.SMTP_USER = config.get<string>('SMTP_USER');
+    this.SMTP_PASSWORD = config.get<string>('SMTP_PASSWORD');
 
     this._FAKER_SEED = isTestEnv ? Number(config.get('FAKER_SEED')) : undefined;
   }

@@ -9,7 +9,10 @@ import { PermissionManager } from '../../utils';
 
 @Injectable()
 export class JwtGuard extends AuthGuard('jwt') {
-  constructor(private reflector: Reflector, private prisma: PrismaService) {
+  constructor(
+    private reflector: Reflector,
+    private prisma: PrismaService,
+  ) {
     super();
   }
 
