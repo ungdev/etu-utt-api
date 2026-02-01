@@ -1,4 +1,5 @@
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
+import { ValidationError } from '@nestjs/common/interfaces/external/validation-error.interface';
 
 /**
  * Error codes
@@ -13,6 +14,7 @@ import { HttpException, HttpStatus } from '@nestjs/common';
  * - 4xxx: Resource errors. This includes all http 404 errors.
  */
 export const enum ERROR_CODE {
+  NOT_FOUND = 404,
   NOT_LOGGED_IN = 1001,
   APPLICATION_HEADER_MISSING = 1002,
   INCONSISTENT_APPLICATION = 1003,
@@ -40,6 +42,7 @@ export const enum ERROR_CODE {
   BODY_MISSING = 2022,
   PARAM_PAST_DATE = 2023,
   PARAM_MISSING_EITHER = 2024,
+  PARAM_NOT_ARRAY = 2025,
   PARAM_DOES_NOT_MATCH_REGEX = 2102,
   NO_FIELD_PROVIDED = 2201,
   WIDGET_OVERLAPPING = 2301,
@@ -98,6 +101,10 @@ export const enum ERROR_CODE {
  * The message can contain `%` characters, which will be replaced by data when throwing the {@link AppException}.
  */
 export const ErrorData = Object.freeze({
+  [ERROR_CODE.NOT_FOUND]: {
+    message: 'The route does not exist',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
   [ERROR_CODE.NOT_LOGGED_IN]: {
     message: 'You must be logged in to access this resource',
     httpCode: HttpStatus.UNAUTHORIZED,
@@ -204,6 +211,10 @@ export const ErrorData = Object.freeze({
   },
   [ERROR_CODE.PARAM_MISSING_EITHER]: {
     message: 'One of these parameters must be provided: %',
+    httpCode: HttpStatus.BAD_REQUEST,
+  },
+  [ERROR_CODE.PARAM_NOT_ARRAY]: {
+    message: 'The following parameters must be an array: %',
     httpCode: HttpStatus.BAD_REQUEST,
   },
   [ERROR_CODE.PARAM_DOES_NOT_MATCH_REGEX]: {
@@ -446,5 +457,74 @@ export class AppException<ErrorCode extends ERROR_CODE> extends HttpException {
       },
       ErrorData[code].httpCode,
     );
+  }
+}
+
+/**
+ * When a parameter error occurs, it is catched by the {@link getValidationPipe | ValidationPipe}.
+ * It formats the error with an {@link ERROR_CODE} and a message.
+ *
+ * Custom errors priority:
+ * When multiple errors are present, only the first one is displayed in the error message.
+ * The order is given by the order of the properties in this object.
+ */
+const mappedErrors = {
+  whitelistValidation: ERROR_CODE.PARAM_DOES_NOT_EXIST,
+  isNotEmpty: ERROR_CODE.PARAM_MISSING,
+  hasEither: ERROR_CODE.PARAM_MISSING_EITHER,
+  isString: ERROR_CODE.PARAM_NOT_STRING,
+  isAlphanumeric: ERROR_CODE.PARAM_NOT_ALPHANUMERIC,
+  isNumber: ERROR_CODE.PARAM_NOT_NUMBER,
+  isInt: ERROR_CODE.PARAM_NOT_INT,
+  isEnum: ERROR_CODE.PARAM_NOT_ENUM,
+  isDate: ERROR_CODE.PARAM_NOT_DATE,
+  isUuid: ERROR_CODE.PARAM_NOT_UUID,
+  isLength: ERROR_CODE.PARAM_INVALID_SIZE,
+  maxLength: ERROR_CODE.PARAM_TOO_LONG,
+  minLength: ERROR_CODE.PARAM_TOO_SHORT,
+  arrayMinSize: ERROR_CODE.PARAM_SIZE_TOO_SMALL,
+  arrayMaxSize: ERROR_CODE.PARAM_SIZE_TOO_BIG,
+  arrayNotEmpty: ERROR_CODE.PARAM_IS_EMPTY,
+  isPositive: ERROR_CODE.PARAM_NOT_POSITIVE,
+  min: ERROR_CODE.PARAM_TOO_LOW,
+  max: ERROR_CODE.PARAM_TOO_HIGH,
+  isUrl: ERROR_CODE.PARAM_NOT_URL,
+  isFutureDate: ERROR_CODE.PARAM_PAST_DATE,
+  isArray: ERROR_CODE.PARAM_NOT_ARRAY,
+} satisfies {
+  [constraint: string]: ERROR_CODE;
+};
+
+export const validationExceptionFactory = (errors: ValidationError[]) => {
+  // Map errors by constraint name
+  const errorsByType: { [constraint: string]: string[] } = {};
+  for (const error of errors) {
+    if (error.children?.length) {
+      return validationExceptionFactory(error.children);
+    }
+    for (const constraint of Object.keys(error.constraints)) {
+      if (constraint in errorsByType) errorsByType[constraint].push(error.property);
+      else errorsByType[constraint] = [error.property];
+    }
+  }
+  // Loop on possible errors and throw the first one
+  for (const [constraint, error] of Object.entries(mappedErrors)) {
+    if (constraint in errorsByType) return new AppException(error, errorsByType[constraint].sort().join(', '));
+  }
+  console.error(errors); // TODO : send to sentry. soon™
+  // If errors are not registered in the mappedErrors object, throw a generic error
+  return new AppException(
+    ERROR_CODE.PARAM_MALFORMED,
+    errors
+      .map((error) => error.property)
+      .sort()
+      .join(', '),
+  );
+};
+
+@Catch(NotFoundException)
+export class NotFoundFilter implements ExceptionFilter {
+  catch(exception: NotFoundException, host: ArgumentsHost) {
+    throw new AppException(ERROR_CODE.NOT_FOUND);
   }
 }

@@ -8,8 +8,9 @@ import UpdateAssoMemberE2ESpec from './update-member.e2e-spec';
 import CreateAssoRoleE2ESpec from './create-role.e2e-spec';
 import DeleteAssoRoleE2ESpec from './delete-role.e2e-spec';
 import UpdateAssoRoleE2ESpec from './update-role.e2e-spec';
+import { E2EAppProvider } from '../../utils/test_utils';
 
-export default function AssoE2ESpec(app: () => INestApplication) {
+export default function AssoE2ESpec(app: E2EAppProvider) {
   describe('Assos', () => {
     SearchE2ESpec(app);
     GetAssoE2ESpec(app);

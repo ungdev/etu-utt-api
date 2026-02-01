@@ -9,7 +9,7 @@ import '../../src/std.type';
 describe.skip('EtuUTT API unit testing', () => {
   let app: TestingModule;
   beforeAll(async () => {
-    app = await Test.createTestingModule({ imports: [AppModule] }).compile();
+    app = await Test.createTestingModule({ imports: [AppModule.register()] }).compile();
   });
   TimetableServiceUnitSpec(() => app);
 });

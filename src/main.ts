@@ -6,15 +6,16 @@ import { AppValidationPipe } from './app.pipe';
 import './std.type';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  app.enableVersioning({
-    type: VersioningType.URI,
-    defaultVersion: '1',
-  });
-  app.setGlobalPrefix(process.env.API_PREFIX);
-  // This env variable is not set in ConfigModule because we use it before modules are loaded
-  app.useGlobalPipes(new AppValidationPipe());
-  app.enableCors({ origin: '*' });
+  const app = await NestFactory.create(AppModule.register());
+  // app.enableVersioning({
+  //   type: VersioningType.URI,
+  //   defaultVersion: '1',
+  // });
+  // app.setGlobalPrefix(process.env.API_PREFIX);
+  // // This env variable is not set in ConfigModule because we use it before modules are loaded
+  // app.useGlobalPipes(new AppValidationPipe());
+  // app.enableCors({ origin: '*' });
+  AppModule.initApp(app);
 
   const config = new DocumentBuilder()
     .setTitle('EtuUTT - API')

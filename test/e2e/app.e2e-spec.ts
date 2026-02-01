@@ -15,37 +15,22 @@ import * as cas from '../external_services/cas';
 import * as timetableProvider from '../external_services/timetable';
 import { ConfigModule } from '../../src/config/config.module';
 import AssoE2ESpec from './assos';
+import { buildTestApp, E2EApp, E2EAppProvider } from '../utils/test_utils';
 
 describe('EtuUTT API e2e testing', () => {
-  let app: INestApplication;
+  let app: E2EApp;
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-    app = moduleRef.createNestApplication();
-    app.setGlobalPrefix(process.env.API_PREFIX);
-    app.enableVersioning({
-      type: VersioningType.URI,
-      defaultVersion: '1',
-    });
-
-    app.useGlobalPipes(new AppValidationPipe());
-    await app.init();
-    await app.listen(3001);
-
+    app = await buildTestApp(3001);
     testUtils.init(() => app);
-    pactum.request.setBaseUrl(
-      `http://localhost:3001${process.env.API_PREFIX.startsWith('/') ? '' : '/'}${process.env.API_PREFIX}${
-        process.env.API_PREFIX.endsWith('/') ? '' : '/'
-      }v1`,
-    );
     cas.enable(app.get(ConfigModule));
     timetableProvider.enable('https://monedt.utt.fr/calendrier');
+    // While the migration from pactum.spec() to app().spec() has not been made on all tests, keep default base url.
+    pactum.request.setBaseUrl(app.spec().baseUrl);
   });
 
-  afterAll(() => {
-    app.close();
+  afterAll(async () => {
+    await app.close();
   });
 
   AuthE2ESpec(() => app);

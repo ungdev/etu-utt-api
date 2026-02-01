@@ -1,11 +1,11 @@
-import { IsInt, IsNotEmpty, IsString } from 'class-validator';
+import { IsAlphanumeric, IsInt, IsNotEmpty } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
-export default class AuthCasSignInReqDto {
-  @IsString()
+export default class AuthSignInDebugReqDto {
   @IsNotEmpty()
-  ticket: string;
+  @IsAlphanumeric()
+  login: string;
 
   @IsInt()
   @Type(() => Number)

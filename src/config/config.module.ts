@@ -1,8 +1,8 @@
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule as NestConfigModule, ConfigService as NestConfigService } from '@nestjs/config';
 
-const isTestEnv = process.env.NODE_ENV === 'test';
-const isProdEnv = process.env.NODE_ENV === 'production';
+export const isTestEnv = () => process.env.NODE_ENV === 'test';
+export const isProdEnv = () => process.env.NODE_ENV === 'production';
 
 @Global()
 @Module({
@@ -11,7 +11,7 @@ const isProdEnv = process.env.NODE_ENV === 'production';
       // Ok, for some reason it still loads the normal .env.dev file.
       // I tried to remove the ternary to make it always load the .env.dev.test file.
       // It loads the .env.dev.test file properly, but overrides it with the normal .env.dev file
-      envFilePath: isTestEnv ? '.env.test' : '.env.dev',
+      envFilePath: isTestEnv() ? '.env.test' : '.env.dev',
     }),
   ],
   exports: [ConfigModule],
@@ -49,17 +49,17 @@ export class ConfigModule {
     this.LDAP_USER = config.get('LDAP_USER');
     this.LDAP_PWD = config.get('LDAP_PWD');
     this.ANNAL_UPLOAD_DIR = config.get<string>('ANNAL_UPLOAD_DIR');
-    this.IS_PROD_ENV = isProdEnv;
+    this.IS_PROD_ENV = isProdEnv();
     this.TIMETABLE_URL = config.get<string>('TIMETABLE_URL');
 
     if (this.ANNAL_UPLOAD_DIR.endsWith('/')) this.ANNAL_UPLOAD_DIR = this.ANNAL_UPLOAD_DIR.slice(0, -1);
     this.ETUUTT_WEBSITE_APPLICATION_ID = config.get('ETUUTT_WEBSITE_APPLICATION_ID');
 
-    this._FAKER_SEED = isTestEnv ? Number(config.get('FAKER_SEED')) : undefined;
+    this._FAKER_SEED = isTestEnv() ? Number(config.get('FAKER_SEED')) : undefined;
   }
 
   get FAKER_SEED() {
-    if (!isTestEnv) throw new Error('FAKER_SEED is a test-environment-only environment variable');
+    if (!isTestEnv()) throw new Error('FAKER_SEED is a test-environment-only environment variable');
     return this._FAKER_SEED;
   }
 

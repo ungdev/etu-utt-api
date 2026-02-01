@@ -4,12 +4,12 @@ import * as fakedb from '../../utils/fakedb';
 import * as pactum from 'pactum';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../../src/prisma/prisma.service';
-import AuthCasSignInReqDto from '../../../src/auth/dto/req/auth-cas-sign-in-req.dto';
+import AuthSignInReqDto from '../../../src/auth/dto/req/auth-sign-in-req.dto';
 import { DEFAULT_APPLICATION } from '../../../prisma/seed/utils';
 import { HttpStatus } from '@nestjs/common';
 
-const CasSignInE2ESpec = e2eSuite('POST /auth/signin/cas', (app) => {
-  const body: AuthCasSignInReqDto = {
+const SignInE2eSpec = e2eSuite('POST /auth/signin', (app) => {
+  const body: AuthSignInReqDto = {
     ticket: cas.validTicket,
     tokenExpiresIn: cas.user.tokenExpiresIn,
   };
@@ -17,7 +17,7 @@ const CasSignInE2ESpec = e2eSuite('POST /auth/signin/cas', (app) => {
   it('should successfully return a user-register code', () =>
     pactum
       .spec()
-      .post('/auth/signin/cas')
+      .post('/auth/signin')
       .withBody(body)
       .expectStatus(HttpStatus.OK)
       .$expectRegexableJson({ status: 'no_account', token: JsonLike.STRING, redirectUrl: null })
@@ -34,7 +34,7 @@ const CasSignInE2ESpec = e2eSuite('POST /auth/signin/cas', (app) => {
       .apiKey.delete({ where: { id: user.apiKey.id } });
     await pactum
       .spec()
-      .post('/auth/signin/cas')
+      .post('/auth/signin')
       .withBody(body)
       .$expectRegexableJson({ status: 'no_api_key', token: JsonLike.STRING, redirectUrl: null })
       .expect((res) => {
@@ -51,7 +51,7 @@ const CasSignInE2ESpec = e2eSuite('POST /auth/signin/cas', (app) => {
     const user = await fakedb.createUser(app, { login: cas.user.login }, true);
     await pactum
       .spec()
-      .post('/auth/signin/cas')
+      .post('/auth/signin')
       .withBody(body)
       .$expectRegexableJson({ status: 'ok', token: JsonLike.STRING, redirectUrl: null })
       .expect(async (res) => {
@@ -68,4 +68,4 @@ const CasSignInE2ESpec = e2eSuite('POST /auth/signin/cas', (app) => {
   });
 });
 
-export default CasSignInE2ESpec;
+export default SignInE2eSpec;
