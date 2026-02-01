@@ -1,4 +1,3 @@
-import { INestApplication } from '@nestjs/common';
 import GetCommentsE2ESpec from './get-comment.e2e-spec';
 import DeleteComment from './delete-comment.e2e-spec';
 import DeleteCommentReply from './delete-reply.e2e-spec';

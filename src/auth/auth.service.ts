@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import * as bcrypt from 'bcryptjs';
 import { Prisma, UserType } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
 import { AppException, ERROR_CODE } from '../exceptions';
@@ -411,15 +410,6 @@ export class AuthService {
       expiresIn: 10,
       secret: this.config.JWT_SECRET,
     });
-  }
-
-  /**
-   * Returns the hash of a password.
-   * @param password The password to hash.
-   */
-  getHash(password: string): Promise<string> {
-    const saltRounds = this.config.SALT_ROUNDS;
-    return bcrypt.hash(password, saltRounds);
   }
 
   /**

@@ -285,7 +285,6 @@ export const createUser = entityFaker(
       .get(PrismaService)
       .user.create({
         data: {
-          hash: params.hash ?? (await app().get(AuthService).getHash(params.password)),
           ...pick(params, 'id', 'login', 'studentId', 'firstName', 'lastName', 'userType'),
           infos: {
             create: {

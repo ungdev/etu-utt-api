@@ -1,4 +1,4 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
+import { Catch, ExceptionFilter, HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
 import { ValidationError } from '@nestjs/common/interfaces/external/validation-error.interface';
 
 /**
@@ -524,7 +524,7 @@ export const validationExceptionFactory = (errors: ValidationError[]) => {
 
 @Catch(NotFoundException)
 export class NotFoundFilter implements ExceptionFilter {
-  catch(exception: NotFoundException, host: ArgumentsHost) {
+  catch() {
     throw new AppException(ERROR_CODE.NOT_FOUND);
   }
 }
