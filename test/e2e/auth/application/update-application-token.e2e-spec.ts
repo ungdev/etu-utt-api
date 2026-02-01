@@ -12,7 +12,11 @@ const UpdateApplicationTokenE2ESpec = e2eSuite('PATCH /auth/application/:applica
   const application = fakedb.createApplication(app, { owner: user });
 
   it('should fail as user is not authenticated', () =>
-    pactum.spec().patch(`/auth/application/${application.id}/token`).withJson({}).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
+    pactum
+      .spec()
+      .patch(`/auth/application/${application.id}/token`)
+      .withJson({})
+      .expectAppError(ERROR_CODE.NOT_LOGGED_IN));
 
   it('should fail as the application does not exist', () =>
     pactum
