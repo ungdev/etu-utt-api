@@ -1,0 +1,21 @@
+import { Prisma, PrismaClient } from '@prisma/client';
+import { translationSelect } from '../utils';
+import { generateCustomModel } from '../prisma/prisma.service';
+
+const LINK_SELECT_FILTER = {
+  select: {
+    id: true,
+    name: translationSelect,
+    tooltip: translationSelect,
+    link: true,
+    createdAt: true,
+  },
+  orderBy: {
+    id: 'asc',
+  },
+} as const satisfies Prisma.LinkFindManyArgs;
+
+export type Link = Prisma.LinkGetPayload<typeof LINK_SELECT_FILTER>;
+
+export const generateCustomLinkModel = (prisma: PrismaClient) =>
+  generateCustomModel(prisma, 'link', LINK_SELECT_FILTER, (_, e: Link) => e);
