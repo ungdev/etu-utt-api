@@ -162,6 +162,16 @@ model GitHubIssue {
   user User @relation(fields: [userId], references: [id])
 }
 
+model Link {
+  id        String @id @default(uuid())
+  nameId    String @unique
+  tooltipId String @unique
+  link      String @unique
+
+  name    Translation @relation(name: "linkNameTranslation", fields: [nameId], references: [id])
+  tooltip Translation @relation(name: "linkTooltipTranslation", fields: [tooltipId], references: [id])
+}
+
 model Semester {
   code  String   @id @db.Char(3)
   start DateTime @db.Date
@@ -245,6 +255,8 @@ model Translation {
   formationFollowingMethodDescriptions UTTFormationFollowingMethod?
   starCriterionDescriptions            UeStarCriterion?
   ueNames                              Ueof?
+  linkName                             Link?                        @relation("linkNameTranslation")
+  linkDescription                      Link?                        @relation("linkTooltipTranslation")
 }
 
 model Ue {
@@ -906,6 +918,7 @@ enum Permission {
   API_UPLOAD_ANNALS // Upload an annal
   API_MODERATE_ANNALS // Moderate annals
   API_MODERATE_COMMENTS // Moderate comments
+  API_MODIFY_LINKS
 
   USER_SEE_DETAILS // See personal details about someone, even the ones the user decided to hide
   USER_UPDATE_DETAILS // Update personal details about someone
