@@ -15,6 +15,7 @@ import { BranchModule } from './branch/branch.module';
 import { AssosModule } from './assos/assos.module';
 import { TranslationInterceptor } from './app.interceptor';
 import { SemesterModule } from './semester/semester.module';
+import { LinkModule } from './link/link.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { SemesterModule } from './semester/semester.module';
     TimetableModule,
     BranchModule,
     AssosModule,
+    LinkModule,
   ],
   // The providers below are used for all the routes of the api.
   // For example, the JwtGuard is used for all the routes and checks whether the user is authenticated.

@@ -504,11 +504,11 @@ model UeCreditCategory {
 }
 
 model UeofInfo {
-  id                      String  @id @default(uuid())
-  minors                  String? @db.Text
-  language                String? @db.Text
-  objectivesTranslationId String? @unique
-  programTranslationId    String? @unique
+  id                      String   @id @default(uuid())
+  minors                  String?  @db.Text
+  language                Language
+  objectivesTranslationId String?  @unique
+  programTranslationId    String?  @unique
 
   objectives Translation? @relation("ueofInfoObjectivesTranslation", fields: [objectivesTranslationId], references: [id], onDelete: Cascade)
   program    Translation? @relation("ueofInfoProgramTranslation", fields: [programTranslationId], references: [id], onDelete: Cascade)

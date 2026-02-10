@@ -14,7 +14,7 @@ import {
   FakeUeCreditCategory,
   FakeApiApplication,
   FakeAssoMembershipRole,
-  FakeAssoMembership,
+  FakeAssoMembership, FakeLink,
 } from './utils/fakedb';
 import { UeAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
 import { ConfigModule } from '../src/config/config.module';
@@ -25,6 +25,8 @@ import { Language } from '@prisma/client';
 import { DEFAULT_APPLICATION } from '../prisma/seed/utils';
 import ApplicationResDto from '../src/auth/application/dto/res/application-res.dto';
 import PermissionsResDto from '../src/auth/permissions/dto/res/permissions.dto';
+import { LinkResDto } from '../src/link/dto/res/link-res.dto';
+import { Translation } from '../src/prisma/types';
 
 function expect<T>(this: Spec, obj: JsonLikeVariant<T>) {
   return this.expectStatus(HttpStatus.OK).$expectRegexableJson(obj);
@@ -315,6 +317,27 @@ Spec.prototype.expectPermissions = function (permissions: PermissionManager) {
       .mappedSort((permission) => permission.permission),
   } satisfies PermissionsResDto);
 };
+Spec.prototype.expectLinks = function (this: Spec, links: FakeLink[]) {
+  return this.expectStatus(HttpStatus.OK).expectJson(
+    [...links]
+      .mappedSort((link) => link.name[this.language])
+      .map(
+        (link) =>
+          ({
+            ...pick(link as Required<FakeLink>, 'id', 'link'),
+            name: link.name[this.language],
+            tooltip: link.tooltip[this.language],
+          }) satisfies TranslationToString<LinkResDto>,
+      ),
+  );
+};
+Spec.prototype.expectLink = function (this: Spec, link: JsonLikeVariant<FakeLink>) {
+  return this.$expectRegexableJson({
+    ...pick(link as Required<FakeLink>, 'id', 'link'),
+    name: getTranslation(link.name as Translation, this.language),
+    tooltip: getTranslation(link.tooltip as Translation, this.language),
+  } satisfies TranslationToString<LinkResDto>);
+};
 
 export { Spec, JsonLikeVariant, FakeUeWithOfs };
 
@@ -371,3 +394,4 @@ function generateSchema<T>(obj: JsonLikeVariant<T>): object {
       return { type: 'boolean' };
   }
 }
+type TranslationToString<T> = T extends number | string | null ? T : T extends Array<infer V> ? Array<TranslationToString<V>> : T extends Translation ? string : {[K in keyof T]: TranslationToString<T[K]>};

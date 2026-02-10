@@ -8,10 +8,6 @@ const LINK_SELECT_FILTER = {
     name: translationSelect,
     tooltip: translationSelect,
     link: true,
-    createdAt: true,
-  },
-  orderBy: {
-    id: 'asc',
   },
 } as const satisfies Prisma.LinkFindManyArgs;
 

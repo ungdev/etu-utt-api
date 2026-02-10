@@ -128,6 +128,9 @@ declare module '@faker-js/faker' {
       association: {
         name: () => string;
       };
+      link: {
+        link: () => string;
+      },
     };
   }
 }
@@ -191,6 +194,9 @@ Faker.prototype.db = {
   association: {
     name: () => fakeSafeUniqueData('association', 'name', faker.person.firstName),
   },
+  link: {
+    link: () => fakeSafeUniqueData('link', 'link', faker.internet.url),
+  }
 };
 
 export { Faker };

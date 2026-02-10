@@ -44,6 +44,7 @@ import { CommentStatus } from '../../src/ue/comments/interfaces/comment.interfac
 import { UeAnnalFile } from '../../src/ue/annals/interfaces/annal.interface';
 import { omit, PermissionManager, pick, translationSelect } from '../../src/utils';
 import { DEFAULT_APPLICATION } from '../../prisma/seed/utils';
+import { Link } from '../../src/link/link.interface';
 
 /**
  * The fake entities can be used like normal entities in the <code>it(string, () => void)</code> functions.
@@ -118,6 +119,7 @@ export type FakeHomepageWidget = Partial<RawHomepageWidget>;
 export type FakeApiApplication = Partial<Omit<RawApiApplication, 'ownerId'>> & {
   owner: { id: string; firstName: string; lastName: string };
 };
+export type FakeLink = Partial<Omit<Link, 'name' | 'tooltip'>> & { name?: Partial<Link['name']>; tooltip?: Partial<Link['tooltip']> };
 
 export interface FakeEntityMap {
   assoMembership: {
@@ -245,6 +247,10 @@ export interface FakeEntityMap {
     params: CreateApiApplicationParameter;
     deps: { owner: FakeUser };
   };
+  link: {
+    entity: FakeLink;
+    params: CreateLinkParameter;
+  }
 }
 
 export type CreateUserParameters = FakeUser & { password: string };
@@ -1089,6 +1095,19 @@ export const createApplication = entityFaker(
         },
       }),
 );
+
+export type CreateLinkParameter = FakeLink;
+export const createLink = entityFaker(
+  'link',
+  {
+    name: () => faker.db.translation(faker.company.name),
+    tooltip: () => faker.db.translation(faker.company.catchPhrase),
+    link: faker.db.link.link,
+  },
+  async (app, params) => app()
+      .get(PrismaService)
+      .normalize.link.create({ data: { ...pick(params, 'id', 'link'), name: { create: params.name }, tooltip: { create: params.tooltip } } }),
+)
 
 /**
  * The return type of a fake function, either Promise<FakeEntity> or FakeEntity depending on whether OnTheFly is true or false
