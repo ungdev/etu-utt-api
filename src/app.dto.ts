@@ -3,6 +3,7 @@ import { applyDecorators, HttpStatus, Injectable } from '@nestjs/common';
 import * as ApiResponses from '@nestjs/swagger';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from '@nestjs/common/interfaces/type.interface';
+import { IsOptional, IsString } from 'class-validator';
 
 // Redefine the mixin function in node_modules/.pnpm/@nestjs+common@<version>_class-transformer@<version>_class-validator@<version>_reflect-metadata@<version>_rxjs@<version>/node_modules/@nestjs/common/decorators/core/injectable.decorator.js
 // This implementation allows to give a name to the class
@@ -43,4 +44,31 @@ export function paginatedResponseDto<TBase extends Constructor>(Base: TBase) {
     items: InstanceType<TBase>[];
   }
   return mixin(ResponseDto, `${Base.name}$Paginated`); // This is important otherwise you will get always the same instance
+}
+
+export class TranslationReqDto {
+  @IsOptional()
+  @IsString()
+  @ApiProperty({ description: "French" })
+  fr?: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty({ description: "English" })
+  en?: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty({ description: "Spanish" })
+  es?: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty({ description: "German" })
+  de?: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty({ description: "Chinese" })
+  zh?: string;
 }

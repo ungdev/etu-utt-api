@@ -6,7 +6,7 @@ import {
   FakeApiApplication,
   FakeAssoMembership,
   FakeAssoMembershipPermission,
-  FakeAssoMembershipRole,
+  FakeAssoMembershipRole, FakeLink,
   FakeUeAnnalType,
   FakeUeof,
 } from './utils/fakedb';
@@ -104,8 +104,9 @@ declare module './declarations' {
     expectCreditCategories(categories: JsonLikeVariant<FakeUeCreditCategory[]>): this;
     expectApplications(applications: FakeApiApplication[]): this;
     expectApplication(application: FakeApiApplication): this;
-
     expectPermissions(permissions: PermissionManager): this;
+    expectLinks(links: FakeLink[]): this;
+    expectLink(link: JsonLikeVariant<FakeLink>): this;
 
     withLanguage(language: Language): this;
     language: Language;
