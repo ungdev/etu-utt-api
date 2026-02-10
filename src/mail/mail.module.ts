@@ -1,10 +1,10 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { MailService } from './mail.service';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { ConfigModule } from '../config/config.module';
-import { MailController } from './mail.controller';
 import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
 
+@Global()
 @Module({
   imports: [
     MailerModule.forRootAsync({
@@ -14,7 +14,7 @@ import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
           transport: {
             requireTLS: true,
             tls: {
-              rejectUnauthorized: false,
+              rejectUnauthorized: config.SMTP_REJECT_UNAUTHORIZED,
             },
             host: config.SMTP_HOST,
             port: config.SMTP_PORT,
@@ -22,7 +22,7 @@ import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
               user: config.SMTP_USER,
               pass: config.SMTP_PASSWORD,
             },
-            name: 'EtuUTT',
+            name: config.SMTP_SERVER_NAME,
           },
           template: {
             adapter: new EjsAdapter(),
@@ -31,15 +31,14 @@ import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
           },
           defaults: {
             from: {
-              name: 'EtuUTT',
-              address: 'etuutt@utt.fr',
+              name: config.SMTP_SENDING_NAME,
+              address: config.SMTP_SENDING_NAME,
             },
           },
         };
       },
     }),
   ],
-  controllers: [MailController],
   providers: [MailService],
   exports: [MailService],
 })

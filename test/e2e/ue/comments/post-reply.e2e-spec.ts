@@ -53,7 +53,6 @@ const PostCommmentReply = e2eSuite('POST /ue/comments/{commentId}/reply', (app) 
       .spec()
       .withBearerToken(user.token)
       .post(`/ue/comments/${comment.id}/reply`)
-      .withBody(undefined)
       .expectAppError(ERROR_CODE.BODY_MISSING);
   });
 

@@ -1,14 +1,10 @@
 import { ISendMailOptions, MailerService } from '@nestjs-modules/mailer';
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigModule } from '../config/config.module';
 
 @Injectable()
 export class MailService {
   private readonly logger = new Logger(MailService.name);
-  constructor(
-    private readonly mailerService: MailerService,
-    private readonly config: ConfigModule,
-  ) {}
+  constructor(private readonly mailerService: MailerService) {}
 
   private async send(to: string, subject: string, template: string, templateVariables: Record<string, any>) {
     const sendMailParams: ISendMailOptions = {
