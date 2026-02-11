@@ -12,5 +12,5 @@ Des certificats _dummy_ sont déjà présents dans le repo, il est possible de l
 pnpm dev:smtp-server:certificate
 ```
 
-On peut alors se connecter au serveur avec smtp://localhost:8025.
+On peut alors se connecter au serveur avec smtp://localhost:587.
 On peut accéder au client mail avec http://localhost:8080.
