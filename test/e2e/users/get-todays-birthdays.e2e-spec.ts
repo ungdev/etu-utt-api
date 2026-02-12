@@ -3,7 +3,7 @@ import * as pactum from 'pactum';
 import { createUser } from '../../utils/fakedb';
 import { ERROR_CODE } from '../../../src/exceptions';
 
-const GetTodaysBirthdaysE2ESpec = e2eSuite('GET /users/birthday/today', (app) => {
+const GetTodaysBirthdaysE2ESpec = e2eSuite('GET /users/birthdays/today', (app) => {
   const now = new Date();
   const user = createUser(app, { infos: { birthday: new Date(now.getTime() - 3_600_000 * 24) } });
   const otherUser = createUser(app, {

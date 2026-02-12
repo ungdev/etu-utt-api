@@ -10,8 +10,8 @@ import {
 } from 'class-validator';
 import { HasSomeAmong } from '../../../../validation';
 
+@HasSomeAmong('ueCode', 'ueof')
 export class CreateAnnalReqDto {
-  @HasSomeAmong('ueCode', 'ueof')
   @IsString()
   @IsNotEmpty()
   @Length(3)

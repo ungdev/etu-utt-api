@@ -4,16 +4,17 @@ import { UeCommentReply } from 'src/ue/comments/interfaces/comment-reply.interfa
 import { UeRating } from 'src/ue/interfaces/rate.interface';
 import {
   FakeApiApplication,
+  FakeAssoWeekly,
   FakeAssoMembership,
   FakeAssoMembershipPermission,
   FakeAssoMembershipRole,
   FakeImageMedia,
   FakeUeAnnalType,
   FakeUeof,
+  FakeUeCreditCategory,
 } from './utils/fakedb';
 import { UeAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
-import { UeRating } from 'src/ue/interfaces/rate.interface';
 import { FakeUe, FakeUser, FakeHomepageWidget, FakeAsso } from './utils/fakedb';
 import { AppProvider } from './utils/test_utils';
 import { Language } from '@prisma/client';
@@ -109,6 +110,8 @@ declare module './declarations' {
     expectImageMedia(media: JsonLikeVariant<FakeImageMedia>): this;
 
     expectPermissions(permissions: PermissionManager): this;
+    expectAssoWeekly(weekly: JsonLikeVariant<FakeAssoWeekly>, created = false): this;
+    expectAssoWeeklies(app: AppProvider, weeklies: JsonLikeVariant<FakeAssoWeekly>[], count: number): this;
 
     withLanguage(language: Language): this;
     language: Language;

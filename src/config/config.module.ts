@@ -42,6 +42,8 @@ export class ConfigModule {
   public readonly SMTP_SERVER_NAME: string;
   public readonly SMTP_SENDING_NAME: string;
   public readonly SMTP_SENDING_EMAIL: string;
+  public readonly WEEKLY_SEND_DAY: number;
+  public readonly WEEKLY_SEND_HOUR: number;
   // DEV ENVIRONMENT ONLY
 
   // TEST ENVIRONMENT ONLY
@@ -74,6 +76,8 @@ export class ConfigModule {
     this.SMTP_SERVER_NAME = config.get<string>('SMTP_SERVER_NAME');
     this.SMTP_SENDING_NAME = config.get<string>('SMTP_SENDING_NAME');
     this.SMTP_SENDING_EMAIL = config.get<string>('SMTP_SENDING_EMAIL');
+    this.WEEKLY_SEND_DAY = Number.parseInt(config.get('WEEKLY_SEND_DAY'));
+    this.WEEKLY_SEND_HOUR = Number.parseInt(config.get('WEEKLY_SEND_HOUR'));
 
     this._FAKER_SEED = isTestEnv ? Number(config.get('FAKER_SEED')) : undefined;
   }

@@ -40,10 +40,15 @@ export const enum ERROR_CODE {
   BODY_MISSING = 2022,
   PARAM_PAST_DATE = 2023,
   PARAM_MISSING_EITHER = 2024,
+  PARAM_DATE_MUST_BE_AFTER = 2025,
+  PARAM_DATE_MUST_BE_A_WEEK_DATE = 2026,
   PARAM_LEXICAL_ILLEGAL = 2101,
   PARAM_DOES_NOT_MATCH_REGEX = 2102,
   NO_FIELD_PROVIDED = 2201,
   WIDGET_OVERLAPPING = 2301,
+  WEEKLY_ALREADY_SENT = 2302,
+  WEEKLY_ALREADY_SENT_FOR_WEEK = 2303,
+  WEEKLY_ALREADY_PLANNED_FOR_WEEK = 2304,
   FILE_INVALID_TYPE = 2901,
   FILE_TOO_HEAVY = 2902,
   FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS = 3001,
@@ -88,6 +93,7 @@ export const enum ERROR_CODE {
   NO_SUCH_ASSO_ROLE = 4415,
   NO_SUCH_ASSO_MEMBERSHIP = 4416,
   NO_SUCH_MEDIA = 4417,
+  NO_SUCH_WEEKLY = 4418,
   ANNAL_ALREADY_UPLOADED = 4901,
   RESOURCE_UNAVAILABLE = 4902,
   RESOURCE_INVALID_TYPE = 4903,
@@ -215,6 +221,14 @@ export const ErrorData = Object.freeze({
     message: 'Content has a wrong syntax: %',
     httpCode: HttpStatus.BAD_REQUEST,
   },
+  [ERROR_CODE.PARAM_DATE_MUST_BE_AFTER]: {
+    message: 'Date % come after date %',
+    httpCode: HttpStatus.BAD_REQUEST,
+  },
+  [ERROR_CODE.PARAM_DATE_MUST_BE_A_WEEK_DATE]: {
+    message: 'Param `%` is not a week-date. A week-date is a date pointing to any Sunday at 12pm, UTC',
+    httpCode: HttpStatus.BAD_REQUEST,
+  },
   [ERROR_CODE.PARAM_DOES_NOT_MATCH_REGEX]: {
     message: 'The following parameters must match the regex "%": %',
     httpCode: HttpStatus.BAD_REQUEST,
@@ -234,6 +248,18 @@ export const ErrorData = Object.freeze({
   [ERROR_CODE.WIDGET_OVERLAPPING]: {
     message: 'Widgets at index % and % are overlapping',
     httpCode: HttpStatus.BAD_REQUEST,
+  },
+  [ERROR_CODE.WEEKLY_ALREADY_SENT]: {
+    message: 'Weekly is already sent',
+    httpCode: HttpStatus.BAD_REQUEST,
+  },
+  [ERROR_CODE.WEEKLY_ALREADY_SENT_FOR_WEEK]: {
+    message: 'Weekly is already sent for the week starting at %',
+    httpCode: HttpStatus.BAD_REQUEST,
+  },
+  [ERROR_CODE.WEEKLY_ALREADY_PLANNED_FOR_WEEK]: {
+    message: 'Asso already has a weekly planned for this week',
+    httpCode: HttpStatus.CONFLICT,
   },
   [ERROR_CODE.FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS]: {
     message: 'Missing permission %',
@@ -397,6 +423,10 @@ export const ErrorData = Object.freeze({
   },
   [ERROR_CODE.NO_SUCH_ASSO_MEMBERSHIP]: {
     message: 'No such membership in asso: %',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
+  [ERROR_CODE.NO_SUCH_WEEKLY]: {
+    message: 'No such weekly in asso: %',
     httpCode: HttpStatus.NOT_FOUND,
   },
   [ERROR_CODE.NO_SUCH_MEDIA]: {

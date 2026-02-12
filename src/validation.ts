@@ -32,9 +32,12 @@ const mappedErrors = {
   max: ERROR_CODE.PARAM_TOO_HIGH,
   isUrl: ERROR_CODE.PARAM_NOT_URL,
   isFutureDate: ERROR_CODE.PARAM_PAST_DATE,
+  isWeekDate: ERROR_CODE.PARAM_DATE_MUST_BE_A_WEEK_DATE,
 } satisfies {
   [constraint: string]: ERROR_CODE;
 };
+
+const errorsOnMultipleFields: string[] = ['hasEither']
 
 export const validationExceptionFactory = (errors: ValidationError[]) => {
   // Map errors by constraint name
@@ -44,8 +47,12 @@ export const validationExceptionFactory = (errors: ValidationError[]) => {
       return validationExceptionFactory(error.children);
     }
     for (const constraint of Object.keys(error.constraints)) {
-      if (constraint in errorsByType) errorsByType[constraint].push(error.property);
-      else errorsByType[constraint] = [error.property];
+      const field = errorsOnMultipleFields.includes(constraint as string) ? error.constraints[constraint] : error.property
+      if (constraint in errorsByType) {
+        errorsByType[constraint].push(field);
+      } else {
+        errorsByType[constraint] = [field];
+      }
     }
   }
   // Loop on possible errors and throw the first one
@@ -69,14 +76,57 @@ class FutureDate implements ValidatorConstraintInterface {
     return new Date(text).getTime() >= Date.now();
   }
 }
+@ValidatorConstraint({ name: 'isWeekDate', async: false })
+class WeekDate implements ValidatorConstraintInterface {
+  validate(text: string): boolean {
+    const date = new Date(text);
+    return date.getWeekDate().getTime() === date.getTime();
+  }
+}
 @ValidatorConstraint({ name: 'hasEither', async: false })
 class HasEither implements ValidatorConstraintInterface {
   validate(_: string, args: ValidationArguments) {
-    args.targetName = args.constraints.join(', ');
     return args.constraints.some((prop) => args.object[prop]);
   }
+
+  defaultMessage(validationArguments?: ValidationArguments): string {
+    return validationArguments.constraints.join(', ');
+  }
 }
+
+/**
+ * Used internally by HasEither.
+ * Makes a property invisible to validation.
+ */
+@ValidatorConstraint({ name: 'ghostProperty', async: false })
+class GhostProperty implements ValidatorConstraintInterface {
+  validate(_: string, args: ValidationArguments) {
+    return args.value === undefined;
+  }
+}
+
 /** Equivalent to @MinDate(() => Date.now()) with an error message */
-export const IsFutureDate = () => Validate(FutureDate);
+export const IsFutureDate = ({ each = false } = {}) => Validate(FutureDate, { each });
+
+export const IsWeekDate = ({ each = false } = {}) => Validate(WeekDate, { each });
+
 /** Checks whether at least one of the given properties is provided. Use this decorator on any property EXCEPT those contained in the constraint list. */
-export const HasSomeAmong = (...args: string[]) => Validate(HasEither, args);
+export function HasSomeAmong<T>(...fields: ((keyof T) & string)[]) {
+  return (target: { prototype: T }) => {
+    // Define a new property on the class.
+    // This property will be used to apply the validator HasEither.
+    // It will not be possible to fill it in the request with the GhostProperty validator.
+    const propertyName = "_internalHasSomeAmong";
+    const propertySymbol = Symbol(propertyName)
+    Object.defineProperty(target.prototype, propertyName, {
+      get() { return this[propertySymbol]; },
+      set(value) { this[propertySymbol] = value; },
+      enumerable: false,
+      configurable: true,
+    });
+    // Apply GhostProperty decorator
+    Validate(GhostProperty)(target.prototype, propertyName);
+    // Apply HasEither decorator
+    Validate(HasEither, fields)(target.prototype, propertyName);
+  };
+}

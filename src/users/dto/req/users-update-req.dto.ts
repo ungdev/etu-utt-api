@@ -69,7 +69,7 @@ export class UserUpdateReqDto {
 
   @IsBoolean()
   @IsOptional()
-  wantDaymail?: boolean;
+  wantWeekly?: boolean;
 
   @IsBoolean()
   @IsOptional()

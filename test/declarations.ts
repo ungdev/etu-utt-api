@@ -16,6 +16,7 @@ import {
   FakeAssoMembershipRole,
   FakeAssoMembership,
   FakeImageMedia,
+  FakeAssoWeekly,
 } from './utils/fakedb';
 import { UeAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
 import { ConfigModule } from '../src/config/config.module';
@@ -330,6 +331,25 @@ Spec.prototype.expectImageMedia = function (media: JsonLikeVariant<FakeImageMedi
     isPublic: media.isPublic,
   });
 };
+Spec.prototype.expectAssoWeekly = function (this: Spec, weekly: JsonLikeVariant<FakeAssoWeekly>, created = false) {
+  return this.expectStatus(created ? HttpStatus.CREATED : HttpStatus.OK).$expectRegexableJson({
+    ...pick(weekly, 'id', 'assoId', 'createdAt', 'date'),
+    title: weekly.title[this.language],
+    message: weekly.message[this.language]
+  });
+};
+Spec.prototype.expectAssoWeeklies = function (this: Spec, app: AppProvider, weeklies: JsonLikeVariant<FakeAssoWeekly>[], count: number) {
+  return this.expectStatus(HttpStatus.OK).$expectRegexableJson({
+    items: weeklies.map((weekly) => ({
+      ...pick(weekly, 'id', 'assoId', 'createdAt', 'date'),
+      title: weekly.title[this.language],
+      message: weekly.message[this.language],
+    })),
+    itemCount: count,
+    itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
+  });
+};
+
 Spec.prototype.$expectRegexableJson = $expectRegexableJson;
 
 export { Spec, JsonLikeVariant, FakeUeWithOfs };

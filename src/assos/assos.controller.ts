@@ -24,6 +24,7 @@ import AssosMemberCreateReqDto from './dto/req/assos-member-create.dto';
 import AssosMemberUpdateReqDto from './dto/req/assos-member-update.dto';
 import AssoMembershipResDto from './dto/res/assos-membership-res.dto';
 import UsersService from '../users/users.service';
+import { ConfigModule } from '../config/config.module';
 import AssosUpdateReqDto from './dto/req/assos-update-req.dto';
 import { ImageMediaPreset } from '@prisma/client';
 
@@ -33,6 +34,7 @@ export class AssosController {
   constructor(
     readonly assosService: AssosService,
     readonly userService: UsersService,
+    readonly config: ConfigModule,
     readonly mediaService: ImageMediaService,
   ) {}
 

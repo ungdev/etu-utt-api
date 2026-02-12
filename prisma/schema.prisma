@@ -65,7 +65,7 @@ model Asso {
   descriptionShortTranslation Translation?         @relation(name: "descriptionShortTranslation", fields: [descriptionShortTranslationId], references: [id], onDelete: Cascade)
   descriptionTranslation      Translation?         @relation(name: "descriptionTranslation", fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
   assoMemberships             AssoMembership[]
-  assoMessages                AssoMessage[]
+  weeklies                    AssoWeekly[]
   events                      Event[]
   assoMembershipRoles         AssoMembershipRole[]
   assoAccount                 User                 @relation(fields: [assoAccountId], references: [id], onDelete: Cascade)
@@ -103,19 +103,19 @@ model AssoMembershipRole {
   asso            Asso             @relation(fields: [assoId], references: [id])
 }
 
-model AssoMessage {
+model AssoWeekly {
   id                 String   @id @default(uuid())
-  date               DateTime
-  sendToMobile       Boolean
-  sendAsDaymail      Boolean
   createdAt          DateTime @default(now())
   assoId             String
   titleTranslationId String   @unique
   bodyTranslationId  String   @unique
+  date               DateTime
 
   asso             Asso        @relation(fields: [assoId], references: [id])
   titleTranslation Translation @relation(name: "titleTranslation", fields: [titleTranslationId], references: [id], onDelete: Cascade)
   bodyTranslation  Translation @relation(name: "bodyTranslation", fields: [bodyTranslationId], references: [id], onDelete: Cascade)
+
+  @@unique([assoId, date])
 }
 
 model Event {
@@ -249,8 +249,8 @@ model Translation {
 
   assoDescription                      Asso?                        @relation("descriptionTranslation")
   assoDescriptionShort                 Asso?                        @relation("descriptionShortTranslation")
-  assoMessageTitle                     AssoMessage?                 @relation("titleTranslation")
-  assoMessageTitleBody                 AssoMessage?                 @relation("bodyTranslation")
+  assoWeeklyTitle                      AssoWeekly?                  @relation("titleTranslation")
+  assoWeeklyTitleBody                  AssoWeekly?                  @relation("bodyTranslation")
   eventDescription                     Event?                       @relation("descriptionTranslation")
   eventTitle                           Event?                       @relation("titleTranslation")
   ueofInfo                             UeofInfo?                    @relation("ueofInfoObjectivesTranslation")
@@ -752,7 +752,7 @@ model UserHomepageWidget {
 model UserPreference {
   id             String   @id @default(uuid())
   language       Language @default(fr)
-  wantDaymail    Boolean  @default(false)
+  wantWeekly     Boolean  @default(false)
   wantDayNotif   Boolean  @default(false)
   wantDiscordUtt Boolean  @default(false)
 

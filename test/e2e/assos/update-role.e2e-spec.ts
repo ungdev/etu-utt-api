@@ -23,7 +23,7 @@ const UpdateAssoRoleE2ESpec = e2eSuite('PUT /assos/:id/roles/:id', (app) => {
   const permission = createAssoMembershipPermission(app, { id: 'manage_roles' });
   createAssoMembership(app, { asso, role: assoMembershipRole, user: userAllowed, permissions: [permission] });
 
-  it('should return 403 as user is not authenticated', () =>
+  it('should return 401 as user is not authenticated', () =>
     pactum.spec().put(`/assos/${asso.id}/roles/${assoMembershipRole.id}`).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
 
   it('should return a 400 as the id param is not valid', () =>
