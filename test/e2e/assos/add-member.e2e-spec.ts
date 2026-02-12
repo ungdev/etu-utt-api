@@ -144,7 +144,8 @@ const AddAssoMemberE2ESpec = e2eSuite('POST /assos/:id/members', (app) => {
         roleId: assoMembershipRole.id,
         permissions: [manageMembersPermission.id],
       })
-      .expectAssoMembershipCreated({
+      .created()
+      .expectAssoMembership({
         id: JsonLike.UUID,
         assoId: asso.id,
         userId: userTargetFromAllowedUser.id,
@@ -176,7 +177,8 @@ const AddAssoMemberE2ESpec = e2eSuite('POST /assos/:id/members', (app) => {
         roleId: assoMembershipRole.id,
         permissions: [manageMembersPermission.id, otherPermission.id],
       })
-      .expectAssoMembershipCreated({
+      .created()
+      .expectAssoMembership({
         id: JsonLike.UUID,
         assoId: asso.id,
         userId: userTargetFromAssoAccount.id,

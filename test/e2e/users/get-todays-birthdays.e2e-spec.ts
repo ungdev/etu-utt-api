@@ -20,7 +20,6 @@ const GetTodaysBirthdaysE2ESpec = e2eSuite('GET /users/birthdays/today', (app) =
       .spec()
       .withBearerToken(user.token)
       .get('/users/birthdays/today')
-      .expectStatus(200)
       .$expectRegexableJson([
         {
           id: otherUser.id,

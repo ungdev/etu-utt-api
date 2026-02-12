@@ -34,12 +34,13 @@ import {
   RawUserPrivacy,
   RawApiKey,
   RawApiApplication,
+  RawImageMedia,
 } from '../../src/prisma/types';
 import { faker } from '@faker-js/faker';
 import { AuthService } from '../../src/auth/auth.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { AppProvider } from './test_utils';
-import { Permission, Sex, TimetableEntryType, UserType } from '@prisma/client';
+import { ImageMediaPreset, Permission, Sex, TimetableEntryType, UserType } from '@prisma/client';
 import { CommentStatus } from '../../src/ue/comments/interfaces/comment.interface';
 import { UeAnnalFile } from '../../src/ue/annals/interfaces/annal.interface';
 import { omit, PermissionManager, pick, translationSelect } from '../../src/utils';
@@ -119,6 +120,7 @@ export type FakeHomepageWidget = Partial<RawHomepageWidget>;
 export type FakeApiApplication = Partial<Omit<RawApiApplication, 'ownerId'>> & {
   owner: { id: string; firstName: string; lastName: string };
 };
+export type FakeImageMedia = Partial<RawImageMedia>;
 export type FakeAssoWeekly = Partial<Pick<AssoWeekly, 'id' | 'assoId' | 'date' | 'createdAt' | 'title' | 'message'>>;
 
 export interface FakeEntityMap {
@@ -251,6 +253,10 @@ export interface FakeEntityMap {
     entity: FakeApiApplication;
     params: CreateApiApplicationParameter;
     deps: { owner: FakeUser };
+  };
+  imageMedia: {
+    entity: FakeImageMedia;
+    params: CreateImageMediaParameter;
   };
 }
 
@@ -1128,6 +1134,19 @@ export const createApplication = entityFaker(
           },
         },
       }),
+);
+
+export type CreateImageMediaParameter = Omit<FakeImageMedia, 'uploadedAt' | 'uploaderId'>;
+export const createImageMedia = entityFaker(
+  'imageMedia',
+  {
+    height: faker.number.int({ min: 100, max: 4000 }),
+    width: faker.number.int({ min: 100, max: 4000 }),
+    isPublic: faker.datatype.boolean,
+    size: faker.number.int({ min: 1000, max: 10_000_000 }),
+    preset: faker.helpers.enumValue(ImageMediaPreset),
+  },
+  async (app, params) => app().get(PrismaService).imageMedia.create({ data: params }),
 );
 
 /**

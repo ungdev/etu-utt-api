@@ -112,29 +112,27 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
         body: 'Cette  UE est troooop bien',
         isAnonymous: true,
       })
-      .expectUeComment(
-        {
-          id: JsonLike.UUID,
-          ueof,
-          author: {
-            id: userDidUe.id,
-            firstName: userDidUe.firstName,
-            lastName: userDidUe.lastName,
-            studentId: userDidUe.studentId,
-          },
-          createdAt: JsonLike.DATE,
-          updatedAt: JsonLike.DATE,
-          semester: semester.code,
-          isAnonymous: true,
-          body: 'Cette  UE est troooop bien',
-          answers: [],
-          upvotes: 0,
-          upvoted: false,
-          status: CommentStatus.UNVERIFIED,
-          lastValidatedBody: null,
+      .created()
+      .expectUeComment({
+        id: JsonLike.UUID,
+        ueof,
+        author: {
+          id: userDidUe.id,
+          firstName: userDidUe.firstName,
+          lastName: userDidUe.lastName,
+          studentId: userDidUe.studentId,
         },
-        true,
-      );
+        createdAt: JsonLike.DATE,
+        updatedAt: JsonLike.DATE,
+        semester: semester.code,
+        isAnonymous: true,
+        body: 'Cette  UE est troooop bien',
+        answers: [],
+        upvotes: 0,
+        upvoted: false,
+        status: CommentStatus.UNVERIFIED,
+        lastValidatedBody: null,
+      });
     return app().get(PrismaService).ueComment.deleteMany();
   });
 
@@ -161,29 +159,27 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
         ueCode: ue.code,
         body: 'Cette  UE est troooop bien',
       })
-      .expectUeComment(
-        {
-          ueof,
-          id: JsonLike.UUID,
-          author: {
-            id: userDidUe.id,
-            firstName: userDidUe.firstName,
-            lastName: userDidUe.lastName,
-            studentId: userDidUe.studentId,
-          },
-          createdAt: JsonLike.DATE,
-          updatedAt: JsonLike.DATE,
-          semester: semester.code,
-          isAnonymous: false,
-          body: 'Cette  UE est troooop bien',
-          answers: [],
-          upvotes: 0,
-          upvoted: false,
-          status: CommentStatus.UNVERIFIED,
-          lastValidatedBody: null,
+      .created()
+      .expectUeComment({
+        ueof,
+        id: JsonLike.UUID,
+        author: {
+          id: userDidUe.id,
+          firstName: userDidUe.firstName,
+          lastName: userDidUe.lastName,
+          studentId: userDidUe.studentId,
         },
-        true,
-      );
+        createdAt: JsonLike.DATE,
+        updatedAt: JsonLike.DATE,
+        semester: semester.code,
+        isAnonymous: false,
+        body: 'Cette  UE est troooop bien',
+        answers: [],
+        upvotes: 0,
+        upvoted: false,
+        status: CommentStatus.UNVERIFIED,
+        lastValidatedBody: null,
+      });
     return app().get(PrismaService).ueComment.deleteMany();
   });
 });

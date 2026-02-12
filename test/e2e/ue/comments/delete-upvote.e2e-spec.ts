@@ -10,7 +10,6 @@ import {
 } from '../../../utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../../src/exceptions';
-import { HttpStatus } from '@nestjs/common';
 import { Dummies, e2eSuite } from '../../../utils/test_utils';
 import { PrismaService } from '../../../../src/prisma/prisma.service';
 import { PermissionManager } from '../../../../src/utils';
@@ -75,7 +74,6 @@ const DeleteUpvote = e2eSuite('DELETE /ue/comments/{commentId}/upvote', (app) =>
       .spec()
       .withBearerToken(userNotAuthor.token)
       .delete(`/ue/comments/${comment1.id}/upvote`)
-      .expectStatus(HttpStatus.OK)
       .$expectRegexableJson({ upvoted: false });
     return createCommentUpvote(app, { user: userNotAuthor, comment: comment1 }, upvote, true);
   });

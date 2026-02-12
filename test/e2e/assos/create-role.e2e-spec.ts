@@ -57,7 +57,8 @@ const CreateAssoRoleE2ESpec = e2eSuite('POST /assos/:id/roles', (app) => {
       .withBearerToken(userAllowed.token)
       .post(`/assos/${asso.id}/roles`)
       .withBody(validBody)
-      .expectAssoMembershipRoleCreated({
+      .created()
+      .expectAssoMembershipRole({
         id: JsonLike.UUID,
         isPresident: false,
         name: validBody.name,
@@ -84,7 +85,8 @@ const CreateAssoRoleE2ESpec = e2eSuite('POST /assos/:id/roles', (app) => {
       .withBearerToken(token)
       .post(`/assos/${asso.id}/roles`)
       .withBody(validBody)
-      .expectAssoMembershipRoleCreated({
+      .created()
+      .expectAssoMembershipRole({
         id: JsonLike.UUID,
         isPresident: false,
         name: validBody.name,
