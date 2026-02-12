@@ -18,15 +18,15 @@ const LexicalGenerationUnitSpec = unitSuite('Lexical generation', (app) => {
   ) => {
     bundles.forEach((bundle) => {
       // These steps are skipped as jest does not support yet pure-esm sub-dependencies
-      describe.skip(name, () => {
-        it(bundle, () => {
+      describe(name, () => {
+        it(bundle, async () => {
           const editor = createHeadlessEditor({
             nodes: BUNDLES['@etuutt/full'],
           });
           editor.update(() => {
             test(editor);
           });
-          editor.read(async () =>
+          await editor.read(async () =>
             expect(await lexicalModule.generateHTML(JSON.stringify(editor.getEditorState()), bundle)).toBe(result),
           );
         });
@@ -48,7 +48,7 @@ const LexicalGenerationUnitSpec = unitSuite('Lexical generation', (app) => {
       $getRoot().append(
         $createParagraphNode().append($createTextNode('Hello '), $createTextNode('World').setFormat('bold')),
       ),
-    '<p style="margin:0px;"><span style="white-space:pre-wrap;">Hello <b><strong style="white-space:pre-wrap;font-weight:bold;">World</strong></b></span></p>',
+    '<p style="margin:0px;"><span style="white-space:pre-wrap;">Hello </span><b><strong style="white-space:pre-wrap;font-weight:bold;">World</strong></b></p>',
   );
 });
 

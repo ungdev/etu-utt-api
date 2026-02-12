@@ -1,4 +1,3 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { Language, Permission } from '@prisma/client';
 import { createEditor } from 'lexical';
 import { Translation } from './prisma/types';
