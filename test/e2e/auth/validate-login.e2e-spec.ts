@@ -3,7 +3,6 @@ import { e2eSuite, JsonLike } from '../../utils/test_utils';
 import { AuthService } from '../../../src/auth/auth.service';
 import { ERROR_CODE } from '../../../src/exceptions';
 import * as fakedb from '../../utils/fakedb';
-import { HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { DEFAULT_APPLICATION } from '../../../prisma/seed/utils';
 import { JwtService } from '@nestjs/jwt';
@@ -49,7 +48,6 @@ const ValidateLoginE2ESpec = e2eSuite('POST /auth/login/validate', (app) => {
         token: await authService().signValidationToken(user.apiKey.id, DEFAULT_APPLICATION.id, 9999),
         clientSecret: DEFAULT_APPLICATION.clientSecret,
       })
-      .expectStatus(HttpStatus.OK)
       .$expectRegexableJson({ token: JsonLike.STRING })
       .expect(async (ctx) => {
         const body = ctx.res.json as { token: string };

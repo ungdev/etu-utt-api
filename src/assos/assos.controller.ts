@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Patch, Post, Put, Query } from '@nestjs/
 import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiAppErrorResponse, paginatedResponseDto } from '../app.dto';
 import { AssoMembershipRole } from './interfaces/membership-role.interface';
+import { ImageMediaService } from '../media/image/imagemedia.service';
 import { AssoMembership } from './interfaces/membership.interface';
 import { ParamAsso } from './decorator/get-asso';
 import { GetUser, IsPublic } from '../auth/decorator';
@@ -10,7 +11,7 @@ import { AppException, ERROR_CODE } from '../exceptions';
 import { ParamMember } from './decorator/get-member';
 import { Asso } from './interfaces/asso.interface';
 import { User } from '../users/interfaces/user.interface';
-import { pick } from '../utils';
+import { isValidLexicalContent, pick } from '../utils';
 import { UUIDParam } from '../app.pipe';
 import AssosSearchReqDto from './dto/req/assos-search-req.dto';
 import AssoOverviewResDto from './dto/res/asso-overview-res.dto';
@@ -23,6 +24,8 @@ import AssosMemberCreateReqDto from './dto/req/assos-member-create.dto';
 import AssosMemberUpdateReqDto from './dto/req/assos-member-update.dto';
 import AssoMembershipResDto from './dto/res/assos-membership-res.dto';
 import UsersService from '../users/users.service';
+import AssosUpdateReqDto from './dto/req/assos-update-req.dto';
+import { ImageMediaPreset } from '@prisma/client';
 
 @Controller('assos')
 @ApiTags('Assos')
@@ -30,6 +33,7 @@ export class AssosController {
   constructor(
     readonly assosService: AssosService,
     readonly userService: UsersService,
+    readonly mediaService: ImageMediaService,
   ) {}
 
   @Get()
@@ -54,6 +58,39 @@ export class AssosController {
   @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_ASSO, 'There is no asso with the given id')
   getAsso(@ParamAsso() asso: Asso): AssoDetailResDto {
     return this.formatAssoDetail(asso);
+  }
+
+  @Patch('/:assoId')
+  @ApiOperation({
+    description: 'Update an asso. Only the fields present in the body will be updated.',
+  })
+  @ApiOkResponse({ type: AssoDetailResDto })
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_ASSO, 'There is no asso with the given id')
+  @ApiAppErrorResponse(
+    ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS,
+    'The user has no permission to perform this action for this asso',
+  )
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_MEDIA, 'The media does not exist')
+  @ApiAppErrorResponse(ERROR_CODE.MEDIA_NOT_PUBLIC, 'The media is not public')
+  @ApiAppErrorResponse(ERROR_CODE.MEDIA_PRESET_REQUIRED, 'The media does not have the required preset (avatar)')
+  async updateAsso(
+    @ParamAsso() asso: Asso,
+    @GetUser() user: User,
+    @Body() body: AssosUpdateReqDto,
+  ): Promise<AssoDetailResDto> {
+    if (!(await this.assosService.hasSomeAssoPermission(asso, user.id, 'manage_infos')))
+      throw new AppException(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, 'manage_infos');
+    for (const key in body.description)
+      if (body.description[key] && !isValidLexicalContent(body.description[key]))
+        throw new AppException(ERROR_CODE.PARAM_LEXICAL_ILLEGAL, `description.${key}`);
+    if (body.logo) {
+      const media = await this.mediaService.getMedia(body.logo);
+      if (!media) throw new AppException(ERROR_CODE.NO_SUCH_MEDIA, body.logo);
+      if (!media.isPublic) throw new AppException(ERROR_CODE.MEDIA_NOT_PUBLIC);
+      if (media.preset !== ImageMediaPreset.AVATAR)
+        throw new AppException(ERROR_CODE.MEDIA_PRESET_REQUIRED, ImageMediaPreset.AVATAR);
+    }
+    return this.assosService.updateAsso(asso.id, body).then(this.formatAssoDetail);
   }
 
   // The route below is not public as it exposes the full name of all members, only the president is supposed to be exposed publicly in the route above
@@ -218,7 +255,8 @@ export class AssosController {
 
   formatAssoOverview(asso: Asso): AssoOverviewResDto {
     return {
-      ...pick(asso, 'id', 'name', 'logo', 'president'),
+      ...pick(asso, 'id', 'name', 'president'),
+      logo: asso.logo ? `/media/image/${asso.logo.id}.webp` : null,
       shortDescription: asso.descriptionShortTranslation,
       president: {
         role: pick(asso.president.role, 'id', 'name'),
@@ -229,7 +267,8 @@ export class AssosController {
 
   formatAssoDetail(asso: Asso): AssoDetailResDto {
     return {
-      ...pick(asso, 'id', 'name', 'mail', 'phoneNumber', 'website', 'logo'),
+      ...pick(asso, 'id', 'name', 'mail', 'phoneNumber', 'website'),
+      logo: asso.logo ? `/media/image/${asso.logo.id}.webp` : null,
       description: asso.descriptionTranslation,
       president: {
         role: pick(asso.president.role, 'id', 'name'),

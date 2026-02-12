@@ -1,14 +1,16 @@
-import { HttpStatus } from '@nestjs/common';
-import { e2eSuite } from '../../utils/test_utils';
+import { Dummies, e2eSuite } from '../../utils/test_utils';
 import * as pactum from 'pactum';
 import { PrismaService } from '../../../src/prisma/prisma.service';
-import { createUser } from '../../utils/fakedb';
+import { createImageMedia, createUser } from '../../utils/fakedb';
+import { ERROR_CODE } from '../../../src/exceptions';
+import { ImageMediaPreset } from '@prisma/client';
 
 const UpdateProfile = e2eSuite('PATCH /users/current', (app) => {
   const user = createUser(app);
+  const image = createImageMedia(app, { preset: ImageMediaPreset.CUSTOM });
 
   it('should return a 401 as user is not authenticated', () => {
-    return pactum.spec().get('/users/current').expectStatus(HttpStatus.UNAUTHORIZED);
+    return pactum.spec().get('/users/current').expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
   it('should return a 400 as the type of the value is wrong', async () => {
@@ -19,7 +21,38 @@ const UpdateProfile = e2eSuite('PATCH /users/current', (app) => {
       .withBody({
         facebook: true,
       })
-      .expectStatus(HttpStatus.BAD_REQUEST);
+      .expectAppError(ERROR_CODE.PARAM_NOT_STRING, 'facebook');
+  });
+
+  it('should return a 400 as no field was provided', async () => {
+    await pactum
+      .spec()
+      .withBearerToken(user.token)
+      .patch(`/users/current`)
+      .withBody({})
+      .expectAppError(ERROR_CODE.NO_FIELD_PROVIDED);
+  });
+
+  it('should return a 404 as media does not exist', async () => {
+    await pactum
+      .spec()
+      .withBearerToken(user.token)
+      .patch(`/users/current`)
+      .withBody({
+        avatar: Dummies.UUID,
+      })
+      .expectAppError(ERROR_CODE.NO_SUCH_MEDIA, Dummies.UUID);
+  });
+
+  it('should return a 403 as image has wrong preset', async () => {
+    await pactum
+      .spec()
+      .withBearerToken(user.token)
+      .patch(`/users/current`)
+      .withBody({
+        avatar: image.id,
+      })
+      .expectAppError(ERROR_CODE.MEDIA_PRESET_REQUIRED, ImageMediaPreset.AVATAR);
   });
 
   it('should return the updated profile', async () => {
@@ -32,7 +65,7 @@ const UpdateProfile = e2eSuite('PATCH /users/current', (app) => {
         displayAddress: 'ALL_PUBLIC',
       })
       .$expectRegexableJson({
-        avatar: user.infos.avatar,
+        avatar: user.infos.avatarMediaId ? `/media/image/${user.infos.avatarMediaId}.webp` : null,
         birthday: user.infos.birthday,
         discord: user.socialNetwork.discord,
         facebook: 'fbProfile',

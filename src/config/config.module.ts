@@ -31,6 +31,8 @@ export class ConfigModule {
   public readonly IS_PROD_ENV: boolean;
   public readonly TIMETABLE_URL: string;
   public readonly ANNAL_UPLOAD_DIR: string;
+  public readonly MEDIA_UPLOAD_DIR: string;
+  public readonly MEDIA_DETACHED_LIFESPAN: number;
   public readonly ETUUTT_WEBSITE_APPLICATION_ID: string;
   public readonly SMTP_HOST: string;
   public readonly SMTP_PORT: number;
@@ -60,6 +62,9 @@ export class ConfigModule {
     this.TIMETABLE_URL = config.get<string>('TIMETABLE_URL');
     this.ANNAL_UPLOAD_DIR = config.get<string>('ANNAL_UPLOAD_DIR');
     if (this.ANNAL_UPLOAD_DIR.endsWith('/')) this.ANNAL_UPLOAD_DIR = this.ANNAL_UPLOAD_DIR.slice(0, -1);
+    this.MEDIA_UPLOAD_DIR = config.get<string>('MEDIA_UPLOAD_DIR');
+    if (this.MEDIA_UPLOAD_DIR.endsWith('/')) this.MEDIA_UPLOAD_DIR = this.MEDIA_UPLOAD_DIR.slice(0, -1);
+    this.MEDIA_DETACHED_LIFESPAN = Number(config.get('MEDIA_DETACHED_LIFESPAN'));
     this.ETUUTT_WEBSITE_APPLICATION_ID = config.get('ETUUTT_WEBSITE_APPLICATION_ID');
     this.SMTP_HOST = config.get<string>('SMTP_HOST');
     this.SMTP_PORT = config.get<number>('SMTP_PORT');

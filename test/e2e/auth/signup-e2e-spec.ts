@@ -93,7 +93,7 @@ const SignupE2ESpec = e2eSuite('POST /auth/signup', (app) => {
       .spec()
       .post('/auth/signup')
       .withBody(dto)
-      .expectStatus(201)
+      .created()
       .expect(async (ctx) => {
         expect(ctx.res.json['token']).toBeDefined();
         const token = app().get(JwtService).decode(ctx.res.json['token']).token;

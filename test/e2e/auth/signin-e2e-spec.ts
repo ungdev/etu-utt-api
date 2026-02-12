@@ -48,7 +48,6 @@ const SignInE2ESpec = e2eSuite('POST /auth/signin', (app) => {
       .spec()
       .post('/auth/signin')
       .withBody(dto)
-      .expectStatus(200)
       .$expectRegexableJson({
         signedIn: true,
         token: JsonLike.STRING,
@@ -79,7 +78,6 @@ const SignInE2ESpec = e2eSuite('POST /auth/signin', (app) => {
       .post('/auth/signin')
       .withApplication(application.id)
       .withBody({ login: userWithApplication.login, password: 'etuutt', tokenExpiresIn: 99999 })
-      .expectStatus(200)
       .$expectRegexableJson({
         signedIn: true,
         token: null,
@@ -102,7 +100,6 @@ const SignInE2ESpec = e2eSuite('POST /auth/signin', (app) => {
       .post('/auth/signin')
       .withApplication(application.id)
       .withBody(dto)
-      .expectStatus(200)
       .$expectRegexableJson({
         signedIn: false,
         token: JsonLike.STRING,
