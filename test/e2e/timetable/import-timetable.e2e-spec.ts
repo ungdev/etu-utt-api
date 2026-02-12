@@ -1,7 +1,6 @@
 import { e2eSuite } from '../../utils/test_utils';
 import * as fakedb from '../../utils/fakedb';
 import * as pactum from 'pactum';
-import { HttpStatus } from '@nestjs/common';
 import { ERROR_CODE } from 'src/exceptions';
 import { setTimetable } from '../../external_services/timetable';
 import { PrismaService } from '../../../src/prisma/prisma.service';
@@ -24,7 +23,7 @@ const ImportTimetableE2ESpec = e2eSuite('POST /timetable/import', (app) => {
     await pactum
       .spec()
       .post('/timetable/import/' + defaultUrl)
-      .expectStatus(HttpStatus.UNAUTHORIZED));
+      .expectAppError(ERROR_CODE.NOT_LOGGED_IN));
 
   it('should fail as UE is invalid', async () => {
     setTimetable(
@@ -97,7 +96,7 @@ const ImportTimetableE2ESpec = e2eSuite('POST /timetable/import', (app) => {
       END:VEVENT`.replace(/^\s+/gm, ''),
     );
 
-    await pactum.spec().post(`/timetable/import/${defaultUrl}`).withBearerToken(users[0].token).expectStatus(201);
+    await pactum.spec().post(`/timetable/import/${defaultUrl}`).withBearerToken(users[0].token).created();
 
     const prisma = app().get(PrismaService);
 
@@ -144,7 +143,7 @@ const ImportTimetableE2ESpec = e2eSuite('POST /timetable/import', (app) => {
       END:VEVENT`.replace(/^\s+/gm, ''),
     );
 
-    await pactum.spec().post(`/timetable/import/${defaultUrl}`).withBearerToken(users[0].token).expectStatus(201);
+    await pactum.spec().post(`/timetable/import/${defaultUrl}`).withBearerToken(users[0].token).created();
 
     const prisma = app().get(PrismaService);
 
@@ -201,7 +200,7 @@ const ImportTimetableE2ESpec = e2eSuite('POST /timetable/import', (app) => {
     );
     // 10 differents users imports the same course
     for (let i = 0; i < users.length; i++) {
-      await pactum.spec().post(`/timetable/import/${defaultUrl}`).withBearerToken(users[i].token).expectStatus(201);
+      await pactum.spec().post(`/timetable/import/${defaultUrl}`).withBearerToken(users[i].token).created();
     }
 
     const prisma = app().get(PrismaService);
@@ -250,7 +249,7 @@ const ImportTimetableE2ESpec = e2eSuite('POST /timetable/import', (app) => {
     );
     const prisma = app().get(PrismaService);
 
-    await pactum.spec().post(`/timetable/import/${defaultUrl}`).withBearerToken(users[0].token).expectStatus(201);
+    await pactum.spec().post(`/timetable/import/${defaultUrl}`).withBearerToken(users[0].token).created();
     expect(
       (
         await prisma.ueCourse.findMany({

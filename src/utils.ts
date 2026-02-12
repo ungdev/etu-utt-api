@@ -1,5 +1,6 @@
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { Language, Permission } from '@prisma/client';
+import { createEditor } from 'lexical';
 import { Translation } from './prisma/types';
 import { ApiPermission, UserPermission } from './auth/interfaces/permissions.interface';
 
@@ -58,28 +59,11 @@ export const translationSelect = {
   },
 };
 
-export class TranslatedTextDto {
-  @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  fr?: string;
-  @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  en?: string;
-  @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  de?: string;
-  @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  es?: string;
-  @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  zh?: string;
-}
+const exhaustiveLanguage = <CheckArray extends readonly Language[]>(array: (
+  [Language] extends [CheckArray[number]]
+    ? CheckArray
+    : 'Missing some values from Language')) => array;
+export const languages = exhaustiveLanguage(['fr', 'en', 'es', 'de', 'zh']);
 
 export class PermissionManager {
   public readonly hardPermissions: Permission[];
@@ -118,5 +102,19 @@ export class PermissionManager {
       }
     }
     return this;
+  }
+}
+
+export function isValidLexicalContent(userInput: string) {
+  try {
+    const editor = createEditor({
+      onError: () => {}, // silent parsing errors
+    });
+    const parsed = JSON.parse(userInput);
+    const editorState = editor.parseEditorState(parsed);
+    editorState.read(() => {});
+    return true;
+  } catch {
+    return false;
   }
 }

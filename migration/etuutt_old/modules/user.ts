@@ -72,7 +72,7 @@ export async function migrateUsers(
           },
           preference: {
             create: {
-              wantDaymail: user.daymail,
+              wantWeekly: user.daymail,
               language: user.language,
               wantDayNotif: false,
               wantDiscordUtt: user.wantsJoinUTTDiscord,

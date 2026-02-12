@@ -180,7 +180,7 @@ export default class UsersService {
         preference: {
           update: {
             language: dto.language,
-            wantDaymail: dto.wantDaymail,
+            wantWeekly: dto.wantWeekly,
             wantDayNotif: dto.wantDayNotif,
             wantDiscordUtt: dto.wantDiscordUtt,
           },

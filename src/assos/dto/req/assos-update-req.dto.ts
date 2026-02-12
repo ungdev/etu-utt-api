@@ -9,7 +9,7 @@ import {
   IsUUID,
   ValidateNested,
 } from 'class-validator';
-import { TranslatedTextDto } from '../../../utils';
+import { TranslationReqDto } from '../../../app.dto';
 
 export default class AssosUpdateReqDto {
   @IsOptional()
@@ -24,14 +24,14 @@ export default class AssosUpdateReqDto {
   logo?: string;
 
   @IsOptional()
-  @Type(() => TranslatedTextDto)
+  @Type(() => TranslationReqDto)
   @ValidateNested()
-  descriptionShort?: TranslatedTextDto;
+  descriptionShort?: TranslationReqDto;
 
   @IsOptional()
-  @Type(() => TranslatedTextDto)
+  @Type(() => TranslationReqDto)
   @ValidateNested()
-  description?: TranslatedTextDto;
+  description?: TranslationReqDto;
 
   @IsOptional()
   @IsString()

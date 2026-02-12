@@ -49,7 +49,7 @@ const UpdateAssoMemberE2ESpec = e2eSuite('PATCH /assos/:id/members/:id', (app) =
 
   const endAt = new Date(Date.now() + 7 * 24 * 3600 * 1000);
 
-  it('should return 403 as user is not authenticated', () =>
+  it('should return 401 as user is not authenticated', () =>
     pactum
       .spec()
       .patch(`/assos/${asso.id}/members/${userInAssoMembershipInAsso.id}`)

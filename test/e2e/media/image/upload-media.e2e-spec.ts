@@ -43,7 +43,7 @@ export const UploadMediaE2ESpec = e2eSuite('POST /media/image', (app) => {
       .withFile('file', `test/e2e/media/image/artifacts/image.webp`)
       .expectAppError(ERROR_CODE.SERVER_DISK_ERROR));
 
-  describe('should create the annal', () => {
+  describe('should create the media', () => {
     beforeAll(() => {
       mkdirSync(`${app().get(ConfigModule).MEDIA_UPLOAD_DIR}/image`, { recursive: true });
     });
@@ -59,6 +59,7 @@ export const UploadMediaE2ESpec = e2eSuite('POST /media/image', (app) => {
         .post(`/media/image`)
         .withQueryParams({ ...params, rotation })
         .withFile('file', `test/e2e/media/image/artifacts/image.${fileExt}`)
+        .created()
         .expectImageMedia({
           width: 256,
           height: 256,
@@ -87,6 +88,7 @@ export const UploadMediaE2ESpec = e2eSuite('POST /media/image', (app) => {
           height: 1080,
         })
         .withFile('file', `test/e2e/media/image/artifacts/image.png`)
+        .created()
         .expectImageMedia({
           width: 1920,
           height: 1080,
