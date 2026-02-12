@@ -5,7 +5,10 @@ import { AuthService } from '../auth.service';
 
 @Injectable()
 export default class ApplicationService {
-  constructor(private prisma: PrismaService, private authService: AuthService) {}
+  constructor(
+    private prisma: PrismaService,
+    private authService: AuthService,
+  ) {}
 
   getFromUserId(userId: string): Promise<Application[]> {
     return this.prisma.normalize.apiApplication.findMany({ where: { ownerId: userId } });

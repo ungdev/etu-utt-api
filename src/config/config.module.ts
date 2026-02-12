@@ -32,6 +32,14 @@ export class ConfigModule {
   public readonly TIMETABLE_URL: string;
   public readonly ANNAL_UPLOAD_DIR: string;
   public readonly ETUUTT_WEBSITE_APPLICATION_ID: string;
+  public readonly SMTP_HOST: string;
+  public readonly SMTP_PORT: number;
+  public readonly SMTP_USER: string;
+  public readonly SMTP_PASSWORD: string;
+  public readonly SMTP_REJECT_UNAUTHORIZED: boolean;
+  public readonly SMTP_SERVER_NAME: string;
+  public readonly SMTP_SENDING_NAME: string;
+  public readonly SMTP_SENDING_EMAIL: string;
   // DEV ENVIRONMENT ONLY
 
   // TEST ENVIRONMENT ONLY
@@ -48,12 +56,19 @@ export class ConfigModule {
     this.LDAP_URL = config.get('LDAP_URL');
     this.LDAP_USER = config.get('LDAP_USER');
     this.LDAP_PWD = config.get('LDAP_PWD');
-    this.ANNAL_UPLOAD_DIR = config.get<string>('ANNAL_UPLOAD_DIR');
     this.IS_PROD_ENV = isProdEnv;
     this.TIMETABLE_URL = config.get<string>('TIMETABLE_URL');
-
+    this.ANNAL_UPLOAD_DIR = config.get<string>('ANNAL_UPLOAD_DIR');
     if (this.ANNAL_UPLOAD_DIR.endsWith('/')) this.ANNAL_UPLOAD_DIR = this.ANNAL_UPLOAD_DIR.slice(0, -1);
     this.ETUUTT_WEBSITE_APPLICATION_ID = config.get('ETUUTT_WEBSITE_APPLICATION_ID');
+    this.SMTP_HOST = config.get<string>('SMTP_HOST');
+    this.SMTP_PORT = config.get<number>('SMTP_PORT');
+    this.SMTP_USER = config.get<string>('SMTP_USER');
+    this.SMTP_PASSWORD = config.get<string>('SMTP_PASSWORD');
+    this.SMTP_REJECT_UNAUTHORIZED = this.getBoolean(config.get('SMTP_REJECT_UNAUTHORIZED'));
+    this.SMTP_SERVER_NAME = config.get<string>('SMTP_SERVER_NAME');
+    this.SMTP_SENDING_NAME = config.get<string>('SMTP_SENDING_NAME');
+    this.SMTP_SENDING_EMAIL = config.get<string>('SMTP_SENDING_EMAIL');
 
     this._FAKER_SEED = isTestEnv ? Number(config.get('FAKER_SEED')) : undefined;
   }
@@ -65,5 +80,15 @@ export class ConfigModule {
 
   get<T extends keyof ConfigModule>(key: T): ConfigModule[T] {
     return this[key];
+  }
+
+  private getBoolean(value: string): boolean {
+    if (value == 'true') {
+      return true;
+    } else if (value == 'false') {
+      return false;
+    } else {
+      throw new Error('Environment variable SMTP_REJECT_UNAUTHORIZED must be "true" or "false"');
+    }
   }
 }
