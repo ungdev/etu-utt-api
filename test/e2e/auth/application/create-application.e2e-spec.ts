@@ -2,7 +2,6 @@ import { e2eSuite, JsonLike } from '../../../utils/test_utils';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../../src/exceptions';
 import * as fakedb from '../../../utils/fakedb';
-import { HttpStatus } from '@nestjs/common';
 
 const CreateApplicationE2ESpec = e2eSuite('POST /auth/application', (app) => {
   const user = fakedb.createUser(app);
@@ -21,7 +20,7 @@ const CreateApplicationE2ESpec = e2eSuite('POST /auth/application', (app) => {
       .post(`/auth/application`)
       .withBearerToken(user.token)
       .withJson(body)
-      .expectStatus(HttpStatus.CREATED)
+      .created()
       .$expectRegexableJson({
         id: JsonLike.UUID,
         name: body.name,

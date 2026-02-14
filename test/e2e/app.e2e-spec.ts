@@ -16,6 +16,7 @@ import * as timetableProvider from '../external_services/timetable';
 import { ConfigModule } from '../../src/config/config.module';
 import AssoE2ESpec from './assos';
 import LinkE2ESpec from './link';
+import MediaE2ESpec from './media';
 
 describe('EtuUTT API e2e testing', () => {
   let app: INestApplication;
@@ -56,4 +57,5 @@ describe('EtuUTT API e2e testing', () => {
   UeE2ESpec(() => app);
   AssoE2ESpec(() => app);
   LinkE2ESpec(() => app);
+  MediaE2ESpec(() => app);
 });

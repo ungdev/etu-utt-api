@@ -66,7 +66,7 @@ const USER_SELECT_FILTER = {
       select: {
         wantDayNotif: true,
         language: true,
-        wantDaymail: true,
+        wantWeekly: true,
         wantDiscordUtt: true,
       },
     },

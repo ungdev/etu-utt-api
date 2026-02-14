@@ -37,6 +37,7 @@ export {
   UserPrivacy as RawUserPrivacy,
   ApiApplication as RawApiApplication,
   ApiKey as RawApiKey,
+  ImageMedia as RawImageMedia,
   Link as RawLink,
 } from '@prisma/client';
 

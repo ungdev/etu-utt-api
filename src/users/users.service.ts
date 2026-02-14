@@ -124,7 +124,14 @@ export default class UsersService {
           },
         },
       })
-    ).map((membership) => ({ ...omit(membership, 'role'), role: membership.role.name }));
+    ).map((membership) => ({
+      ...omit(membership, 'role'),
+      role: membership.role.name,
+      asso: {
+        ...membership.asso,
+        logo: membership.asso.logo ? `/media/image/${membership.asso.logo.id}.webp` : null,
+      },
+    }));
     return membership;
   }
 
@@ -135,7 +142,7 @@ export default class UsersService {
         infos: {
           update: {
             nickname: dto.nickname,
-            avatar: dto.avatar,
+            avatar: { connect: dto.avatar ? { id: dto.avatar } : undefined },
             passions: dto.passions,
             website: dto.website,
           },
@@ -173,7 +180,7 @@ export default class UsersService {
         preference: {
           update: {
             language: dto.language,
-            wantDaymail: dto.wantDaymail,
+            wantWeekly: dto.wantWeekly,
             wantDayNotif: dto.wantDayNotif,
             wantDiscordUtt: dto.wantDiscordUtt,
           },

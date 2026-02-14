@@ -9,6 +9,7 @@ import { AssoMembershipRole } from './interfaces/membership-role.interface';
 import AssosSearchReqDto from './dto/req/assos-search-req.dto';
 import AssosMemberUpdateReqDto from './dto/req/assos-member-update.dto';
 import { AppException, ERROR_CODE } from '../exceptions';
+import AssosUpdateReqDto from './dto/req/assos-update-req.dto';
 
 @Injectable()
 export class AssosService {
@@ -79,6 +80,59 @@ export class AssosService {
         id: assoId,
       },
     });
+  }
+
+  async updateAsso(assoId: string, update: AssosUpdateReqDto): Promise<Asso> {
+    const updated = await this.prisma.normalize.asso.update({
+      where: { id: assoId },
+      data: {
+        ...(update.name ? { name: update.name } : {}),
+        ...(update.logo ? { logo: { connect: { id: update.logo } } } : {}),
+        ...(update.descriptionShort ? { descriptionShortTranslation: { update: update.descriptionShort } } : {}),
+        ...(update.description ? { descriptionTranslation: { update: update.description } } : {}),
+        ...(update.email ? { mail: update.email } : {}),
+        ...(update.phoneNumber ? { phoneNumber: update.phoneNumber } : {}),
+        ...(update.website ? { website: update.website } : {}),
+      },
+    });
+    if (update.description) {
+      // Cleanup unused images
+      const regex = /"src":"https:\/\/[^"]+\/media\/image\/([0-9a-f-]{36})\.webp"/g;
+      const imagesInUse = new Set<string>();
+      for (const field in updated.descriptionTranslation)
+        for (const match of (<string>updated.descriptionTranslation[field])?.matchAll(regex) ?? [])
+          imagesInUse.add(match[1]);
+      const currentImages = (
+        await this.prisma.imageMedia.findMany({
+          where: { descriptionForAssos: { some: { id: assoId } } },
+          select: { id: true },
+        })
+      ).map((m) => m.id);
+      const deletions = currentImages.filter((x) => !imagesInUse.has(x));
+      const additions = [...imagesInUse].filter((x) => !currentImages.includes(x));
+      const existingAdditionIds = (
+        await this.prisma.imageMedia.findMany({
+          where: { id: { in: additions } },
+          select: { id: true },
+        })
+      ).map((m) => m.id);
+      if (deletions.length > 0 || additions.length > 0)
+        await this.prisma.$transaction([
+          ...deletions.map((id) =>
+            this.prisma.imageMedia.update({
+              where: { id },
+              data: { descriptionForAssos: { disconnect: { id: assoId } } },
+            }),
+          ),
+          ...Array.from(additions.filter((x) => existingAdditionIds.includes(x))).map((id) =>
+            this.prisma.imageMedia.update({
+              where: { id },
+              data: { descriptionForAssos: { connect: { id: assoId } } },
+            }),
+          ),
+        ]);
+    }
+    return updated;
   }
 
   async getAssoMembers(assoId: string): Promise<AssoMembershipRole[]> {

@@ -34,16 +34,18 @@ import {
   RawUserPrivacy,
   RawApiKey,
   RawApiApplication,
+  RawImageMedia,
 } from '../../src/prisma/types';
 import { faker } from '@faker-js/faker';
 import { AuthService } from '../../src/auth/auth.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { AppProvider } from './test_utils';
-import { Permission, Sex, TimetableEntryType, UserType } from '@prisma/client';
+import { ImageMediaPreset, Permission, Sex, TimetableEntryType, UserType } from '@prisma/client';
 import { CommentStatus } from '../../src/ue/comments/interfaces/comment.interface';
 import { UeAnnalFile } from '../../src/ue/annals/interfaces/annal.interface';
 import { omit, PermissionManager, pick, translationSelect } from '../../src/utils';
 import { DEFAULT_APPLICATION } from '../../prisma/seed/utils';
+import { AssoWeekly } from '../../src/assos/interfaces/weekly.interface';
 import { Link } from '../../src/link/link.interface';
 
 /**
@@ -119,6 +121,8 @@ export type FakeHomepageWidget = Partial<RawHomepageWidget>;
 export type FakeApiApplication = Partial<Omit<RawApiApplication, 'ownerId'>> & {
   owner: { id: string; firstName: string; lastName: string };
 };
+export type FakeImageMedia = Partial<RawImageMedia>;
+export type FakeAssoWeekly = Partial<Pick<AssoWeekly, 'id' | 'assoId' | 'date' | 'createdAt' | 'title' | 'message'>>;
 export type FakeLink = Partial<Omit<Link, 'name' | 'tooltip'>> & { name?: Partial<Link['name']>; tooltip?: Partial<Link['tooltip']> };
 
 export interface FakeEntityMap {
@@ -145,6 +149,11 @@ export interface FakeEntityMap {
     entity: FakeAsso;
     params: CreateAssoParameters;
   };
+  assoWeekly: {
+    entity: FakeAssoWeekly;
+    params: CreateAssoWeeklyParameters;
+    deps: { asso: FakeAsso };
+  }
   timetableEntryOverride: {
     entity: Partial<FakeTimetableEntryOverride>;
     params: CreateTimetableEntryOverrideParameters;
@@ -247,10 +256,14 @@ export interface FakeEntityMap {
     params: CreateApiApplicationParameter;
     deps: { owner: FakeUser };
   };
+  imageMedia: {
+    entity: FakeImageMedia;
+    params: CreateImageMediaParameter;
+  };
   link: {
     entity: FakeLink;
     params: CreateLinkParameter;
-  }
+  };
 }
 
 export type CreateUserParameters = FakeUser & { password: string };
@@ -547,6 +560,39 @@ export const createAsso = entityFaker(
       .assoMembershipRole.findFirst({ where: { assoId: asso.id } });
     return { ...asso, president: null, presidentRole: presidentRole };
   },
+);
+
+export type CreateAssoWeeklyParameters = FakeAssoWeekly;
+export const createAssoWeekly = entityFaker(
+  'assoWeekly',
+  {
+    date: new Date,
+    title: {
+      fr: faker.company.catchPhrase,
+      en: faker.company.catchPhrase,
+      es: faker.company.catchPhrase,
+      de: faker.company.catchPhrase,
+      zh: faker.company.catchPhrase,
+    },
+    message: {
+      fr: faker.company.catchPhrase,
+      en: faker.company.catchPhrase,
+      es: faker.company.catchPhrase,
+      de: faker.company.catchPhrase,
+      zh: faker.company.catchPhrase,
+    }
+  },
+  async (app, deps, params) => {
+    return app().get(PrismaService).normalize.assoWeekly.create({
+      data: {
+        id: params.id,
+        titleTranslation: { create: params.title },
+        bodyTranslation: { create: params.message },
+        asso: { connect: { id: deps.asso.id } },
+        date: params.date,
+      },
+    })
+  }
 );
 
 export type CreateTimetableGroupParams = { users?: Array<{ user: FakeUser; priority: number }> };
@@ -1096,6 +1142,19 @@ export const createApplication = entityFaker(
       }),
 );
 
+export type CreateImageMediaParameter = Omit<FakeImageMedia, 'uploadedAt' | 'uploaderId'>;
+export const createImageMedia = entityFaker(
+  'imageMedia',
+  {
+    height: faker.number.int({ min: 100, max: 4000 }),
+    width: faker.number.int({ min: 100, max: 4000 }),
+    isPublic: faker.datatype.boolean,
+    size: faker.number.int({ min: 1000, max: 10_000_000 }),
+    preset: faker.helpers.enumValue(ImageMediaPreset),
+  },
+  async (app, params) => app().get(PrismaService).imageMedia.create({ data: params }),
+);
+
 export type CreateLinkParameter = FakeLink;
 export const createLink = entityFaker(
   'link',
@@ -1165,7 +1224,7 @@ function deeplyCallFunctions<T>(params: T) {
     for (const key in params) {
       if (typeof params[key] === 'function') {
         params[key] = (params[key] as () => T[Extract<keyof T, string>])();
-      } else if (typeof params[key] === 'object') {
+      } else if (typeof params[key] === 'object' && !(params[key] instanceof Date)) {
         deeplyCallFunctions(params[key]);
       }
     }
