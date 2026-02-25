@@ -359,7 +359,7 @@ Spec.prototype.expectLinks = function (this: Spec, links: FakeLink[]) {
       .map(
         (link) =>
           ({
-            ...pick(link as Required<FakeLink>, 'id', 'link'),
+            ...pick(link as Required<FakeLink>, 'id', 'hyperlink'),
             name: link.name[this.language],
             tooltip: link.tooltip[this.language],
           }) satisfies TranslationToString<LinkResDto>,
@@ -368,7 +368,7 @@ Spec.prototype.expectLinks = function (this: Spec, links: FakeLink[]) {
 };
 Spec.prototype.expectLink = function (this: Spec, link: JsonLikeVariant<FakeLink>) {
   return this.$expectRegexableJson({
-    ...pick(link as Required<FakeLink>, 'id', 'link'),
+    ...pick(link as Required<FakeLink>, 'id', 'hyperlink'),
     name: getTranslation(link.name as Translation, this.language),
     tooltip: getTranslation(link.tooltip as Translation, this.language),
   } satisfies TranslationToString<LinkResDto>);

@@ -13,7 +13,7 @@ const UpdateLinksE2ESpec = e2eSuite('PATCH /link/:id', (app) => {
   const userNoPermission = fakedb.createUser(app);
 
   const body = () => ({
-    link: faker.db.link.link(),
+    hyperlink: faker.db.link.hyperlink(),
     name: faker.db.translation(faker.company.name),
     tooltip: faker.db.translation(faker.company.catchPhrase)
   } as LinkReqDto);

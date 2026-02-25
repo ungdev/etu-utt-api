@@ -7,5 +7,5 @@ export class LinkResDto {
   name: Translation;
   @ApiProperty({ type: String })
   tooltip: Translation;
-  link: string;
+  hyperlink: string;
 }

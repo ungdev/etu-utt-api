@@ -43,7 +43,7 @@ import { AppProvider } from './test_utils';
 import { ImageMediaPreset, Permission, Sex, TimetableEntryType, UserType } from '@prisma/client';
 import { CommentStatus } from '../../src/ue/comments/interfaces/comment.interface';
 import { UeAnnalFile } from '../../src/ue/annals/interfaces/annal.interface';
-import { omit, PermissionManager, pick, translationSelect } from '../../src/utils';
+import { languages, omit, PermissionManager, pick, translationSelect } from '../../src/utils';
 import { DEFAULT_APPLICATION } from '../../prisma/seed/utils';
 import { AssoWeekly } from '../../src/assos/interfaces/weekly.interface';
 import { Link } from '../../src/link/link.interface';
@@ -792,6 +792,7 @@ export const createUeof = entityFaker(
     info: {
       program: faker.db.translation,
       objectives: faker.db.translation,
+      language: faker.helpers.arrayElement(languages)
     },
     workTime: {
       cm: () => faker.number.int({ min: 0, max: 100 }),
@@ -843,6 +844,7 @@ export const createUeof = entityFaker(
           info: {
             create: {
               ...omit(params.info, 'objectives', 'program'),
+              language: params.info.language ?? faker.helpers.arrayElement(languages),
               objectives: {
                 create: {
                   fr: 'TODO : implement this value',
@@ -1161,11 +1163,11 @@ export const createLink = entityFaker(
   {
     name: () => faker.db.translation(faker.company.name),
     tooltip: () => faker.db.translation(faker.company.catchPhrase),
-    link: faker.db.link.link,
+    hyperlink: faker.db.link.hyperlink,
   },
   async (app, params) => app()
       .get(PrismaService)
-      .normalize.link.create({ data: { ...pick(params, 'id', 'link'), name: { create: params.name }, tooltip: { create: params.tooltip } } }),
+      .normalize.link.create({ data: { ...pick(params, 'id', 'hyperlink'), name: { create: params.name }, tooltip: { create: params.tooltip } } }),
 )
 
 /**

@@ -7,7 +7,7 @@ const LINK_SELECT_FILTER = {
     id: true,
     name: translationSelect,
     tooltip: translationSelect,
-    link: true,
+    hyperlink: true,
   },
 } as const satisfies Prisma.LinkFindManyArgs;
 
