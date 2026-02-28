@@ -9,7 +9,7 @@ import { languages } from './utils';
 
 // Redefine the mixin function in node_modules/.pnpm/@nestjs+common@<version>_class-transformer@<version>_class-validator@<version>_reflect-metadata@<version>_rxjs@<version>/node_modules/@nestjs/common/decorators/core/injectable.decorator.js
 // This implementation allows to give a name to the class
-function mixin<T>(class_: Type<T>, newClassName: string): Type<T> {
+export function mixin<T>(class_: Type<T>, newClassName: string): Type<T> {
   Object.defineProperty(class_, 'name', { value: newClassName });
   Injectable()(class_);
   return class_;

@@ -1,9 +1,10 @@
 import {
-  $getState,
-  $setState,
+  $create,
+  $getState, $getStateChange,
+  $setState, BaseStaticNodeConfig,
   createState,
   DOMConversionMap,
-  DOMExportOutput,
+  DOMExportOutput, EditorConfig,
   LexicalEditor,
   NodeKey,
   SerializedTextNode,
@@ -11,53 +12,49 @@ import {
   TextNode,
 } from 'lexical';
 
-const ColorOptions = { blue: '#2d8fce', darkblue: '#1b557a', grey: '#444c5f', darkgrey: '#2e3442' };
-export type ColorType = keyof typeof ColorOptions;
-
-type SerializedColorTextNode = Spread<{ color?: ColorType }, SerializedTextNode>;
+export enum Color {
+  blue = '#2d8fce',
+  darkblue = '#1b557a',
+  grey = '#444c5f',
+  darkgrey = '#2e3442'
+}
+type SerializedColor = keyof typeof Color;
 
 const colorState = createState('color', {
-  parse: (v) => ((v as ColorType) in ColorOptions ? (v as ColorType) : undefined),
+  parse: (v) => typeof v === 'string' && v in Color ? v as SerializedColor : undefined,
 });
 
 export class ColorTextNode extends TextNode {
-  static getType() {
-    return 'color-text';
+  $config(): BaseStaticNodeConfig {
+    return this.config('color-text', {
+      extends: TextNode,
+      stateConfigs: [{ flat: true, stateConfig: colorState }],
+    });
   }
 
-  static clone(node: ColorTextNode) {
-    return new ColorTextNode(node.__text, node.__key);
-  }
-
-  setColor(color?: ColorType) {
+  setColor(color?: SerializedColor) {
     $setState(this, colorState, color);
     return this;
   }
 
-  static importJSON(serializedNode: SerializedColorTextNode): ColorTextNode {
-    return $createColorTextNode(serializedNode.text).updateFromJSON(serializedNode).setColor(serializedNode.color);
+  createDOM(config: EditorConfig): HTMLElement {
+    const element = super.createDOM(config);
+    element.style.color = $getState(this, colorState);
+    return element;
   }
 
-  exportJSON(): SerializedColorTextNode {
-    return {
-      ...super.exportJSON(),
-      color: $getState(this, colorState),
-      $: undefined,
-    };
-  }
-
-  exportDOM(editor: LexicalEditor): DOMExportOutput {
-    const { element } = super.exportDOM(editor);
-    const color = $getState(this, colorState);
-    if (color) (element as HTMLElement).style.color = ColorOptions[color];
-    return { element };
-  }
-
-  static importDOM(): DOMConversionMap {
-    return null;
+  updateDOM(prevNode: this, dom: HTMLElement, config: EditorConfig): boolean {
+    if (super.updateDOM(prevNode, dom, config)) {
+      return true;
+    }
+    const colorChange = $getStateChange(this, prevNode, colorState);
+    if (colorChange !== null) {
+      dom.style.color = colorChange[0];
+    }
+    return false;
   }
 }
 
-export function $createColorTextNode(text?: string, nodeKey?: NodeKey): ColorTextNode {
-  return new ColorTextNode(text, nodeKey);
+export function $createColorTextNode(text?: string, color?: SerializedColor): ColorTextNode {
+  return $create(ColorTextNode).setTextContent(text).setColor(color);
 }

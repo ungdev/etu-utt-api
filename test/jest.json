@@ -7,7 +7,7 @@
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   },
-  "collectCoverageFrom": ["**/*.ts", "!main.ts", "!**/*-res.dto.ts"],
+  "collectCoverageFrom": ["**/*.ts", "!main.ts", "!**/*-res.dto.ts", "!**/*-req.dto.ts"],
   "coverageDirectory": "coverage",
   "coverageReporters": ["html", "lcov", "text-summary"]
 }

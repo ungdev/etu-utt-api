@@ -1,78 +1,97 @@
 import {
+  $create,
+  $getState, $getStateChange,
+  $setState, BaseStaticNodeConfig,
+  createState,
   DecoratorNode,
-  DOMConversionMap,
-  DOMExportOutput,
-  LexicalEditor,
-  NodeKey,
-  SerializedLexicalNode,
-  Spread,
+  EditorConfig,
 } from 'lexical';
 
-type SerializedImageNode = Spread<
-  {
-    src: string;
-    altText: string;
-    width: number | 'inherit';
-    height: number | 'inherit';
-  },
-  SerializedLexicalNode
->;
+const srcState = createState('src', {
+  parse: (value) => (typeof value === 'string' ? value : undefined),
+});
+
+const altTextState = createState('altText', {
+  parse: (value) => (typeof value === 'string' ? value : undefined),
+});
+
+const widthState = createState('width', {
+  parse: (value) => (value === 'inherit' || typeof value === 'number' ? value : 'inherit'),
+})
+
+const heightState = createState('height', {
+  parse: (value) => (value === 'inherit' || typeof value === 'number' ? value : 'inherit'),
+})
 
 export class ImageNode extends DecoratorNode<HTMLElement> {
-  __src: string;
-  __altText: string;
-  __width: number | 'inherit';
-  __height: number | 'inherit';
-
-  static getType() {
-    return 'image';
+  $config(): BaseStaticNodeConfig {
+    return this.config('image', {
+      extends: DecoratorNode,
+      stateConfigs: [
+        { flat: true, stateConfig: srcState },
+        { flat: true, stateConfig: altTextState },
+        { flat: true, stateConfig: widthState },
+        { flat: true, stateConfig: heightState },
+      ],
+    });
   }
 
-  static clone(node: ImageNode) {
-    return new ImageNode(node.__src, node.__altText, node.__width, node.__height, node.__key);
+  setSrc(src?: string) {
+    $setState(this, srcState, src);
+    return this;
   }
 
-  constructor(src: string, altText?: string, width?: number | 'inherit', height?: number | 'inherit', key?: NodeKey) {
-    super(key);
-    this.__src = src;
-    this.__altText = altText || '';
-    this.__width = width || 'inherit';
-    this.__height = height || 'inherit';
+  setAltText(altText: string) {
+    $setState(this, altTextState, altText);
+    return this;
   }
 
-  exportDOM(editor: LexicalEditor): DOMExportOutput {
-    const element = document.createElement('span');
-    if (editor._config?.theme?.image) element.className = editor._config.theme.image;
+  setWidth(width: number | 'inherit') {
+    $setState(this, widthState, width);
+    return this;
+  }
+
+  setHeight(height: number | 'inherit') {
+    $setState(this, heightState, height);
+    return this;
+  }
+
+  createDOM(): HTMLElement {
     const img = document.createElement('img');
-    img.src = this.__src;
-    img.alt = this.__altText;
-    if (this.__width !== 'inherit') img.width = this.__width;
-    if (this.__height !== 'inherit') img.height = this.__height;
+    img.src = $getState(this, srcState);
+    img.alt = $getState(this, altTextState);
+    const width = $getState(this, widthState);
+    const height = $getState(this, heightState);
+    if (width !== 'inherit') img.width = width;
+    if (height !== 'inherit') img.height = height;
+
+    const element = document.createElement('span');
     element.appendChild(img);
-    return { element };
+    return element;
   }
 
-  static importJSON(serializedNode: SerializedImageNode): ImageNode {
-    return $createImageNode(
-      serializedNode.src,
-      serializedNode.altText,
-      serializedNode.width,
-      serializedNode.height,
-    ).updateFromJSON(serializedNode);
-  }
-
-  exportJSON(): SerializedImageNode {
-    return {
-      ...super.exportJSON(),
-      src: this.__src,
-      altText: this.__altText,
-      width: this.__width,
-      height: this.__height,
-    };
-  }
-
-  static importDOM(): DOMConversionMap {
-    return null;
+  updateDOM(prevNode: this, dom: HTMLElement, config: EditorConfig): boolean {
+    const image = dom.children[0] as HTMLImageElement;
+    if (super.updateDOM(prevNode, dom, config)) {
+      return true;
+    }
+    const srcChange = $getStateChange(this, prevNode, srcState);
+    if (srcChange !== null) {
+      image.src = srcChange[0];
+    }
+    const altTextChange = $getStateChange(this, prevNode, altTextState);
+    if (altTextChange !== null) {
+      image.alt = altTextChange[0];
+    }
+    const widthChange = $getStateChange(this, prevNode, widthState);
+    if (widthChange !== null) {
+      image.width = widthChange[0] === 'inherit' ? undefined : widthChange[0];
+    }
+    const heightChange = $getStateChange(this, prevNode, heightState);
+    if (heightChange !== null) {
+      image.height = heightChange[0] === 'inherit' ? undefined : heightChange[0];
+    }
+    return false;
   }
 }
 
@@ -81,7 +100,6 @@ export function $createImageNode(
   altText?: string,
   width?: number | 'inherit',
   height?: number | 'inherit',
-  nodeKey?: NodeKey,
 ): ImageNode {
-  return new ImageNode(src, altText, width, height, nodeKey);
+  return $create(ImageNode).setSrc(src).setAltText(altText).setWidth(width).setHeight(height);
 }

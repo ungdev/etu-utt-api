@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'EtuUTT'
-copyright = '2025, UTT Net Group'
+copyright = '2026, UTT Net Group'
 author = 'UTT Net Group'
 
 

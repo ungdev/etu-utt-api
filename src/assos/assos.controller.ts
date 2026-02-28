@@ -11,7 +11,7 @@ import { AppException, ERROR_CODE } from '../exceptions';
 import { ParamMember } from './decorator/get-member';
 import { Asso } from './interfaces/asso.interface';
 import { User } from '../users/interfaces/user.interface';
-import { isValidLexicalContent, pick } from '../utils';
+import { pick } from '../utils';
 import { UUIDParam } from '../app.pipe';
 import AssosSearchReqDto from './dto/req/assos-search-req.dto';
 import AssoOverviewResDto from './dto/res/asso-overview-res.dto';
