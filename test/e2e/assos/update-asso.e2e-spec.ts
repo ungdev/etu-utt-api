@@ -11,7 +11,6 @@ import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { pick } from '../../../src/utils';
-import { Color } from 'src/lexical/nodes/ColorTextNode';
 
 const UpdateAssoE2ESpec = e2eSuite('PATCH /assos/:id', (app) => {
   const userNotAllowed = createUser(app);

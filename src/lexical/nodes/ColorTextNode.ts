@@ -1,14 +1,11 @@
 import {
   $create,
-  $getState, $getStateChange,
-  $setState, BaseStaticNodeConfig,
+  $getState,
+  $getStateChange,
+  $setState,
+  BaseStaticNodeConfig,
   createState,
-  DOMConversionMap,
-  DOMExportOutput, EditorConfig,
-  LexicalEditor,
-  NodeKey,
-  SerializedTextNode,
-  Spread,
+  EditorConfig,
   TextNode,
 } from 'lexical';
 
