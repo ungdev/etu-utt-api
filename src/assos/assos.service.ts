@@ -124,7 +124,7 @@ export class AssosService {
               data: { descriptionForAssos: { disconnect: { id: assoId } } },
             }),
           ),
-          ...Array.from(additions.filter((x) => existingAdditionIds.includes(x))).map((id) =>
+          ...additions.filter((x) => existingAdditionIds.includes(x)).map((id) =>
             this.prisma.imageMedia.update({
               where: { id },
               data: { descriptionForAssos: { connect: { id: assoId } } },

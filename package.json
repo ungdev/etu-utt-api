@@ -7,6 +7,8 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "npx nest build",
+    "build:docs": "python3 -m sphinx -W -T -b html -d docs/build/doctrees -D language=fr docs docs/build/html",
+    "build:docs:configure": "pip install --upgrade pip setuptools sphinx readthedocs-sphinx-ext && pip install -r docs/requirements.txt",
     "start": "NODE_ENV=production node dist/src/main",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint": "eslint \"{src,apps,libs,test,prisma,migration}/**/*.ts\" --fix",
@@ -38,6 +40,14 @@
   },
   "dependencies": {
     "@fast-csv/parse": "^5.0.2",
+    "@lexical/code": "^0.37.0",
+    "@lexical/extension": "^0.37.0",
+    "@lexical/headless": "^0.37.0",
+    "@lexical/html": "^0.37.0",
+    "@lexical/link": "^0.37.0",
+    "@lexical/list": "^0.37.0",
+    "@lexical/rich-text": "^0.37.0",
+    "@lexical/table": "^0.37.0",
     "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/axios": "^4.0.0",
     "@nestjs/common": "^11.0.11",

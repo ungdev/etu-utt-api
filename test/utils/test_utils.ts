@@ -51,6 +51,12 @@ function suite<T extends AppProvider>(name: string, func: (app: T) => void) {
       func(app);
     });
 }
+suite.skip =
+  <T extends AppProvider>(name: string, func: (app: T) => void) =>
+  (app: T) =>
+    describe.skip(name, () => {
+      func(app);
+    });
 
 /**
  * Creates a suite for e2e testing. It works the same as {@link describe}, but it cleans the database before each suite.

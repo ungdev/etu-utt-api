@@ -28,9 +28,9 @@ export class ImageMediaService {
     readonly config: ConfigModule,
   ) {}
 
-  async convertMedia(file: MulterWithMime, options: ImageMediaUploadReqDto): Promise<ImageMetadata> {
+  async convertMedia(file: MulterWithMime, options: ConversionOptions): Promise<ImageMetadata> {
     if (!(options.preset in presets)) options.preset = ImageMediaPreset.CUSTOM;
-    Object.assign(options, presets[options.preset]);
+    if (options.preset) Object.assign(options, presets[options.preset]);
     let instructions = sharp(file.multer.buffer);
     let metadata = await instructions.metadata();
     const size = [metadata.width, metadata.height];
@@ -90,8 +90,9 @@ export class ImageMediaService {
 
   async cleanup() {
     const media = await this.clearUnusedMedia();
-    const deletions = media.map((m) => this.deleteMediaFromDisk(m.id).catch(() => m)); // return media on failure
-    const failedDeletions = (await Promise.all(deletions)).filter((r): r is ImageMedia => r !== undefined);
+    const deletionsPromises = media.map((m) => this.deleteMediaFromDisk(m.id).catch(() => m)); // return media on failure
+    const deletions = await Promise.all(deletionsPromises);
+    const failedDeletions = deletions.filter((r): r is ImageMedia => r !== undefined);
     failedDeletions.map(this.rollbackMedia); // Restore failed media, no need to wait for completion
   }
 
@@ -115,7 +116,9 @@ export class ImageMediaService {
     return targetMedias;
   }
 
+
   private async deleteMediaFromDisk(mediaId: string): Promise<void> {
     await rm(`${this.config.MEDIA_UPLOAD_DIR}/image/${mediaId}.webp`, { force: true });
   }
+
 }
