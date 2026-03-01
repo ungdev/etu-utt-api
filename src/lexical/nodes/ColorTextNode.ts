@@ -36,7 +36,7 @@ export class ColorTextNode extends TextNode {
 
   createDOM(config: EditorConfig): HTMLElement {
     const element = super.createDOM(config);
-    element.style.color = $getState(this, colorState);
+    element.style.color = Color[$getState(this, colorState)];
     return element;
   }
 
@@ -46,7 +46,7 @@ export class ColorTextNode extends TextNode {
     }
     const colorChange = $getStateChange(this, prevNode, colorState);
     if (colorChange !== null) {
-      dom.style.color = colorChange[0];
+      dom.style.color = Color[colorChange[0]];
     }
     return false;
   }
