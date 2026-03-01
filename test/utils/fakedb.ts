@@ -45,6 +45,7 @@ import { CommentStatus } from '../../src/ue/comments/interfaces/comment.interfac
 import { UeAnnalFile } from '../../src/ue/annals/interfaces/annal.interface';
 import { omit, PermissionManager, pick, translationSelect } from '../../src/utils';
 import { DEFAULT_APPLICATION } from '../../prisma/seed/utils';
+import { AssoWeekly } from '../../src/assos/interfaces/weekly.interface';
 
 /**
  * The fake entities can be used like normal entities in the <code>it(string, () => void)</code> functions.
@@ -120,6 +121,7 @@ export type FakeApiApplication = Partial<Omit<RawApiApplication, 'ownerId'>> & {
   owner: { id: string; firstName: string; lastName: string };
 };
 export type FakeImageMedia = Partial<RawImageMedia>;
+export type FakeAssoWeekly = Partial<Pick<AssoWeekly, 'id' | 'assoId' | 'date' | 'createdAt' | 'title' | 'message'>>;
 
 export interface FakeEntityMap {
   assoMembership: {
@@ -145,6 +147,11 @@ export interface FakeEntityMap {
     entity: FakeAsso;
     params: CreateAssoParameters;
   };
+  assoWeekly: {
+    entity: FakeAssoWeekly;
+    params: CreateAssoWeeklyParameters;
+    deps: { asso: FakeAsso };
+  }
   timetableEntryOverride: {
     entity: Partial<FakeTimetableEntryOverride>;
     params: CreateTimetableEntryOverrideParameters;
@@ -547,6 +554,39 @@ export const createAsso = entityFaker(
       .assoMembershipRole.findFirst({ where: { assoId: asso.id } });
     return { ...asso, president: null, presidentRole: presidentRole };
   },
+);
+
+export type CreateAssoWeeklyParameters = FakeAssoWeekly;
+export const createAssoWeekly = entityFaker(
+  'assoWeekly',
+  {
+    date: new Date,
+    title: {
+      fr: faker.company.catchPhrase,
+      en: faker.company.catchPhrase,
+      es: faker.company.catchPhrase,
+      de: faker.company.catchPhrase,
+      zh: faker.company.catchPhrase,
+    },
+    message: {
+      fr: faker.company.catchPhrase,
+      en: faker.company.catchPhrase,
+      es: faker.company.catchPhrase,
+      de: faker.company.catchPhrase,
+      zh: faker.company.catchPhrase,
+    }
+  },
+  async (app, deps, params) => {
+    return app().get(PrismaService).normalize.assoWeekly.create({
+      data: {
+        id: params.id,
+        titleTranslation: { create: params.title },
+        bodyTranslation: { create: params.message },
+        asso: { connect: { id: deps.asso.id } },
+        date: params.date,
+      },
+    })
+  }
 );
 
 export type CreateTimetableGroupParams = { users?: Array<{ user: FakeUser; priority: number }> };
@@ -1165,7 +1205,7 @@ function deeplyCallFunctions<T>(params: T) {
     for (const key in params) {
       if (typeof params[key] === 'function') {
         params[key] = (params[key] as () => T[Extract<keyof T, string>])();
-      } else if (typeof params[key] === 'object') {
+      } else if (typeof params[key] === 'object' && !(params[key] instanceof Date)) {
         deeplyCallFunctions(params[key]);
       }
     }

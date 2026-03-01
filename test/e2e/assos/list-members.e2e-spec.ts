@@ -10,7 +10,7 @@ const GetAssoMembersE2ESpec = e2eSuite('GET /assos/:id/members', (app) => {
   const permissions = [];
   createAssoMembership(app, { asso, role: assoMembershipRole, user, permissions });
 
-  it('should return 403 as user is not authenticated', () =>
+  it('should return 401 as user is not authenticated', () =>
     pactum.spec().get(`/assos/${asso.id}/members`).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
 
   it('should return a 400 as the id param is not valid', () =>

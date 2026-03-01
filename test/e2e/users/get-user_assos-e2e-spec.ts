@@ -1,9 +1,9 @@
 import { e2eSuite } from '../../utils/test_utils';
 import { createAsso, createAssoMembership, createAssoMembershipRole, createUser } from '../../utils/fakedb';
 import * as pactum from 'pactum';
-import { HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { omit } from '../../../src/utils';
+import { ERROR_CODE } from 'src/exceptions';
 
 const GetUserAssociationE2ESpec = e2eSuite('GET /users/:userId/associations', (app) => {
   const user = createUser(app);
@@ -12,7 +12,7 @@ const GetUserAssociationE2ESpec = e2eSuite('GET /users/:userId/associations', (a
   createAssoMembership(app, { asso: asso, user: user, role });
 
   it('should return a 401 as user is not authenticated', () => {
-    return pactum.spec().get(`/users/${user.id}/associations`).expectStatus(HttpStatus.UNAUTHORIZED);
+    return pactum.spec().get(`/users/${user.id}/associations`).expectAppError(ERROR_CODE.NOT_LOGGED_IN);
   });
 
   it('should return a 404 as user was not found', () => {
@@ -20,7 +20,7 @@ const GetUserAssociationE2ESpec = e2eSuite('GET /users/:userId/associations', (a
       .spec()
       .get('/users/abcdefg/associations')
       .withBearerToken(user.token)
-      .expectStatus(HttpStatus.NOT_FOUND);
+      .expectAppError(ERROR_CODE.NO_SUCH_USER, 'abcdefg');
   });
 
   it('should successfully find the asso', async () => {
@@ -67,7 +67,6 @@ const GetUserAssociationE2ESpec = e2eSuite('GET /users/:userId/associations', (a
       .spec()
       .get(`/users/${user.id}/associations`)
       .withBearerToken(user.token)
-      .expectStatus(HttpStatus.OK)
       .$expectRegexableJson(assoMembershipFromDb.filter((value) => value !== undefined));
   });
 });

@@ -58,28 +58,11 @@ export const translationSelect = {
   },
 };
 
-export class TranslatedTextDto {
-  @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  fr?: string;
-  @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  en?: string;
-  @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  de?: string;
-  @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  es?: string;
-  @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  zh?: string;
-}
+const exhaustiveLanguage = <CheckArray extends readonly Language[]>(array: (
+  [Language] extends [CheckArray[number]]
+    ? CheckArray
+    : 'Missing some values from Language')) => array;
+export const languages = exhaustiveLanguage(['fr', 'en', 'es', 'de', 'zh']);
 
 export class PermissionManager {
   public readonly hardPermissions: Permission[];

@@ -3,15 +3,7 @@ export { ColorTextNode } from './ColorTextNode';
 export { ImageNode } from './ImageNode';
 import './NodeStyleInjector';
 
-export type RegisteredStyleMap = {
-  [K1 in keyof EditorThemeClasses]: EditorThemeClasses[K1] extends Record<string, unknown>
-    ? {
-        [K2 in keyof EditorThemeClasses[K1]]: EditorThemeClasses[K1][K2] extends Record<string, unknown>
-          ? { [K3 in keyof EditorThemeClasses[K1][K2]]: keyof typeof CustomStyles }
-          : keyof typeof CustomStyles;
-      }
-    : keyof typeof CustomStyles;
-};
+export type RegisteredStyleMap<SubEditorThemeClasses = EditorThemeClasses> = {[K in keyof SubEditorThemeClasses]: SubEditorThemeClasses[K] extends Record<string, unknown> ? RegisteredStyleMap<SubEditorThemeClasses[K]> : keyof typeof CustomStyles};
 
 /**
  * Style to apply to elements of lexical content during HTML export.

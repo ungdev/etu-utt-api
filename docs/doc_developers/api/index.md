@@ -17,4 +17,5 @@ lexical.md
 ues.md
 timetables.md
 scripts.md
+mails.md
 ```

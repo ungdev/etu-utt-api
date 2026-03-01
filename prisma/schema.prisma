@@ -1,6 +1,6 @@
 generator client {
   provider   = "prisma-client"
-  output     = "../src/prisma/types"
+  output     = "../src/prisma/build"
   engineType = "client"
 }
 
@@ -43,8 +43,8 @@ model Translation {
 
   assoDescription                      Asso?                        @relation("descriptionTranslation")
   assoDescriptionShort                 Asso?                        @relation("descriptionShortTranslation")
-  assoMessageTitle                     AssoMessage?                 @relation("titleTranslation")
-  assoMessageTitleBody                 AssoMessage?                 @relation("bodyTranslation")
+  assoWeeklyTitle                      AssoWeekly?                  @relation("titleTranslation")
+  assoWeeklyTitleBody                  AssoWeekly?                  @relation("bodyTranslation")
   eventDescription                     Event?                       @relation("descriptionTranslation")
   eventTitle                           Event?                       @relation("titleTranslation")
   ueofInfo                             UeofInfo?                    @relation("ueofInfoObjectivesTranslation")

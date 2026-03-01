@@ -1,5 +1,5 @@
 import { AddressPrivacy, Language } from '../../../prisma/types';
-import { IsArray, IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class UserUpdateReqDto {
   @IsString()
@@ -7,6 +7,7 @@ export class UserUpdateReqDto {
   nickname?: string;
 
   @IsString()
+  @IsUUID()
   @IsOptional()
   avatar?: string;
 
@@ -68,7 +69,7 @@ export class UserUpdateReqDto {
 
   @IsBoolean()
   @IsOptional()
-  wantDaymail?: boolean;
+  wantWeekly?: boolean;
 
   @IsBoolean()
   @IsOptional()

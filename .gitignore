@@ -112,8 +112,7 @@ docs/_build/
 docs/build/
 
 # Prisma generated files
-src/prisma/types/**/*.ts
-!src/prisma/types/index.ts
+src/prisma/build/**/*.ts
 
 # OLD DATABASE, DO NOT PUSH, IT CONTAINS SENSITIVE DATA
 migration/etuutt_old/etuutt_old.sql

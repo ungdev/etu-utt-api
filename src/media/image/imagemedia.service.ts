@@ -55,10 +55,10 @@ export class ImageMediaService {
     return { width: metadata.width, height: metadata.height, size: file.multer.buffer.length, preset: options.preset };
   }
 
-  async registerMedia(metaData: ImageMetadata, uploader: User, isPublic: boolean): Promise<RawImageMedia> {
+  async registerMedia(metadata: ImageMetadata, uploader: User, isPublic: boolean): Promise<RawImageMedia> {
     const image = await this.prisma.imageMedia.create({
       data: {
-        ...metaData,
+        ...metadata,
         uploader: {
           connect: { id: uploader.id },
         },
@@ -76,8 +76,24 @@ export class ImageMediaService {
     return this.prisma.imageMedia.delete({ where: { id: mediaId } });
   }
 
-  async getMedia(mediaId: string) {
+  async getMedia(mediaId: string): Promise<RawImageMedia> {
     return this.prisma.imageMedia.findUnique({ where: { id: mediaId } });
+  }
+
+  async writeMediaToDisk(mediaId: string, buffer: Buffer): Promise<void> {
+    await writeFile(`${this.config.MEDIA_UPLOAD_DIR}/image/${mediaId}.webp`, buffer);
+  }
+
+  readMediaFromDisk(mediaId: string): ReadStream {
+    return createReadStream(`${this.config.MEDIA_UPLOAD_DIR}/image/${mediaId}.webp`);
+  }
+
+  async cleanup() {
+    const media = await this.clearUnusedMedia();
+    const deletionsPromises = media.map((m) => this.deleteMediaFromDisk(m.id).catch(() => m)); // return media on failure
+    const deletions = await Promise.all(deletionsPromises);
+    const failedDeletions = deletions.filter((r): r is RawImageMedia => r !== undefined);
+    failedDeletions.map(this.rollbackMedia); // Restore failed media, no need to wait for completion
   }
 
   /**
@@ -91,7 +107,7 @@ export class ImageMediaService {
         avatarForUsers: { none: {} },
         logoForAssos: { none: {} },
         descriptionForAssos: { none: {} },
-        uploadedAt: { lt: new Date(Date.now() - this.config.MEDIA_DETACHED_LIFESPAN * 3_600_000) },
+        uploadedAt: { lt: new Date(Date.now() - this.config.MEDIA_DETACHED_LIFESPAN * 86_400_000) },
       },
     });
     await this.prisma.imageMedia.deleteMany({
@@ -100,22 +116,7 @@ export class ImageMediaService {
     return targetMedias;
   }
 
-  async writeMediaToDisk(mediaId: string, buffer: Buffer): Promise<void> {
-    await writeFile(`${this.config.MEDIA_UPLOAD_DIR}/image/${mediaId}.webp`, buffer);
-  }
-
-  readMediaFromDisk(mediaId: string): ReadStream {
-    return createReadStream(`${this.config.MEDIA_UPLOAD_DIR}/image/${mediaId}.webp`);
-  }
-
-  async deleteMediaFromDisk(mediaId: string): Promise<void> {
+  private async deleteMediaFromDisk(mediaId: string): Promise<void> {
     await rm(`${this.config.MEDIA_UPLOAD_DIR}/image/${mediaId}.webp`, { force: true });
-  }
-
-  async cleanup() {
-    const media = await this.clearUnusedMedia();
-    (await Promise.all(media.map((m) => this.deleteMediaFromDisk(m.id).catch(() => m)))).map(
-      (r) => r && this.rollbackMedia(r),
-    );
   }
 }

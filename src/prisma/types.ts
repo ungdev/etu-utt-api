@@ -1,4 +1,4 @@
-import { Language, Translation as RawTranslation } from './types/client';
+import { Language, Translation as RawTranslation } from './build/client';
 
 export {
   Prisma,
@@ -47,7 +47,8 @@ export {
   ApiApplication as RawApiApplication,
   ApiKey as RawApiKey,
   ImageMedia as RawImageMedia,
-} from './types/client';
+
+} from './build/client';
 
 export { RawTranslation };
 export type Translation = Pick<Partial<RawTranslation>, Language>;

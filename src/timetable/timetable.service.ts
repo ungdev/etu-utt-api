@@ -35,7 +35,11 @@ const detailedEntryInclusions = (userId: string) => ({
  */
 @Injectable()
 export default class TimetableService {
-  constructor(private prisma: PrismaService, private http: HttpService, readonly config: ConfigModule) {}
+  constructor(
+    private prisma: PrismaService,
+    private http: HttpService,
+    readonly config: ConfigModule,
+  ) {}
 
   /**
    * Returns the {@link TimetableEntryOccurrence}s for the user for the next 24 hours.
