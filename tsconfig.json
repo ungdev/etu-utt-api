@@ -1,12 +1,12 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "esnext",
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
-    "target": "es2022",
+    "target": "esnext",
     "sourceMap": true,
     "outDir": "./dist",
     "paths": {
@@ -21,7 +21,8 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": false,
     "esModuleInterop": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "moduleResolution": "node"
   },
   "ts-node": {
     "files": true
