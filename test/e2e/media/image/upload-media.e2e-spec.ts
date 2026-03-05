@@ -3,7 +3,7 @@ import { mkdirSync, rmSync } from 'fs';
 import { ERROR_CODE } from '../../../../src/exceptions';
 import { createUser } from '../../../utils/fakedb';
 import { e2eSuite, JsonLike } from '../../../utils/test_utils';
-import { ConfigModule } from '../../../../src/config/config.module';
+import { ConfigService } from '../../../../src/config/config.service';
 import { PermissionManager } from '../../../../src/utils';
 import * as pactum from 'pactum';
 
@@ -45,11 +45,11 @@ export const UploadMediaE2ESpec = e2eSuite('POST /media/image', (app) => {
 
   describe('should create the media', () => {
     beforeAll(() => {
-      mkdirSync(`${app().get(ConfigModule).MEDIA_UPLOAD_DIR}/image`, { recursive: true });
+      mkdirSync(`${app().get(ConfigService).MEDIA_UPLOAD_DIR}/image`, { recursive: true });
     });
 
     afterAll(() => {
-      rmSync(app().get(ConfigModule).MEDIA_UPLOAD_DIR.split('/')[0], { recursive: true });
+      rmSync(app().get(ConfigService).MEDIA_UPLOAD_DIR.split('/')[0], { recursive: true });
     });
 
     const testFunction = (fileExt: 'png' | 'jpg' | 'avif' | 'tif' | 'webp', rotation: 0 | 1 | 2 | 3) => async () => {

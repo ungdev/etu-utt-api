@@ -22,7 +22,7 @@
     "dev:db:reset": "env-cmd -f .env.dev --use-shell \"pnpm prisma migrate reset --force && pnpm prisma db push\"",
     "dev:smtp-server:certificate": "openssl req -x509 -newkey rsa:4096 -keyout myKey.pem -out cert.pem -days 365 -nodes -subj \"/CN=ung.utt.fr/O=UTT Net Group/C=FR\" && openssl pkcs12 -export -out dummy-cert.p12 -inkey myKey.pem -in cert.pem -passout pass:etuutt && rm myKey.pem cert.pem && chmod 644 dummy-cert.p12",
     "dev:smtp-server": "docker run -p 587:587 -p 8080:8080 -p 8081:8081 -e FAKESMTP_PORT=587 -e FAKESMTP_AUTHENTICATION_USERNAME=etuutt -e FAKESMTP_AUTHENTICATION_PASSWORD=etuutt -e FAKESMTP_REQUIRETLS=true -e FAKESMTP_TLSKEYSTORE_LOCATION=file:/data/dummy-cert.p12 -e FAKESMTP_TLSKEYSTORE_PASSWORD=etuutt -e FAKESMTP_TLSKEYSTORE_TYPE=PKCS12 -v ./dummy-cert.p12:/data/dummy-cert.p12 gessnerfl/fake-smtp-server",
-    "test": "NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules\" jest --config test/jest.json --runInBand",
+    "test": "NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules --trace-deprecation\" jest --config test/jest.json --runInBand",
     "test:grep": "pnpm test --testNamePattern",
     "test:unit": "pnpm test \"unit/app.spec.ts\"",
     "test:e2e": "pnpm test \"e2e/app.e2e-spec.ts\"",

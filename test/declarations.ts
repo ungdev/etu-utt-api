@@ -19,7 +19,7 @@ import {
   FakeAssoWeekly,
 } from './utils/fakedb';
 import { UeAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
-import { ConfigModule } from '../src/config/config.module';
+import { ConfigService } from '../src/config/config.service';
 import { AppProvider, JsonLike } from './utils/test_utils';
 import { getTranslation, omit, PermissionManager, pick } from '../src/utils';
 import { regex, string, uuid, int } from 'pactum-matchers';
@@ -158,7 +158,7 @@ Spec.prototype.expectUsers = function (app: AppProvider, users: FakeUser[], coun
       addresses: [],
     })),
     itemCount: count,
-    itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
+    itemsPerPage: app().get(ConfigService).PAGINATION_PAGE_SIZE,
   });
 };
 Spec.prototype.expectUes = function (ues: FakeUeWithOfs[]) {
@@ -168,7 +168,7 @@ Spec.prototype.expectUesWithPagination = function (app: AppProvider, ues: FakeUe
   return (<Spec>this).$expectRegexableJson({
     items: ues.map((ue) => ueOverviewExpectation(ue, this)),
     itemCount: count,
-    itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
+    itemsPerPage: app().get(ConfigService).PAGINATION_PAGE_SIZE,
   });
 };
 Spec.prototype.expectUeComment = function (this: Spec, obj) {
@@ -248,7 +248,7 @@ Spec.prototype.expectAssos = function (this: Spec, app: AppProvider, assos: Fake
       },
     })),
     itemCount: count,
-    itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
+    itemsPerPage: app().get(ConfigService).PAGINATION_PAGE_SIZE,
   });
 };
 Spec.prototype.expectAsso = function (asso: FakeAsso) {
@@ -346,7 +346,7 @@ Spec.prototype.expectAssoWeeklies = function (this: Spec, app: AppProvider, week
       message: weekly.message[this.language],
     })),
     itemCount: count,
-    itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
+    itemsPerPage: app().get(ConfigService).PAGINATION_PAGE_SIZE,
   });
 };
 

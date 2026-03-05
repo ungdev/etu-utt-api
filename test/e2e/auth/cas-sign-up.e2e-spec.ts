@@ -6,7 +6,7 @@ import * as fakedb from '../../utils/fakedb';
 import { AuthService } from '../../../src/auth/auth.service';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { ERROR_CODE } from '../../../src/exceptions';
-import { ConfigModule } from '../../../src/config/config.module';
+import { ConfigService } from '../../../src/config/config.service';
 import { LdapUser } from 'ldap-server-mock';
 import { mockLdapServer } from '../../external_services/ldap';
 
@@ -34,7 +34,7 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
   it('should fail as the provided token does not contains an object in the right form', async () => {
     const token = app()
       .get(JwtService)
-      .sign({ a: 'b' }, { expiresIn: 60, secret: app().get(ConfigModule).JWT_SECRET });
+      .sign({ a: 'b' }, { expiresIn: 60, secret: app().get(ConfigService).JWT_SECRET });
     pactum
       .spec()
       .post('/auth/signup/cas')

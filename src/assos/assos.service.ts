@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '../prisma/types';
-import { ConfigModule } from '../config/config.module';
+import { ConfigService } from '../config/config.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { RawAssoMembershipRole } from '../prisma/types';
 import { Asso } from './interfaces/asso.interface';
@@ -15,7 +15,7 @@ import AssosUpdateReqDto from './dto/req/assos-update-req.dto';
 export class AssosService {
   constructor(
     readonly prisma: PrismaService,
-    readonly config: ConfigModule,
+    readonly config: ConfigService,
   ) {}
 
   /**

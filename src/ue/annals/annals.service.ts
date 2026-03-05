@@ -7,7 +7,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { MulterWithMime } from '../../upload.interceptor';
 import { CreateAnnalReqDto } from './dto/req/create-annal-req.dto';
 import { UpdateAnnalReqDto } from './dto/req/update-annal-req.dto';
-import { ConfigModule } from '../../config/config.module';
+import { ConfigService } from '../../config/config.service';
 import { User } from '../../users/interfaces/user.interface';
 import { RawSemester } from '../../prisma/types';
 
@@ -15,7 +15,7 @@ import { RawSemester } from '../../prisma/types';
 export class AnnalsService {
   constructor(
     readonly prisma: PrismaService,
-    readonly config: ConfigModule,
+    readonly config: ConfigService,
   ) {}
 
   async getUeAnnalMetadata(user: User, ueCode: string, isModerator: boolean) {

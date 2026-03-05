@@ -3,16 +3,16 @@ import { PrismaClient } from '../../src/prisma/types';
 import { INestApplication } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { faker } from '@faker-js/faker';
-import { ConfigModule } from '../../src/config/config.module';
+import { ConfigService } from '../../src/config/config.service';
 import { clearUniqueValues, generateDefaultApplication } from '../../prisma/seed/utils';
 
 /**
  * Initializes this file.
  * Sets the seed for faker. This is useful to have deterministic tests.
- * @param app The app from which to get the {@link ConfigModule}.
+ * @param app The app from which to get the {@link ConfigService}.
  */
 export function init(app: AppProvider) {
-  faker.seed(app().get(ConfigModule).FAKER_SEED);
+  faker.seed(app().get(ConfigService).FAKER_SEED);
 }
 
 /**

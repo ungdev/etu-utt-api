@@ -2,7 +2,7 @@ import { createReadStream, ReadStream } from 'fs';
 import { rm, writeFile } from 'fs/promises';
 import { Injectable } from '@nestjs/common';
 import { RawImageMedia, ImageMediaPreset } from '../../prisma/types';
-import { ConfigModule } from '../../config/config.module';
+import { ConfigService } from '../../config/config.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MulterWithMime } from '../../upload.interceptor';
 import { User } from '../../users/interfaces/user.interface';
@@ -25,7 +25,7 @@ export type ImageMetadata = Omit<RawImageMedia, 'id' | 'uploadedAt' | 'isPublic'
 export class ImageMediaService {
   constructor(
     readonly prisma: PrismaService,
-    readonly config: ConfigModule,
+    readonly config: ConfigService,
   ) {}
 
   async convertMedia(file: MulterWithMime, options: ConversionOptions): Promise<ImageMetadata> {
