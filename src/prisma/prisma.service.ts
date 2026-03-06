@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
-import { ConfigModule } from '../config/config.module';
+import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import { PrismaMariaDb } from '@prisma/adapter-mariadb';
+import { PrismaClient } from './types';
+import { ConfigService } from '../config/config.service';
 import { generateCustomUserModel } from '../users/interfaces/user.interface';
 import { omit } from '../utils';
 import { generateCustomCommentModel } from '../ue/comments/interfaces/comment.interface';
@@ -17,25 +18,24 @@ import { generateCustomApplicationModel } from '../auth/application/interfaces/a
 import { generateCustomAssoWeeklyModel } from '../assos/interfaces/weekly.interface';
 
 @Injectable()
-export class PrismaService extends PrismaClient<ReturnType<typeof prismaOptions>> {
+export class PrismaService extends PrismaClient<ReturnType<typeof prismaOptions>> implements OnModuleDestroy {
   readonly normalize: ReturnType<typeof createNormalizedEntitiesUtility>;
+  readonly adapter: Record<'adapter', PrismaMariaDb>;
 
-  constructor(config: ConfigModule) {
+  constructor(config: ConfigService) {
     super(prismaOptions(config));
     this.normalize = createNormalizedEntitiesUtility(this);
   }
+
+  onModuleDestroy(): any {
+    this.$disconnect();
+  }
 }
 
-const prismaOptions = (config: ConfigModule) => ({
-  datasources: {
-    db: {
-      url: config.DATABASE_URL,
-    },
-  },
-});
+const prismaOptions = (config: ConfigService) => ({ adapter: new PrismaMariaDb(config.DATABASE_URL) });
 
 /**
- * @typedef {import('@prisma/client').Prisma.UserDelegate} UserDelegate
+ * @typedef {import('../prisma/types').Prisma.UserDelegate} UserDelegate
  */
 
 function createNormalizedEntitiesUtility(prisma: PrismaClient) {

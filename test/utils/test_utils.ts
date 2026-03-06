@@ -1,18 +1,18 @@
 import { PrismaService } from '../../src/prisma/prisma.service';
+import { PrismaClient } from '../../src/prisma/types';
 import { INestApplication } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { faker } from '@faker-js/faker';
-import { ConfigModule } from '../../src/config/config.module';
+import { ConfigService } from '../../src/config/config.service';
 import { clearUniqueValues, generateDefaultApplication } from '../../prisma/seed/utils';
-import { PrismaClient } from '@prisma/client';
 
 /**
  * Initializes this file.
  * Sets the seed for faker. This is useful to have deterministic tests.
- * @param app The app from which to get the {@link ConfigModule}.
+ * @param app The app from which to get the {@link ConfigService}.
  */
 export function init(app: AppProvider) {
-  faker.seed(app().get(ConfigModule).FAKER_SEED);
+  faker.seed(app().get(ConfigService).FAKER_SEED);
 }
 
 /**
@@ -87,9 +87,11 @@ export const Dummies = {
  * @param prisma The prisma service instance.
  */
 export async function cleanDb(prisma: PrismaService | PrismaClient) {
-  await prisma.$executeRawUnsafe(`SET FOREIGN_KEY_CHECKS = 0`);
-  // _runtimeDataModel.models basically contains a JS-ified version of the schema.prisma
-  for (const modelName of Object.keys((prisma as any)._runtimeDataModel.models) as string[])
-    await prisma[modelName].deleteMany();
-  await prisma.$executeRawUnsafe(`SET FOREIGN_KEY_CHECKS = 1`);
+  return prisma.$transaction(async (tx) => {
+    await tx.$executeRawUnsafe(`SET FOREIGN_KEY_CHECKS = 0`);
+    // _runtimeDataModel.models basically contains a JS-ified version of the schema.prisma
+    for (const modelName of Object.keys((tx as any)._runtimeDataModel.models) as string[])
+      await tx[modelName].deleteMany();
+    await tx.$executeRawUnsafe(`SET FOREIGN_KEY_CHECKS = 1`);
+  });
 }

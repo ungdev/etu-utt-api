@@ -3,7 +3,7 @@ import * as pactum from 'pactum';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { e2eSuite } from '../../utils/test_utils';
 import { ERROR_CODE } from '../../../src/exceptions';
-import { UserType } from '@prisma/client';
+import { UserType } from '../../../src/prisma/types';
 import { createUser } from '../../utils/fakedb';
 import { JwtService } from '@nestjs/jwt';
 

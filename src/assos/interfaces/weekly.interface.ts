@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '../../prisma/types';
 import { generateCustomModel } from '../../prisma/prisma.service';
 import { pick, translationSelect } from '../../utils';
 import { Translation } from '../../prisma/types';

@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '../../prisma/types';
 import { generateCustomModel } from '../../prisma/prisma.service';
 
 const RATE_SELECT_FILTER = {

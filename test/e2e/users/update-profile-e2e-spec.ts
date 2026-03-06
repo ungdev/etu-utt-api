@@ -3,7 +3,7 @@ import * as pactum from 'pactum';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { createImageMedia, createUser } from '../../utils/fakedb';
 import { ERROR_CODE } from '../../../src/exceptions';
-import { ImageMediaPreset } from '@prisma/client';
+import { ImageMediaPreset } from '../../../src/prisma/types';
 
 const UpdateProfile = e2eSuite('PATCH /users/current', (app) => {
   const user = createUser(app);

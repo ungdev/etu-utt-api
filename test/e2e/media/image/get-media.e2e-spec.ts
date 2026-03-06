@@ -1,7 +1,7 @@
 import { Dummies, e2eSuite } from '../../../utils/test_utils';
 import * as fakedb from '../../../utils/fakedb';
 import { cpSync, mkdirSync, rmSync } from 'fs';
-import { ConfigModule } from '../../../../src/config/config.module';
+import { ConfigService } from '../../../../src/config/config.service';
 import { createUser } from '../../../utils/fakedb';
 import { ERROR_CODE } from '../../../../src/exceptions';
 import * as pactum from 'pactum';
@@ -13,19 +13,19 @@ export const GetMediaE2ESpec = e2eSuite('GET /media/image/:mediaId', (app) => {
   const publicMediaInError = fakedb.createImageMedia(app, { isPublic: true });
 
   beforeAll(() => {
-    mkdirSync(`${app().get(ConfigModule).MEDIA_UPLOAD_DIR}/image`, { recursive: true });
+    mkdirSync(`${app().get(ConfigService).MEDIA_UPLOAD_DIR}/image`, { recursive: true });
     cpSync(
       `test/e2e/media/image/artifacts/image.webp`,
-      `${app().get(ConfigModule).MEDIA_UPLOAD_DIR}/image/${publicMedia.id}.webp`,
+      `${app().get(ConfigService).MEDIA_UPLOAD_DIR}/image/${publicMedia.id}.webp`,
     );
     cpSync(
       `test/e2e/media/image/artifacts/image.webp`,
-      `${app().get(ConfigModule).MEDIA_UPLOAD_DIR}/image/${nonPublicMedia.id}.webp`,
+      `${app().get(ConfigService).MEDIA_UPLOAD_DIR}/image/${nonPublicMedia.id}.webp`,
     );
   });
 
   afterAll(() => {
-    rmSync(app().get(ConfigModule).MEDIA_UPLOAD_DIR.split('/')[0], { recursive: true });
+    rmSync(app().get(ConfigService).MEDIA_UPLOAD_DIR.split('/')[0], { recursive: true });
   });
 
   it('should return a 404 as the media does not exist', () =>

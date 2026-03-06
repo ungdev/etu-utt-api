@@ -3,7 +3,7 @@ import nock from 'nock';
 import { HttpStatus } from '@nestjs/common';
 import { faker } from '@faker-js/faker';
 import { RegisterUserData } from '../../src/auth/auth.service';
-import { ConfigModule } from '../../src/config/config.module';
+import { ConfigService } from '../../src/config/config.service';
 
 export let validService = '';
 export const validTicket = faker.string.uuid();
@@ -15,7 +15,7 @@ export const user: RegisterUserData = {
   tokenExpiresIn: 999999,
 };
 
-export function enable(config: ConfigModule) {
+export function enable(config: ConfigService) {
   validService = config.CAS_SERVICE;
   axios.defaults.adapter = 'http';
   nock(config.CAS_URL)

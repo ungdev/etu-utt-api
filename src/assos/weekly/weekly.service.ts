@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { AssoWeekly } from '../interfaces/weekly.interface';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '../../prisma/build/client';
 import { Translation } from '../../prisma/types';
 import WeeklyResDto from './dto/res/weekly-res.dto';
 import { PrismaService } from '../../prisma/prisma.service';
-import { ConfigModule } from '../../config/config.module';
+import { ConfigService } from '../../config/config.service';
 
 @Injectable()
 export default class WeeklyService {
-  constructor(readonly prisma: PrismaService, readonly config: ConfigModule) {}
+  constructor(readonly prisma: PrismaService, readonly config: ConfigService) {}
 
   async searchWeeklies(assoId: string, from: Date, to: Date, page: number): Promise<{ weeklies: AssoWeekly[], count: number }> {
     const where = {

@@ -14,7 +14,7 @@ import { e2eSuite } from '../../utils/test_utils';
 import { UeController } from '../../../src/ue/ue.controller';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
-import { UserType } from '@prisma/client';
+import { UserType } from '../../../src/prisma/types';
 import { FakeUeWithOfs } from 'test/declarations';
 
 const GetE2ESpec = e2eSuite('GET /ue/{ueCode}', (app) => {
