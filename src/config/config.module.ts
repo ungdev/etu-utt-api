@@ -1,9 +1,6 @@
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule as NestConfigModule } from '@nestjs/config';
-import { ConfigService } from './config.service';
-
-export const isTestEnv = process.env.NODE_ENV === 'test';
-export const isProdEnv = process.env.NODE_ENV === 'production';
+import { ConfigService, isTestEnv } from './config.service';
 
 @Global()
 @Module({

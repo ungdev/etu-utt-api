@@ -2,7 +2,7 @@ import { createReadStream, ReadStream } from 'fs';
 import { rm, writeFile } from 'fs/promises';
 import { Injectable } from '@nestjs/common';
 import { RawImageMedia, ImageMediaPreset } from '../../prisma/types';
-import { ConfigService } from '../../config/config.service';
+import { ConfigService, isTestEnv } from '../../config/config.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MulterWithMime } from '../../upload.interceptor';
 import { User } from '../../users/interfaces/user.interface';
@@ -69,7 +69,9 @@ export class ImageMediaService {
   }
 
   async rollbackMedia(media: RawImageMedia): Promise<void> {
-    await this.prisma.imageMedia.create({ data: media });
+    const promise = this.prisma.imageMedia.create({ data: media });
+    // Don't let a hanging promise with Jest
+    if (isTestEnv) await promise;
   }
 
   async unRegisterMedia(mediaId: string): Promise<RawImageMedia> {
@@ -81,7 +83,9 @@ export class ImageMediaService {
   }
 
   async writeMediaToDisk(mediaId: string, buffer: Buffer): Promise<void> {
-    await writeFile(`${this.config.MEDIA_UPLOAD_DIR}/image/${mediaId}.webp`, buffer);
+    const promise = writeFile(`${this.config.MEDIA_UPLOAD_DIR}/image/${mediaId}.webp`, buffer);
+    // Don't let a hanging promise with Jest
+    if (isTestEnv) await promise;
   }
 
   readMediaFromDisk(mediaId: string): ReadStream {
@@ -117,6 +121,8 @@ export class ImageMediaService {
   }
 
   private async deleteMediaFromDisk(mediaId: string): Promise<void> {
-    await rm(`${this.config.MEDIA_UPLOAD_DIR}/image/${mediaId}.webp`, { force: true });
+    const promise = rm(`${this.config.MEDIA_UPLOAD_DIR}/image/${mediaId}.webp`, { force: true });
+    // Don't let a hanging promise with Jest
+    if (isTestEnv) await promise;
   }
 }

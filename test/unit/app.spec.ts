@@ -1,3 +1,4 @@
+// Ejs adapter should not be imported in a test environment (it lets hanging promises and things like this, + anyway we don't need it)
 jest.mock('@nestjs-modules/mailer/dist/adapters/ejs.adapter', () => ({
   EjsAdapter: jest.fn().mockImplementation(() => ({
     compile: jest.fn(),

@@ -7,7 +7,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { MulterWithMime } from '../../upload.interceptor';
 import { CreateAnnalReqDto } from './dto/req/create-annal-req.dto';
 import { UpdateAnnalReqDto } from './dto/req/update-annal-req.dto';
-import { ConfigService } from '../../config/config.service';
+import { ConfigService, isTestEnv } from '../../config/config.service';
 import { User } from '../../users/interfaces/user.interface';
 import { RawSemester } from '../../prisma/types';
 
@@ -177,7 +177,7 @@ export class AnnalsService {
       });
     });
     // Jest cannot run async code
-    if (process.env.NODE_ENV === 'test') await promise;
+    if (isTestEnv) await promise;
     return fileEntry;
   }
 

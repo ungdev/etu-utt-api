@@ -20,7 +20,7 @@ const LexicalValidationUnitSpec = unitSuite('Lexical validation', (app) => {
 
   const checkValidityForBundles = (
     name: string,
-    bundles: Partial<Record<keyof typeof BUNDLES, boolean>>,
+    bundles: Record<keyof typeof BUNDLES, boolean>,
     test: (editor: LexicalEditor) => void,
   ) => {
     Object.entries(bundles).forEach(([bundle, shouldBeValid]) => {
@@ -46,7 +46,7 @@ const LexicalValidationUnitSpec = unitSuite('Lexical validation', (app) => {
     'Paragraph',
     {
       '@etuutt/full': true,
-      // '@etuutt/simple': true,
+      '@etuutt/simple': true,
     },
     () => $getRoot().append($createParagraphNode().append($createTextNode('Hello World'))),
   );
