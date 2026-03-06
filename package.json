@@ -29,7 +29,7 @@
     "test:watch": "pnpm test --watch",
     "test:cov": "pnpm test --coverage",
     "test:instantfail": "pnpm test --bail",
-    "test:db:reset": "env-cmd -f .env.test --use-shell \"pnpm dev:db:reset\"",
+    "test:db:reset": "env-cmd -f .env.test --use-shell \"pnpm prisma generate && pnpm prisma migrate reset --force && pnpm prisma db push\"",
     "test:db:editor": "env-cmd -f .env.test -- pnpm prisma studio",
     "seed:base": "env-cmd -f .env.dev -- ts-node scripts/seed/base.ts",
     "seed:ue": "env-cmd -f .env.dev -- ts-node scripts/seed/ue.ts",
