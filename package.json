@@ -1,10 +1,11 @@
 {
-  "name": "etu-utt-api-nestjs-prisma",
+  "name": "etu-utt-api",
   "version": "0.0.1",
   "description": "",
   "author": "",
   "private": true,
   "license": "UNLICENSED",
+  "type": "commonjs",
   "scripts": {
     "build": "npx nest build",
     "build:docs": "python3 -m sphinx -W -T -b html -d docs/build/doctrees -D language=fr docs docs/build/html",
