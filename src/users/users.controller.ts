@@ -1,19 +1,19 @@
 import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
-import UsersSearchReqDto from './dto/req/users-search-req.dto';
-import { UserUpdateReqDto } from './dto/req/users-update-req.dto';
-import { GetUser } from '../auth/decorator';
-import { User } from './interfaces/user.interface';
-import UsersService from './users.service';
-import { AppException, ERROR_CODE } from '../exceptions';
-import { pick } from '../utils';
+import UsersSearchReqDto from '@/users/dto/req/users-search-req.dto';
+import { UserUpdateReqDto } from '@/users/dto/req/users-update-req.dto';
+import { GetUser } from '@/auth/decorator';
+import { User } from '@/users/interfaces/user.interface';
+import UsersService from '@/users/users.service';
+import { AppException, ERROR_CODE } from '@/exceptions';
+import { pick } from '@/utils';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import UserOverviewResDto from './dto/res/user-overview-res.dto';
-import { ApiAppErrorResponse, paginatedResponseDto } from '../app.dto';
-import UserDetailResDto from './dto/res/user-detail-res.dto';
-import UserBirthdayResDto from './dto/res/user-birthday-res.dto';
-import UserAssoMembershipResDto from './dto/res/user-asso-membership-res.dto';
-import { ImageMediaService } from '../media/image/imagemedia.service';
-import { ImageMediaPreset } from '../prisma/types';
+import UserOverviewResDto from '@/users/dto/res/user-overview-res.dto';
+import { ApiAppErrorResponse, paginatedResponseDto } from '@/app.dto';
+import UserDetailResDto from '@/users/dto/res/user-detail-res.dto';
+import UserBirthdayResDto from '@/users/dto/res/user-birthday-res.dto';
+import UserAssoMembershipResDto from '@/users/dto/res/user-asso-membership-res.dto';
+import { ImageMediaService } from '@/media/image/imagemedia.service';
+import { ImageMediaPreset } from '@/prisma/types';
 
 @Controller('users')
 @ApiTags('User')

@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
-import { Asso } from '../../../src/assos/interfaces/asso.interface';
-import { PrismaClient, RawAssoMembershipRole } from '../../../src/prisma/types';
+import { Asso } from '@/assos/interfaces/asso.interface';
+import { PrismaClient, RawAssoMembershipRole } from '@/prisma/types';
 
 export default function assoMembershipRoleSeed(prisma: PrismaClient, assos: Asso[]): Promise<RawAssoMembershipRole[]> {
   console.log('Seeding assoMembershipRoles');

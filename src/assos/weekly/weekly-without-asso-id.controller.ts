@@ -1,7 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import WeeklyInfoResDto from './dto/res/weekly-info-res.dto';
-import { ConfigService } from '../../config/config.service';
+import WeeklyInfoResDto from '@/assos/weekly/dto/res/weekly-info-res.dto';
+import { ConfigService } from '@/config/config.service';
 
 @Controller('assos/weekly')
 @ApiTags('Weekly')

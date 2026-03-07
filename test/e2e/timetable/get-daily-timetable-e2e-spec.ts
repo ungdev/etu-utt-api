@@ -1,9 +1,9 @@
-import { e2eSuite } from '../../utils/test_utils';
-import * as fakedb from '../../utils/fakedb';
-import { RawTimetableEntry } from '../../../src/prisma/types';
-import { PrismaService } from '../../../src/prisma/prisma.service';
+import { e2eSuite } from '#/utils/test_utils';
+import * as fakedb from '#/utils/fakedb';
+import { RawTimetableEntry } from '@/prisma/types';
+import { PrismaService } from '@/prisma/prisma.service';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from 'src/exceptions';
+import { ERROR_CODE } from '@/exceptions';
 
 const GetDailyTimetableE2ESpec = e2eSuite('GET /timetable/current/daily/:day/:month/:year', (app) => {
   const user = fakedb.createUser(app);

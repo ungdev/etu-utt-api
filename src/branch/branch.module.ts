@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { BranchService } from './branch.service';
-import { BranchController } from './branch.controller';
+import { BranchService } from '@/branch/branch.service';
+import { BranchController } from '@/branch/branch.controller';
 
 @Module({
   providers: [BranchService],

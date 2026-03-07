@@ -1,4 +1,4 @@
-import { RawSemester } from '../../../src/prisma/types';
+import { RawSemester } from '@/prisma/types';
 import { getOperationResults, PrismaClient, PrismaOperationResult } from '../make-migration';
 
 export async function createSemesters(prisma: PrismaClient) {

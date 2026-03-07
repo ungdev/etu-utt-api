@@ -1,9 +1,9 @@
-import { Dummies, e2eSuite } from '../../utils/test_utils';
+import { Dummies, e2eSuite } from '#/utils/test_utils';
 import * as pactum from 'pactum';
-import { PrismaService } from '../../../src/prisma/prisma.service';
-import { createImageMedia, createUser } from '../../utils/fakedb';
-import { ERROR_CODE } from '../../../src/exceptions';
-import { ImageMediaPreset } from '../../../src/prisma/types';
+import { PrismaService } from '@/prisma/prisma.service';
+import { createImageMedia, createUser } from '#/utils/fakedb';
+import { ERROR_CODE } from '@/exceptions';
+import { ImageMediaPreset } from '@/prisma/types';
 
 const UpdateProfile = e2eSuite('PATCH /users/current', (app) => {
   const user = createUser(app);

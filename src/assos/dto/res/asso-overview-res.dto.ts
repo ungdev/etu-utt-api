@@ -1,6 +1,6 @@
-import { Translation } from '../../../prisma/types';
+import { Translation } from '@/prisma/types';
 import { ApiProperty } from '@nestjs/swagger';
-import AssoPresident from './asso-president-res.dto';
+import AssoPresident from '@/assos/dto/res/asso-president-res.dto';
 
 export default class AssoOverviewResDto {
   id: string;

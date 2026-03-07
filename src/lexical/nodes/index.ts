@@ -1,7 +1,7 @@
 import type { EditorThemeClasses } from 'lexical';
-export { ColorTextNode } from './ColorTextNode';
-export { ImageNode } from './ImageNode';
-import './NodeStyleInjector';
+export { ColorTextNode } from '@/lexical/nodes/ColorTextNode';
+export { ImageNode } from '@/lexical/nodes/ImageNode';
+import '@/lexical/nodes/NodeStyleInjector';
 
 export type RegisteredStyleMap<SubEditorThemeClasses = EditorThemeClasses> = {[K in keyof SubEditorThemeClasses]: SubEditorThemeClasses[K] extends Record<string, unknown> ? RegisteredStyleMap<SubEditorThemeClasses[K]> : keyof typeof CustomStyles};
 

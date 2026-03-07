@@ -7,13 +7,13 @@ import {
   createSemester,
   createCommentReply,
   createUeof,
-} from '../../../utils/fakedb';
+} from '#/utils/fakedb';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '../../../../src/exceptions';
-import { Dummies, e2eSuite, JsonLike } from '../../../utils/test_utils';
-import { PrismaService } from '../../../../src/prisma/prisma.service';
-import { CommentStatus } from 'src/ue/comments/interfaces/comment.interface';
-import { PermissionManager } from '../../../../src/utils';
+import { ERROR_CODE } from '@/exceptions';
+import { Dummies, e2eSuite, JsonLike } from '#/utils/test_utils';
+import { PrismaService } from '@/prisma/prisma.service';
+import { CommentStatus } from '@/ue/comments/interfaces/comment.interface';
+import { PermissionManager } from '@/utils';
 
 const UpdateCommentReply = e2eSuite('PATCH /ue/comments/reply/{replyId}', (app) => {
   const user = createUser(app, { permissions: new PermissionManager().with('API_GIVE_OPINIONS_UE') });

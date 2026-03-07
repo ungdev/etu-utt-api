@@ -1,4 +1,4 @@
-import { PrismaClient, RawUeStarCriterion } from '../../../src/prisma/types';
+import { PrismaClient, RawUeStarCriterion } from '@/prisma/types';
 import { faker } from '@faker-js/faker';
 
 const FAKER_ROUNDS = 5;

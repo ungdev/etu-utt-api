@@ -1,5 +1,5 @@
-import { e2eSuite } from '../../utils/test_utils';
-import * as fakedb from '../../utils/fakedb';
+import { e2eSuite } from '#/utils/test_utils';
+import * as fakedb from '#/utils/fakedb';
 import * as pactum from 'pactum';
 
 export const GetBranchesE2ESpec = e2eSuite('GET /branch', (app) => {

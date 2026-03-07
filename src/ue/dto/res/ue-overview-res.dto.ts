@@ -1,4 +1,4 @@
-import { Translation } from '../../../prisma/types';
+import { Translation } from '@/prisma/types';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UeOverviewResDto {

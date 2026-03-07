@@ -1,8 +1,8 @@
-import { FakeAsso, createAsso } from '../../utils/fakedb';
+import { FakeAsso, createAsso } from '#/utils/fakedb';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '../../../src/exceptions';
-import { e2eSuite } from '../../utils/test_utils';
-import { ConfigService } from '../../../src/config/config.service';
+import { ERROR_CODE } from '@/exceptions';
+import { e2eSuite } from '#/utils/test_utils';
+import { ConfigService } from '@/config/config.service';
 
 const SearchE2ESpec = e2eSuite('GET /assos', (app) => {
   const assos: FakeAsso[] = [];

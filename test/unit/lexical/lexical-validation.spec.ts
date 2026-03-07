@@ -1,11 +1,11 @@
-import { unitSuite } from '../../utils/test_utils';
-import { BUNDLES, LexicalModule } from '../../../src/lexical/lexical.module';
+import { unitSuite } from '#/utils/test_utils';
+import { BUNDLES, LexicalModule } from '@/lexical/lexical.module';
 import { createHeadlessEditor } from '@lexical/headless';
 import { $createParagraphNode, $createTextNode, $getRoot, LexicalEditor } from 'lexical';
 import { $createCodeHighlightNode, $createCodeNode } from '@lexical/code';
 import { $createHeadingNode, $createQuoteNode } from '@lexical/rich-text';
-import { $createImageNode } from '../../../src/lexical/nodes/ImageNode';
-import { $createColorTextNode } from '../../../src/lexical/nodes/ColorTextNode';
+import { $createImageNode } from '@/lexical/nodes/ImageNode';
+import { $createColorTextNode } from '@/lexical/nodes/ColorTextNode';
 import { $createAutoLinkNode, $createLinkNode } from '@lexical/link';
 import { $createHorizontalRuleNode } from '@lexical/extension';
 import { $createListItemNode, $createListNode } from '@lexical/list';

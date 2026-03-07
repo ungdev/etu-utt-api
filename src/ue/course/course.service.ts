@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
-import { RawUeCourse } from 'src/prisma/types';
-import { UeCourse } from './interfaces/course.interface';
+import { PrismaService } from '@/prisma/prisma.service';
+import { RawUeCourse } from '@/prisma/types';
+import { UeCourse } from '@/ue/course/interfaces/course.interface';
 
 @Injectable()
 export class CourseService {

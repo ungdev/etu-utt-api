@@ -1,9 +1,9 @@
 import { PrismaMariaDb } from '@prisma/adapter-mariadb';
-import { PrismaClient } from '../../src/prisma/types';
+import { PrismaClient } from '@/prisma/types';
 import { createReadStream } from 'fs';
 import { createInterface } from 'readline/promises';
 import { parse } from '@fast-csv/parse';
-import '../../src/std.type';
+import '@/std.type';
 
 const prisma = new PrismaClient({ adapter: new PrismaMariaDb(process.env.DATABASE_URL) });
 

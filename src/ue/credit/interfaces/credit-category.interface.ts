@@ -1,5 +1,5 @@
-import { Prisma, PrismaClient } from '../../../prisma/types';
-import { RequestType, generateCustomModel } from '../../../prisma/prisma.service';
+import { Prisma, PrismaClient } from '@/prisma/types';
+import { RequestType, generateCustomModel } from '@/prisma/prisma.service';
 
 const CREDIT_CATEGORY_SELECT_FILTER = {
   select: {

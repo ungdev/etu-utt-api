@@ -7,12 +7,12 @@ import {
   createSemester,
   createCommentUpvote,
   createUeof,
-} from '../../../utils/fakedb';
+} from '#/utils/fakedb';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '../../../../src/exceptions';
-import { Dummies, e2eSuite } from '../../../utils/test_utils';
-import { PrismaService } from '../../../../src/prisma/prisma.service';
-import { PermissionManager } from '../../../../src/utils';
+import { ERROR_CODE } from '@/exceptions';
+import { Dummies, e2eSuite } from '#/utils/test_utils';
+import { PrismaService } from '@/prisma/prisma.service';
+import { PermissionManager } from '@/utils';
 
 const DeleteUpvote = e2eSuite('DELETE /ue/comments/{commentId}/upvote', (app) => {
   const user = createUser(app, { permissions: new PermissionManager().with('API_GIVE_OPINIONS_UE') });

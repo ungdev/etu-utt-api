@@ -1,4 +1,4 @@
-import { PrismaClient, RawUeStarVote, RawUeStarCriterion, RawUserUeSubscription } from '../../../src/prisma/types';
+import { PrismaClient, RawUeStarVote, RawUeStarCriterion, RawUserUeSubscription } from '@/prisma/types';
 import { faker } from '@faker-js/faker';
 
 export default function ueStarVotesSeed(

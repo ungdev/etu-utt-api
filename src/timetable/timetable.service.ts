@@ -1,20 +1,20 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '@/prisma/prisma.service';
 import {
   DetailedTimetableEntry,
   TimetableEntryGroupForUser,
   TimetableEntryOccurrence,
-} from './interfaces/timetable.interface';
-import { CourseEvent } from './interfaces/ical.interface';
-import { RawTimetableEntry, RawTimetableEntryOverride, RawTimetableGroup } from '../prisma/types';
-import { omit } from '../utils';
-import TimetableCreateEntryReqDto from './dto/req/timetable-create-entry-req.dto';
-import TimetableUpdateEntryReqDto from './dto/req/timetable-update-entry-req.dto';
-import TimetableDeleteOccurrencesReqDto from './dto/req/timetable-delete-occurrences-req.dto';
-import { AppException, ERROR_CODE } from '../exceptions';
+} from '@/timetable/interfaces/timetable.interface';
+import { CourseEvent } from '@/timetable/interfaces/ical.interface';
+import { RawTimetableEntry, RawTimetableEntryOverride, RawTimetableGroup } from '@/prisma/types';
+import { omit } from '@/utils';
+import TimetableCreateEntryReqDto from '@/timetable/dto/req/timetable-create-entry-req.dto';
+import TimetableUpdateEntryReqDto from '@/timetable/dto/req/timetable-update-entry-req.dto';
+import TimetableDeleteOccurrencesReqDto from '@/timetable/dto/req/timetable-delete-occurrences-req.dto';
+import { AppException, ERROR_CODE } from '@/exceptions';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
-import { ConfigService } from '../config/config.service';
+import { ConfigService } from '@/config/config.service';
 
 /**
  * The inclusions to use when fetching a {@link DetailedTimetableEntry}.

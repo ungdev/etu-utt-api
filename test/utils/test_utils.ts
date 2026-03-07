@@ -1,14 +1,14 @@
-import { PrismaService } from '../../src/prisma/prisma.service';
-import { PrismaClient } from '../../src/prisma/types';
+import { PrismaService } from '@/prisma/prisma.service';
+import { PrismaClient } from '@/prisma/types';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { faker } from '@faker-js/faker';
-import { ConfigService } from '../../src/config/config.service';
-import { clearUniqueValues, generateDefaultApplication } from '../../prisma/seed/utils';
+import { ConfigService } from '@/config/config.service';
+import { clearUniqueValues, generateDefaultApplication } from '#/../prisma/seed/utils';
 import Spec from 'pactum/src/models/Spec';
-import { AppModule } from '../../src/app.module';
+import { AppModule } from '@/app.module';
 import * as pactum from 'pactum';
-import '../declarations.d.ts'
+import '#/declarations.d.ts'
 
 export async function buildTestApp(port: number): Promise<E2EApp> {
   const moduleRef = await Test.createTestingModule({

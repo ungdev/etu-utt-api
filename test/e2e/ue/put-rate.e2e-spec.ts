@@ -7,13 +7,13 @@ import {
   createSemester,
   createUeSubscription,
   createUeof,
-} from '../../utils/fakedb';
+} from '#/utils/fakedb';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from 'src/exceptions';
-import { e2eSuite } from '../../utils/test_utils';
-import { PrismaService } from '../../../src/prisma/prisma.service';
+import { ERROR_CODE } from '@/exceptions';
+import { e2eSuite } from '#/utils/test_utils';
+import { PrismaService } from '@/prisma/prisma.service';
 import { faker } from '@faker-js/faker';
-import { PermissionManager } from '../../../src/utils';
+import { PermissionManager } from '@/utils';
 
 const PutRate = e2eSuite('PUT /ue/ueof/{ueofCode}/rate', (app) => {
   const user = createUser(app, { permissions: new PermissionManager().with('API_GIVE_OPINIONS_UE') });
