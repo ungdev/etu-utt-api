@@ -1,5 +1,5 @@
 import { Validate, ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
-import { AppException, ERROR_CODE } from './exceptions';
+import { AppException, ERROR_CODE } from '@/exceptions';
 import { ValidationError } from '@nestjs/common/interfaces/external/validation-error.interface';
 
 /**

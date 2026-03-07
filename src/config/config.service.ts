@@ -52,9 +52,9 @@ export class ConfigService {
     this.IS_PROD_ENV = isProdEnv;
     this.TIMETABLE_URL = config.get<string>('TIMETABLE_URL');
     this.ANNAL_UPLOAD_DIR = config.get<string>('ANNAL_UPLOAD_DIR');
-    if (this.ANNAL_UPLOAD_DIR.endsWith('/')) this.ANNAL_UPLOAD_DIR = this.ANNAL_UPLOAD_DIR.slice(0, -1);
+    if (this.ANNAL_UPLOAD_DIR.endsWith('@/')) this.ANNAL_UPLOAD_DIR = this.ANNAL_UPLOAD_DIR.slice(0, -1);
     this.MEDIA_UPLOAD_DIR = config.get<string>('MEDIA_UPLOAD_DIR');
-    if (this.MEDIA_UPLOAD_DIR.endsWith('/')) this.MEDIA_UPLOAD_DIR = this.MEDIA_UPLOAD_DIR.slice(0, -1);
+    if (this.MEDIA_UPLOAD_DIR.endsWith('@/')) this.MEDIA_UPLOAD_DIR = this.MEDIA_UPLOAD_DIR.slice(0, -1);
     this.MEDIA_DETACHED_LIFESPAN = Number(config.get('MEDIA_DETACHED_LIFESPAN'));
     this.ETUUTT_WEBSITE_APPLICATION_ID = config.get('ETUUTT_WEBSITE_APPLICATION_ID');
     this.SMTP_HOST = config.get<string>('SMTP_HOST');

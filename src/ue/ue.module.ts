@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
-import { UeController } from './ue.controller';
-import { UeService } from './ue.service';
-import { CommentsController } from './comments/comments.controller';
-import { AnnalsController } from './annals/annals.controller';
-import { CreditController } from './credit/credit.controller';
-import { AnnalsService } from './annals/annals.service';
-import { CreditService } from './credit/credit.service';
-import { CommentsService } from './comments/comments.service';
-import { CourseService } from './course/course.service';
+import { UeController } from '@/ue/ue.controller';
+import { UeService } from '@/ue/ue.service';
+import { CommentsController } from '@/ue/comments/comments.controller';
+import { AnnalsController } from '@/ue/annals/annals.controller';
+import { CreditController } from '@/ue/credit/credit.controller';
+import { AnnalsService } from '@/ue/annals/annals.service';
+import { CreditService } from '@/ue/credit/credit.service';
+import { CommentsService } from '@/ue/comments/comments.service';
+import { CourseService } from '@/ue/course/course.service';
 
 /**
  * Defines the `UE` module. This module handles all routes prefixed by `/ue`.

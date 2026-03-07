@@ -1,8 +1,8 @@
-import { e2eSuite } from '../../utils/test_utils';
-import { createUser } from '../../utils/fakedb';
+import { e2eSuite } from '#/utils/test_utils';
+import { createUser } from '#/utils/fakedb';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '../../../src/exceptions';
-import { ConfigService } from '../../../src/config/config.service';
+import { ERROR_CODE } from '@/exceptions';
+import { ConfigService } from '@/config/config.service';
 
 const GetWeeklyInfoE2ESpec = e2eSuite('GET /assos/weekly/info', (app) => {
   const user = createUser(app);

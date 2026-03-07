@@ -1,10 +1,10 @@
-import AuthSignUpReqDto from '../../../src/auth/dto/req/auth-sign-up-req.dto';
+import AuthSignUpReqDto from '@/auth/dto/req/auth-sign-up-req.dto';
 import * as pactum from 'pactum';
-import { PrismaService } from '../../../src/prisma/prisma.service';
-import { e2eSuite } from '../../utils/test_utils';
-import { ERROR_CODE } from '../../../src/exceptions';
-import { UserType } from '../../../src/prisma/types';
-import { createUser } from '../../utils/fakedb';
+import { PrismaService } from '@/prisma/prisma.service';
+import { e2eSuite } from '#/utils/test_utils';
+import { ERROR_CODE } from '@/exceptions';
+import { UserType } from '@/prisma/types';
+import { createUser } from '#/utils/fakedb';
 import { JwtService } from '@nestjs/jwt';
 
 const SignupE2ESpec = e2eSuite('POST /auth/signup', (app) => {
@@ -30,7 +30,7 @@ const SignupE2ESpec = e2eSuite('POST /auth/signup', (app) => {
     return pactum
       .spec()
       .post('/auth/signup')
-      .withBody({ ...dto, login: 'my/login_1' })
+      .withBody({ ...dto, login: '#/login_1' })
       .expectAppError(ERROR_CODE.PARAM_NOT_ALPHANUMERIC, 'login');
   });
   it('should return a 400 if password is missing', async () => {

@@ -1,4 +1,4 @@
-import UeCommentAuthorResDto from './ue-comment-author-res.dto';
+import UeCommentAuthorResDto from '@/ue/comments/dto/res/ue-comment-author-res.dto';
 
 export default class UeCommentResDto {
   id: string;

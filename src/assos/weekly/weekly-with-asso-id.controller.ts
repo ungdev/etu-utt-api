@@ -1,19 +1,19 @@
 import { Body, Controller, Delete, Get, Patch, Post, Query } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiQuery } from '@nestjs/swagger';
-import WeeklyResDto from './dto/res/weekly-res.dto';
-import { ApiAppErrorResponse, paginatedResponseDto } from '../../app.dto';
-import { AppException, ERROR_CODE } from '../../exceptions';
-import { ParamAsso } from '../decorator/get-asso';
-import { Asso } from '../interfaces/asso.interface';
-import AssoGetWeeklyReqDto from './dto/req/weekly-search-req.dto';
-import { GetUser } from '../../auth/decorator';
-import { User } from '../../users/interfaces/user.interface';
-import AssosPostWeeklyReqDto from './dto/req/weekly-req.dto';
-import { UUIDParam } from '../../app.pipe';
-import { AssoWeekly } from '../interfaces/weekly.interface';
-import { ConfigService } from '../../config/config.service';
-import WeeklyService from './weekly.service';
-import { AssosService } from '../assos.service';
+import WeeklyResDto from '@/assos/weekly/dto/res/weekly-res.dto';
+import { ApiAppErrorResponse, paginatedResponseDto } from '@/app.dto';
+import { AppException, ERROR_CODE } from '@/exceptions';
+import { ParamAsso } from '@/assos/decorator/get-asso';
+import { Asso } from '@/assos/interfaces/asso.interface';
+import AssoGetWeeklyReqDto from '@/assos/weekly/dto/req/weekly-search-req.dto';
+import { GetUser } from '@/auth/decorator/get-user.decorator';
+import { User } from '@/users/interfaces/user.interface';
+import AssosPostWeeklyReqDto from '@/assos/weekly/dto/req/weekly-req.dto';
+import { UUIDParam } from '@/app.pipe';
+import { AssoWeekly } from '@/assos/interfaces/weekly.interface';
+import { ConfigService } from '@/config/config.service';
+import WeeklyService from '@/assos/weekly/weekly.service';
+import { AssosService } from '@/assos/assos.service';
 
 @Controller('assos/:assoId/weekly')
 export class WeeklyWithAssoIdController {

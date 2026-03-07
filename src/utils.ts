@@ -1,6 +1,6 @@
-import { Language, Permission } from './prisma/types';
-import { Translation } from './prisma/types';
-import { ApiPermission, UserPermission } from './auth/interfaces/permissions.interface';
+import { Language, Permission } from '@/prisma/types';
+import { Translation } from '@/prisma/types';
+import { ApiPermission, UserPermission } from '@/auth/interfaces/permissions.interface';
 
 /**
  * Returns a new object built from the given object with only the specified keys.

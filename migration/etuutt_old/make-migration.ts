@@ -1,7 +1,7 @@
-import { PrismaClient as _PrismaClient } from '../../src/prisma/types';
+import { PrismaClient as _PrismaClient } from '@/prisma/types';
 import { PrismaMariaDb } from '@prisma/adapter-mariadb';
 import { createConnection } from 'mysql';
-import { cleanDb } from '../../test/utils/test_utils';
+import { cleanDb } from '#/utils/test_utils';
 import { findLegacyUeofName, migrateUEs } from './modules/ue';
 import { createCreditCategories } from './modules/creditCategory';
 import { createSemesters } from './modules/semester';
@@ -14,9 +14,9 @@ import {
   RawSemester,
   RawUe,
   RawUeComment,
-} from '../../src/prisma/types';
+} from '@/prisma/types';
 import { stringToTranslation } from './utils';
-import { omit } from '../../src/utils';
+import { omit } from '@/utils';
 
 type MayBePromise<T> = Promise<T> | T;
 

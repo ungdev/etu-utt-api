@@ -7,13 +7,13 @@ import {
   createUeSubscription,
   createComment,
   createUeof,
-} from '../../../utils/fakedb';
+} from '#/utils/fakedb';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '../../../../src/exceptions';
-import { e2eSuite, JsonLike } from '../../../utils/test_utils';
-import { PrismaService } from '../../../../src/prisma/prisma.service';
-import { CommentStatus } from 'src/ue/comments/interfaces/comment.interface';
-import { PermissionManager } from '../../../../src/utils';
+import { ERROR_CODE } from '@/exceptions';
+import { e2eSuite, JsonLike } from '#/utils/test_utils';
+import { PrismaService } from '@/prisma/prisma.service';
+import { CommentStatus } from '@/ue/comments/interfaces/comment.interface';
+import { PermissionManager } from '@/utils';
 
 const PostCommment = e2eSuite('POST /ue/comments', (app) => {
   const userNotDoneUe = createUser(app, { permissions: new PermissionManager().with('API_GIVE_OPINIONS_UE') });

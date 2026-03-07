@@ -1,13 +1,13 @@
-import { Dummies, e2eSuite } from '../../utils/test_utils';
+import { Dummies, e2eSuite } from '#/utils/test_utils';
 import {
   createAsso, createAssoWeekly,
   createAssoMembership,
   createAssoMembershipPermission,
   createAssoMembershipRole,
   createUser,
-} from '../../utils/fakedb';
+} from '#/utils/fakedb';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '../../../src/exceptions';
+import { ERROR_CODE } from '@/exceptions';
 
 const DeleteWeeklyE2ESpec = e2eSuite('DELETE /assos/:assoId/weekly/:weeklyId', (app) => {
   const userWithPermission = createUser(app);

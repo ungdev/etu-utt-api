@@ -1,8 +1,8 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { findRequiredApiPermissions } from '../decorator';
-import { AppException, ERROR_CODE } from '../../exceptions';
-import { RequestAuthData } from '../interfaces/request-auth-data.interface';
+import { findRequiredApiPermissions } from '@/auth/decorator';
+import { AppException, ERROR_CODE } from '@/exceptions';
+import { RequestAuthData } from '@/auth/interfaces/request-auth-data.interface';
 
 @Injectable()
 export class PermissionGuard implements CanActivate {

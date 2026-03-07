@@ -1,4 +1,4 @@
-import { PrismaClient, RawSemester, RawUe, RawUser, RawUserUeSubscription } from '../../../src/prisma/types';
+import { PrismaClient, RawSemester, RawUe, RawUser, RawUserUeSubscription } from '@/prisma/types';
 import { faker } from '@faker-js/faker';
 import { OF_SUFFIX } from './ue.seed';
 

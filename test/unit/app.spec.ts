@@ -5,12 +5,12 @@ jest.mock('@nestjs-modules/mailer/dist/adapters/ejs.adapter', () => ({
   })),
 }));
 
-import TimetableServiceUnitSpec from './timetable/timetable.service.spec';
-import LexicalValidationUnitSpec from './lexical/lexical-validation.spec';
-import LexicalGenerationUnitSpec from './lexical/lexical-generation.spec';
+import TimetableServiceUnitSpec from '#/unit/timetable/timetable.service.spec';
+import LexicalValidationUnitSpec from '#/unit/lexical/lexical-validation.spec';
+import LexicalGenerationUnitSpec from '#/unit/lexical/lexical-generation.spec';
 import { Test, TestingModule } from '@nestjs/testing';
-import { AppModule } from '../../src/app.module';
-import '../../src/std.type';
+import { AppModule } from '@/app.module';
+import '@/std.type';
 
 describe('EtuUTT API unit testing', () => {
   let app: TestingModule;

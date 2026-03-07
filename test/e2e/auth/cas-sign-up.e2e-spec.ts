@@ -1,14 +1,14 @@
-import { e2eSuite, JsonLike } from '../../utils/test_utils';
+import { e2eSuite, JsonLike } from '#/utils/test_utils';
 import * as pactum from 'pactum';
 import { faker } from '@faker-js/faker';
 import { JwtService } from '@nestjs/jwt';
-import * as fakedb from '../../utils/fakedb';
-import { AuthService } from '../../../src/auth/auth.service';
-import { PrismaService } from '../../../src/prisma/prisma.service';
-import { ERROR_CODE } from '../../../src/exceptions';
-import { ConfigService } from '../../../src/config/config.service';
+import * as fakedb from '#/utils/fakedb';
+import { AuthService } from '@/auth/auth.service';
+import { PrismaService } from '@/prisma/prisma.service';
+import { ERROR_CODE } from '@/exceptions';
+import { ConfigService } from '@/config/config.service';
 import { LdapUser } from 'ldap-server-mock';
-import { mockLdapServer } from '../../external_services/ldap';
+import { mockLdapServer } from '#/external_services/ldap';
 
 const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
   const list: LdapUser[] = [];
