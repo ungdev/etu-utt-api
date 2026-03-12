@@ -1,16 +1,16 @@
 import {
-  createUser,
-  createUe,
-  createComment,
   createBranch,
   createBranchOption,
-  createSemester,
+  createComment,
   createCommentReply,
+  createSemester,
+  createUe,
   createUeof,
+  createUser,
 } from '#/utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '@/exceptions';
-import { Dummies, e2eSuite, JsonLike } from '#/utils/test_utils';
+import { Dummies, JsonLike, e2eSuite } from '#/utils/test_utils';
 import { PrismaService } from '@/prisma/prisma.service';
 import { CommentStatus } from '@/ue/comments/interfaces/comment.interface';
 import { PermissionManager } from '@/utils';

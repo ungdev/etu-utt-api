@@ -4,18 +4,17 @@ import { UeCommentReply } from 'src/ue/comments/interfaces/comment-reply.interfa
 import { UeRating } from 'src/ue/interfaces/rate.interface';
 import {
   FakeApiApplication,
-  FakeAssoWeekly,
+  FakeAsso,
   FakeAssoMembership,
   FakeAssoMembershipPermission,
   FakeAssoMembershipRole,
+  FakeAssoWeekly,
+  FakeHomepageWidget,
   FakeImageMedia,
-  FakeUeAnnalType,
-  FakeUeof,
-  FakeUeCreditCategory,
-} from './utils/fakedb';
+  FakeUe,
+ FakeUeAnnalType, FakeUeCreditCategory, FakeUeof, FakeUser } from './utils/fakedb';
 import { UeAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
-import { FakeUe, FakeUser, FakeHomepageWidget, FakeAsso } from './utils/fakedb';
 import { AppProvider } from './utils/test_utils';
 import { Language } from '../src/prisma/types';
 import { PermissionManager } from '../src/utils';

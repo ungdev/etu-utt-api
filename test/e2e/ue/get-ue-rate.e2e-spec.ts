@@ -4,8 +4,8 @@ import {
   createCriterion,
   createSemester,
   createUe,
-  createUeof,
   createUeRating,
+  createUeof,
   createUser,
 } from '#/utils/fakedb';
 import * as pactum from 'pactum';

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { createWriteStream, createReadStream } from 'fs';
+import { createReadStream, createWriteStream } from 'fs';
 import { writeFile } from 'fs/promises';
 import sharp from 'sharp';
 import PDFDocument from 'pdfkit';

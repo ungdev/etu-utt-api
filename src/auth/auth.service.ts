@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
-import { Prisma, UserType } from '@/prisma/types';
+import { Prisma, RawApiKey , UserType } from '@/prisma/types';
 import { JwtService } from '@nestjs/jwt';
 import { AppException, ERROR_CODE } from '@/exceptions';
 import { ConfigService } from '@/config/config.service';
@@ -14,7 +14,6 @@ import { LdapAccountGroup } from '@/ldap/ldap.interface';
 import { UeService } from '@/ue/ue.service';
 import { SemesterService } from '@/semester/semester.service';
 import AuthSignUpReqDto from '@/auth/dto/req/auth-sign-up-req.dto';
-import { RawApiKey } from '@/prisma/types';
 import crypto from 'crypto';
 
 export type RegisterUserData = {

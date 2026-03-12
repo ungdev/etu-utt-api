@@ -2,7 +2,7 @@ import { ImageMediaPreset } from '@/prisma/types';
 import { mkdirSync, rmSync } from 'fs';
 import { ERROR_CODE } from '@/exceptions';
 import { createUser } from '#/utils/fakedb';
-import { e2eSuite, JsonLike } from '#/utils/test_utils';
+import { JsonLike, e2eSuite } from '#/utils/test_utils';
 import { ConfigService } from '@/config/config.service';
 import { PermissionManager } from '@/utils';
 import * as pactum from 'pactum';

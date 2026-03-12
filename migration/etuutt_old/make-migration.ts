@@ -1,4 +1,11 @@
-import { PrismaClient as _PrismaClient } from '@/prisma/types';
+import { RawBranch ,
+  RawBranchOption,
+  RawCreditCategory,
+  RawSemester,
+  RawUe,
+  RawUeComment,
+  PrismaClient as _PrismaClient,
+} from '@/prisma/types';
 import { PrismaMariaDb } from '@prisma/adapter-mariadb';
 import { createConnection } from 'mysql';
 import { cleanDb } from '#/utils/test_utils';
@@ -7,14 +14,6 @@ import { createCreditCategories } from './modules/creditCategory';
 import { createSemesters } from './modules/semester';
 import { migrateUeComments } from './modules/ueComment';
 import { createBranches } from './modules/branch';
-import {
-  RawBranch,
-  RawBranchOption,
-  RawCreditCategory,
-  RawSemester,
-  RawUe,
-  RawUeComment,
-} from '@/prisma/types';
 import { stringToTranslation } from './utils';
 import { omit } from '@/utils';
 

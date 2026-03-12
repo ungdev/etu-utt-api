@@ -1,14 +1,14 @@
 import {
+  FakeUeStarVote,
   createBranch,
   createBranchOption,
   createCriterion,
   createSemester,
   createUe,
-  createUeof,
   createUeRating,
   createUeSubscription,
+  createUeof,
   createUser,
-  FakeUeStarVote,
 } from '#/utils/fakedb';
 import { e2eSuite } from '#/utils/test_utils';
 import { UeController } from '@/ue/ue.controller';

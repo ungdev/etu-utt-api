@@ -12,7 +12,8 @@
     "build:docs:configure": "pip install --upgrade pip setuptools sphinx readthedocs-sphinx-ext && pip install -r docs/requirements.txt",
     "start": "NODE_ENV=production node dist/src/main",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "lint": "eslint \"{src,apps,libs,test,prisma,migration}/**/*.ts\" --fix",
+    "lint": "pnpm lint:dry --fix",
+    "lint:dry": "eslint \"{src,apps,libs,test,prisma,migration}/**/*.ts\"",
     "dev": "NODE_ENV=development npx nest start --watch",
     "dev:debug": "NODE_ENV=development npx nest start --debug --watch",
     "db:reset": "pnpm dev:db:reset && pnpm test:db:reset",
@@ -38,7 +39,8 @@
     "seed:base:prod": "node scripts/seed/base.js",
     "seed:ue:prod": "node scripts/seed/ue.js",
     "seed:ue:aliases:prod": "node scripts/seed/aliases.js",
-    "script:deps:graph": "ts-node scripts/dependency_graph.ts"
+    "script:deps-graph": "ts-node scripts/dependency_graph.ts",
+    "script:reorder-imports": "ts-node scripts/reorder_imports.ts"
   },
   "dependencies": {
     "@fast-csv/parse": "^5.0.5",
@@ -97,6 +99,7 @@
     "env-cmd": "^11.0.0",
     "eslint": "^10.0.2",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-prettier": "^5.5.5",
     "globals": "^17.4.0",
     "jest": "30.2.0",

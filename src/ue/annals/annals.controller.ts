@@ -18,7 +18,7 @@ import UeAnnalResDto from '@/ue/annals/dto/res/ue-annal-res.dto';
 import UeAnnalMetadataResDto from '@/ue/annals/dto/res/ue-annal-metadata-res.dto';
 import { GetPermissions } from '@/auth/decorator/get-permissions.decorator';
 import { Permission } from '@/prisma/types';
-import { omit, PermissionManager } from '@/utils';
+import { PermissionManager, omit } from '@/utils';
 
 @Controller('ue/annals')
 @ApiTags('Annal')

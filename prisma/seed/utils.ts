@@ -1,7 +1,6 @@
 import { Faker, faker } from '@faker-js/faker';
 import { Entity, FakeEntityMap } from '#/utils/fakedb';
-import { Translation } from '@/prisma/types';
-import { PrismaClient, UserType } from '@/prisma/types';
+import { PrismaClient , Translation, UserType } from '@/prisma/types';
 import { PrismaService } from '@/prisma/prisma.service';
 
 // While waiting to be able to recover the real data

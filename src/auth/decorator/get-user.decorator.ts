@@ -1,4 +1,4 @@
-import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { ExecutionContext, createParamDecorator } from '@nestjs/common';
 import { User } from '@/users/interfaces/user.interface';
 import { RequestAuthData } from '@/auth/interfaces/request-auth-data.interface';
 

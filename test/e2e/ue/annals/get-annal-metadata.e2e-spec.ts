@@ -1,13 +1,13 @@
 import * as pactum from 'pactum';
 import {
-  createUser,
+  createAnnalType,
   createBranch,
   createBranchOption,
   createSemester,
   createUe,
   createUeSubscription,
-  createAnnalType,
   createUeof,
+  createUser,
 } from '#/utils/fakedb';
 import { e2eSuite } from '#/utils/test_utils';
 import { ERROR_CODE } from '@/exceptions';
