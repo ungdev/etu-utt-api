@@ -1,5 +1,4 @@
-import { Language, Permission } from '@/prisma/types';
-import { Translation } from '@/prisma/types';
+import { Language, Permission , Translation } from '@/prisma/types';
 import { ApiPermission, UserPermission } from '@/auth/interfaces/permissions.interface';
 
 /**

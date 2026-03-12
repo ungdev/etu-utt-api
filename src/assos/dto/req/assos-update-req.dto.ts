@@ -5,8 +5,8 @@ import {
   IsOptional,
   IsPhoneNumber,
   IsString,
-  IsUrl,
   IsUUID,
+  IsUrl,
   ValidateNested,
 } from 'class-validator';
 import { TranslationReqDto } from '@/app.dto';

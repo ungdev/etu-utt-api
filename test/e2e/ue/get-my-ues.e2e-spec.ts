@@ -5,8 +5,8 @@ import {
   createBranchOption,
   createSemester,
   createUe,
-  createUeof,
   createUeSubscription,
+  createUeof,
   createUser,
 } from '#/utils/fakedb';
 import { ERROR_CODE } from '@/exceptions';

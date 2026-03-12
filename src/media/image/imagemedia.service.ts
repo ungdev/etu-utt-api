@@ -1,7 +1,7 @@
-import { createReadStream, ReadStream } from 'fs';
+import { ReadStream, createReadStream } from 'fs';
 import { rm, writeFile } from 'fs/promises';
 import { Injectable } from '@nestjs/common';
-import { RawImageMedia, ImageMediaPreset } from '@/prisma/types';
+import { ImageMediaPreset, RawImageMedia } from '@/prisma/types';
 import { ConfigService, isTestEnv } from '@/config/config.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { MulterWithMime } from '@/upload.interceptor';

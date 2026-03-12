@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@/prisma/types';
+import { Prisma , RawAssoMembershipRole } from '@/prisma/types';
 import { ConfigService } from '@/config/config.service';
 import { PrismaService } from '@/prisma/prisma.service';
-import { RawAssoMembershipRole } from '@/prisma/types';
 import { Asso } from '@/assos/interfaces/asso.interface';
 import { AssoMembership } from '@/assos/interfaces/membership.interface';
 import { AssoMembershipRole } from '@/assos/interfaces/membership-role.interface';

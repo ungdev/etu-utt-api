@@ -1,12 +1,12 @@
 import {
-  createUser,
-  createUe,
-  createCriterion,
-  createBranchOption,
   createBranch,
+  createBranchOption,
+  createCriterion,
   createSemester,
+  createUe,
   createUeSubscription,
   createUeof,
+  createUser,
 } from '#/utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '@/exceptions';

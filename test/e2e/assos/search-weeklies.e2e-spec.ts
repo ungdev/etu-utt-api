@@ -1,9 +1,9 @@
 import { Dummies, e2eSuite } from '#/utils/test_utils';
 import {
-  createAsso, createAssoWeekly,
-  createAssoMembership,
+  createAsso, createAssoMembership,
   createAssoMembershipPermission,
   createAssoMembershipRole,
+  createAssoWeekly,
   createUser,
 } from '#/utils/fakedb';
 import * as pactum from 'pactum';

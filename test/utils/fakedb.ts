@@ -1,49 +1,48 @@
 import {
+  ImageMediaPreset,
+  Permission,
+  RawAnnalType,
+  RawApiApplication,
+  RawApiKey,
   RawAsso,
   RawAssoMembership,
-  RawAssoMembershipRole,
   RawAssoMembershipPermission,
+  RawAssoMembershipRole,
   RawBranch,
   RawBranchOption,
   RawCreditCategory,
   RawHomepageWidget,
+  RawImageMedia,
   RawSemester,
   RawTimetableEntry,
   RawTimetableEntryOverride,
   RawTimetableGroup,
   RawUe,
-  RawUeof,
-  RawAnnalType,
   RawUeComment,
   RawUeCommentReply,
   RawUeCommentUpvote,
   RawUeCredit,
-  RawUeofInfo,
   RawUeStarCriterion,
   RawUeStarVote,
   RawUeWorkTime,
+  RawUeof,
+  RawUeofInfo,
   RawUser,
   RawUserAddress,
   RawUserBranchSubscription,
   RawUserInfos,
   RawUserMailsPhones,
   RawUserPreference,
-  RawUserSocialNetwork,
-  RawUserUeSubscription,
-  Translation,
   RawUserPrivacy,
-  RawApiKey,
-  RawApiApplication,
-  RawImageMedia,
-} from '@/prisma/types';
+  RawUserSocialNetwork,
+ RawUserUeSubscription, Sex, TimetableEntryType, Translation, UserType } from '@/prisma/types';
 import { faker } from '@faker-js/faker';
 import { AuthService } from '@/auth/auth.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { AppProvider } from '#/utils/test_utils';
-import { ImageMediaPreset, Permission, Sex, TimetableEntryType, UserType } from '@/prisma/types';
 import { CommentStatus } from '@/ue/comments/interfaces/comment.interface';
 import { UeAnnalFile } from '@/ue/annals/interfaces/annal.interface';
-import { omit, PermissionManager, pick, translationSelect } from '@/utils';
+import { PermissionManager, omit, pick, translationSelect } from '@/utils';
 import { DEFAULT_APPLICATION } from '#/../prisma/seed/utils';
 import { AssoWeekly } from '@/assos/interfaces/weekly.interface';
 

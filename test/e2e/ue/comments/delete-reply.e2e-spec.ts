@@ -1,14 +1,14 @@
 import {
-  createUser,
-  createUe,
-  createComment,
   createBranch,
   createBranchOption,
-  createSemester,
+  createComment,
   createCommentReply,
+  createSemester,
+  createUe,
   createUeof,
+  createUser,
 } from '#/utils/fakedb';
-import { e2eSuite, Dummies } from '#/utils/test_utils';
+import { Dummies, e2eSuite } from '#/utils/test_utils';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '@/exceptions';
 import { CommentStatus } from '@/ue/comments/interfaces/comment.interface';

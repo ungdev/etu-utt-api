@@ -1,4 +1,4 @@
-import { getOperationResults, PrismaClient, PrismaOperationResult } from '../make-migration';
+import { PrismaClient, PrismaOperationResult, getOperationResults } from '../make-migration';
 import { RawBranch, RawBranchOption } from '@/prisma/types';
 
 export async function createBranches(prisma: PrismaClient) {

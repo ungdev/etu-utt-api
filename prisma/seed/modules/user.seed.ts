@@ -1,4 +1,4 @@
-import { PrismaClient, Sex, RawUser } from '@/prisma/types';
+import { PrismaClient, RawUser, Sex } from '@/prisma/types';
 import { faker } from '@faker-js/faker';
 import { DEFAULT_APPLICATION } from '../utils';
 import { AuthService } from '@/auth/auth.service';

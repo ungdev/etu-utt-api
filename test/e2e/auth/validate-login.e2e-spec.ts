@@ -1,5 +1,5 @@
 import * as pactum from 'pactum';
-import { e2eSuite, JsonLike } from '#/utils/test_utils';
+import { JsonLike, e2eSuite } from '#/utils/test_utils';
 import { AuthService } from '@/auth/auth.service';
 import { ERROR_CODE } from '@/exceptions';
 import * as fakedb from '#/utils/fakedb';

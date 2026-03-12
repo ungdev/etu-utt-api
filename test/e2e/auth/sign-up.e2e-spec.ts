@@ -1,4 +1,4 @@
-import { e2eSuite, JsonLike } from '#/utils/test_utils';
+import { JsonLike, e2eSuite } from '#/utils/test_utils';
 import * as pactum from 'pactum';
 import { faker } from '@faker-js/faker';
 import { JwtService } from '@nestjs/jwt';

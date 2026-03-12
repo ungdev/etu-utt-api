@@ -1,5 +1,5 @@
-import { omit, PermissionManager } from '@/utils';
-import { createUser, createCriterion, FakeUeStarCriterion } from '#/utils/fakedb';
+import { PermissionManager, omit } from '@/utils';
+import { FakeUeStarCriterion, createCriterion, createUser } from '#/utils/fakedb';
 import { e2eSuite } from '#/utils/test_utils';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '@/exceptions';

@@ -7,22 +7,22 @@ import { UeCommentReply } from '@/ue/comments/interfaces/comment-reply.interface
 import { Criterion } from '@/ue/interfaces/criterion.interface';
 import { UeRating } from '@/ue/interfaces/rate.interface';
 import {
-  FakeUeAnnalType,
-  FakeUser,
-  FakeHomepageWidget,
-  FakeAsso,
-  FakeUeCreditCategory,
   FakeApiApplication,
-  FakeAssoMembershipRole,
+  FakeAsso,
   FakeAssoMembership,
-  FakeImageMedia,
+  FakeAssoMembershipRole,
   FakeAssoWeekly,
+  FakeHomepageWidget,
+  FakeImageMedia,
+  FakeUeAnnalType,
+  FakeUeCreditCategory,
+  FakeUser,
 } from '#/utils/fakedb';
 import { UeAnnalFile } from '@/ue/annals/interfaces/annal.interface';
 import { ConfigService } from '@/config/config.service';
 import { AppProvider, JsonLike } from '#/utils/test_utils';
-import { getTranslation, omit, PermissionManager, pick } from '@/utils';
-import { regex, string, uuid, int } from 'pactum-matchers';
+import { PermissionManager, getTranslation, omit, pick } from '@/utils';
+import { int, regex, string, uuid } from 'pactum-matchers';
 import { Language } from '@/prisma/types';
 import { DEFAULT_APPLICATION } from '#/../prisma/seed/utils';
 import ApplicationResDto from '@/auth/application/dto/res/application-res.dto';

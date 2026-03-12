@@ -4,9 +4,9 @@ import {
   $getStateChange,
   $setState,
   BaseStaticNodeConfig,
-  createState,
   EditorConfig,
   TextNode,
+  createState,
 } from 'lexical';
 
 export enum Color {

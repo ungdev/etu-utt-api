@@ -1,4 +1,4 @@
-import { e2eSuite, JsonLike } from '#/utils/test_utils';
+import { JsonLike, e2eSuite } from '#/utils/test_utils';
 import * as cas from '#/external_services/cas';
 import * as fakedb from '#/utils/fakedb';
 import * as pactum from 'pactum';
