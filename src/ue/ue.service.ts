@@ -5,8 +5,8 @@ import { UeRateReqDto } from './dto/req/ue-rate-req.dto';
 import { Ue } from './interfaces/ue.interface';
 import { Criterion } from './interfaces/criterion.interface';
 import { UeRating } from './interfaces/rate.interface';
-import { ConfigModule } from '../config/config.module';
-import { Language, Prisma } from '@prisma/client';
+import { ConfigService } from '../config/config.service';
+import { Language, Prisma } from '../prisma/types';
 import { SemesterService } from '../semester/semester.service';
 import { RawUserUeSubscription } from 'src/prisma/types';
 
@@ -14,7 +14,7 @@ import { RawUserUeSubscription } from 'src/prisma/types';
 export class UeService {
   constructor(
     readonly prisma: PrismaService,
-    readonly config: ConfigModule,
+    readonly config: ConfigService,
     readonly semesterService: SemesterService,
   ) {}
 

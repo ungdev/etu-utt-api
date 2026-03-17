@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Patch, Post, Query } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Permission } from '@prisma/client';
+import { Permission } from '../../prisma/types';
 import { ApiAppErrorResponse, paginatedResponseDto } from '../../app.dto';
 import { UUIDParam } from '../../app.pipe';
 import { GetUser, RequireApiPermission } from '../../auth/decorator';

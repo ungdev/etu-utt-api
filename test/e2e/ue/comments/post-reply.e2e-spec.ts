@@ -53,7 +53,6 @@ const PostCommmentReply = e2eSuite('POST /ue/comments/{commentId}/reply', (app) 
       .spec()
       .withBearerToken(user.token)
       .post(`/ue/comments/${comment.id}/reply`)
-      .withBody(undefined)
       .expectAppError(ERROR_CODE.BODY_MISSING);
   });
 
@@ -109,22 +108,20 @@ const PostCommmentReply = e2eSuite('POST /ue/comments/{commentId}/reply', (app) 
       .withBody({
         body: 'heyhey',
       })
-      .expectUeCommentReply(
-        {
-          id: JsonLike.UUID,
-          author: {
-            id: user.id,
-            lastName: user.lastName,
-            firstName: user.firstName,
-          },
-          body: 'heyhey',
-          createdAt: JsonLike.DATE,
-          updatedAt: JsonLike.DATE,
-          status: CommentStatus.ACTIVE,
-          reports: [],
+      .created()
+      .expectUeCommentReply({
+        id: JsonLike.UUID,
+        author: {
+          id: user.id,
+          lastName: user.lastName,
+          firstName: user.firstName,
         },
-        true,
-      );
+        body: 'heyhey',
+        createdAt: JsonLike.DATE,
+        updatedAt: JsonLike.DATE,
+        status: CommentStatus.ACTIVE,
+        reports: [],
+      });
     return app().get(PrismaService).ueCommentReply.deleteMany();
   });
 });

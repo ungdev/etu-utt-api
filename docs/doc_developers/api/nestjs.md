@@ -228,7 +228,7 @@ export class DummyModule {}
 ```
 
 ```{tip}
-L'API de EtuUTT utilise des guards personnalisés, ils sont listés [ici](#outils-specifiques-de-etuutt).
+L'API de EtuUTT utilise des guards personnalisés, ils sont listés [ici](#outils-spécifiques-du-site-étu).
 ```
 
 ### Les interceptors [_(docs)_](https://docs.nestjs.com/interceptors)
@@ -292,7 +292,7 @@ Voici une illustration qui permet de récapituler les différentes étapes dans 
 
 ### La gestion des erreurs
 
-Nous avons implémenté des messages d'erreurs customisés, voir la page sur [la gestion des erreurs]().
+Nous avons implémenté des messages d'erreurs customisés, voir la page sur [la gestion des erreurs](errors.md).
 
 ### L'authentification nécessaire par défaut
 

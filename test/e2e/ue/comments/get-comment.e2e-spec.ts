@@ -12,7 +12,7 @@ import {
   createUser,
 } from '../../../utils/fakedb';
 import { e2eSuite } from '../../../utils/test_utils';
-import { ConfigModule } from '../../../../src/config/config.module';
+import { ConfigService } from '../../../../src/config/config.service';
 import { ERROR_CODE } from 'src/exceptions';
 import { PrismaService } from '../../../../src/prisma/prisma.service';
 import { PermissionManager } from '../../../../src/utils';
@@ -109,12 +109,10 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
             ? (<Date>b.createdAt).getTime() - (<Date>a.createdAt).getTime()
             : b.upvotes - a.upvotes,
         )
-        .slice(0, app().get(ConfigModule).PAGINATION_PAGE_SIZE)
-        .map((comment) => {
-          return { ...comment, ue };
-        }),
+        .slice(0, app().get(ConfigService).PAGINATION_PAGE_SIZE)
+        .map((comment) => ({ ...comment, ue })),
       itemCount: comments.length,
-      itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
+      itemsPerPage: app().get(ConfigService).PAGINATION_PAGE_SIZE,
     };
     return pactum
       .spec()
@@ -149,12 +147,10 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
               ? (<Date>b.createdAt).getTime() - (<Date>a.createdAt).getTime()
               : b.upvotes - a.upvotes,
           )
-          .slice(app().get(ConfigModule).PAGINATION_PAGE_SIZE, app().get(ConfigModule).PAGINATION_PAGE_SIZE * 2)
-          .map((comment) => {
-            return { ...comment, ue };
-          }),
+          .slice(app().get(ConfigService).PAGINATION_PAGE_SIZE, app().get(ConfigService).PAGINATION_PAGE_SIZE * 2)
+          .map((comment) => ({ ...comment, ue })),
         itemCount: comments.length,
-        itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
+        itemsPerPage: app().get(ConfigService).PAGINATION_PAGE_SIZE,
       });
   });
 
@@ -178,9 +174,9 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
             : b.upvotes - a.upvotes,
         )
         .map((comment) => ({ ...comment, ue }))
-        .slice(0, app().get(ConfigModule).PAGINATION_PAGE_SIZE),
+        .slice(0, app().get(ConfigService).PAGINATION_PAGE_SIZE),
       itemCount: comments.length,
-      itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
+      itemsPerPage: app().get(ConfigService).PAGINATION_PAGE_SIZE,
     };
     return pactum
       .spec()

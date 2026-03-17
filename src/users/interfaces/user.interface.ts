@@ -1,6 +1,5 @@
-import { Prisma, PrismaClient } from '@prisma/client';
 import { generateCustomModel, RequestType } from '../../prisma/prisma.service';
-import { Translation } from '../../prisma/types';
+import { Prisma, PrismaClient, Translation } from '../../prisma/types';
 
 const USER_SELECT_FILTER = {
   select: {
@@ -66,7 +65,7 @@ const USER_SELECT_FILTER = {
       select: {
         wantDayNotif: true,
         language: true,
-        wantDaymail: true,
+        wantWeekly: true,
         wantDiscordUtt: true,
       },
     },

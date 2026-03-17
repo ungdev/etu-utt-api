@@ -61,5 +61,4 @@ interface LdapUserAsso {
   gidNumber: LdapAccountGroup.ASSOCIATIONS;
   /** Name of the association */
   displayName: string;
-
 }

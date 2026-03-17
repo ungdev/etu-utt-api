@@ -1,7 +1,6 @@
 import { faker } from '@faker-js/faker';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from 'src/exceptions';
-import { ConfigModule } from '../../../../src/config/config.module';
 import { PrismaService } from '../../../../src/prisma/prisma.service';
 import {
   createBranch,
@@ -18,8 +17,9 @@ import {
   FakeComment,
 } from '../../../utils/fakedb';
 import { e2eSuite } from '../../../utils/test_utils';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '../../../../src/prisma/build/client';
 import { PermissionManager } from '../../../../src/utils';
+import { ConfigService } from '../../../../src/config/config.service';
 
 const GetReportedComments = e2eSuite('GET /ue/comments/reports', (app) => {
   const userModerator = createUser(app, {
@@ -112,9 +112,9 @@ const GetReportedComments = e2eSuite('GET /ue/comments/reports', (app) => {
       });
 
     const commentsFiltered = {
-      items: comments.slice(0, app().get(ConfigModule).PAGINATION_PAGE_SIZE),
+      items: comments.slice(0, app().get(ConfigService).PAGINATION_PAGE_SIZE),
       itemCount: comments.length,
-      itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
+      itemsPerPage: app().get(ConfigService).PAGINATION_PAGE_SIZE,
     };
     return pactum
       .spec()
@@ -136,11 +136,11 @@ const GetReportedComments = e2eSuite('GET /ue/comments/reports', (app) => {
         },
         where: reportedCommentsWhereClause,
       });
-    const PAGINATION_PAGE_SIZE = app().get(ConfigModule).PAGINATION_PAGE_SIZE;
+    const PAGINATION_PAGE_SIZE = app().get(ConfigService).PAGINATION_PAGE_SIZE;
     const commentsFiltered = {
       items: comments.slice(PAGINATION_PAGE_SIZE, 2 * PAGINATION_PAGE_SIZE),
       itemCount: comments.length,
-      itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
+      itemsPerPage: app().get(ConfigService).PAGINATION_PAGE_SIZE,
     };
     return pactum
       .spec()
@@ -179,7 +179,7 @@ const GetReportedComments = e2eSuite('GET /ue/comments/reports', (app) => {
         },
         where: reportedCommentsWhereClause,
       });
-    const PAGINATION_PAGE_SIZE = app().get(ConfigModule).PAGINATION_PAGE_SIZE;
+    const PAGINATION_PAGE_SIZE = app().get(ConfigService).PAGINATION_PAGE_SIZE;
     const commentsFiltered = {
       items: comments.slice(0, PAGINATION_PAGE_SIZE),
       itemCount: comments.length,

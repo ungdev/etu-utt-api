@@ -34,18 +34,25 @@ import {
   RawUserPrivacy,
   RawApiKey,
   RawApiApplication,
+  RawImageMedia,
   RawUeCommentReport,
   RawUeCommentReplyReport,
+  RawUeCommentReportReason,
+  ImageMediaPreset,
+  Permission,
+  Sex,
+  TimetableEntryType,
+  UserType,
 } from '../../src/prisma/types';
 import { faker } from '@faker-js/faker';
 import { AuthService } from '../../src/auth/auth.service';
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { AppProvider } from './test_utils';
-import { Permission, Sex, TimetableEntryType, UeCommentReportReason, UserType } from '@prisma/client';
 import { CommentStatus } from '../../src/ue/comments/interfaces/comment.interface';
 import { AnnalStatus, UeAnnalFile } from '../../src/ue/annals/interfaces/annal.interface';
 import { omit, PermissionManager, pick, translationSelect } from '../../src/utils';
 import { DEFAULT_APPLICATION } from '../../prisma/seed/utils';
+import { AssoWeekly } from '../../src/assos/interfaces/weekly.interface';
 
 /**
  * The fake entities can be used like normal entities in the <code>it(string, () => void)</code> functions.
@@ -118,7 +125,7 @@ export type FakeCommentReply = Partial<RawUeCommentReply> & {
 };
 export type FakeCommentReport = Partial<RawUeCommentReport>;
 export type FakeCommentReplyReport = Partial<RawUeCommentReplyReport>;
-export type FakeCommentReportReason = Partial<UeCommentReportReason>;
+export type FakeCommentReportReason = Partial<RawUeCommentReportReason>;
 export type FakeUeCreditCategory = Partial<RawCreditCategory>;
 export type FakeUeAnnalType = Partial<RawAnnalType>;
 export type FakeUeAnnal = Partial<UeAnnalFile>;
@@ -126,6 +133,8 @@ export type FakeHomepageWidget = Partial<RawHomepageWidget>;
 export type FakeApiApplication = Partial<Omit<RawApiApplication, 'ownerId'>> & {
   owner: { id: string; firstName: string; lastName: string };
 };
+export type FakeImageMedia = Partial<RawImageMedia>;
+export type FakeAssoWeekly = Partial<Pick<AssoWeekly, 'id' | 'assoId' | 'date' | 'createdAt' | 'title' | 'message'>>;
 
 export interface FakeEntityMap {
   assoMembership: {
@@ -151,6 +160,11 @@ export interface FakeEntityMap {
     entity: FakeAsso;
     params: CreateAssoParameters;
   };
+  assoWeekly: {
+    entity: FakeAssoWeekly;
+    params: CreateAssoWeeklyParameters;
+    deps: { asso: FakeAsso };
+  }
   timetableEntryOverride: {
     entity: Partial<FakeTimetableEntryOverride>;
     params: CreateTimetableEntryOverrideParameters;
@@ -225,17 +239,17 @@ export interface FakeEntityMap {
   };
   commentReport: {
     entity: FakeCommentReport;
-    params: CreateCommentReport;
+    params: CreateCommentReportParameters;
     deps: { comment: FakeComment; user: FakeUser; reason: FakeCommentReportReason };
   };
   commentReplyReport: {
     entity: FakeCommentReplyReport;
-    params: CreateCommentReplyReport;
+    params: CreateCommentReplyReportParameters;
     deps: { reply: FakeCommentReply; user: FakeUser; reason: FakeCommentReportReason };
   };
   commentReportReason: {
     entity: FakeCommentReportReason;
-    params: CreateCommentReportReason;
+    params: CreateCommentReportReasonParameters;
   };
   ueCreditCategory: {
     entity: FakeUeCreditCategory;
@@ -266,6 +280,10 @@ export interface FakeEntityMap {
     entity: FakeApiApplication;
     params: CreateApiApplicationParameter;
     deps: { owner: FakeUser };
+  };
+  imageMedia: {
+    entity: FakeImageMedia;
+    params: CreateImageMediaParameter;
   };
 }
 
@@ -563,6 +581,39 @@ export const createAsso = entityFaker(
       .assoMembershipRole.findFirst({ where: { assoId: asso.id } });
     return { ...asso, president: null, presidentRole: presidentRole };
   },
+);
+
+export type CreateAssoWeeklyParameters = FakeAssoWeekly;
+export const createAssoWeekly = entityFaker(
+  'assoWeekly',
+  {
+    date: new Date,
+    title: {
+      fr: faker.company.catchPhrase,
+      en: faker.company.catchPhrase,
+      es: faker.company.catchPhrase,
+      de: faker.company.catchPhrase,
+      zh: faker.company.catchPhrase,
+    },
+    message: {
+      fr: faker.company.catchPhrase,
+      en: faker.company.catchPhrase,
+      es: faker.company.catchPhrase,
+      de: faker.company.catchPhrase,
+      zh: faker.company.catchPhrase,
+    }
+  },
+  async (app, deps, params) => {
+    return app().get(PrismaService).normalize.assoWeekly.create({
+      data: {
+        id: params.id,
+        titleTranslation: { create: params.title },
+        bodyTranslation: { create: params.message },
+        asso: { connect: { id: deps.asso.id } },
+        date: params.date,
+      },
+    })
+  }
 );
 
 export type CreateTimetableGroupParams = { users?: Array<{ user: FakeUser; priority: number }> };
@@ -1060,7 +1111,7 @@ export const createCommentReply = entityFaker(
     return { ...rawFakeReply, status: params.status };
   },
 );
-export type CreateCommentReport = FakeCommentReport;
+export type CreateCommentReportParameters = FakeCommentReport;
 export const createCommentReport = entityFaker(
   'commentReport',
   {
@@ -1094,7 +1145,7 @@ export const createCommentReport = entityFaker(
       });
   },
 );
-export type CreateCommentReplyReport = FakeCommentReplyReport;
+export type CreateCommentReplyReportParameters = FakeCommentReplyReport;
 export const createCommentReplyReport = entityFaker(
   'commentReplyReport',
   {
@@ -1129,7 +1180,7 @@ export const createCommentReplyReport = entityFaker(
   },
 );
 
-export type CreateCommentReportReason = FakeCommentReportReason;
+export type CreateCommentReportReasonParameters = FakeCommentReportReason;
 export const createCommentReportReason = entityFaker(
   'commentReportReason',
   {
@@ -1206,6 +1257,19 @@ export const createApplication = entityFaker(
       }),
 );
 
+export type CreateImageMediaParameter = Omit<FakeImageMedia, 'uploadedAt' | 'uploaderId'>;
+export const createImageMedia = entityFaker(
+  'imageMedia',
+  {
+    height: faker.number.int({ min: 100, max: 4000 }),
+    width: faker.number.int({ min: 100, max: 4000 }),
+    isPublic: faker.datatype.boolean,
+    size: faker.number.int({ min: 1000, max: 10_000_000 }),
+    preset: faker.helpers.enumValue(ImageMediaPreset),
+  },
+  async (app, params) => app().get(PrismaService).imageMedia.create({ data: params }),
+);
+
 /**
  * The return type of a fake function, either Promise<FakeEntity> or FakeEntity depending on whether OnTheFly is true or false
  */
@@ -1262,7 +1326,7 @@ function deeplyCallFunctions<T>(params: T) {
     for (const key in params) {
       if (typeof params[key] === 'function') {
         params[key] = (params[key] as () => T[Extract<keyof T, string>])();
-      } else if (typeof params[key] === 'object') {
+      } else if (typeof params[key] === 'object' && !(params[key] instanceof Date)) {
         deeplyCallFunctions(params[key]);
       }
     }

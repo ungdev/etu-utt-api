@@ -16,7 +16,7 @@ import { ApiAppErrorResponse } from '../../app.dto';
 import UeAnnalResDto from './dto/res/ue-annal-res.dto';
 import UeAnnalMetadataResDto from './dto/res/ue-annal-metadata-res.dto';
 import { GetPermissions } from '../../auth/decorator/get-permissions.decorator';
-import { Permission } from '@prisma/client';
+import { Permission } from '../../prisma/types';
 import { omit, PermissionManager } from '../../utils';
 import { AnnalStatus } from './interfaces/annal.interface';
 

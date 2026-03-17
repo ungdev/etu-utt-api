@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
-import { Prisma, UserType } from '@prisma/client';
+import { Prisma, UserType } from '../prisma/types';
 import { JwtService } from '@nestjs/jwt';
 import { AppException, ERROR_CODE } from '../exceptions';
-import { ConfigModule } from '../config/config.module';
+import { ConfigService } from '../config/config.service';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import { XMLParser } from 'fast-xml-parser';
@@ -36,7 +36,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwt: JwtService,
-    private config: ConfigModule,
+    private config: ConfigService,
     private httpService: HttpService,
     private ldap: LdapModule,
     private ueService: UeService,

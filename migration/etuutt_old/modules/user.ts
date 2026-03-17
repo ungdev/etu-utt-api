@@ -1,4 +1,4 @@
-import { PrismaClient, UserType } from '@prisma/client';
+import { PrismaClient, UserType } from '../../../src/prisma/types';
 import { QueryFunction } from '../make-migration';
 import { RawSemester, RawUe, RawUser } from '../../../src/prisma/types';
 
@@ -72,7 +72,7 @@ export async function migrateUsers(
           },
           preference: {
             create: {
-              wantDaymail: user.daymail,
+              wantWeekly: user.daymail,
               language: user.language,
               wantDayNotif: false,
               wantDiscordUtt: user.wantsJoinUTTDiscord,

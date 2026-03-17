@@ -12,7 +12,7 @@ import {
 } from '../../../utils/fakedb';
 import { Dummies, e2eSuite } from '../../../utils/test_utils';
 import { ERROR_CODE } from '../../../../src/exceptions';
-import { AnnalStatus } from 'src/ue/annals/interfaces/annal.interface';
+import { AnnalStatus } from '../../../../src/ue/annals/interfaces/annal.interface';
 import { PermissionManager } from '../../../../src/utils';
 
 const GetAnnalFile = e2eSuite('GET /ue/annals/{annalId}', (app) => {

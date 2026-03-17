@@ -1,20 +1,8 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  ParseIntPipe,
-  ParseUUIDPipe,
-  Patch,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import TimetableService from './timetable.service';
 import { GetUser } from '../auth/decorator';
 import { User } from '../users/interfaces/user.interface';
-import { PositiveNumberValidationPipe, regex, RegexPipe } from '../app.pipe';
+import { IntParam, PositiveIntParam, regex, RegexPipe } from '../app.pipe';
 import TimetableCreateEntryReqDto from './dto/req/timetable-create-entry-req.dto';
 import TimetableUpdateEntryReqDto from './dto/req/timetable-update-entry-req.dto';
 import { DetailedTimetableEntry, ResponseDetailedTimetableEntry } from './interfaces/timetable.interface';
@@ -34,9 +22,9 @@ export class TimetableController {
 
   @Get('/current/daily/:date/:month/:year')
   async getSelfDaily(
-    @Param('date', ParseIntPipe) date: number,
-    @Param('month', ParseIntPipe) month: number,
-    @Param('year', ParseIntPipe) year: number,
+    @IntParam('date') date: number,
+    @IntParam('month') month: number,
+    @IntParam('year') year: number,
     @GetUser() user: User,
   ) {
     const dateObject = new Date(year, month - 1, date);
@@ -51,10 +39,10 @@ export class TimetableController {
 
   @Get('/current/:daysCount/:date/:month/:year')
   async getSelfTimetable(
-    @Param('daysCount', PositiveNumberValidationPipe) daysCount: number,
-    @Param('date', PositiveNumberValidationPipe) date: number,
-    @Param('month', PositiveNumberValidationPipe) month: number,
-    @Param('year', PositiveNumberValidationPipe) year: number,
+    @PositiveIntParam('daysCount') daysCount: number,
+    @PositiveIntParam('date') date: number,
+    @PositiveIntParam('month') month: number,
+    @PositiveIntParam('year') year: number,
     @GetUser() user: User,
   ) {
     const dateObject = new Date(year, month - 1, date);

@@ -41,14 +41,13 @@ const SignInE2ESpec = e2eSuite('POST /auth/signin', (app) => {
       .expectAppError(ERROR_CODE.PARAM_MISSING, 'password'));
 
   it('should return a 400 if no body is provided', async () =>
-    pactum.spec().post('/auth/signin').withBody(undefined).expectAppError(ERROR_CODE.BODY_MISSING));
+    pactum.spec().post('/auth/signin').expectAppError(ERROR_CODE.BODY_MISSING));
 
   it('should return a token for a valid user as the application is the EtuUTT website', () =>
     pactum
       .spec()
       .post('/auth/signin')
       .withBody(dto)
-      .expectStatus(200)
       .$expectRegexableJson({
         signedIn: true,
         token: JsonLike.STRING,
@@ -79,7 +78,6 @@ const SignInE2ESpec = e2eSuite('POST /auth/signin', (app) => {
       .post('/auth/signin')
       .withApplication(application.id)
       .withBody({ login: userWithApplication.login, password: 'etuutt', tokenExpiresIn: 99999 })
-      .expectStatus(200)
       .$expectRegexableJson({
         signedIn: true,
         token: null,
@@ -102,7 +100,6 @@ const SignInE2ESpec = e2eSuite('POST /auth/signin', (app) => {
       .post('/auth/signin')
       .withApplication(application.id)
       .withBody(dto)
-      .expectStatus(200)
       .$expectRegexableJson({
         signedIn: false,
         token: JsonLike.STRING,

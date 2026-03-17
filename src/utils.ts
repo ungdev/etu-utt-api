@@ -1,4 +1,4 @@
-import { Language, Permission } from '@prisma/client';
+import { Language, Permission } from './prisma/types';
 import { Translation } from './prisma/types';
 import { ApiPermission, UserPermission } from './auth/interfaces/permissions.interface';
 
@@ -56,6 +56,12 @@ export const translationSelect = {
     zh: true,
   },
 };
+
+const exhaustiveLanguage = <CheckArray extends readonly Language[]>(array: (
+  [Language] extends [CheckArray[number]]
+    ? CheckArray
+    : 'Missing some values from Language')) => array;
+export const languages = exhaustiveLanguage(['fr', 'en', 'es', 'de', 'zh']);
 
 export class PermissionManager {
   public readonly hardPermissions: Permission[];

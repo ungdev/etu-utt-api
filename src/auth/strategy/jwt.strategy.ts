@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PrismaService } from '../../prisma/prisma.service';
-import { ConfigModule } from '../../config/config.module';
+import { ConfigService } from '../../config/config.service';
 import { RequestAuthData } from '../interfaces/request-auth-data.interface';
 import { PermissionManager } from '../../utils';
 import { UserPermission } from '../interfaces/permissions.interface';
@@ -10,7 +10,7 @@ import { UserPermission } from '../interfaces/permissions.interface';
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(
-    config: ConfigModule,
+    config: ConfigService,
     private prisma: PrismaService,
   ) {
     super({

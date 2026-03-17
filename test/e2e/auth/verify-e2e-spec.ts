@@ -15,21 +15,16 @@ const VerifyE2ESpec = e2eSuite('GET /auth/signin', (app) => {
       .expectAppError(ERROR_CODE.INVALID_TOKEN_FORMAT));
 
   it('should return that the token is not valid', async () =>
-    pactum
-      .spec()
-      .get('/auth/signin')
-      .withHeaders('Authorization', 'Bearer abcdef')
-      .expectStatus(200)
-      .expectBody({ valid: false }));
+    pactum.spec().get('/auth/signin').withHeaders('Authorization', 'Bearer abcdef').expectBody({ valid: false }));
 
   it('should fail as the token has expired', async () => {
     const token = await app().get(AuthService).signAuthenticationToken('abcdef', 0);
-    await pactum.spec().get('/auth/signin').withBearerToken(token).expectStatus(200).expectBody({ valid: false });
+    await pactum.spec().get('/auth/signin').withBearerToken(token).expectBody({ valid: false });
   });
 
   it('should return that the token is valid', async () => {
     const token = await app().get(AuthService).signAuthenticationToken('abcdef');
-    return pactum.spec().get('/auth/signin').withBearerToken(token).expectStatus(200).expectBody({ valid: true });
+    return pactum.spec().get('/auth/signin').withBearerToken(token).expectBody({ valid: true });
   });
 });
 

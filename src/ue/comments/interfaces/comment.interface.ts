@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '../../../prisma/types';
 import { RequestType, generateCustomModel } from '../../../prisma/prisma.service';
 import { REPLY_SELECT_FILTER, UeCommentReply, formatReply } from './comment-reply.interface';
 import { omit } from '../../../utils';
@@ -75,7 +75,7 @@ const COMMENT_SELECT_FILTER = {
   ],
 } satisfies Partial<RequestType<'ueComment'>>;
 
-export type UEExtraArgs = {
+export type UeExtraArgs = {
   userId: string;
   /**
    * If true this will include deleted comments and deleted replies
@@ -123,7 +123,7 @@ export function generateCustomCommentModel(prisma: PrismaClient) {
     'ueComment',
     COMMENT_SELECT_FILTER,
     formatComment,
-    async (query, args: UEExtraArgs) => {
+    async (query, args: UeExtraArgs) => {
       if ('data' in query && !('where' in query)) {
         // CREATE operation → skip where filters
         return query;
@@ -144,14 +144,14 @@ export function generateCustomCommentModel(prisma: PrismaClient) {
   );
 }
 
-export function formatComment(prisma: PrismaClient, comment: UnformattedUeComment, args: UEExtraArgs): UeComment {
+export function formatComment(prisma: PrismaClient, comment: UnformattedUeComment, args: UeExtraArgs): UeComment {
   const bypassAnonymousData = !!args.bypassAnonymousData;
   const includeReports = !!args.includeReports;
   return {
     ...omit(
       comment,
       'deletedAt',
-      !comment.isAnonymous || bypassAnonymousData || args.userId == comment.author.id ? undefined : 'author',
+      !comment.isAnonymous || bypassAnonymousData || args.userId === comment.author.id ? undefined : 'author',
     ),
     answers: comment.answers
       .filter((answer) => args.includeDeleted || answer.deletedAt === null)

@@ -1,27 +1,33 @@
 import { ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
-import { IsPublic } from '../decorator';
+import { IsPublic, SkipApplicationCheck } from '../decorator';
 import { AppException, ERROR_CODE } from '../../exceptions';
 import { RequestAuthData } from '../interfaces/request-auth-data.interface';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PermissionManager } from '../../utils';
+import { RawApiApplication } from '../../prisma/types';
 
 @Injectable()
 export class JwtGuard extends AuthGuard('jwt') {
-  constructor(private reflector: Reflector, private prisma: PrismaService) {
+  constructor(
+    private reflector: Reflector,
+    private prisma: PrismaService,
+  ) {
     super();
   }
 
   async canActivate(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest() as { user: RequestAuthData };
+    const canSkipApplicationHeader = this.reflector.get(SkipApplicationCheck, context.getHandler());
     const applicationId = context.switchToHttp().getRequest().headers['x-application'];
-    if (!applicationId) throw new AppException(ERROR_CODE.APPLICATION_HEADER_MISSING);
-    const application = await this.prisma.apiApplication.findUnique({
-      where: { id: applicationId },
-    });
-    if (!application) {
-      throw new AppException(ERROR_CODE.NO_SUCH_APPLICATION, applicationId);
+    let application: RawApiApplication | null = null;
+    if (!applicationId && !canSkipApplicationHeader) throw new AppException(ERROR_CODE.APPLICATION_HEADER_MISSING);
+    else if (applicationId) {
+      application = await this.prisma.apiApplication.findUnique({
+        where: { id: applicationId },
+      });
+      if (!application) throw new AppException(ERROR_CODE.NO_SUCH_APPLICATION, applicationId);
     }
     // Check whether the user is logged in
     let loggedIn = true;

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '../../prisma/build/client';
 import { ConfigModule } from '../../config/config.module';
 import { PrismaService } from '../../prisma/prisma.service';
 import { omit, pick } from '../../utils';
@@ -11,14 +11,15 @@ import GetUeCommentsReqDto from './dto/req/ue-get-comments-req.dto';
 import GetReportedCommentsReqDto from './dto/req/ue-get-reported-comments-req.dto';
 import UeCommentReportResDto from './dto/res/ue-comment-report-res.dto';
 import { UeCommentReply } from './interfaces/comment-reply.interface';
-import { UeComment } from './interfaces/comment.interface';
+import { CommentStatus, UeComment } from './interfaces/comment.interface';
+import { ConfigService } from '../../config/config.service';
 import { UeService } from '../ue.service';
 
 @Injectable()
 export class CommentsService {
   constructor(
     readonly prisma: PrismaService,
-    readonly config: ConfigModule,
+    readonly config: ConfigService,
     readonly ueService: UeService,
   ) {}
 

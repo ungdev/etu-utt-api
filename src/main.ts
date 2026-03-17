@@ -11,8 +11,8 @@ async function bootstrap() {
     type: VersioningType.URI,
     defaultVersion: '1',
   });
+  // This env variable is not set in ConfigService because we use it before modules are loaded
   app.setGlobalPrefix(process.env.API_PREFIX);
-  // This env variable is not set in ConfigModule because we use it before modules are loaded
   app.useGlobalPipes(new AppValidationPipe());
   app.enableCors({ origin: '*' });
 
