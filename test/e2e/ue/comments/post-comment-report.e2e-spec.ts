@@ -97,6 +97,7 @@ const ReportComment = e2eSuite('POST /ue/comments/{commentId}/report', (app) => 
         body: "it's offensive",
         reason: reportReason.name,
       })
+      .created()
       .expectUeCommentReport({
         id: JsonLike.UUID,
         body: "it's offensive",
@@ -109,7 +110,7 @@ const ReportComment = e2eSuite('POST /ue/comments/{commentId}/report', (app) => 
           firstName: userNotAuthor.firstName,
           lastName: userNotAuthor.lastName,
         },
-      },true));
+      }));
 });
 
 export default ReportComment;

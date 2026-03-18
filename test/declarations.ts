@@ -27,6 +27,7 @@ import { Language } from '../src/prisma/types';
 import { DEFAULT_APPLICATION } from '../prisma/seed/utils';
 import ApplicationResDto from '../src/auth/application/dto/res/application-res.dto';
 import PermissionsResDto from '../src/auth/permissions/dto/res/permissions.dto';
+import UeCommentResDto from 'src/ue/comments/dto/res/ue-comment-res.dto';
 
 function ueOverviewExpectation(ue: FakeUeWithOfs, spec: Spec) {
   return {
@@ -200,9 +201,10 @@ Spec.prototype.expectUeComments = function (this: Spec, obj) {
         ...pick(answer, 'author', 'body', 'id', 'status'),
         createdAt: answer.createdAt,
         updatedAt: answer.updatedAt,
+        reports: []
       })),
     })),
-  } satisfies JsonLikeVariant<Pagination<UeComment>>);
+  } satisfies JsonLikeVariant<Pagination<UeCommentResDto>>);
 };
 Spec.prototype.expectUeCommentReply = $expectRegexableJson<UeCommentReply>;
 Spec.prototype.expectUeCommentReport = $expectRegexableJson<UeCommentReport>;

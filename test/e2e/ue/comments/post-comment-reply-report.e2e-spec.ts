@@ -102,6 +102,7 @@ const ReportCommentReply = e2eSuite('POST /ue/comments/reply/{replyId}/report', 
         body: "it's offensive",
         reason: reportReason.name,
       })
+      .created()
       .expectUeCommentReport({
         id: JsonLike.UUID,
         body: "it's offensive",
@@ -114,7 +115,7 @@ const ReportCommentReply = e2eSuite('POST /ue/comments/reply/{replyId}/report', 
           firstName: userNotAuthor.firstName,
           lastName: userNotAuthor.lastName,
         },
-      }, true));
+      }));
 });
 
 export default ReportCommentReply;

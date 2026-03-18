@@ -87,7 +87,7 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .get(`/ue/comments`)
+      .get('/ue/comments')
       .withQueryParams({
         ueCode: ue.code.slice(0, ue.code.length - 1),
       })
@@ -117,7 +117,7 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .get(`/ue/comments`)
+      .get('/ue/comments')
       .withQueryParams({
         ueCode: ue.code,
       })
@@ -135,7 +135,7 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .get(`/ue/comments`)
+      .get('/ue/comments')
       .withQueryParams({
         page: 2,
         ueCode: ue.code,
