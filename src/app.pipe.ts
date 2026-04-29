@@ -3,10 +3,10 @@ import {
   ParseUUIDPipe,
   Type,
   ArgumentMetadata,
-  BadRequestException,
   Injectable,
   PipeTransform,
   ValidationPipe,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { AppException, ERROR_CODE } from './exceptions';
 import { validationExceptionFactory } from './validation';
@@ -47,6 +47,18 @@ export const UUIDParam = (property: string, ...pipes: (Type<PipeTransform> | Pip
     ...pipes,
   );
 
+export const IntParam = (property: string, ...pipes: (Type<PipeTransform> | PipeTransform)[]) =>
+  Param(
+    property,
+    new ParseIntPipe({
+      exceptionFactory: () => new AppException(ERROR_CODE.PARAM_NOT_NUMBER, property),
+    }),
+    ...pipes,
+  );
+
+export const PositiveIntParam = (property: string, ...pipes: (Type<PipeTransform> | PipeTransform)[]) =>
+  Param(property, new PositiveNumberValidationPipe(), ...pipes);
+
 export interface ArrayDto<T> extends Array<T> {
   items: T[];
 }
@@ -86,14 +98,10 @@ export class AppValidationPipe extends ValidationPipe {
 
 @Injectable()
 export class PositiveNumberValidationPipe implements PipeTransform {
-  async transform(value: string) {
+  async transform(value: string, metadata: ArgumentMetadata) {
     const asNumber = Number.parseInt(value);
-    if (Number.isNaN(asNumber)) {
-      throw new BadRequestException('value must be a positive number');
-    }
-    if (asNumber <= 0) {
-      throw new BadRequestException('value must be a positive number');
-    }
+    if (Number.isNaN(asNumber)) throw new AppException(ERROR_CODE.PARAM_NOT_NUMBER, metadata.data);
+    if (asNumber <= 0) throw new AppException(ERROR_CODE.PARAM_NOT_POSITIVE, metadata.data);
     return asNumber;
   }
 }

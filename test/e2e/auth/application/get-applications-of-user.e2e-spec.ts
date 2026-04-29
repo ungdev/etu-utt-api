@@ -2,7 +2,7 @@ import { e2eSuite } from '../../../utils/test_utils';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../../src/exceptions';
 import * as fakedb from '../../../utils/fakedb';
-import { Permission } from '@prisma/client';
+import { Permission } from '../../../../src/prisma/types';
 import { PermissionManager } from '../../../../src/utils';
 
 const GetApplicationsOfUserE2ESpec = e2eSuite('GET /auth/application/of/:userId', (app) => {

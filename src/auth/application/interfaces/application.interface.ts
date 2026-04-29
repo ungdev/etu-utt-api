@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '../../../prisma/types';
 import { generateCustomModel } from '../../../prisma/prisma.service';
 
 const APPLICATION_SELECT_FILTER = {
@@ -23,5 +23,10 @@ const APPLICATION_SELECT_FILTER = {
 export type Application = Prisma.ApiApplicationGetPayload<typeof APPLICATION_SELECT_FILTER>;
 
 export function generateCustomApplicationModel(prisma: PrismaClient) {
-  return generateCustomModel(prisma, 'apiApplication', APPLICATION_SELECT_FILTER, (_, application: Application) => application);
+  return generateCustomModel(
+    prisma,
+    'apiApplication',
+    APPLICATION_SELECT_FILTER,
+    (_, application: Application) => application,
+  );
 }

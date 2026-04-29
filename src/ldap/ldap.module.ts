@@ -1,6 +1,6 @@
 import { Injectable, Module } from '@nestjs/common';
 import { Client as LdapClient } from 'ldapts';
-import { ConfigModule } from '../config/config.module';
+import { ConfigService } from '../config/config.service';
 import { LdapUser } from './ldap.interface';
 
 @Module({
@@ -8,7 +8,7 @@ import { LdapUser } from './ldap.interface';
 })
 @Injectable()
 export class LdapModule {
-  constructor(private config: ConfigModule) {}
+  constructor(private config: ConfigService) {}
 
   async fetch(user: string): Promise<LdapUser | null> {
     if (!this.config.LDAP_URL) {

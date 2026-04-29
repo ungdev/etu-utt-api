@@ -3,7 +3,7 @@ import * as pactum from 'pactum';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { e2eSuite } from '../../utils/test_utils';
 import { ERROR_CODE } from '../../../src/exceptions';
-import { UserType } from '@prisma/client';
+import { UserType } from '../../../src/prisma/types';
 import { createUser } from '../../utils/fakedb';
 import { JwtService } from '@nestjs/jwt';
 import { DEFAULT_APPLICATION } from '../../../prisma/seed/utils';
@@ -87,18 +87,14 @@ const SignupE2ESpec = e2eSuite('POST /auth/signup', (app) => {
       .expectAppError(ERROR_CODE.PARAM_NOT_DATE, 'birthday');
   });
   it('should return a 400 if no body is provided', async () => {
-    return pactum
-      .spec()
-      .post('/auth/signup')
-      .withBody(undefined)
-      .expectAppError(ERROR_CODE.BODY_MISSING);
+    return pactum.spec().post('/auth/signup').expectAppError(ERROR_CODE.BODY_MISSING);
   });
   it('should create a new user, with no api key permissions as user is not a student', async () => {
     await pactum
       .spec()
       .post('/auth/signup')
       .withBody(dto)
-      .expectStatus(201)
+      .created()
       .expect(async (ctx) => {
         expect(ctx.res.json['token']).toBeDefined();
         const token = app().get(JwtService).decode(ctx.res.json['token']).token;

@@ -4,7 +4,6 @@ import { AuthService } from '../../../src/auth/auth.service';
 import { ERROR_CODE } from '../../../src/exceptions';
 import * as fakedb from '../../utils/fakedb';
 import { pick } from '../../../src/utils';
-import { HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 
 const CreateApiKeyE2ESpec = e2eSuite('POST /auth/api-key', (app) => {
@@ -39,7 +38,7 @@ const CreateApiKeyE2ESpec = e2eSuite('POST /auth/api-key', (app) => {
       .spec()
       .post('/auth/api-key')
       .withJson({ token: await authService().signRegisterApiKeyToken(otherUser.id, application.id, 99999) })
-      .expectStatus(HttpStatus.CREATED)
+      .created()
       .$expectRegexableJson({ redirectUrl: JsonLike.STRING })
       .expect((ctx) => {
         const body = ctx.res.json as { redirectUrl: string };

@@ -1,4 +1,4 @@
-# Documentation développeurs - API
+# API
 
 Cette documentation s'adresse aux développeurs de l'API de EtuUTT. Elle traite des aspects techniques la concernant :
 outils utilisés, outils développés, choix faits, ...
@@ -10,6 +10,12 @@ setup.md
 nestjs.md
 conventions.md
 test.md
+documentation.md
+errors.md
+permissions.md
+lexical.md
 ues.md
 timetables.md
+scripts.md
+mails.md
 ```

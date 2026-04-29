@@ -1,0 +1,60 @@
+model Semester {
+  code  String   @id @db.Char(3)
+  start DateTime @db.Date
+  end   DateTime @db.Date
+
+  openedUes             Ueof[]
+  annals                UeAnnal[]
+  comments              UeComment[]
+  courses               UeCourse[]
+  bdeContributionsStart UserBDEContribution[]    @relation("startSemester")
+  bdeContributionsEnd   UserBDEContribution[]    @relation("endSemester")
+  branchSubscriptions   UserBranchSubscription[]
+  ueSubscriptions       UserUeSubscription[]
+  etuUTTTeams           UserEtuUTTTeam[]
+}
+
+model UTTBranch {
+  code                     String  @id @db.VarChar(10)
+  name                     String  @db.VarChar(255)
+  isMaster                 Boolean @default(false)
+  exitSalary               Int?
+  employmentRate           Float?
+  CDIRate                  Float?
+  abroadEmploymentRate     Float?
+  descriptionTranslationId String  @unique
+
+  descriptionTranslation Translation       @relation(fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
+  branchOptions          UTTBranchOption[]
+}
+
+model UTTBranchOption {
+  id                       String @id @default(uuid())
+  code                     String @db.VarChar(10)
+  name                     String @db.VarChar(255)
+  branchCode               String
+  descriptionTranslationId String @unique
+
+  branch                 UTTBranch                @relation(fields: [branchCode], references: [code])
+  descriptionTranslation Translation              @relation(fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
+  uecredits              UeCredit[]
+  branchSubscriptions    UserBranchSubscription[]
+
+  @@unique([code, branchCode])
+}
+
+model UTTFormation {
+  name                     String @id @db.VarChar(100)
+  descriptionTranslationId String @unique
+
+  descriptionTranslation Translation     @relation(fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
+  userFormations         UserFormation[]
+}
+
+model UTTFormationFollowingMethod {
+  name                     String @id @db.VarChar(100)
+  descriptionTranslationId String @unique
+
+  descriptionTranslation Translation     @relation(fields: [descriptionTranslationId], references: [id], onDelete: Cascade)
+  userFormations         UserFormation[]
+}

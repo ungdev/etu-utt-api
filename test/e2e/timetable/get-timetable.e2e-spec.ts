@@ -1,8 +1,8 @@
 import { e2eSuite } from '../../utils/test_utils';
 import * as fakedb from '../../utils/fakedb';
-import { HttpStatus } from '@nestjs/common';
 import * as pactum from 'pactum';
 import { createTimetableEntry, createTimetableGroup } from '../../utils/fakedb';
+import { ERROR_CODE } from 'src/exceptions';
 
 const GetTimetableE2ESpec = e2eSuite('GET /timetable/current/:daysCount/:day/:month/:year', (app) => {
   const user = fakedb.createUser(app);
@@ -16,7 +16,7 @@ const GetTimetableE2ESpec = e2eSuite('GET /timetable/current/:daysCount/:day/:mo
   });
 
   it('should fail as user is not authenticated', () =>
-    pactum.spec().get('/timetable/current/2/1/2/3').expectStatus(HttpStatus.UNAUTHORIZED));
+    pactum.spec().get('/timetable/current/2/1/2/3').expectAppError(ERROR_CODE.NOT_LOGGED_IN));
 
   it('should fail as the value passed are not positive numbers', () =>
     Promise.all([
@@ -24,26 +24,42 @@ const GetTimetableE2ESpec = e2eSuite('GET /timetable/current/:daysCount/:day/:mo
         .spec()
         .get('/timetable/current/yeahthatsanumber/1/2/3')
         .withBearerToken(user.token)
-        .expectStatus(HttpStatus.BAD_REQUEST),
+        .expectAppError(ERROR_CODE.PARAM_NOT_NUMBER, 'daysCount'),
       pactum
         .spec()
         .get('/timetable/current/2/yeahthatsanumber/2/3')
         .withBearerToken(user.token)
-        .expectStatus(HttpStatus.BAD_REQUEST),
+        .expectAppError(ERROR_CODE.PARAM_NOT_NUMBER, 'date'),
       pactum
         .spec()
         .get('/timetable/current/2/1/yeahthatsanumber/3')
         .withBearerToken(user.token)
-        .expectStatus(HttpStatus.BAD_REQUEST),
+        .expectAppError(ERROR_CODE.PARAM_NOT_NUMBER, 'month'),
       pactum
         .spec()
         .get('/timetable/current/2/1/2/yeahthatsanumber')
         .withBearerToken(user.token)
-        .expectStatus(HttpStatus.BAD_REQUEST),
-      pactum.spec().get('/timetable/current/-1/2/3/4').withBearerToken(user.token).expectStatus(HttpStatus.BAD_REQUEST),
-      pactum.spec().get('/timetable/current/1/-2/3/4').withBearerToken(user.token).expectStatus(HttpStatus.BAD_REQUEST),
-      pactum.spec().get('/timetable/current/1/2/-3/4').withBearerToken(user.token).expectStatus(HttpStatus.BAD_REQUEST),
-      pactum.spec().get('/timetable/current/1/2/3/-4').withBearerToken(user.token).expectStatus(HttpStatus.BAD_REQUEST),
+        .expectAppError(ERROR_CODE.PARAM_NOT_NUMBER, 'year'),
+      pactum
+        .spec()
+        .get('/timetable/current/-1/2/3/4')
+        .withBearerToken(user.token)
+        .expectAppError(ERROR_CODE.PARAM_NOT_POSITIVE, 'daysCount'),
+      pactum
+        .spec()
+        .get('/timetable/current/1/-2/3/4')
+        .withBearerToken(user.token)
+        .expectAppError(ERROR_CODE.PARAM_NOT_POSITIVE, 'date'),
+      pactum
+        .spec()
+        .get('/timetable/current/1/2/-3/4')
+        .withBearerToken(user.token)
+        .expectAppError(ERROR_CODE.PARAM_NOT_POSITIVE, 'month'),
+      pactum
+        .spec()
+        .get('/timetable/current/1/2/3/-4')
+        .withBearerToken(user.token)
+        .expectAppError(ERROR_CODE.PARAM_NOT_POSITIVE, 'year'),
     ]));
 
   it('should return the events in the next 2 days', async () => {
@@ -54,7 +70,6 @@ const GetTimetableE2ESpec = e2eSuite('GET /timetable/current/:daysCount/:day/:mo
       .spec()
       .get(`/timetable/current/2/${date}/${month}/${year}`)
       .withBearerToken(user.token)
-      .expectStatus(HttpStatus.OK)
       .$expectRegexableJson([
         {
           id: `0@${timetableEntry.id}`,

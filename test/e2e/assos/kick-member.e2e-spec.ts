@@ -35,7 +35,7 @@ const KickAssoMemberE2ESpec = e2eSuite('DELETE /assos/:id/members/:id', (app) =>
   });
   createAssoMembership(app, { asso, role: assoMembershipRole, user: userAllowed, permissions: [permission] });
 
-  it('should return 403 as user is not authenticated', () =>
+  it('should return 401 as user is not authenticated', () =>
     pactum
       .spec()
       .delete(`/assos/${asso.id}/members/${userInAssoMembershipInAsso.id}`)

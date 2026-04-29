@@ -11,7 +11,7 @@ import {
 } from '../../../utils/fakedb';
 import { JsonLike, e2eSuite } from '../../../utils/test_utils';
 import { ERROR_CODE } from '../../../../src/exceptions';
-import { ConfigModule } from '../../../../src/config/config.module';
+import { ConfigService } from '../../../../src/config/config.service';
 import { CommentStatus } from 'src/ue/comments/interfaces/comment.interface';
 import { PermissionManager, pick } from '../../../../src/utils';
 import { mkdirSync, rmSync } from 'fs';
@@ -116,11 +116,11 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
 
   describe('should create the annal', () => {
     beforeAll(() => {
-      mkdirSync(app().get(ConfigModule).ANNAL_UPLOAD_DIR, { recursive: true });
+      mkdirSync(app().get(ConfigService).ANNAL_UPLOAD_DIR, { recursive: true });
     });
 
     afterAll(() => {
-      rmSync(app().get(ConfigModule).ANNAL_UPLOAD_DIR.split('/')[0], { recursive: true });
+      rmSync(app().get(ConfigService).ANNAL_UPLOAD_DIR.split('/')[0], { recursive: true });
     });
 
     const testFunction =
@@ -135,18 +135,16 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
               typeId: annalType.id,
               ueCode: ue.code,
             })
-            .expectUeAnnal(
-              {
-                id: JsonLike.UUID,
-                createdAt: JsonLike.DATE,
-                updatedAt: JsonLike.DATE,
-                semesterId: semester.code,
-                type: annalType,
-                status: CommentStatus.PROCESSING,
-                sender: pick(senderUser, 'id', 'firstName', 'lastName'),
-              },
-              true,
-            )
+            .created()
+            .expectUeAnnal({
+              id: JsonLike.UUID,
+              createdAt: JsonLike.DATE,
+              updatedAt: JsonLike.DATE,
+              semesterId: semester.code,
+              type: annalType,
+              status: CommentStatus.PROCESSING,
+              sender: pick(senderUser, 'id', 'firstName', 'lastName'),
+            })
         ).body;
         return pactum
           .spec()
@@ -173,18 +171,16 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
             typeId: annalType.id,
             ueCode: ue.code,
           })
-          .expectUeAnnal(
-            {
-              id: JsonLike.UUID,
-              createdAt: JsonLike.DATE,
-              updatedAt: JsonLike.DATE,
-              semesterId: semester.code,
-              type: annalType,
-              status: CommentStatus.PROCESSING,
-              sender: pick(senderUser, 'id', 'firstName', 'lastName'),
-            },
-            true,
-          )
+          .created()
+          .expectUeAnnal({
+            id: JsonLike.UUID,
+            createdAt: JsonLike.DATE,
+            updatedAt: JsonLike.DATE,
+            semesterId: semester.code,
+            type: annalType,
+            status: CommentStatus.PROCESSING,
+            sender: pick(senderUser, 'id', 'firstName', 'lastName'),
+          })
       ).body;
       return pactum
         .spec()
@@ -207,18 +203,16 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
             typeId: annalType.id,
             ueCode: ue.code,
           })
-          .expectUeAnnal(
-            {
-              id: JsonLike.UUID,
-              createdAt: JsonLike.DATE,
-              updatedAt: JsonLike.DATE,
-              semesterId: semester.code,
-              type: annalType,
-              status: CommentStatus.PROCESSING,
-              sender: pick(senderUser, 'id', 'firstName', 'lastName'),
-            },
-            true,
-          )
+          .created()
+          .expectUeAnnal({
+            id: JsonLike.UUID,
+            createdAt: JsonLike.DATE,
+            updatedAt: JsonLike.DATE,
+            semesterId: semester.code,
+            type: annalType,
+            status: CommentStatus.PROCESSING,
+            sender: pick(senderUser, 'id', 'firstName', 'lastName'),
+          })
       ).body;
       return pactum
         .spec()
@@ -241,18 +235,16 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
             typeId: annalType.id,
             ueCode: ue.code,
           })
-          .expectUeAnnal(
-            {
-              id: JsonLike.UUID,
-              createdAt: JsonLike.DATE,
-              updatedAt: JsonLike.DATE,
-              semesterId: semester.code,
-              type: annalType,
-              status: CommentStatus.PROCESSING,
-              sender: pick(senderUser, 'id', 'firstName', 'lastName'),
-            },
-            true,
-          )
+          .created()
+          .expectUeAnnal({
+            id: JsonLike.UUID,
+            createdAt: JsonLike.DATE,
+            updatedAt: JsonLike.DATE,
+            semesterId: semester.code,
+            type: annalType,
+            status: CommentStatus.PROCESSING,
+            sender: pick(senderUser, 'id', 'firstName', 'lastName'),
+          })
       ).body;
       return pactum
         .spec()
@@ -271,18 +263,16 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
             typeId: annalType.id,
             ueCode: ue.code,
           })
-          .expectUeAnnal(
-            {
-              id: JsonLike.UUID,
-              createdAt: JsonLike.DATE,
-              updatedAt: JsonLike.DATE,
-              semesterId: semester.code,
-              type: annalType,
-              status: CommentStatus.PROCESSING,
-              sender: pick(senderUser, 'id', 'firstName', 'lastName'),
-            },
-            true,
-          )
+          .created()
+          .expectUeAnnal({
+            id: JsonLike.UUID,
+            createdAt: JsonLike.DATE,
+            updatedAt: JsonLike.DATE,
+            semesterId: semester.code,
+            type: annalType,
+            status: CommentStatus.PROCESSING,
+            sender: pick(senderUser, 'id', 'firstName', 'lastName'),
+          })
       ).body;
       return pactum
         .spec()

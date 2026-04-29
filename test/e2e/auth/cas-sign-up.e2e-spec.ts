@@ -6,9 +6,8 @@ import * as fakedb from '../../utils/fakedb';
 import { AuthService } from '../../../src/auth/auth.service';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { ERROR_CODE } from '../../../src/exceptions';
-import { ConfigModule } from '../../../src/config/config.module';
+import { ConfigService } from '../../../src/config/config.service';
 import { LdapUser } from 'ldap-server-mock';
-import { HttpStatus } from '@nestjs/common';
 import { mockLdapServer } from '../../external_services/ldap';
 import { DEFAULT_APPLICATION } from '../../../prisma/seed/utils';
 import { Permission } from '@prisma/client';
@@ -23,7 +22,7 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
     end: new Date(),
   });
   const ue = fakedb.createUe(app);
-  fakedb.createUeof(app, { branchOptions: [branchOption], semesters: [semester], ue });
+  const ueof = fakedb.createUeof(app, { branchOptions: [branchOption], semesters: [semester], ue });
 
   mockLdapServer(list);
 
@@ -37,7 +36,7 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
   it('should fail as the provided token does not contains an object in the right form', async () => {
     const token = app()
       .get(JwtService)
-      .sign({ a: 'b' }, { expiresIn: 60, secret: app().get(ConfigModule).JWT_SECRET });
+      .sign({ a: 'b' }, { expiresIn: 60, secret: app().get(ConfigService).JWT_SECRET });
     pactum
       .spec()
       .post('/auth/signup/cas')
@@ -83,7 +82,7 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
       datefin: 20240930,
       jpegPhoto: `http://localhost/${login}.jpg`,
       gidNumber: type === 'student' ? '10000' : type === 'faculty' ? '5000' : '9999',
-      uv: ['PETM6', 'SY16', 'LO17', 'RE02', 'IF03', 'CTC1', 'LG11', 'PEICT', ue.code],
+      uv: [ueof.code],
     };
   };
   const executeValidSignupRequest = async (personAttributes, expectedApiPermissions: Permission[]) => {
@@ -103,7 +102,7 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
       .withJson({
         registerToken: await authService.signRegisterUserToken(login, mail, firstName, lastName, tokenExpiresIn),
       })
-      .expectStatus(HttpStatus.CREATED)
+      .created()
       .$expectRegexableJson({ token: JsonLike.STRING });
     const user = await app().get(PrismaService).user.findUnique({ where: { login } });
     expect(user).not.toBeNull();

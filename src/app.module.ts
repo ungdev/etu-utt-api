@@ -15,12 +15,16 @@ import { BranchModule } from './branch/branch.module';
 import { AssosModule } from './assos/assos.module';
 import { TranslationInterceptor } from './app.interceptor';
 import { SemesterModule } from './semester/semester.module';
+import { ImageMediaModule } from './media/image/imagemedia.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
     ConfigModule,
     HttpModule,
     PrismaModule,
+    ImageMediaModule,
+    MailModule,
     SemesterModule,
     AuthModule,
     ProfileModule,

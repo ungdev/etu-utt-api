@@ -1,10 +1,11 @@
+import { PrismaMariaDb } from '@prisma/adapter-mariadb';
+import { PrismaClient } from '../../src/prisma/types';
 import { createReadStream } from 'fs';
 import { createInterface } from 'readline/promises';
 import { parse } from '@fast-csv/parse';
-import { PrismaClient } from '@prisma/client';
-import '../../src/array';
+import '../../src/std.type';
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({ adapter: new PrismaMariaDb(process.env.DATABASE_URL) });
 
 type UEOF = {
   entry_nb: string;
@@ -157,8 +158,8 @@ async function main() {
         branchOptions: ue.engineer_branch_option.length
           ? ue.engineer_branch_option
           : ue.engineer_branch.length
-          ? ue.engineer_branch
-          : branches.filter((branch) => !branch.isMaster).map((branch) => branch.code),
+            ? ue.engineer_branch
+            : branches.filter((branch) => !branch.isMaster).map((branch) => branch.code),
       });
     if (ue.master_credit_type)
       credits.push({
@@ -167,8 +168,8 @@ async function main() {
         branchOptions: ue.master_branch_option.length
           ? ue.master_branch_option
           : ue.master_branch.length
-          ? ue.master_branch
-          : branches.filter((branch) => branch.isMaster).map((branch) => branch.code),
+            ? ue.master_branch
+            : branches.filter((branch) => branch.isMaster).map((branch) => branch.code),
       });
     if (ue.code === 'PE00')
       credits.push(
@@ -330,7 +331,7 @@ async function main() {
       ),
     );
     console.info('\x1b[42;30m✅ Import complete\x1b[0m');
-  } catch (error) {
+  } catch {
     console.error(
       '\x1b[41;30mAn error occurred while importing UE requirements. Try `$ pnpm seed:ue:aliases` first.\x1b[0m',
     );

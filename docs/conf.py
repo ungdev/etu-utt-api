@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'EtuUTT'
-copyright = '2024, UTT Net Group'
+copyright = '2026, UTT Net Group'
 author = 'UTT Net Group'
 
 
@@ -52,7 +52,14 @@ exclude_patterns = ['build', 'Thumbs.db', '.DS_Store']
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'shibuya'
+html_theme_options = {
+    "accent_color": "blue",
+    "github_url": "https://github.com/ungdev/etu-utt-api",
+    "announcement": "<center>Le site étu est toujours en cours de développement : la documentation est en cours d'écriture et peux être incomplète/incorrecte.</center>",
+}
+html_favicon = "logo.svg"
+html_logo = "logo.svg"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -65,3 +72,4 @@ source_suffix = {
 }
 
 myst_enable_extensions = ["attrs_inline"]
+myst_heading_anchors = 4

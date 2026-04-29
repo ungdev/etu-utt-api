@@ -12,11 +12,16 @@ import { ApiAppErrorResponse, paginatedResponseDto } from '../app.dto';
 import UserDetailResDto from './dto/res/user-detail-res.dto';
 import UserBirthdayResDto from './dto/res/user-birthday-res.dto';
 import UserAssoMembershipResDto from './dto/res/user-asso-membership-res.dto';
+import { ImageMediaService } from '../media/image/imagemedia.service';
+import { ImageMediaPreset } from '../prisma/types';
 
 @Controller('users')
 @ApiTags('User')
 export default class UsersController {
-  constructor(private usersService: UsersService) {}
+  constructor(
+    private usersService: UsersService,
+    private mediaService: ImageMediaService,
+  ) {}
 
   @Get()
   @ApiOperation({
@@ -83,6 +88,12 @@ export default class UsersController {
   async updateInfos(@GetUser() user: User, @Body() dto: UserUpdateReqDto): Promise<UserDetailResDto> {
     if (Object.values(dto).every((element) => element === undefined))
       throw new AppException(ERROR_CODE.NO_FIELD_PROVIDED);
+    if (dto.avatar) {
+      const media = await this.mediaService.getMedia(dto.avatar);
+      if (!media) throw new AppException(ERROR_CODE.NO_SUCH_MEDIA, dto.avatar);
+      if (media.preset !== ImageMediaPreset.AVATAR)
+        throw new AppException(ERROR_CODE.MEDIA_PRESET_REQUIRED, ImageMediaPreset.AVATAR);
+    }
     await this.usersService.updateUserProfil(user.id, dto);
     return this.formatUserDetails(await this.usersService.fetchUser(user.id), true);
   }
@@ -112,7 +123,8 @@ export default class UsersController {
       studentId: user.studentId,
       userType: user.userType,
       infos: {
-        ...pick(user.infos, 'nickname', 'avatar', 'nationality', 'passions', 'website'),
+        ...pick(user.infos, 'nickname', 'nationality', 'passions', 'website'),
+        avatar: user.infos.avatar ? `/media/image/${user.infos.avatar.id}.webp` : null,
         sex: user.privacy.sex || includeAll ? user.infos.sex : undefined,
         birthday: user.privacy.birthday || includeAll ? user.infos.birthday : undefined,
       },
@@ -153,7 +165,7 @@ export default class UsersController {
       lastName: user.lastName,
       nickname: user.infos.nickname,
       type: user.userType,
-      avatar: user.infos.avatar,
+      avatar: user.infos.avatar ? `/media/image/${user.infos.avatar.id}.webp` : null,
       sex: user.privacy.sex || includeAll ? user.infos.sex : undefined,
       nationality: user.infos.nationality,
       birthday: user.privacy.birthday || includeAll ? user.infos.birthday : undefined,

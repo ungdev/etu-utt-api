@@ -24,7 +24,7 @@ const CreateAssoRoleE2ESpec = e2eSuite('POST /assos/:id/roles', (app) => {
     name: 'Bouffeur de carte graphiques',
   };
 
-  it('should return 403 as user is not authenticated', () =>
+  it('should return 401 as user is not authenticated', () =>
     pactum.spec().post(`/assos/${asso.id}/roles`).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
 
   it('should return a 400 as the id param is not valid', () =>
@@ -57,7 +57,8 @@ const CreateAssoRoleE2ESpec = e2eSuite('POST /assos/:id/roles', (app) => {
       .withBearerToken(userAllowed.token)
       .post(`/assos/${asso.id}/roles`)
       .withBody(validBody)
-      .expectAssoMembershipRoleCreated({
+      .created()
+      .expectAssoMembershipRole({
         id: JsonLike.UUID,
         isPresident: false,
         name: validBody.name,
@@ -84,7 +85,8 @@ const CreateAssoRoleE2ESpec = e2eSuite('POST /assos/:id/roles', (app) => {
       .withBearerToken(token)
       .post(`/assos/${asso.id}/roles`)
       .withBody(validBody)
-      .expectAssoMembershipRoleCreated({
+      .created()
+      .expectAssoMembershipRole({
         id: JsonLike.UUID,
         isPresident: false,
         name: validBody.name,
