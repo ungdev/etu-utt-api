@@ -10,7 +10,7 @@ import { ConfigService } from '../../../src/config/config.service';
 import { LdapUser } from 'ldap-server-mock';
 import { mockLdapServer } from '../../external_services/ldap';
 import { DEFAULT_APPLICATION } from '../../../prisma/seed/utils';
-import { Permission } from '@prisma/client';
+import { Permission } from '../../../src/prisma/types';
 
 const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
   const list: LdapUser[] = [];
