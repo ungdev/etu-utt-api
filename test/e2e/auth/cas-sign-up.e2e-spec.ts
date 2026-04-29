@@ -107,13 +107,13 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
     const user = await app().get(PrismaService).user.findUnique({ where: { login } });
     expect(user).not.toBeNull();
     const apiKeyPermissions = await app().get(PrismaService).apiKeyPermission.findMany({ where: { apiKey: { userId: user.id, applicationId: DEFAULT_APPLICATION.id } } });
-    expect(apiKeyPermissions.map(permission => permission.permission)).toEqual(expectedApiPermissions);
+    expect(apiKeyPermissions.map(permission => permission.permission).sort()).toEqual(expectedApiPermissions);
     list.pop(); // Remove the person we've added for this test
   };
 
   it('should successfully create the user and return a token', async () => {
     const personAttribute = getPersonAttributes('student');
-    await executeValidSignupRequest(personAttribute, [Permission.API_SEE_OPINIONS_UE, Permission.API_GIVE_OPINIONS_UE, Permission.API_SEE_ANNALS, Permission.API_UPLOAD_ANNALS]);
+    await executeValidSignupRequest(personAttribute, [Permission.API_GIVE_OPINIONS_UE, Permission.API_SEE_ANNALS, Permission.API_SEE_OPINIONS_UE, Permission.API_UPLOAD_ANNALS]);
     await app()
       .get(PrismaService)
       .user.deleteMany({ where: { login: personAttribute.uid } });
