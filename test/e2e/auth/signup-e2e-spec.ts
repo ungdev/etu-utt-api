@@ -6,6 +6,7 @@ import { ERROR_CODE } from '../../../src/exceptions';
 import { UserType } from '../../../src/prisma/types';
 import { createUser } from '../../utils/fakedb';
 import { JwtService } from '@nestjs/jwt';
+import { DEFAULT_APPLICATION } from '../../../prisma/seed/utils';
 
 const SignupE2ESpec = e2eSuite('POST /auth/signup', (app) => {
   const dto = {
@@ -88,7 +89,7 @@ const SignupE2ESpec = e2eSuite('POST /auth/signup', (app) => {
   it('should return a 400 if no body is provided', async () => {
     return pactum.spec().post('/auth/signup').expectAppError(ERROR_CODE.BODY_MISSING);
   });
-  it('should create a new user', async () => {
+  it('should create a new user, with no api key permissions as user is not a student', async () => {
     await pactum
       .spec()
       .post('/auth/signup')
@@ -114,6 +115,8 @@ const SignupE2ESpec = e2eSuite('POST /auth/signup', (app) => {
     expect(user.infos.birthday).toEqual(dto.birthday);
     expect(user.userType).toEqual(UserType.OTHER);
     expect(user.id).toMatch(/[a-z0-9-]{36}/);
+    const apiKeyPermissions = await app().get(PrismaService).apiKeyPermission.findMany({ where: { apiKey: { userId: user.id, applicationId: DEFAULT_APPLICATION.id } } });
+    expect(apiKeyPermissions).toEqual([]);
     await app()
       .get(PrismaService)
       .user.delete({ where: { id: user.id } });

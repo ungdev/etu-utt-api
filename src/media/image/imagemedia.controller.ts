@@ -65,7 +65,7 @@ export class ImageMediaController {
       await this.imageMediaService.unRegisterMedia(savedMedia.id);
       throw new AppException(ERROR_CODE.SERVER_DISK_ERROR);
     }
-    this.imageMediaService.cleanup();
+    await this.imageMediaService.cleanup();
     return omit(savedMedia, 'uploaderId', 'uploadedAt');
   }
 }
