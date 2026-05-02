@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsNumber, IsPositive, IsString, IsOptional, Length } from 'class-validator';
-import { Language } from '@prisma/client';
+import { Language } from '../../../prisma/types';
 
 /**
  * Query parameters of the request to search UEs.

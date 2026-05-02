@@ -1,5 +1,5 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { Language } from '@prisma/client';
+import { Language } from './prisma/types';
 
 /**
  * Get the language for which the request was made.
