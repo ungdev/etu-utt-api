@@ -1,7 +1,4 @@
-import { IsAlphanumeric, IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
-import { IsPositive } from 'class-validator';
-import { Type } from 'class-transformer';
-import { Sex } from '../../../prisma/types';
+import { IsNotEmpty, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export default class AuthSignUpReqDto {
