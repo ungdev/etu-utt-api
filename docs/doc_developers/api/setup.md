@@ -171,14 +171,10 @@ Les tests sont tous lancés. Au bout de quelques secondes / minutes, tous les te
 
 Pour cela, vous devez avoir Python3 installé.
 
-Il faut commencer par installer les dépendances :
-
 ```bash
-# Pour les commandes pip, il est possible d'utiliser python -m pip (ou python3 -m pip) à la place de pip.
-cd docs
-pip install --upgrade pip setuptools sphinx readthedocs-sphinx-ext
-pip install -r docs/requirements.txt
-python -m sphinx -T -b html -d _build/doctrees -D language=fr . build/html
+# Pour la première commande, il faut la faire uniquement la première fois, elle va installer les dépendances python
+pnpm build:docs:configure
+pnpm build:docs
 ```
 
 Le résultat du build se situe alors dans `docs/build/html`. Le fichier racine est `index.html`. Le résultat de la

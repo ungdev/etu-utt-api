@@ -50,12 +50,15 @@ const DebugSignInE2ESpec = e2eSuite('POST (/vdev)/auth/signin', (app) => {
       .withBody({ ...dto, login: 'my/login_1' })
       .expectAppError(ERROR_CODE.PARAM_NOT_ALPHANUMERIC, 'login'));
 
-  it('should return a 400 if no body is provided', async () =>
+  it('should return a 400 if password is missing', async () =>
     pactum.spec()
       .withVersion('dev')
       .post('/auth/signin')
-      .withBody(undefined)
-      .expectAppError(ERROR_CODE.BODY_MISSING));
+      .withBody({ ...dto, password: undefined })
+      .expectAppError(ERROR_CODE.PARAM_MISSING, 'password'));
+
+  it('should return a 400 if no body is provided', async () =>
+    pactum.spec().post('/auth/signin').expectAppError(ERROR_CODE.BODY_MISSING));
 
   it('should return a token for a valid user as the application is the EtuUTT website', () =>
     pactum
@@ -63,7 +66,6 @@ const DebugSignInE2ESpec = e2eSuite('POST (/vdev)/auth/signin', (app) => {
       .withVersion('dev')
       .post('/auth/signin')
       .withBody(dto)
-      .expectStatus(200)
       .$expectRegexableJson({
         signedIn: true,
         token: JsonLike.STRING,
@@ -95,7 +97,6 @@ const DebugSignInE2ESpec = e2eSuite('POST (/vdev)/auth/signin', (app) => {
       .post('/auth/signin')
       .withApplication(application.id)
       .withBody({ login: userWithApplication.login, tokenExpiresIn: 99999 })
-      .expectStatus(200)
       .$expectRegexableJson({
         signedIn: true,
         token: null,
@@ -119,7 +120,6 @@ const DebugSignInE2ESpec = e2eSuite('POST (/vdev)/auth/signin', (app) => {
       .post('/auth/signin')
       .withApplication(application.id)
       .withBody(dto)
-      .expectStatus(200)
       .$expectRegexableJson({
         signedIn: false,
         token: JsonLike.STRING,

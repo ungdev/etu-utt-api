@@ -1,6 +1,6 @@
 import { ExecutionContext, SetMetadata } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { UserType } from '@prisma/client';
+import { UserType } from '../../prisma/types';
 
 export const REQUIRED_USER_TYPES_KEY = 'requiredUserTypes';
 /**

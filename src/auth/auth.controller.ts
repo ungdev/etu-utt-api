@@ -14,7 +14,7 @@ import CreateApiKeyReqDto from './dto/req/create-api-key-req.dto';
 import ApplicationService from './application/application.service';
 import { Application } from './application/interfaces/application.interface';
 import AuthValidateReqDto from './dto/req/auth-validate-req.dto';
-import { ConfigModule } from '../config/config.module';
+import { ConfigService } from '../config/config.service';
 import AuthTokenResDto from './dto/res/auth-token-res.dto';
 import AuthRedirectionResDto from './dto/res/auth-redirection-res.dto';
 
@@ -26,7 +26,7 @@ export class AuthController {
     protected authService: AuthService,
     protected usersService: UsersService,
     protected applicationService: ApplicationService,
-    protected config: ConfigModule,
+    protected config: ConfigService,
   ) {}
 
   @HttpCode(HttpStatus.OK)

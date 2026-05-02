@@ -1,0 +1,51 @@
+model ApiApplication {
+  id           String @id @default(uuid())
+  name         String
+  ownerId      String
+  redirectUrl  String
+  clientSecret String
+
+  owner   User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  apiKeys ApiKey[]
+}
+
+model ApiKey {
+  id            String @id @default(uuid())
+  token         String @unique
+  userId        String
+  applicationId String
+
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  application       ApiApplication     @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  apiKeyPermissions ApiKeyPermission[]
+
+  @@unique([userId, applicationId])
+}
+
+model ApiKeyPermission {
+  id         String     @id @default(uuid())
+  permission Permission
+  apiKeyId   String
+  userId     String? // The user targetted by the permission. If null, this is a hard grant. It must thus be null if this is an api permission.
+  granterId  String? // Null if granter was deleted
+  createdAt  DateTime   @default(now())
+
+  apiKey  ApiKey @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  user    User?  @relation(name: "target", fields: [userId], references: [id], onDelete: Cascade)
+  granter User?  @relation(name: "granter", fields: [granterId], references: [id], onDelete: SetNull)
+
+  @@unique([apiKeyId, userId, permission])
+}
+
+enum Permission {
+  API_SEE_OPINIONS_UE // See the rates of an UE
+  API_GIVE_OPINIONS_UE // Rate an UE you have done or are doing
+  API_SEE_ANNALS // See and download annals
+  API_UPLOAD_ANNALS // Upload an annal
+  API_MODERATE_ANNALS // Moderate annals
+  API_MODERATE_COMMENTS // Moderate comments
+  API_UPLOAD_MEDIA // Upload to media enpoints
+
+  USER_SEE_DETAILS // See personal details about someone, even the ones the user decided to hide
+  USER_UPDATE_DETAILS // Update personal details about someone
+}

@@ -3,7 +3,7 @@ import * as pactum from 'pactum';
 import { ERROR_CODE } from 'src/exceptions';
 import { e2eSuite } from '../../utils/test_utils';
 import { registerUniqueValue } from '../../../prisma/seed/utils';
-import { ConfigModule } from '../../../src/config/config.module';
+import { ConfigService } from '../../../src/config/config.service';
 import { FakeUeWithOfs } from 'test/declarations';
 
 const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
@@ -71,7 +71,7 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
       .spec()
       .withBearerToken(user.token)
       .get('/ue')
-      .expectUesWithPagination(app, ues.slice(0, app().get(ConfigModule).PAGINATION_PAGE_SIZE), ues.length);
+      .expectUesWithPagination(app, ues.slice(0, app().get(ConfigService).PAGINATION_PAGE_SIZE), ues.length);
   });
 
   it('should return a list of all ues (within the second page)', () => {
@@ -83,8 +83,8 @@ const SearchE2ESpec = e2eSuite('GET /ue', (app) => {
       .expectUesWithPagination(
         app,
         ues.slice(
-          app().get(ConfigModule).PAGINATION_PAGE_SIZE,
-          Math.min(30, app().get(ConfigModule).PAGINATION_PAGE_SIZE * 2),
+          app().get(ConfigService).PAGINATION_PAGE_SIZE,
+          Math.min(30, app().get(ConfigService).PAGINATION_PAGE_SIZE * 2),
         ),
         ues.length,
       );

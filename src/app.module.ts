@@ -15,6 +15,8 @@ import { BranchModule } from './branch/branch.module';
 import { AssosModule } from './assos/assos.module';
 import { TranslationInterceptor } from './app.interceptor';
 import { SemesterModule } from './semester/semester.module';
+import { ImageMediaModule } from './media/image/imagemedia.module';
+import { MailModule } from './mail/mail.module';
 import { AppValidationPipe } from './app.pipe';
 import { NotFoundFilter } from './exceptions';
 
@@ -26,6 +28,8 @@ export class AppModule {
         ConfigModule,
         HttpModule,
         PrismaModule,
+        ImageMediaModule,
+        MailModule,
         SemesterModule,
         AuthModule.register(),
         ProfileModule,

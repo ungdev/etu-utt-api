@@ -30,6 +30,7 @@ jobs:
 
   build:
     runs-on: self-hosted
+    needs: lint
     strategy:
       matrix:
         node-version: [22]
@@ -50,8 +51,35 @@ jobs:
       - run: pnpm prisma generate
       - run: pnpm build
 
+  docs:
+    runs-on: self-hosted
+    needs: build
+    strategy:
+      matrix:
+        node-version: [22]
+        pnpm-version: [10]
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ matrix.pnpm-version }}
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          package-manager-cache: false
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
+      - name: Use Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+      - run: pnpm build:docs:configure
+      - run: pnpm build:docs
+
   test:
     runs-on: self-hosted
+    needs: docs
     strategy:
       matrix:
         node-version: [22]

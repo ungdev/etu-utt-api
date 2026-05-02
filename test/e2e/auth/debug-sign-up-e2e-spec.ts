@@ -2,9 +2,10 @@ import AuthSignUpDebugReqDto from '../../../src/auth/dto/req/auth-sign-up-debug-
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { buildTestApp, E2EApp, e2eSuite } from '../../utils/test_utils';
 import { ERROR_CODE } from '../../../src/exceptions';
-import { UserType } from '@prisma/client';
+import { UserType } from '../../../src/prisma/types';
 import { createUser } from '../../utils/fakedb';
 import { JwtService } from '@nestjs/jwt';
+import { DEFAULT_APPLICATION } from '../../../prisma/seed/utils';
 
 const DebugSignUpE2ESpec = e2eSuite('POST (/vdev)/auth/signup', (app) => {
   const dto = {
@@ -63,20 +64,15 @@ const DebugSignUpE2ESpec = e2eSuite('POST (/vdev)/auth/signup', (app) => {
       .expectAppError(ERROR_CODE.PARAM_MISSING, 'firstName');
   });
   it('should return a 400 if no body is provided', async () => {
-    return app()
-      .spec()
-      .withVersion('dev')
-      .post('/auth/signup')
-      .withBody(undefined)
-      .expectAppError(ERROR_CODE.BODY_MISSING);
+    return app().spec().withVersion('dev').post('/auth/signup').expectAppError(ERROR_CODE.BODY_MISSING);
   });
-  it('should create a new user', async () => {
+  it('should create a new user, with no api key permissions as user is not a student', async () => {
     await app()
       .spec()
       .withVersion('dev')
       .post('/auth/signup')
       .withBody(dto)
-      .expectStatus(201)
+      .created()
       .expect(async (ctx) => {
         expect(ctx.res.json['token']).toBeDefined();
         const token = app().get(JwtService).decode(ctx.res.json['token']).token;
@@ -94,6 +90,8 @@ const DebugSignUpE2ESpec = e2eSuite('POST (/vdev)/auth/signup', (app) => {
     expect(user.lastName).toEqual(dto.lastName);
     expect(user.userType).toEqual(UserType.OTHER);
     expect(user.id).toMatch(/[a-z0-9-]{36}/);
+    const apiKeyPermissions = await app().get(PrismaService).apiKeyPermission.findMany({ where: { apiKey: { userId: user.id, applicationId: DEFAULT_APPLICATION.id } } });
+    expect(apiKeyPermissions).toEqual([]);
     await app()
       .get(PrismaService)
       .user.delete({ where: { id: user.id } });

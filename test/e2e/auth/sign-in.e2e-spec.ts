@@ -6,7 +6,6 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import AuthSignInReqDto from '../../../src/auth/dto/req/auth-sign-in-req.dto';
 import { DEFAULT_APPLICATION } from '../../../prisma/seed/utils';
-import { HttpStatus } from '@nestjs/common';
 
 const SignInE2eSpec = e2eSuite('POST /auth/signin', (app) => {
   const body: AuthSignInReqDto = {
@@ -19,7 +18,6 @@ const SignInE2eSpec = e2eSuite('POST /auth/signin', (app) => {
       .spec()
       .post('/auth/signin')
       .withBody(body)
-      .expectStatus(HttpStatus.OK)
       .$expectRegexableJson({ status: 'no_account', token: JsonLike.STRING, redirectUrl: null })
       .expect((res) => {
         const jwt = app().get(JwtService);

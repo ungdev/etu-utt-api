@@ -4,14 +4,14 @@ import { User, UserAssoMembership } from './interfaces/user.interface';
 import UsersSearchReqDto from './dto/req/users-search-req.dto';
 import { UserUpdateReqDto } from './dto/req/users-update-req.dto';
 import { omit, translationSelect } from '../utils';
-import { ConfigModule } from '../config/config.module';
-import { Prisma } from '@prisma/client';
+import { ConfigService } from '../config/config.service';
+import { Prisma } from '../prisma/types';
 
 @Injectable()
 export default class UsersService {
   constructor(
     private prisma: PrismaService,
-    readonly config: ConfigModule,
+    readonly config: ConfigService,
   ) {}
 
   async searchUsers(dto: UsersSearchReqDto) {
@@ -124,7 +124,14 @@ export default class UsersService {
           },
         },
       })
-    ).map((membership) => ({ ...omit(membership, 'role'), role: membership.role.name }));
+    ).map((membership) => ({
+      ...omit(membership, 'role'),
+      role: membership.role.name,
+      asso: {
+        ...membership.asso,
+        logo: membership.asso.logo ? `/media/image/${membership.asso.logo.id}.webp` : null,
+      },
+    }));
     return membership;
   }
 
@@ -135,7 +142,7 @@ export default class UsersService {
         infos: {
           update: {
             nickname: dto.nickname,
-            avatar: dto.avatar,
+            avatar: { connect: dto.avatar ? { id: dto.avatar } : undefined },
             passions: dto.passions,
             website: dto.website,
           },
@@ -173,7 +180,7 @@ export default class UsersService {
         preference: {
           update: {
             language: dto.language,
-            wantDaymail: dto.wantDaymail,
+            wantWeekly: dto.wantWeekly,
             wantDayNotif: dto.wantDayNotif,
             wantDiscordUtt: dto.wantDiscordUtt,
           },

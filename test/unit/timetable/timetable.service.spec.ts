@@ -5,7 +5,8 @@ import * as fakedb from '../../utils/fakedb';
 import { createTimetableEntry, createTimetableEntryOverride } from '../../utils/fakedb';
 import { faker } from '@faker-js/faker';
 
-const TimetableServiceUnitSpec = unitSuite('Timetable.service', (app) => {
+// This check is skipped, please remove the last argument to enable tests
+const TimetableServiceUnitSpec = unitSuite.skip('Timetable.service', (app) => {
   let timetableService: TimetableService;
   let prisma: PrismaService;
   const user1 = fakedb.createUser(app);

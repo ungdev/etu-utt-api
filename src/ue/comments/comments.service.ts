@@ -7,13 +7,13 @@ import UeCommentUpdateReqDto from './dto/req/ue-comment-update-req.dto';
 import GetUeCommentsReqDto from './dto/req/ue-get-comments-req.dto';
 import { UeCommentReply } from './interfaces/comment-reply.interface';
 import { CommentStatus, UeComment } from './interfaces/comment.interface';
-import { ConfigModule } from '../../config/config.module';
+import { ConfigService } from '../../config/config.service';
 
 @Injectable()
 export class CommentsService {
   constructor(
     readonly prisma: PrismaService,
-    readonly config: ConfigModule,
+    readonly config: ConfigService,
   ) {}
 
   /**
