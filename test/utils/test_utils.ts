@@ -8,6 +8,7 @@ import { clearUniqueValues, generateDefaultApplication } from '../../prisma/seed
 import Spec from 'pactum/src/models/Spec';
 import { AppModule } from '../../src/app.module';
 import * as pactum from 'pactum';
+import '../declarations.d.ts'
 
 export async function buildTestApp(port: number): Promise<E2EApp> {
   const moduleRef = await Test.createTestingModule({
