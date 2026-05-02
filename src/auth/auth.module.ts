@@ -10,8 +10,8 @@ import ApplicationController from './application/application.controller';
 import ApplicationService from './application/application.service';
 import PermissionsController from './permissions/permissions.controller';
 import PermissionsService from './permissions/permissions.service';
-import { isProdEnv } from '../config/config.module';
 import { AuthDebugController } from './auth-debug.controller';
+import { isProdEnv } from '../config/config.service';
 
 export class AuthModule {
   static register(): DynamicModule {

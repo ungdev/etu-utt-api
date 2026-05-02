@@ -9,12 +9,12 @@ import { Application } from './application/interfaces/application.interface';
 import AuthSignInDebugResDto from './dto/res/auth-sign-in-debug-res.dto';
 import AuthSignInDebugReqDto from './dto/req/auth-sign-in-debug-req.dto';
 import { AuthService } from './auth.service';
-import { ConfigModule } from '../config/config.module';
+import { ConfigService } from '../config/config.service';
 import ApplicationService from './application/application.service';
 
 @Controller({ path: 'auth', version: 'dev' })
 export class AuthDebugController {
-  constructor(private authService: AuthService, private config: ConfigModule, private applicationService: ApplicationService) {
+  constructor(private authService: AuthService, private config: ConfigService, private applicationService: ApplicationService) {
   }
 
   @IsPublic()

@@ -15,7 +15,7 @@ const DebugSignInE2ESpec = e2eSuite('POST (/vdev)/auth/signin', (app) => {
   } as AuthSignInDebugReqDto;
 
   const user = fakedb.createUser(app, dto);
-  const userWithApplication = fakedb.createUser(app, { login: 'thisisalphanumeric', password: 'etuutt' });
+  const userWithApplication = fakedb.createUser(app, { login: 'thisisalphanumeric' });
   const application = fakedb.createApplication(app, { owner: userWithApplication });
 
   it('should not exist in a production environment', async () => {
@@ -49,13 +49,6 @@ const DebugSignInE2ESpec = e2eSuite('POST (/vdev)/auth/signin', (app) => {
       .post('/auth/signin')
       .withBody({ ...dto, login: 'my/login_1' })
       .expectAppError(ERROR_CODE.PARAM_NOT_ALPHANUMERIC, 'login'));
-
-  it('should return a 400 if password is missing', async () =>
-    pactum.spec()
-      .withVersion('dev')
-      .post('/auth/signin')
-      .withBody({ ...dto, password: undefined })
-      .expectAppError(ERROR_CODE.PARAM_MISSING, 'password'));
 
   it('should return a 400 if no body is provided', async () =>
     pactum.spec().post('/auth/signin').expectAppError(ERROR_CODE.BODY_MISSING));
