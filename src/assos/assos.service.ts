@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '../prisma/types';
 import { ConfigService } from '../config/config.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { RawAssoMembershipRole } from '../prisma/types';
@@ -8,7 +7,6 @@ import { AssoMembership } from './interfaces/membership.interface';
 import { AssoMembershipRole } from './interfaces/membership-role.interface';
 import AssosSearchReqDto from './dto/req/assos-search-req.dto';
 import AssosMemberUpdateReqDto from './dto/req/assos-member-update.dto';
-import { AppException, ERROR_CODE } from '../exceptions';
 import AssosUpdateReqDto from './dto/req/assos-update-req.dto';
 
 @Injectable()

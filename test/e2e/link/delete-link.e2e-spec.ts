@@ -3,7 +3,6 @@ import * as pactum from 'pactum';
 import * as fakedb from '../../utils/fakedb';
 import { ERROR_CODE } from '../../../src/exceptions';
 import { PermissionManager } from '../../../src/utils';
-import { HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 
 const DeleteLinkE2ESpec = e2eSuite('DELETE /link/:id', (app) => {
