@@ -60,10 +60,22 @@ export class LinkService {
    * @returns The updated link.
    */
   public async update(id: string, { name, tooltip, hyperlink, position, public_ }: { name?: Translation, tooltip?: Translation, hyperlink?: string, position?: number, public_?: boolean }): Promise<Link> {
+    // Manage position separately
     if (position !== undefined) {
-      await this.prisma.link.updateMany({ where: { position: { gte: position } }, data: { position: { increment: 1 } } });
+      const { position: currentPosition } = await this.prisma.link.findUnique({ where: { id } });
+      if (currentPosition > position) {
+        await this.prisma.$transaction([
+          this.prisma.link.updateMany({ where: { position: { gte: position, lt: currentPosition } }, data: { position: { increment: 1 } } }),
+          this.prisma.link.update({where: { id }, data: { position } }),
+      ]);
+      } else if (currentPosition < position) {
+        await this.prisma.$transaction([
+          this.prisma.link.updateMany({ where: { position: { gt: currentPosition, lte: position } }, data: { position: { decrement: 1 } } }),
+          this.prisma.link.update({ where: { id }, data: { position } }),
+        ]);
+      }
     }
-    return this.prisma.normalize.link.update({ where: { id }, data: { name: { create: name }, tooltip: { create: tooltip }, hyperlink, position, public: public_ } });
+    return this.prisma.normalize.link.update({ where: { id }, data: { name: { create: name }, tooltip: { create: tooltip }, hyperlink, public: public_ } });
   }
 
   /**

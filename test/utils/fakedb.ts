@@ -1165,7 +1165,7 @@ export const createLink = entityFaker(
     tooltip: () => faker.db.translation(faker.company.catchPhrase),
     hyperlink: faker.db.link.hyperlink,
     public: true,
-    position: faker.db.link.position(),
+    position: faker.db.link.position,
   },
   async (app, params) =>
     app()

@@ -97,14 +97,15 @@ const registeredCounters: {
  * Function that generates 0, then 1, then 2, etc. for each field of any FakeEntity.
  * @param table Table in the database.
  * @param column Name of the field of the fake entity.
+ * @param startCountingFrom Number from which we should start counting. Defaults to 0.
  */
-function fakeCounterData<T extends keyof FakeEntityMap, K extends keyof Entity<T> & string>(table: T, column: K): number {
+function fakeCounterData<T extends keyof FakeEntityMap, K extends keyof Entity<T> & string>(table: T, column: K, startCountingFrom: number = 0): number {
   if (!(table in registeredCounters))
     registeredCounters[table] = {
-      [column]: 0,
+      [column]: startCountingFrom,
     };
   else if (!(column in registeredCounters[table]))
-    (registeredCounters[table][column] as number) = 0;
+    (registeredCounters[table][column] as number) = startCountingFrom;
   return registeredCounters[table][column]++;
 }
 
@@ -208,7 +209,7 @@ Faker.prototype.db = {
     es: rng(),
   }),
   assoMembershipRole: {
-    position: () => fakeCounterData('assoMembershipRole', 'position'),
+    position: () => fakeCounterData('assoMembershipRole', 'position', 1), // Start at 1, as there will be the president role created by default
   },
   ueStarCriterion: {
     name: () => fakeSafeUniqueData('ueStarCriterion', 'name', faker.word.adjective),

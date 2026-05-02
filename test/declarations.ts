@@ -355,7 +355,7 @@ Spec.prototype.expectAssoWeeklies = function (this: Spec, app: AppProvider, week
 Spec.prototype.expectLinks = function (this: Spec, links: FakeLink[]) {
   return this.expectStatus(HttpStatus.OK).expectJson(
     [...links]
-      .mappedSort((link) => link.name[this.language])
+      .mappedSort((link) => link.position)
       .map(
         (link) =>
           ({
@@ -369,7 +369,7 @@ Spec.prototype.expectLinks = function (this: Spec, links: FakeLink[]) {
 Spec.prototype.expectLinksForAdmin = function (this: Spec, links: FakeLink[]) {
   return this.expectStatus(HttpStatus.OK).expectJson(
     [...links]
-      .mappedSort((link) => link.name[this.language])
+      .mappedSort((link) => link.position)
       .map(
         (link) =>
           ({

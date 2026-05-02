@@ -26,14 +26,13 @@ const DeleteLinkE2ESpec = e2eSuite('DELETE /link/:id', (app) => {
       .spec()
       .delete(`/link/${Dummies.UUID}`)
       .withBearerToken(user.token)
-      .expectAppError(ERROR_CODE.LINK_ALREADY_EXISTS));
+      .expectAppError(ERROR_CODE.NO_SUCH_LINK, Dummies.UUID));
 
   it('should successfully delete the link', async () => {
     await pactum
       .spec()
-      .post(`/link/${link.id}`)
+      .delete(`/link/${link.id}`)
       .withBearerToken(user.token)
-      .expectStatus(HttpStatus.CREATED)
       .expectLink(link);
     // Verify position of secondLink has changed
     const secondLinkFromDb = await app().get(PrismaService).normalize.link.findUnique({ where: { id: secondLink.id } });
