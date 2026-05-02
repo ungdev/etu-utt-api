@@ -33,6 +33,18 @@ model ImageMedia {
   descriptionForAssos Asso[]      @relation("descriptionImages")
 }
 
+model Link {
+  id        String  @id @default(uuid())
+  position  Int     @unique
+  nameId    String  @unique
+  tooltipId String  @unique
+  hyperlink String  @unique
+  public    Boolean // If you need to be connected to see the link
+
+  name    Translation @relation(name: "linkNameTranslation", fields: [nameId], references: [id])
+  tooltip Translation @relation(name: "linkTooltipTranslation", fields: [tooltipId], references: [id])
+}
+
 model Translation {
   id String  @id @default(uuid())
   fr String? @db.Text
@@ -57,6 +69,8 @@ model Translation {
   formationFollowingMethodDescriptions UTTFormationFollowingMethod?
   starCriterionDescriptions            UeStarCriterion?
   ueNames                              Ueof?
+  linkName                             Link?                        @relation("linkNameTranslation")
+  linkDescription                      Link?                        @relation("linkTooltipTranslation")
 }
 
 enum AttributeType {

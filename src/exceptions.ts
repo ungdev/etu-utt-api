@@ -94,12 +94,14 @@ export const enum ERROR_CODE {
   NO_SUCH_ASSO_MEMBERSHIP = 4416,
   NO_SUCH_MEDIA = 4417,
   NO_SUCH_WEEKLY = 4418,
+  NO_SUCH_LINK = 4419,
   ANNAL_ALREADY_UPLOADED = 4901,
   RESOURCE_UNAVAILABLE = 4902,
   RESOURCE_INVALID_TYPE = 4903,
   ASSO_ROLE_ALREADY_MOVED = 4904,
   CREDENTIALS_ALREADY_TAKEN = 5001,
   SERVER_DISK_ERROR = 8001,
+  LINK_ALREADY_EXISTS = 5002,
   HIDDEN_DUCK = 9999,
 }
 
@@ -425,6 +427,10 @@ export const ErrorData = Object.freeze({
     message: 'No such membership in asso: %',
     httpCode: HttpStatus.NOT_FOUND,
   },
+  [ERROR_CODE.NO_SUCH_LINK]: {
+    message: 'No link with id: %',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
   [ERROR_CODE.NO_SUCH_WEEKLY]: {
     message: 'No such weekly in asso: %',
     httpCode: HttpStatus.NOT_FOUND,
@@ -445,12 +451,16 @@ export const ErrorData = Object.freeze({
     message: 'Resource have incorrect type, expected %',
     httpCode: HttpStatus.BAD_REQUEST,
   },
+  [ERROR_CODE.ASSO_ROLE_ALREADY_MOVED]: {
+    message: 'You should not try to update role position simultaneously',
+    httpCode: HttpStatus.CONFLICT,
+  },
   [ERROR_CODE.CREDENTIALS_ALREADY_TAKEN]: {
     message: 'The given credentials are already taken',
     httpCode: HttpStatus.CONFLICT,
   },
-  [ERROR_CODE.ASSO_ROLE_ALREADY_MOVED]: {
-    message: 'You should not try to update role position simultaneously',
+  [ERROR_CODE.LINK_ALREADY_EXISTS]: {
+    message: 'This hyperlink already exists',
     httpCode: HttpStatus.CONFLICT,
   },
   [ERROR_CODE.SERVER_DISK_ERROR]: {

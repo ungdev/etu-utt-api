@@ -9,6 +9,7 @@ import {
   FakeAssoMembershipPermission,
   FakeAssoMembershipRole,
   FakeImageMedia,
+  FakeLink,
   FakeUeAnnalType,
   FakeUeof,
   FakeUeCreditCategory,
@@ -108,10 +109,12 @@ declare module './declarations' {
     expectApplications(applications: FakeApiApplication[]): this;
     expectApplication(application: FakeApiApplication): this;
     expectImageMedia(media: JsonLikeVariant<FakeImageMedia>): this;
-
     expectPermissions(permissions: PermissionManager): this;
     expectAssoWeekly(weekly: JsonLikeVariant<FakeAssoWeekly>, created = false): this;
     expectAssoWeeklies(app: AppProvider, weeklies: JsonLikeVariant<FakeAssoWeekly>[], count: number): this;
+    expectLinks(links: FakeLink[]): this;
+    expectLinksForAdmin(links: FakeLink[]): this;
+    expectLink(link: JsonLikeVariant<FakeLink>): this;
 
     withLanguage(language: Language): this;
     language: Language;

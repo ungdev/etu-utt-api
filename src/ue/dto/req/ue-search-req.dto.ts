@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsNumber, IsPositive, IsString, IsOptional, Length } from 'class-validator';
+import { Language } from '../../../prisma/types';
 
 /**
  * Query parameters of the request to search UEs.
@@ -41,5 +42,5 @@ export class UeSearchReqDto {
   @IsString()
   @Length(2)
   @IsOptional()
-  preferredLang?: string;
+  preferredLang?: Language;
 }

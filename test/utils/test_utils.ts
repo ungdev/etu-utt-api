@@ -4,7 +4,7 @@ import { INestApplication } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { faker } from '@faker-js/faker';
 import { ConfigService } from '../../src/config/config.service';
-import { clearUniqueValues, generateDefaultApplication } from '../../prisma/seed/utils';
+import { clearFakerExtension, generateDefaultApplication } from '../../prisma/seed/utils';
 
 /**
  * Initializes this file.
@@ -45,7 +45,7 @@ function suite<T extends AppProvider>(name: string, func: (app: T) => void) {
       beforeAll(async () => {
         const prisma = app().get(PrismaService);
         await cleanDb(prisma);
-        clearUniqueValues();
+        clearFakerExtension();
         await generateDefaultApplication(prisma);
       }, 15000);
       func(app);

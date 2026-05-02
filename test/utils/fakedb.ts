@@ -43,9 +43,10 @@ import { AppProvider } from './test_utils';
 import { ImageMediaPreset, Permission, Sex, TimetableEntryType, UserType } from '../../src/prisma/types';
 import { CommentStatus } from '../../src/ue/comments/interfaces/comment.interface';
 import { UeAnnalFile } from '../../src/ue/annals/interfaces/annal.interface';
-import { omit, PermissionManager, pick, translationSelect } from '../../src/utils';
+import { languages, omit, PermissionManager, pick, translationSelect } from '../../src/utils';
 import { DEFAULT_APPLICATION } from '../../prisma/seed/utils';
 import { AssoWeekly } from '../../src/assos/interfaces/weekly.interface';
+import { Link } from '../../src/link/link.interface';
 
 /**
  * The fake entities can be used like normal entities in the <code>it(string, () => void)</code> functions.
@@ -122,6 +123,7 @@ export type FakeApiApplication = Partial<Omit<RawApiApplication, 'ownerId'>> & {
 };
 export type FakeImageMedia = Partial<RawImageMedia>;
 export type FakeAssoWeekly = Partial<Pick<AssoWeekly, 'id' | 'assoId' | 'date' | 'createdAt' | 'title' | 'message'>>;
+export type FakeLink = Partial<Omit<Link, 'name' | 'tooltip'>> & { name?: Partial<Link['name']>; tooltip?: Partial<Link['tooltip']> };
 
 export interface FakeEntityMap {
   assoMembership: {
@@ -257,6 +259,10 @@ export interface FakeEntityMap {
   imageMedia: {
     entity: FakeImageMedia;
     params: CreateImageMediaParameter;
+  };
+  link: {
+    entity: FakeLink;
+    params: CreateLinkParameter;
   };
 }
 
@@ -786,6 +792,7 @@ export const createUeof = entityFaker(
     info: {
       program: faker.db.translation,
       objectives: faker.db.translation,
+      language: faker.helpers.arrayElement(languages)
     },
     workTime: {
       cm: () => faker.number.int({ min: 0, max: 100 }),
@@ -837,6 +844,7 @@ export const createUeof = entityFaker(
           info: {
             create: {
               ...omit(params.info, 'objectives', 'program'),
+              language: params.info.language ?? faker.helpers.arrayElement(languages),
               objectives: {
                 create: {
                   fr: 'TODO : implement this value',
@@ -1147,6 +1155,28 @@ export const createImageMedia = entityFaker(
     preset: faker.helpers.enumValue(ImageMediaPreset),
   },
   async (app, params) => app().get(PrismaService).imageMedia.create({ data: params }),
+);
+
+export type CreateLinkParameter = FakeLink;
+export const createLink = entityFaker(
+  'link',
+  {
+    name: () => faker.db.translation(faker.company.name),
+    tooltip: () => faker.db.translation(faker.company.catchPhrase),
+    hyperlink: faker.db.link.hyperlink,
+    public: true,
+    position: faker.db.link.position,
+  },
+  async (app, params) =>
+    app()
+    .get(PrismaService)
+      .normalize.link.create({
+        data: {
+          ...pick(params, 'id', 'hyperlink', 'public', 'position'),
+          name: { create: params.name },
+          tooltip: { create: params.tooltip },
+        },
+      }),
 );
 
 /**
