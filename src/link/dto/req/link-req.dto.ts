@@ -1,11 +1,11 @@
 import {
-  IsBoolean, IsInt,
+  IsBoolean,
+  IsInt,
   IsNotEmpty,
-  IsNumber,
   IsObject,
   IsOptional,
-  IsPositive,
-  IsUrl, Min,
+  IsUrl,
+  Min,
   ValidateNested,
 } from 'class-validator';
 import { TranslationReqDto } from '../../../app.dto';
