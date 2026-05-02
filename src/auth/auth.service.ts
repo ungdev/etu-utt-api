@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
-import { Prisma, UserType } from '@prisma/client';
+import { Prisma, UserType, Permission } from '../prisma/types';
 import { JwtService } from '@nestjs/jwt';
 import { AppException, ERROR_CODE } from '../exceptions';
-import { ConfigModule } from '../config/config.module';
+import { ConfigService } from '../config/config.service';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import { XMLParser } from 'fast-xml-parser';
@@ -36,7 +36,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwt: JwtService,
-    private config: ConfigModule,
+    private config: ConfigService,
     private httpService: HttpService,
     private ldap: LdapModule,
     private ueService: UeService,
@@ -107,6 +107,7 @@ export class AuthService {
             create: {
               token: AuthService.generateToken(),
               application: { connect: { id: applicationId } },
+              apiKeyPermissions: { createMany: { data: [] } }
             },
           },
           ...(branch.length && branchOption.length && currentSemester
@@ -212,6 +213,23 @@ export class AuthService {
         },
       });
 
+      if (type == UserType.STUDENT) {
+        await this.prisma.apiKey.update({
+          where: { userId_applicationId: { userId: user.id, applicationId } },
+          data: {
+            apiKeyPermissions: {
+              createMany: {
+                data: [
+                  { permission: Permission.API_SEE_OPINIONS_UE, userId: user.id },
+                  { permission: Permission.API_GIVE_OPINIONS_UE, userId: user.id },
+                  { permission: Permission.API_SEE_ANNALS, userId: user.id },
+                  { permission: Permission.API_UPLOAD_ANNALS, userId: user.id },
+                ],
+              }
+            }
+          }
+        });
+      }
       return this.signAuthenticationToken(user.apiKeys[0].token, tokenExpiresIn);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {

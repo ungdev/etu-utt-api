@@ -1,6 +1,5 @@
-import { PrismaClient } from '@prisma/client';
 import { faker } from '@faker-js/faker';
-import { RawBranchOption, RawCreditCategory, RawSemester, RawUe } from '../../../src/prisma/types';
+import { PrismaClient, RawBranchOption, RawCreditCategory, RawSemester, RawUe } from '../../../src/prisma/types';
 import { generateTranslation } from '../utils';
 
 const FAKER_ROUNDS = 20;

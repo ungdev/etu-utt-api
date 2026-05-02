@@ -2,7 +2,7 @@ import { FakeAsso, createAsso } from '../../utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
 import { e2eSuite } from '../../utils/test_utils';
-import { ConfigModule } from '../../../src/config/config.module';
+import { ConfigService } from '../../../src/config/config.service';
 
 const SearchE2ESpec = e2eSuite('GET /assos', (app) => {
   const assos: FakeAsso[] = [];
@@ -24,7 +24,7 @@ const SearchE2ESpec = e2eSuite('GET /assos', (app) => {
     return pactum
       .spec()
       .get('/assos')
-      .expectAssos(app, assos.slice(0, app().get(ConfigModule).PAGINATION_PAGE_SIZE), assos.length);
+      .expectAssos(app, assos.slice(0, app().get(ConfigService).PAGINATION_PAGE_SIZE), assos.length);
   });
 
   it('should return a list of all ues (within the second page)', () => {
@@ -35,8 +35,8 @@ const SearchE2ESpec = e2eSuite('GET /assos', (app) => {
       .expectAssos(
         app,
         assos.slice(
-          app().get(ConfigModule).PAGINATION_PAGE_SIZE,
-          Math.min(30, app().get(ConfigModule).PAGINATION_PAGE_SIZE * 2),
+          app().get(ConfigService).PAGINATION_PAGE_SIZE,
+          Math.min(30, app().get(ConfigService).PAGINATION_PAGE_SIZE * 2),
         ),
         assos.length,
       );

@@ -14,7 +14,7 @@ import TimetableDeleteOccurrencesReqDto from './dto/req/timetable-delete-occurre
 import { AppException, ERROR_CODE } from '../exceptions';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
-import { ConfigModule } from '../config/config.module';
+import { ConfigService } from '../config/config.service';
 
 /**
  * The inclusions to use when fetching a {@link DetailedTimetableEntry}.
@@ -38,7 +38,7 @@ export default class TimetableService {
   constructor(
     private prisma: PrismaService,
     private http: HttpService,
-    readonly config: ConfigModule,
+    readonly config: ConfigService,
   ) {}
 
   /**

@@ -1,15 +1,15 @@
 import { Global, Module } from '@nestjs/common';
 import { MailService } from './mail.service';
 import { MailerModule } from '@nestjs-modules/mailer';
-import { ConfigModule } from '../config/config.module';
+import { ConfigService } from '../config/config.service';
 import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
 
 @Global()
 @Module({
   imports: [
     MailerModule.forRootAsync({
-      inject: [ConfigModule],
-      useFactory: async (config: ConfigModule) => {
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => {
         return {
           transport: {
             requireTLS: true,

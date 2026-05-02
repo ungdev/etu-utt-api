@@ -1,5 +1,11 @@
-import { RawSemester, RawUeComment, RawUser, RawUserUeSubscription } from '../../../src/prisma/types';
-import { Prisma, PrismaClient } from '@prisma/client';
+import {
+  Prisma,
+  PrismaClient,
+  RawSemester,
+  RawUeComment,
+  RawUser,
+  RawUserUeSubscription,
+} from '../../../src/prisma/types';
 import { faker } from '@faker-js/faker';
 
 const FAKER_ROUNDS = 100;

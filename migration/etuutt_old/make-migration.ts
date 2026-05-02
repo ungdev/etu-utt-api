@@ -1,4 +1,5 @@
-import { PrismaClient as _PrismaClient } from '@prisma/client';
+import { PrismaClient as _PrismaClient } from '../../src/prisma/types';
+import { PrismaMariaDb } from '@prisma/adapter-mariadb';
 import { createConnection } from 'mysql';
 import { cleanDb } from '../../test/utils/test_utils';
 import { findLegacyUeofName, migrateUEs } from './modules/ue';
@@ -34,7 +35,7 @@ export async function getOperationResults<T>(operations: MayBePromise<PrismaOper
 }
 
 let ueId = -1;
-const _prisma = new _PrismaClient();
+const _prisma = new _PrismaClient({ adapter: new PrismaMariaDb(process.env.DATABASE_URL) });
 const prisma = _prisma.$extends({
   model: {
     semester: {

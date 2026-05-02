@@ -13,7 +13,7 @@ import UserDetailResDto from './dto/res/user-detail-res.dto';
 import UserBirthdayResDto from './dto/res/user-birthday-res.dto';
 import UserAssoMembershipResDto from './dto/res/user-asso-membership-res.dto';
 import { ImageMediaService } from '../media/image/imagemedia.service';
-import { ImageMediaPreset } from '@prisma/client';
+import { ImageMediaPreset } from '../prisma/types';
 
 @Controller('users')
 @ApiTags('User')

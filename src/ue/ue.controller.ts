@@ -15,7 +15,7 @@ import { UeDetailResDto } from './dto/res/ue-detail-res.dto';
 import { UeOverviewResDto } from './dto/res/ue-overview-res.dto';
 import UeRateCriterionResDto from './dto/res/ue-rate-criterion-res.dto';
 import UeRateResDto from './dto/res/ue-rate-res.dto';
-import { Language, UserType } from '@prisma/client';
+import { Language, UserType } from '../prisma/types';
 import { UeRating } from './interfaces/rate.interface';
 import { GetLanguage } from '../app.decorator';
 

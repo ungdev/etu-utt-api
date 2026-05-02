@@ -1,6 +1,5 @@
-import { PrismaClient } from '@prisma/client';
 import { faker } from '@faker-js/faker';
-import { RawBranch } from '../../../src/prisma/types';
+import { PrismaClient, RawBranch } from '../../../src/prisma/types';
 
 const FAKER_ROUNDS = 8;
 

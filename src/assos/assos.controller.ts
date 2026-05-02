@@ -11,7 +11,7 @@ import { AppException, ERROR_CODE } from '../exceptions';
 import { ParamMember } from './decorator/get-member';
 import { Asso } from './interfaces/asso.interface';
 import { User } from '../users/interfaces/user.interface';
-import { isValidLexicalContent, pick } from '../utils';
+import { pick } from '../utils';
 import { UUIDParam } from '../app.pipe';
 import AssosSearchReqDto from './dto/req/assos-search-req.dto';
 import AssoOverviewResDto from './dto/res/asso-overview-res.dto';
@@ -24,9 +24,10 @@ import AssosMemberCreateReqDto from './dto/req/assos-member-create.dto';
 import AssosMemberUpdateReqDto from './dto/req/assos-member-update.dto';
 import AssoMembershipResDto from './dto/res/assos-membership-res.dto';
 import UsersService from '../users/users.service';
-import { ConfigModule } from '../config/config.module';
+import { ConfigService } from '../config/config.service';
 import AssosUpdateReqDto from './dto/req/assos-update-req.dto';
-import { ImageMediaPreset } from '@prisma/client';
+import { ImageMediaPreset } from '../prisma/types';
+import { LexicalModule } from '../lexical/lexical.module';
 
 @Controller('assos')
 @ApiTags('Assos')
@@ -34,8 +35,9 @@ export class AssosController {
   constructor(
     readonly assosService: AssosService,
     readonly userService: UsersService,
-    readonly config: ConfigModule,
+    readonly config: ConfigService,
     readonly mediaService: ImageMediaService,
+    readonly lexicalModule: LexicalModule,
   ) {}
 
   @Get()
@@ -83,7 +85,7 @@ export class AssosController {
     if (!(await this.assosService.hasSomeAssoPermission(asso, user.id, 'manage_infos')))
       throw new AppException(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, 'manage_infos');
     for (const key in body.description)
-      if (body.description[key] && !isValidLexicalContent(body.description[key]))
+      if (body.description[key] && !this.lexicalModule.isValidLexicalContent(body.description[key]))
         throw new AppException(ERROR_CODE.PARAM_LEXICAL_ILLEGAL, `description.${key}`);
     if (body.logo) {
       const media = await this.mediaService.getMedia(body.logo);

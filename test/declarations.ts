@@ -20,11 +20,11 @@ import {
   FakeLink,
 } from './utils/fakedb';
 import { UeAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
-import { ConfigModule } from '../src/config/config.module';
+import { ConfigService } from '../src/config/config.service';
 import { AppProvider, JsonLike } from './utils/test_utils';
 import { getTranslation, omit, PermissionManager, pick } from '../src/utils';
 import { regex, string, uuid, int } from 'pactum-matchers';
-import { Language } from '@prisma/client';
+import { Language } from '../src/prisma/types';
 import { DEFAULT_APPLICATION } from '../prisma/seed/utils';
 import ApplicationResDto from '../src/auth/application/dto/res/application-res.dto';
 import PermissionsResDto from '../src/auth/permissions/dto/res/permissions.dto';
@@ -161,7 +161,7 @@ Spec.prototype.expectUsers = function (app: AppProvider, users: FakeUser[], coun
       addresses: [],
     })),
     itemCount: count,
-    itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
+    itemsPerPage: app().get(ConfigService).PAGINATION_PAGE_SIZE,
   });
 };
 Spec.prototype.expectUes = function (ues: FakeUeWithOfs[]) {
@@ -171,7 +171,7 @@ Spec.prototype.expectUesWithPagination = function (app: AppProvider, ues: FakeUe
   return (<Spec>this).$expectRegexableJson({
     items: ues.map((ue) => ueOverviewExpectation(ue, this)),
     itemCount: count,
-    itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
+    itemsPerPage: app().get(ConfigService).PAGINATION_PAGE_SIZE,
   });
 };
 Spec.prototype.expectUeComment = function (this: Spec, obj) {
@@ -251,7 +251,7 @@ Spec.prototype.expectAssos = function (this: Spec, app: AppProvider, assos: Fake
       },
     })),
     itemCount: count,
-    itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
+    itemsPerPage: app().get(ConfigService).PAGINATION_PAGE_SIZE,
   });
 };
 Spec.prototype.expectAsso = function (asso: FakeAsso) {
@@ -349,7 +349,7 @@ Spec.prototype.expectAssoWeeklies = function (this: Spec, app: AppProvider, week
       message: weekly.message[this.language],
     })),
     itemCount: count,
-    itemsPerPage: app().get(ConfigModule).PAGINATION_PAGE_SIZE,
+    itemsPerPage: app().get(ConfigService).PAGINATION_PAGE_SIZE,
   });
 };
 Spec.prototype.expectLinks = function (this: Spec, links: FakeLink[]) {

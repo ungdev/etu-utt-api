@@ -14,7 +14,7 @@ import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiAppErrorResponse, paginatedResponseDto } from '../../app.dto';
 import { UeCommentUpvoteResDto$False, UeCommentUpvoteResDto$True } from './dto/res/ue-comment-upvote-res.dto';
 import UeCommentReplyResDto from './dto/res/ue-comment-reply-res.dto';
-import { Permission } from '@prisma/client';
+import { Permission } from '../../prisma/types';
 import { GetPermissions } from '../../auth/decorator/get-permissions.decorator';
 import { PermissionManager } from '../../utils';
 

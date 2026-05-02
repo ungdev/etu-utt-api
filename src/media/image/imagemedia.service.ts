@@ -1,8 +1,8 @@
 import { createReadStream, ReadStream } from 'fs';
 import { rm, writeFile } from 'fs/promises';
 import { Injectable } from '@nestjs/common';
-import { ImageMedia, ImageMediaPreset } from '@prisma/client';
-import { ConfigModule } from '../../config/config.module';
+import { RawImageMedia, ImageMediaPreset } from '../../prisma/types';
+import { ConfigService, isTestEnv } from '../../config/config.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MulterWithMime } from '../../upload.interceptor';
 import { User } from '../../users/interfaces/user.interface';
@@ -19,18 +19,18 @@ const presets: PresetStruct = {
   AVATAR: { width: 256, height: 256, quality: 70, effort: 5 },
 };
 
-export type ImageMetadata = Omit<ImageMedia, 'id' | 'uploadedAt' | 'isPublic' | 'uploaderId'>;
+export type ImageMetadata = Omit<RawImageMedia, 'id' | 'uploadedAt' | 'isPublic' | 'uploaderId'>;
 
 @Injectable()
 export class ImageMediaService {
   constructor(
     readonly prisma: PrismaService,
-    readonly config: ConfigModule,
+    readonly config: ConfigService,
   ) {}
 
-  async convertMedia(file: MulterWithMime, options: ImageMediaUploadReqDto): Promise<ImageMetadata> {
+  async convertMedia(file: MulterWithMime, options: ConversionOptions): Promise<ImageMetadata> {
     if (!(options.preset in presets)) options.preset = ImageMediaPreset.CUSTOM;
-    Object.assign(options, presets[options.preset]);
+    if (options.preset) Object.assign(options, presets[options.preset]);
     let instructions = sharp(file.multer.buffer);
     let metadata = await instructions.metadata();
     const size = [metadata.width, metadata.height];
@@ -55,7 +55,7 @@ export class ImageMediaService {
     return { width: metadata.width, height: metadata.height, size: file.multer.buffer.length, preset: options.preset };
   }
 
-  async registerMedia(metadata: ImageMetadata, uploader: User, isPublic: boolean): Promise<ImageMedia> {
+  async registerMedia(metadata: ImageMetadata, uploader: User, isPublic: boolean): Promise<RawImageMedia> {
     const image = await this.prisma.imageMedia.create({
       data: {
         ...metadata,
@@ -68,20 +68,24 @@ export class ImageMediaService {
     return image;
   }
 
-  async rollbackMedia(media: ImageMedia): Promise<void> {
-    await this.prisma.imageMedia.create({ data: media });
+  async rollbackMedia(media: RawImageMedia): Promise<void> {
+    const promise = this.prisma.imageMedia.create({ data: media });
+    // Don't let a hanging promise with Jest
+    if (isTestEnv) await promise;
   }
 
-  async unRegisterMedia(mediaId: string): Promise<ImageMedia> {
+  async unRegisterMedia(mediaId: string): Promise<RawImageMedia> {
     return this.prisma.imageMedia.delete({ where: { id: mediaId } });
   }
 
-  async getMedia(mediaId: string): Promise<ImageMedia> {
+  async getMedia(mediaId: string): Promise<RawImageMedia> {
     return this.prisma.imageMedia.findUnique({ where: { id: mediaId } });
   }
 
   async writeMediaToDisk(mediaId: string, buffer: Buffer): Promise<void> {
-    await writeFile(`${this.config.MEDIA_UPLOAD_DIR}/image/${mediaId}.webp`, buffer);
+    const promise = writeFile(`${this.config.MEDIA_UPLOAD_DIR}/image/${mediaId}.webp`, buffer);
+    // Don't let a hanging promise with Jest
+    if (isTestEnv) await promise;
   }
 
   readMediaFromDisk(mediaId: string): ReadStream {
@@ -90,16 +94,17 @@ export class ImageMediaService {
 
   async cleanup() {
     const media = await this.clearUnusedMedia();
-    const deletions = media.map((m) => this.deleteMediaFromDisk(m.id).catch(() => m)); // return media on failure
-    const failedDeletions = (await Promise.all(deletions)).filter((r): r is ImageMedia => r !== undefined);
-    failedDeletions.map(this.rollbackMedia); // Restore failed media, no need to wait for completion
+    const deletionsPromises = media.map((m) => this.deleteMediaFromDisk(m.id).catch(() => m)); // return media on failure
+    const deletions = await Promise.all(deletionsPromises);
+    const failedDeletions = deletions.filter((r): r is RawImageMedia => r !== undefined);
+    await Promise.all(failedDeletions.map(this.rollbackMedia));
   }
 
   /**
    * Clears unused from the Database. {@link ImageMediaService.deleteMediaFromDisk DeleteMediaFromDisk} must be called
    * with the output of this method to clear data from disk.
    */
-  private async clearUnusedMedia(): Promise<ImageMedia[]> {
+  async clearUnusedMedia(): Promise<RawImageMedia[]> {
     const targetMedias = await this.prisma.imageMedia.findMany({
       where: {
         // Filter explanation https://www.prisma.io/docs/orm/prisma-client/queries/relation-queries#filter-on-absence-of--to-many-records

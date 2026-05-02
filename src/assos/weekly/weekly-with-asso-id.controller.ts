@@ -11,13 +11,13 @@ import { User } from '../../users/interfaces/user.interface';
 import AssosPostWeeklyReqDto from './dto/req/weekly-req.dto';
 import { UUIDParam } from '../../app.pipe';
 import { AssoWeekly } from '../interfaces/weekly.interface';
-import { ConfigModule } from '../../config/config.module';
+import { ConfigService } from '../../config/config.service';
 import WeeklyService from './weekly.service';
 import { AssosService } from '../assos.service';
 
 @Controller('assos/:assoId/weekly')
 export class WeeklyWithAssoIdController {
-  constructor(readonly weeklyService: WeeklyService, readonly assosService: AssosService, readonly config: ConfigModule) {}
+  constructor(readonly weeklyService: WeeklyService, readonly assosService: AssosService, readonly config: ConfigService) {}
 
   @Get()
   @ApiOperation({ description: 'Get weeklies from query parameter `from` to query parameter `to`.' })

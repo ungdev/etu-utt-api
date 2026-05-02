@@ -4,14 +4,14 @@ import { User, UserAssoMembership } from './interfaces/user.interface';
 import UsersSearchReqDto from './dto/req/users-search-req.dto';
 import { UserUpdateReqDto } from './dto/req/users-update-req.dto';
 import { omit, translationSelect } from '../utils';
-import { ConfigModule } from '../config/config.module';
-import { Prisma } from '@prisma/client';
+import { ConfigService } from '../config/config.service';
+import { Prisma } from '../prisma/types';
 
 @Injectable()
 export default class UsersService {
   constructor(
     private prisma: PrismaService,
-    readonly config: ConfigModule,
+    readonly config: ConfigService,
   ) {}
 
   async searchUsers(dto: UsersSearchReqDto) {

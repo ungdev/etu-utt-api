@@ -219,16 +219,16 @@ export const ErrorData = Object.freeze({
     message: 'One of these parameters must be provided: %',
     httpCode: HttpStatus.BAD_REQUEST,
   },
-  [ERROR_CODE.PARAM_LEXICAL_ILLEGAL]: {
-    message: 'Content has a wrong syntax: %',
-    httpCode: HttpStatus.BAD_REQUEST,
-  },
   [ERROR_CODE.PARAM_DATE_MUST_BE_AFTER]: {
     message: 'Date % come after date %',
     httpCode: HttpStatus.BAD_REQUEST,
   },
   [ERROR_CODE.PARAM_DATE_MUST_BE_A_WEEK_DATE]: {
     message: 'Param `%` is not a week-date. A week-date is a date pointing to any Sunday at 12pm, UTC',
+    httpCode: HttpStatus.BAD_REQUEST,
+  },
+  [ERROR_CODE.PARAM_LEXICAL_ILLEGAL]: {
+    message: 'Content has a wrong syntax: %',
     httpCode: HttpStatus.BAD_REQUEST,
   },
   [ERROR_CODE.PARAM_DOES_NOT_MATCH_REGEX]: {

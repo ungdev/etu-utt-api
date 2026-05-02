@@ -1,6 +1,15 @@
-import { Language, Translation as RawTranslation } from '@prisma/client';
+import { Language, Translation as RawTranslation } from './build/client';
 
 export {
+  Prisma,
+  PrismaClient,
+  UserType,
+  Sex,
+  AddressPrivacy,
+  Language,
+  Permission,
+  ImageMediaPreset,
+  TimetableEntryType,
   User as RawUser,
   UserInfos as RawUserInfos,
   TimetableEntry as RawTimetableEntry,
@@ -39,7 +48,7 @@ export {
   ApiKey as RawApiKey,
   ImageMedia as RawImageMedia,
   Link as RawLink,
-} from '@prisma/client';
+} from './build/client';
 
 export { RawTranslation };
 export type Translation = Pick<Partial<RawTranslation>, Language>;

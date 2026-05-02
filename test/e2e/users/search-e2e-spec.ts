@@ -2,7 +2,7 @@ import * as pactum from 'pactum';
 import { e2eSuite } from '../../utils/test_utils';
 import * as fakedb from '../../utils/fakedb';
 import { ERROR_CODE } from '../../../src/exceptions';
-import { ConfigModule } from '../../../src/config/config.module';
+import { ConfigService } from '../../../src/config/config.service';
 
 const SearchE2ESpec = e2eSuite('GET /users', (app) => {
   const user = fakedb.createUser(app, {
@@ -40,7 +40,7 @@ const SearchE2ESpec = e2eSuite('GET /users', (app) => {
       .spec()
       .get('/users?firstName=s')
       .withBearerToken(user.token)
-      .expectUsers(app, randomUsers.slice(0, app().get(ConfigModule).PAGINATION_PAGE_SIZE), randomUsers.length);
+      .expectUsers(app, randomUsers.slice(0, app().get(ConfigService).PAGINATION_PAGE_SIZE), randomUsers.length);
   });
 
   it('should return a user by searching by their last name', async () =>
@@ -51,7 +51,7 @@ const SearchE2ESpec = e2eSuite('GET /users', (app) => {
       .spec()
       .get('/users?nickname=nickname')
       .withBearerToken(user.token)
-      .expectUsers(app, randomUsers.slice(0, app().get(ConfigModule).PAGINATION_PAGE_SIZE), randomUsers.length));
+      .expectUsers(app, randomUsers.slice(0, app().get(ConfigService).PAGINATION_PAGE_SIZE), randomUsers.length));
 
   it('should return a user by searching with the name field (searching in the first name)', async () =>
     pactum.spec().get(`/users?q=${user.firstName}`).withBearerToken(user.token).expectUsers(app, [user], 1));

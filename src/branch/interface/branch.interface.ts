@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { Prisma } from '../../prisma/types';
 
 const BRANCH_SELECT_FILTER = {
   select: {

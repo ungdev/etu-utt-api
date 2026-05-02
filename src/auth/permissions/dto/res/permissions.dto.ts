@@ -1,5 +1,5 @@
 import { UserPermission } from '../../../interfaces/permissions.interface';
-import { Permission } from '@prisma/client';
+import { Permission } from '../../../../prisma/types';
 
 export default class PermissionsResDto {
   hardPermissions: Permission[];

@@ -6,9 +6,11 @@ import * as fakedb from '../../utils/fakedb';
 import { AuthService } from '../../../src/auth/auth.service';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { ERROR_CODE } from '../../../src/exceptions';
-import { ConfigModule } from '../../../src/config/config.module';
+import { ConfigService } from '../../../src/config/config.service';
 import { LdapUser } from 'ldap-server-mock';
 import { mockLdapServer } from '../../external_services/ldap';
+import { DEFAULT_APPLICATION } from '../../../prisma/seed/utils';
+import { Permission } from '../../../src/prisma/types';
 
 const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
   const list: LdapUser[] = [];
@@ -20,7 +22,7 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
     end: new Date(),
   });
   const ue = fakedb.createUe(app);
-  fakedb.createUeof(app, { branchOptions: [branchOption], semesters: [semester], ue });
+  const ueof = fakedb.createUeof(app, { branchOptions: [branchOption], semesters: [semester], ue });
 
   mockLdapServer(list);
 
@@ -34,7 +36,7 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
   it('should fail as the provided token does not contains an object in the right form', async () => {
     const token = app()
       .get(JwtService)
-      .sign({ a: 'b' }, { expiresIn: 60, secret: app().get(ConfigModule).JWT_SECRET });
+      .sign({ a: 'b' }, { expiresIn: 60, secret: app().get(ConfigService).JWT_SECRET });
     pactum
       .spec()
       .post('/auth/signup/cas')
@@ -80,10 +82,10 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
       datefin: 20240930,
       jpegPhoto: `http://localhost/${login}.jpg`,
       gidNumber: type === 'student' ? '10000' : type === 'faculty' ? '5000' : '9999',
-      uv: ['PETM6', 'SY16', 'LO17', 'RE02', 'IF03', 'CTC1', 'LG11', 'PEICT', ue.code],
+      uv: [ueof.code],
     };
   };
-  const executeValidSignupRequest = async (personAttributes) => {
+  const executeValidSignupRequest = async (personAttributes, expectedApiPermissions: Permission[]) => {
     const firstName = faker.person.firstName();
     const lastName = faker.person.lastName();
     const login = personAttributes.uid;
@@ -102,12 +104,16 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
       })
       .created()
       .$expectRegexableJson({ token: JsonLike.STRING });
-    expect(await app().get(PrismaService).user.count({ where: { login } })).toEqual(1);
+    const user = await app().get(PrismaService).user.findUnique({ where: { login } });
+    expect(user).not.toBeNull();
+    const apiKeyPermissions = await app().get(PrismaService).apiKeyPermission.findMany({ where: { apiKey: { userId: user.id, applicationId: DEFAULT_APPLICATION.id } } });
+    expect(apiKeyPermissions.map(permission => permission.permission).sort()).toEqual(expectedApiPermissions);
+    list.pop(); // Remove the person we've added for this test
   };
 
   it('should successfully create the user and return a token', async () => {
     const personAttribute = getPersonAttributes('student');
-    await executeValidSignupRequest(personAttribute);
+    await executeValidSignupRequest(personAttribute, [Permission.API_GIVE_OPINIONS_UE, Permission.API_SEE_ANNALS, Permission.API_SEE_OPINIONS_UE, Permission.API_UPLOAD_ANNALS]);
     await app()
       .get(PrismaService)
       .user.deleteMany({ where: { login: personAttribute.uid } });
@@ -115,7 +121,7 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
 
   it('should successfully create the user and return a token (as a teacher)', async () => {
     const personAttribute = getPersonAttributes('faculty');
-    await executeValidSignupRequest(personAttribute);
+    await executeValidSignupRequest(personAttribute, []);
     await app()
       .get(PrismaService)
       .user.deleteMany({ where: { login: personAttribute.uid } });
@@ -132,7 +138,7 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
       displayName: assoName,
       mail,
       gidNumber: '6000',
-    });
+    }, []);
     expect(
       await app()
         .get(PrismaService)
