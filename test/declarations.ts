@@ -366,9 +366,23 @@ Spec.prototype.expectLinks = function (this: Spec, links: FakeLink[]) {
       ),
   );
 };
+Spec.prototype.expectLinksForAdmin = function (this: Spec, links: FakeLink[]) {
+  return this.expectStatus(HttpStatus.OK).expectJson(
+    [...links]
+      .mappedSort((link) => link.name[this.language])
+      .map(
+        (link) =>
+          ({
+            ...pick(link as Required<FakeLink>, 'id', 'hyperlink', 'public'),
+            name: link.name[this.language],
+            tooltip: link.tooltip[this.language],
+          }) satisfies TranslationToString<LinkResDto>,
+      ),
+  );
+}
 Spec.prototype.expectLink = function (this: Spec, link: JsonLikeVariant<FakeLink>) {
   return this.$expectRegexableJson({
-    ...pick(link as Required<FakeLink>, 'id', 'hyperlink'),
+    ...pick(link as Required<FakeLink>, 'id', 'hyperlink', 'public'),
     name: getTranslation(link.name as Translation, this.language),
     tooltip: getTranslation(link.tooltip as Translation, this.language),
   } satisfies TranslationToString<LinkResDto>);

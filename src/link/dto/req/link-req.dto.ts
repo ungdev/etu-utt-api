@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsObject, IsUrl, ValidateNested } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber, IsObject, IsOptional, IsUrl, ValidateNested } from 'class-validator';
 import { TranslationReqDto } from '../../../app.dto';
 import { Type } from 'class-transformer';
 
@@ -16,4 +16,12 @@ export class LinkReqDto {
   @IsUrl()
   @IsNotEmpty()
   hyperlink: string;
+
+  @IsBoolean()
+  @IsOptional()
+  public?: boolean = true;
+
+  @IsNumber()
+  @IsOptional()
+  position?: number;
 }

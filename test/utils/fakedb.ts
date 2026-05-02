@@ -1164,11 +1164,20 @@ export const createLink = entityFaker(
     name: () => faker.db.translation(faker.company.name),
     tooltip: () => faker.db.translation(faker.company.catchPhrase),
     hyperlink: faker.db.link.hyperlink,
+    public: true,
+    position: faker.db.link.position(),
   },
-  async (app, params) => app()
-      .get(PrismaService)
-      .normalize.link.create({ data: { ...pick(params, 'id', 'hyperlink'), name: { create: params.name }, tooltip: { create: params.tooltip } } }),
-)
+  async (app, params) =>
+    app()
+    .get(PrismaService)
+      .normalize.link.create({
+        data: {
+          ...pick(params, 'id', 'hyperlink', 'public', 'position'),
+          name: { create: params.name },
+          tooltip: { create: params.tooltip },
+        },
+      }),
+);
 
 /**
  * The return type of a fake function, either Promise<FakeEntity> or FakeEntity depending on whether OnTheFly is true or false

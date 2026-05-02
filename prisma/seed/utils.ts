@@ -12,7 +12,7 @@ export const creditType = ['CS', 'TM', 'EC', 'HT', 'ME', 'ST', 'EE'];
 
 /**
  * Stores all values that should be unique and shall not be used multiple times by faker
- * The values of this object are reset using {@link clearUniqueValues} in beforeAll blocks.
+ * The values of this object are reset using {@link clearFakerExtension} in beforeAll blocks.
  */
 const registeredUniqueValues: {
   [Type in keyof FakeEntityMap]?: {
@@ -59,16 +59,8 @@ export const registerUniqueValue = <T extends keyof FakeEntityMap, K extends key
 };
 
 /**
- * Clears all unique values that have been registered and makes all values available again.
- * This function is called automatically in beforeAll blocks when database is cleared.
- */
-export const clearUniqueValues = () => {
-  for (const key in registeredUniqueValues) delete registeredUniqueValues[key];
-};
-
-/**
  * Function that can generate a safe random unique value.
- * It is "safe" in the sense that it will not generate a value that has already been generated since last call to {@link clearUniqueValues}.
+ * It is "safe" in the sense that it will not generate a value that has already been generated since last call to {@link clearFakerExtension}.
  * @param table the for which the value is generated.
  * @param column the column for which the value is generated.
  * @param generatorFunction the function that generates the value.
@@ -90,6 +82,40 @@ function fakeSafeUniqueData<T extends keyof FakeEntityMap, K extends keyof Entit
   } while (!canUseValue(table, column, data));
   return registerUniqueValue(table, column, data);
 }
+
+/**
+ * For each field of each FakeEntity, stores the next number to yield.
+ * That number is increased by one each time, and can be used as a counter (for example, to store a position).
+ */
+const registeredCounters: {
+  [Type in keyof FakeEntityMap]?: {
+    [property in keyof Entity<Type> & string]?: number;
+  };
+} = {};
+
+/**
+ * Function that generates 0, then 1, then 2, etc. for each field of any FakeEntity.
+ * @param table Table in the database.
+ * @param column Name of the field of the fake entity.
+ */
+function fakeCounterData<T extends keyof FakeEntityMap, K extends keyof Entity<T> & string>(table: T, column: K): number {
+  if (!(table in registeredCounters))
+    registeredCounters[table] = {
+      [column]: 0,
+    };
+  else if (!(column in registeredCounters[table]))
+    (registeredCounters[table][column] as number) = 0;
+  return registeredCounters[table][column]++;
+}
+
+/**
+ * Clears all unique values that have been registered and makes all values available again.
+ * This function is called automatically in beforeAll blocks when database is cleared.
+ */
+export const clearFakerExtension = () => {
+  for (const key in registeredUniqueValues) delete registeredUniqueValues[key];
+  for (const key in registeredCounters) delete registeredCounters[key];
+};
 
 /**
  * Extends the faker module with custom functions.
@@ -130,6 +156,7 @@ declare module '@faker-js/faker' {
       };
       link: {
         hyperlink: () => string;
+        position: () => number;
       },
     };
   }
@@ -181,12 +208,7 @@ Faker.prototype.db = {
     es: rng(),
   }),
   assoMembershipRole: {
-    position: () =>
-      fakeSafeUniqueData(
-        'assoMembershipRole',
-        'position',
-        () => Math.max(...(registeredUniqueValues.assoMembershipRole?.position ?? [0])) + 1,
-      ),
+    position: () => fakeCounterData('assoMembershipRole', 'position'),
   },
   ueStarCriterion: {
     name: () => fakeSafeUniqueData('ueStarCriterion', 'name', faker.word.adjective),
@@ -196,6 +218,7 @@ Faker.prototype.db = {
   },
   link: {
     hyperlink: () => fakeSafeUniqueData('link', 'hyperlink', faker.internet.url),
+    position: () => fakeCounterData('link', 'position'),
   }
 };
 

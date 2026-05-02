@@ -35,10 +35,18 @@ export class LinkService {
    * @param name Name of the new link.
    * @param tooltip Small description of the new link.
    * @param hyperlink Hyperlink of the new link.
+   * @param public If non-connected people can access the link it.
+   * @param position 0-based position of the link.
    * @returns The new link.
    */
-  public create(name: Translation, tooltip: Translation, hyperlink: string): Promise<Link> {
-    return this.prisma.normalize.link.create({ data: { name: {create: name}, tooltip: {create: tooltip}, hyperlink } })
+  public async create(name: Translation, tooltip: Translation, hyperlink: string, public_: boolean, position = undefined): Promise<Link> {
+    const linkCount = await this.count();
+    if (position === undefined || position > linkCount) {
+      position = linkCount;
+    } else {
+      await this.prisma.link.updateMany({ where: { position: { gte: position } }, data: { position: { increment: 1 } } });
+    }
+    return this.prisma.normalize.link.create({ data: { position: position, name: { create: name }, tooltip: { create: tooltip }, hyperlink, public: public_ } })
   }
 
   /**
@@ -47,9 +55,28 @@ export class LinkService {
    * @param name Name of the link to modify, or undefined if that shouldn't be modified.
    * @param tooltip New tooltip of the link, or undefined if that shouldn't be modified.
    * @param hyperlink New hyperlink of the link, or undefined if that shouldn't be modified.
+   * @param position 0-based position of the link.
+   * @param public_ If the link is visible for not-connected users.
    * @returns The updated link.
    */
-  public update(id: string, { name, tooltip, hyperlink }: { name?: Translation, tooltip?: Translation, hyperlink?: string }): Promise<Link> {
-    return this.prisma.normalize.link.update({ where: { id }, data: { name: {create: name}, tooltip: {create: tooltip}, hyperlink } });
+  public async update(id: string, { name, tooltip, hyperlink, position, public_ }: { name?: Translation, tooltip?: Translation, hyperlink?: string, position?: number, public_?: boolean }): Promise<Link> {
+    if (position !== undefined) {
+      await this.prisma.link.updateMany({ where: { position: { gte: position } }, data: { position: { increment: 1 } } });
+    }
+    return this.prisma.normalize.link.update({ where: { id }, data: { name: { create: name }, tooltip: { create: tooltip }, hyperlink, position, public: public_ } });
+  }
+
+  /**
+   * Deletes a link. All links after this one (with a greater position) will see their position decrease by 1.
+   * @param id Id of the link to delete.
+   */
+  public async delete(id: string): Promise<Link> {
+    const link = await this.prisma.normalize.link.delete({ where: { id } });
+    await this.prisma.link.updateMany({ where: { position: { gt: link.position } }, data: { position: { decrement: 1 } } });
+    return link;
+  }
+
+  public count(): Promise<number> {
+    return this.prisma.link.count();
   }
 }

@@ -1,4 +1,4 @@
-import { e2eSuite, JsonLike } from '../../utils/test_utils';
+import { Dummies, e2eSuite, JsonLike } from '../../utils/test_utils';
 import * as pactum from 'pactum';
 import * as fakedb from '../../utils/fakedb';
 import { LinkReqDto } from '../../../src/link/dto/req/link-req.dto';
@@ -8,46 +8,42 @@ import { PermissionManager } from '../../../src/utils';
 import { HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 
-const CreateLinksE2ESpec = e2eSuite('POST /link', (app) => {
-  const existingLink = fakedb.createLink(app);
+const DeleteLinkE2ESpec = e2eSuite('DELETE /link/:id', (app) => {
+  const link = fakedb.createLink(app);
+  const secondLink = fakedb.createLink(app);
   const user = fakedb.createUser(app, { permissions: new PermissionManager().with('API_MODIFY_LINKS') });
   const userNoPermission = fakedb.createUser(app);
 
-  const body: LinkReqDto = {
-    hyperlink: faker.db.link.hyperlink(),
-    name: faker.db.translation(faker.company.name),
-    tooltip: faker.db.translation(faker.company.catchPhrase),
-  };
-
-  it('should fail as user is not connected', () => pactum.spec().post('/link').withBody(body).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
+  it('should fail as user is not connected', () => pactum.spec().delete(`/link/${link.id}`).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
 
   it('should fail as user does not have permission API_MODIFY_LINKS', () =>
     pactum
       .spec()
-      .post('/link')
+      .delete(`/link/${link.id}`)
       .withBearerToken(userNoPermission.token)
-      .withBody(body)
       .expectAppError(ERROR_CODE.FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS, 'API_MODIFY_LINKS'));
 
-  it('should fail as link already exists', () =>
+  it('should fail as the link does not exist', () =>
     pactum
       .spec()
-      .post('/link')
+      .delete(`/link/${Dummies.UUID}`)
       .withBearerToken(user.token)
-      .withBody({ ...body, hyperlink: existingLink.hyperlink })
       .expectAppError(ERROR_CODE.LINK_ALREADY_EXISTS));
 
-  it('should successfully create the link', async () => {
+  it('should successfully delete the link', async () => {
     await pactum
       .spec()
-      .post('/link')
+      .post(`/link/${link.id}`)
       .withBearerToken(user.token)
-      .withBody(body)
       .expectStatus(HttpStatus.CREATED)
-      .expectLink({ id: JsonLike.UUID, ...body, public: true });
-    const deleted = await app().get(PrismaService).link.deleteMany({ where: {id: { not: existingLink.id }}});
-    expect(deleted.count).toBe(1);
+      .expectLink(link);
+    // Verify position of secondLink has changed
+    const secondLinkFromDb = await app().get(PrismaService).normalize.link.findUnique({ where: { id: secondLink.id } });
+    expect(secondLinkFromDb.position).toBe(0);
+    // Set back position of secondLink to 1
+    await app().get(PrismaService).link.update({ where: { id: secondLink.id }, data: { position: 1 } });
+    await fakedb.createLink(app, link, true);
   });
 });
 
-export default CreateLinksE2ESpec;
+export default DeleteLinkE2ESpec;

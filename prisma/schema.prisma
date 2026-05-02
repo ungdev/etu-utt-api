@@ -181,10 +181,12 @@ model ImageMedia {
 }
 
 model Link {
-  id        String @id @default(uuid())
-  nameId    String @unique
-  tooltipId String @unique
-  hyperlink String @unique
+  id        String  @id @default(uuid())
+  position  Int     @unique
+  nameId    String  @unique
+  tooltipId String  @unique
+  hyperlink String  @unique
+  public    Boolean // If you need to be connected to see the link
 
   name    Translation @relation(name: "linkNameTranslation", fields: [nameId], references: [id])
   tooltip Translation @relation(name: "linkTooltipTranslation", fields: [tooltipId], references: [id])

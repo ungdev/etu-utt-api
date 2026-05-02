@@ -8,4 +8,8 @@ export class LinkResDto {
   @ApiProperty({ type: String })
   tooltip: Translation;
   hyperlink: string;
+
+  // Admin information
+  @ApiProperty({ description: 'Only with permission API_MODIFY_LINKS.' })
+  public?: boolean;
 }

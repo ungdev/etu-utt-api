@@ -15,7 +15,7 @@ const UpdateLinksE2ESpec = e2eSuite('PATCH /link/:id', (app) => {
   const body = () => ({
     hyperlink: faker.db.link.hyperlink(),
     name: faker.db.translation(faker.company.name),
-    tooltip: faker.db.translation(faker.company.catchPhrase)
+    tooltip: faker.db.translation(faker.company.catchPhrase),
   } as LinkReqDto);
 
   it('should fail as user is not connected', () => pactum.spec().patch(`/link/${link.id}`).withBody(body()).expectAppError(ERROR_CODE.NOT_LOGGED_IN))

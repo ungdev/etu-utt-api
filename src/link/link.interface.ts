@@ -5,9 +5,11 @@ import { generateCustomModel } from '../prisma/prisma.service';
 const LINK_SELECT_FILTER = {
   select: {
     id: true,
+    position: true,
     name: translationSelect,
     tooltip: translationSelect,
     hyperlink: true,
+    public: true,
   },
 } as const satisfies Prisma.LinkFindManyArgs;
 
