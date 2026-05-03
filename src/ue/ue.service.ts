@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { UeSearchReqDto } from './dto/req/ue-search-req.dto';
-import { PrismaService } from '../prisma/prisma.service';
-import { UeRateReqDto } from './dto/req/ue-rate-req.dto';
-import { Ue } from './interfaces/ue.interface';
-import { Criterion } from './interfaces/criterion.interface';
-import { UeRating } from './interfaces/rate.interface';
-import { ConfigService } from '../config/config.service';
-import { Language, Prisma } from '../prisma/types';
-import { SemesterService } from '../semester/semester.service';
+import { UeSearchReqDto } from '@/ue/dto/req/ue-search-req.dto';
+import { PrismaService } from '@/prisma/prisma.service';
+import { UeRateReqDto } from '@/ue/dto/req/ue-rate-req.dto';
+import { Ue } from '@/ue/interfaces/ue.interface';
+import { Criterion } from '@/ue/interfaces/criterion.interface';
+import { UeRating } from '@/ue/interfaces/rate.interface';
+import { ConfigService } from '@/config/config.service';
+import { Language, Prisma } from '@/prisma/types';
+import { SemesterService } from '@/semester/semester.service';
 
 @Injectable()
 export class UeService {

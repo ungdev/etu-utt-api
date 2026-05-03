@@ -1,7 +1,7 @@
-import { CommentStatus } from './comment.interface';
-import { Prisma, PrismaClient } from '../../../prisma/types';
-import { omit } from '../../../utils';
-import { generateCustomModel } from '../../../prisma/prisma.service';
+import { CommentStatus } from '@/ue/comments/interfaces/comment.interface';
+import { Prisma, PrismaClient } from '@/prisma/types';
+import { omit } from '@/utils';
+import { generateCustomModel } from '@/prisma/prisma.service';
 
 const REPLY_SELECT_FILTER = {
   select: {

@@ -2,9 +2,9 @@ import {
   $create,
   $getState, $getStateChange,
   $setState, BaseStaticNodeConfig,
-  createState,
   DecoratorNode,
   EditorConfig,
+  createState,
 } from 'lexical';
 
 const srcState = createState('src', {

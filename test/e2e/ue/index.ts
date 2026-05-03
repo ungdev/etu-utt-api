@@ -1,13 +1,13 @@
 import { INestApplication } from '@nestjs/common';
-import SearchE2ESpec from './search.e2e-spec';
-import GetE2ESpec from './get.e2e-spec';
-import GetRateCriteria from './get-rate-criteria.e2e-spec';
-import GetRateE2ESpec from './get-ue-rate.e2e-spec';
-import PutRate from './put-rate.e2e-spec';
-import DeleteRate from './delete-rate.e2e-spec';
-import AnnalsE2ESpec from './annals';
-import CommentsE2ESpec from './comments';
-import GetMyUesE2ESpec from './get-my-ues.e2e-spec';
+import SearchE2ESpec from '#/e2e/ue/search.e2e-spec';
+import GetE2ESpec from '#/e2e/ue/get.e2e-spec';
+import GetRateCriteria from '#/e2e/ue/get-rate-criteria.e2e-spec';
+import GetRateE2ESpec from '#/e2e/ue/get-ue-rate.e2e-spec';
+import PutRate from '#/e2e/ue/put-rate.e2e-spec';
+import DeleteRate from '#/e2e/ue/delete-rate.e2e-spec';
+import AnnalsE2ESpec from '#/e2e/ue/annals';
+import CommentsE2ESpec from '#/e2e/ue/comments';
+import GetMyUesE2ESpec from '#/e2e/ue/get-my-ues.e2e-spec';
 
 export default function UeE2ESpec(app: () => INestApplication) {
   describe('UE', () => {

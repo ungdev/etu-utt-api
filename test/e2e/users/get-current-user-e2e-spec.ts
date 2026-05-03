@@ -1,9 +1,9 @@
-import { e2eSuite } from '../../utils/test_utils';
-import { createUser } from '../../utils/fakedb';
+import { e2eSuite } from '#/utils/test_utils';
+import { createUser } from '#/utils/fakedb';
 import * as pactum from 'pactum';
-import { PrismaService } from '../../../src/prisma/prisma.service';
-import { pick } from '../../../src/utils';
-import { ERROR_CODE } from '../../../src/exceptions';
+import { PrismaService } from '@/prisma/prisma.service';
+import { pick } from '@/utils';
+import { ERROR_CODE } from '@/exceptions';
 
 const GetCurrentUserE2ESpec = e2eSuite('GET /users/current', (app) => {
   const user = createUser(app);

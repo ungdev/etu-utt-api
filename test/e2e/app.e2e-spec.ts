@@ -6,24 +6,24 @@ jest.mock('@nestjs-modules/mailer/dist/adapters/ejs.adapter', () => ({
   })),
 }));
 
-import '../declarations';
-import '../../src/std.type';
-import * as testUtils from '../utils/test_utils';
+import '#/declarations';
+import '@/std.type';
+import * as testUtils from '#/utils/test_utils';
 import { INestApplication, VersioningType } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { AppModule } from '../../src/app.module';
+import { AppModule } from '@/app.module';
 import * as pactum from 'pactum';
-import AuthE2ESpec from './auth';
-import ProfileE2ESpec from './profile';
-import UsersE2ESpec from './users';
-import TimetableE2ESpec from './timetable';
-import UeE2ESpec from './ue';
-import { AppValidationPipe } from '../../src/app.pipe';
-import * as cas from '../external_services/cas';
-import * as timetableProvider from '../external_services/timetable';
-import { ConfigService } from '../../src/config/config.service';
-import AssoE2ESpec from './assos';
-import MediaE2ESpec from './media';
+import AuthE2ESpec from '#/e2e/auth';
+import ProfileE2ESpec from '#/e2e/profile';
+import UsersE2ESpec from '#/e2e/users';
+import TimetableE2ESpec from '#/e2e/timetable';
+import UeE2ESpec from '#/e2e/ue';
+import { AppValidationPipe } from '@/app.pipe';
+import * as cas from '#/external_services/cas';
+import * as timetableProvider from '#/external_services/timetable';
+import { ConfigService } from '@/config/config.service';
+import AssoE2ESpec from '#/e2e/assos';
+import MediaE2ESpec from '#/e2e/media';
 
 describe('EtuUTT API e2e testing', () => {
   let app: INestApplication;

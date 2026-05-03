@@ -1,22 +1,22 @@
 import { Module } from '@nestjs/common';
-import { AuthModule } from './auth/auth.module';
-import { PrismaModule } from './prisma/prisma.module';
-import { ProfileModule } from './profile/profile.module';
-import { UsersModule } from './users/users.module';
+import { AuthModule } from '@/auth/auth.module';
+import { PrismaModule } from '@/prisma/prisma.module';
+import { ProfileModule } from '@/profile/profile.module';
+import { UsersModule } from '@/users/users.module';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
-import { PermissionGuard } from './auth/guard/permission.guard';
-import { RoleGuard } from './auth/guard/role.guard';
-import { UeModule } from './ue/ue.module';
-import { JwtGuard } from './auth/guard';
-import { TimetableModule } from './timetable/timetable.module';
-import { ConfigModule } from './config/config.module';
-import { HttpModule } from './http/http.module';
-import { BranchModule } from './branch/branch.module';
-import { AssosModule } from './assos/assos.module';
-import { TranslationInterceptor } from './app.interceptor';
-import { SemesterModule } from './semester/semester.module';
-import { ImageMediaModule } from './media/image/imagemedia.module';
-import { MailModule } from './mail/mail.module';
+import { PermissionGuard } from '@/auth/guard/permission.guard';
+import { RoleGuard } from '@/auth/guard/role.guard';
+import { UeModule } from '@/ue/ue.module';
+import { JwtGuard } from '@/auth/guard';
+import { TimetableModule } from '@/timetable/timetable.module';
+import { ConfigModule } from '@/config/config.module';
+import { HttpModule } from '@/http/http.module';
+import { BranchModule } from '@/branch/branch.module';
+import { AssosModule } from '@/assos/assos.module';
+import { TranslationInterceptor } from '@/app.interceptor';
+import { SemesterModule } from '@/semester/semester.module';
+import { ImageMediaModule } from '@/media/image/imagemedia.module';
+import { MailModule } from '@/mail/mail.module';
 
 @Module({
   imports: [

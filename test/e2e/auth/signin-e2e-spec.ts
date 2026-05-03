@@ -1,12 +1,12 @@
-import AuthSignInDto from '../../../src/auth/dto/req/auth-sign-in-req.dto';
+import AuthSignInDto from '@/auth/dto/req/auth-sign-in-req.dto';
 import * as pactum from 'pactum';
-import { e2eSuite, JsonLike } from '../../utils/test_utils';
-import * as fakedb from '../../utils/fakedb';
-import { ERROR_CODE } from '../../../src/exceptions';
+import { JsonLike, e2eSuite } from '#/utils/test_utils';
+import * as fakedb from '#/utils/fakedb';
+import { ERROR_CODE } from '@/exceptions';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from '../../../src/prisma/prisma.service';
-import { DEFAULT_APPLICATION } from '../../../prisma/seed/utils';
-import { AuthService } from '../../../src/auth/auth.service';
+import { PrismaService } from '@/prisma/prisma.service';
+import { DEFAULT_APPLICATION } from '#/../prisma/seed/utils';
+import { AuthService } from '@/auth/auth.service';
 
 const SignInE2ESpec = e2eSuite('POST /auth/signin', (app) => {
   const dto = {
@@ -30,7 +30,7 @@ const SignInE2ESpec = e2eSuite('POST /auth/signin', (app) => {
     pactum
       .spec()
       .post('/auth/signin')
-      .withBody({ ...dto, login: 'my/login_1' })
+      .withBody({ ...dto, login: '#/login_1' })
       .expectAppError(ERROR_CODE.PARAM_NOT_ALPHANUMERIC, 'login'));
 
   it('should return a 400 if password is missing', async () =>

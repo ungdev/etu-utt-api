@@ -1,15 +1,15 @@
 import {
-  Param,
-  ParseUUIDPipe,
-  Type,
   ArgumentMetadata,
   Injectable,
-  PipeTransform,
-  ValidationPipe,
+  Param,
   ParseIntPipe,
+  ParseUUIDPipe,
+  PipeTransform,
+  Type,
+  ValidationPipe,
 } from '@nestjs/common';
-import { AppException, ERROR_CODE } from './exceptions';
-import { validationExceptionFactory } from './validation';
+import { AppException, ERROR_CODE } from '@/exceptions';
+import { validationExceptionFactory } from '@/validation';
 
 /**
  * A validating pipe for regex.

@@ -1,7 +1,7 @@
-import { UploadedFile, UseInterceptors, ParseFilePipe, Injectable } from '@nestjs/common';
+import { Injectable, ParseFilePipe, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
-import { AppException, ERROR_CODE } from './exceptions';
+import { AppException, ERROR_CODE } from '@/exceptions';
 
 export type MulterWithMime = {
   mime: string;

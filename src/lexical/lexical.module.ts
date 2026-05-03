@@ -1,15 +1,15 @@
 import { Module } from '@nestjs/common';
-import { TextNode, ParagraphNode } from 'lexical';
+import { ParagraphNode, TextNode } from 'lexical';
 import { createHeadlessEditor } from '@lexical/headless';
 import { $generateHtmlFromNodes } from '@lexical/html';
 import { AutoLinkNode, LinkNode } from '@lexical/link';
 import { HeadingNode, QuoteNode } from '@lexical/rich-text';
 import { CodeHighlightNode, CodeNode } from '@lexical/code';
-import { TableNode, TableCellNode, TableRowNode } from '@lexical/table';
-import { ListNode, ListItemNode } from '@lexical/list';
+import { TableCellNode, TableNode, TableRowNode } from '@lexical/table';
+import { ListItemNode, ListNode } from '@lexical/list';
 import { HorizontalRuleNode } from '@lexical/extension';
-import { ColorTextNode, ImageNode, RegisteredStyleMap } from './nodes';
-import { patchNodeExportDOM } from './nodes/NodeStyleInjector';
+import { ColorTextNode, ImageNode, RegisteredStyleMap } from '@/lexical/nodes';
+import { patchNodeExportDOM } from '@/lexical/nodes/NodeStyleInjector';
 
 /** @internal */
 export const BUNDLES = {

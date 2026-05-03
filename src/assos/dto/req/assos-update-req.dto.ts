@@ -5,11 +5,11 @@ import {
   IsOptional,
   IsPhoneNumber,
   IsString,
-  IsUrl,
   IsUUID,
+  IsUrl,
   ValidateNested,
 } from 'class-validator';
-import { TranslationReqDto } from '../../../app.dto';
+import { TranslationReqDto } from '@/app.dto';
 
 export default class AssosUpdateReqDto {
   @IsOptional()

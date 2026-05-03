@@ -1,4 +1,4 @@
-import { PrismaClient, RawCreditCategory } from '../../../src/prisma/types';
+import { PrismaClient, RawCreditCategory } from '@/prisma/types';
 import { faker } from '@faker-js/faker';
 
 const FAKER_ROUNDS = 5;

@@ -1,8 +1,8 @@
-import { PrismaClient, Sex, RawUser } from '../../../src/prisma/types';
+import { PrismaClient, RawUser, Sex } from '@/prisma/types';
 import { faker } from '@faker-js/faker';
 import * as bcrypt from 'bcryptjs';
 import { DEFAULT_APPLICATION } from '../utils';
-import { AuthService } from '../../../src/auth/auth.service';
+import { AuthService } from '@/auth/auth.service';
 
 const FAKER_ROUNDS = 100;
 

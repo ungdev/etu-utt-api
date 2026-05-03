@@ -1,32 +1,32 @@
 import { HttpStatus } from '@nestjs/common';
 import Spec from 'pactum/src/models/Spec';
-import { FakeAssoMembers, FakeUeWithOfs, JsonLikeVariant } from './declarations.d';
-import { ERROR_CODE, ErrorData, ExtrasTypeBuilder } from '../src/exceptions';
-import { UeComment } from '../src/ue/comments/interfaces/comment.interface';
-import { UeCommentReply } from '../src/ue/comments/interfaces/comment-reply.interface';
-import { Criterion } from 'src/ue/interfaces/criterion.interface';
-import { UeRating } from 'src/ue/interfaces/rate.interface';
+import { FakeAssoMembers, FakeUeWithOfs, JsonLikeVariant } from '#/declarations.d';
+import { ERROR_CODE, ErrorData, ExtrasTypeBuilder } from '@/exceptions';
+import { UeComment } from '@/ue/comments/interfaces/comment.interface';
+import { UeCommentReply } from '@/ue/comments/interfaces/comment-reply.interface';
+import { Criterion } from '@/ue/interfaces/criterion.interface';
+import { UeRating } from '@/ue/interfaces/rate.interface';
 import {
-  FakeUeAnnalType,
-  FakeUser,
-  FakeHomepageWidget,
-  FakeAsso,
-  FakeUeCreditCategory,
   FakeApiApplication,
-  FakeAssoMembershipRole,
+  FakeAsso,
   FakeAssoMembership,
-  FakeImageMedia,
+  FakeAssoMembershipRole,
   FakeAssoWeekly,
-} from './utils/fakedb';
-import { UeAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
-import { ConfigService } from '../src/config/config.service';
-import { AppProvider, JsonLike } from './utils/test_utils';
-import { getTranslation, omit, PermissionManager, pick } from '../src/utils';
-import { regex, string, uuid, int } from 'pactum-matchers';
-import { Language } from '../src/prisma/types';
-import { DEFAULT_APPLICATION } from '../prisma/seed/utils';
-import ApplicationResDto from '../src/auth/application/dto/res/application-res.dto';
-import PermissionsResDto from '../src/auth/permissions/dto/res/permissions.dto';
+  FakeHomepageWidget,
+  FakeImageMedia,
+  FakeUeAnnalType,
+  FakeUeCreditCategory,
+  FakeUser,
+} from '#/utils/fakedb';
+import { UeAnnalFile } from '@/ue/annals/interfaces/annal.interface';
+import { ConfigService } from '@/config/config.service';
+import { AppProvider, JsonLike } from '#/utils/test_utils';
+import { PermissionManager, getTranslation, omit, pick } from '@/utils';
+import { int, regex, string, uuid } from 'pactum-matchers';
+import { Language } from '@/prisma/types';
+import { DEFAULT_APPLICATION } from '#/../prisma/seed/utils';
+import ApplicationResDto from '@/auth/application/dto/res/application-res.dto';
+import PermissionsResDto from '@/auth/permissions/dto/res/permissions.dto';
 
 function ueOverviewExpectation(ue: FakeUeWithOfs, spec: Spec) {
   return {

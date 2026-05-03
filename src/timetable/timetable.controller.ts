@@ -1,16 +1,16 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
-import TimetableService from './timetable.service';
-import { GetUser } from '../auth/decorator';
-import { User } from '../users/interfaces/user.interface';
-import { IntParam, PositiveIntParam, regex, RegexPipe } from '../app.pipe';
-import TimetableCreateEntryReqDto from './dto/req/timetable-create-entry-req.dto';
-import TimetableUpdateEntryReqDto from './dto/req/timetable-update-entry-req.dto';
-import { DetailedTimetableEntry, ResponseDetailedTimetableEntry } from './interfaces/timetable.interface';
-import TimetableDeleteOccurrencesReqDto from './dto/req/timetable-delete-occurrences-req.dto';
-import { AppException, ERROR_CODE } from '../exceptions';
-import { CourseService } from '../ue/course/course.service';
-import { UeService } from '../ue/ue.service';
-import { UeCourse } from '../ue/course/interfaces/course.interface';
+import { IntParam, PositiveIntParam, RegexPipe, regex } from '@/app.pipe';
+import { GetUser } from '@/auth/decorator';
+import TimetableCreateEntryReqDto from '@/timetable/dto/req/timetable-create-entry-req.dto';
+import TimetableDeleteOccurrencesReqDto from '@/timetable/dto/req/timetable-delete-occurrences-req.dto';
+import TimetableUpdateEntryReqDto from '@/timetable/dto/req/timetable-update-entry-req.dto';
+import { DetailedTimetableEntry, ResponseDetailedTimetableEntry } from '@/timetable/interfaces/timetable.interface';
+import TimetableService from '@/timetable/timetable.service';
+import { User } from '@/users/interfaces/user.interface';
+import { AppException, ERROR_CODE } from '@/exceptions';
+import { CourseService } from '@/ue/course/course.service';
+import { UeService } from '@/ue/ue.service';
+import { UeCourse } from '@/ue/course/interfaces/course.interface';
 
 @Controller('/timetable')
 export class TimetableController {

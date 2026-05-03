@@ -1,19 +1,19 @@
 import * as pactum from 'pactum';
 import {
-  createUser,
+  createAnnalType,
   createBranch,
   createBranchOption,
   createSemester,
   createUe,
   createUeSubscription,
-  createAnnalType,
   createUeof,
-} from '../../../utils/fakedb';
-import { JsonLike, e2eSuite } from '../../../utils/test_utils';
-import { ERROR_CODE } from '../../../../src/exceptions';
-import { ConfigService } from '../../../../src/config/config.service';
-import { CommentStatus } from 'src/ue/comments/interfaces/comment.interface';
-import { PermissionManager, pick } from '../../../../src/utils';
+  createUser,
+} from '#/utils/fakedb';
+import { JsonLike, e2eSuite } from '#/utils/test_utils';
+import { ERROR_CODE } from '@/exceptions';
+import { ConfigService } from '@/config/config.service';
+import { CommentStatus } from '@/ue/comments/interfaces/comment.interface';
+import { PermissionManager, pick } from '@/utils';
 import { mkdirSync, rmSync } from 'fs';
 
 const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {

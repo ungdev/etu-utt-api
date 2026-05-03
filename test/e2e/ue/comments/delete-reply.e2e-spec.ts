@@ -1,19 +1,19 @@
 import {
-  createUser,
-  createUe,
-  createComment,
   createBranch,
   createBranchOption,
-  createSemester,
+  createComment,
   createCommentReply,
+  createSemester,
+  createUe,
   createUeof,
-} from '../../../utils/fakedb';
-import { e2eSuite, Dummies } from '../../../utils/test_utils';
+  createUser,
+} from '#/utils/fakedb';
+import { Dummies, e2eSuite } from '#/utils/test_utils';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '../../../../src/exceptions';
-import { CommentStatus } from 'src/ue/comments/interfaces/comment.interface';
-import { PrismaService } from '../../../../src/prisma/prisma.service';
-import { PermissionManager } from '../../../../src/utils';
+import { ERROR_CODE } from '@/exceptions';
+import { CommentStatus } from '@/ue/comments/interfaces/comment.interface';
+import { PrismaService } from '@/prisma/prisma.service';
+import { PermissionManager } from '@/utils';
 
 const DeleteCommentReply = e2eSuite('DELETE /ue/comments/reply/{replyId}', (app) => {
   const user = createUser(app, { permissions: new PermissionManager().with('API_GIVE_OPINIONS_UE') });

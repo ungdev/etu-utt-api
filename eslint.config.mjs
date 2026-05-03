@@ -5,6 +5,7 @@ import tsParser from '@typescript-eslint/parser';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import typescriptPlugin from 'typescript-eslint';
+import importPlugin from 'eslint-plugin-import'
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,7 +13,7 @@ const __dirname = path.dirname(__filename);
 export default defineConfig([globalIgnores(['eslint.config.mjs']),
   {
     extends: [
-      typescriptPlugin.configs.recommended, eslintConfigPrettier
+      typescriptPlugin.configs.recommended, eslintConfigPrettier, importPlugin.flatConfigs.recommended, importPlugin.flatConfigs.typescript,
     ],
 
     languageOptions: {
@@ -36,7 +37,10 @@ export default defineConfig([globalIgnores(['eslint.config.mjs']),
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
+      'import/no-unresolved': 'off',
+      // Currently disabled, until https://github.com/import-js/eslint-plugin-import/pull/3230 is merged to support ESLint 10.
+      //'import/order': 'error'
     },
-    files: ['**/*.ts']
+    files: ['**/*.ts'],
   },
 ]);

@@ -1,9 +1,9 @@
-import { Dummies, e2eSuite } from '../../../utils/test_utils';
-import * as fakedb from '../../../utils/fakedb';
+import { Dummies, e2eSuite } from '#/utils/test_utils';
+import * as fakedb from '#/utils/fakedb';
 import { cpSync, mkdirSync, rmSync } from 'fs';
-import { ConfigService } from '../../../../src/config/config.service';
-import { createUser } from '../../../utils/fakedb';
-import { ERROR_CODE } from '../../../../src/exceptions';
+import { ConfigService } from '@/config/config.service';
+import { createUser } from '#/utils/fakedb';
+import { ERROR_CODE } from '@/exceptions';
 import * as pactum from 'pactum';
 
 export const GetMediaE2ESpec = e2eSuite('GET /media/image/:mediaId', (app) => {

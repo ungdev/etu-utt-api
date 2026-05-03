@@ -1,4 +1,4 @@
-import { ImageMediaPreset } from '../../../../prisma/types';
+import { ImageMediaPreset } from '@/prisma/types';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';

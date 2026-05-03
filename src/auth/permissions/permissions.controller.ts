@@ -1,11 +1,11 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import PermissionsService from './permissions.service';
-import { GetPermissions } from '../decorator/get-permissions.decorator';
-import { PermissionManager } from '../../utils';
-import PermissionsResDto from './dto/res/permissions.dto';
-import { AuthService } from '../auth.service';
-import { AppException, ERROR_CODE } from '../../exceptions';
+import PermissionsService from '@/auth/permissions/permissions.service';
+import { GetPermissions } from '@/auth/decorator/get-permissions.decorator';
+import { PermissionManager } from '@/utils';
+import PermissionsResDto from '@/auth/permissions/dto/res/permissions.dto';
+import { AuthService } from '@/auth/auth.service';
+import { AppException, ERROR_CODE } from '@/exceptions';
 
 @Controller('auth/permissions')
 @ApiTags('Permissions')

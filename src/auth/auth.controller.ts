@@ -1,25 +1,25 @@
 import { Body, Controller, Get, Headers, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import AuthSignInReqDto from './dto/req/auth-sign-in-req.dto';
-import AuthSignUpReqDto from './dto/req/auth-sign-up-req.dto';
-import { IsPublic } from './decorator';
-import { AppException, ERROR_CODE } from '../exceptions';
-import AuthCasSignInReqDto from './dto/req/auth-cas-sign-in-req.dto';
-import AuthCasSignUpReqDto from './dto/req/auth-cas-sign-up-req.dto';
-import UsersService from '../users/users.service';
+import { AuthService } from '@/auth/auth.service';
+import AuthSignInReqDto from '@/auth/dto/req/auth-sign-in-req.dto';
+import AuthSignUpReqDto from '@/auth/dto/req/auth-sign-up-req.dto';
+import { IsPublic } from '@/auth/decorator';
+import { AppException, ERROR_CODE } from '@/exceptions';
+import AuthCasSignInReqDto from '@/auth/dto/req/auth-cas-sign-in-req.dto';
+import AuthCasSignUpReqDto from '@/auth/dto/req/auth-cas-sign-up-req.dto';
+import UsersService from '@/users/users.service';
 import { ApiCreatedResponse, ApiHeader, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import AuthSigninResDto from './dto/res/auth-signin-res.dto';
-import TokenValidityResDto from './dto/res/token-validity-res.dto';
-import CasLoginResDto from './dto/res/cas-login-res.dto';
-import { ApiAppErrorResponse } from '../app.dto';
-import { GetApplication } from './decorator/get-application.decorator';
-import CreateApiKeyReqDto from './dto/req/create-api-key-req.dto';
-import ApplicationService from './application/application.service';
-import { Application } from './application/interfaces/application.interface';
-import AuthValidateReqDto from './dto/req/auth-validate-req.dto';
-import { ConfigService } from '../config/config.service';
-import AuthTokenResDto from './dto/res/auth-token-res.dto';
-import AuthRedirectionResDto from './dto/res/auth-redirection-res.dto';
+import AuthSigninResDto from '@/auth/dto/res/auth-signin-res.dto';
+import TokenValidityResDto from '@/auth/dto/res/token-validity-res.dto';
+import CasLoginResDto from '@/auth/dto/res/cas-login-res.dto';
+import { ApiAppErrorResponse } from '@/app.dto';
+import { GetApplication } from '@/auth/decorator/get-application.decorator';
+import CreateApiKeyReqDto from '@/auth/dto/req/create-api-key-req.dto';
+import ApplicationService from '@/auth/application/application.service';
+import { Application } from '@/auth/application/interfaces/application.interface';
+import AuthValidateReqDto from '@/auth/dto/req/auth-validate-req.dto';
+import { ConfigService } from '@/config/config.service';
+import AuthTokenResDto from '@/auth/dto/res/auth-token-res.dto';
+import AuthRedirectionResDto from '@/auth/dto/res/auth-redirection-res.dto';
 
 @Controller('auth')
 @ApiTags('Authentication')

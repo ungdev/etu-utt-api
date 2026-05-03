@@ -1,15 +1,15 @@
-import { Dummies, e2eSuite } from '../../utils/test_utils';
+import { Dummies, e2eSuite } from '#/utils/test_utils';
 import {
-  createAsso, createAssoWeekly,
-  createAssoMembership,
+  createAsso, createAssoMembership,
   createAssoMembershipPermission,
   createAssoMembershipRole,
+  createAssoWeekly,
   createUser,
-} from '../../utils/fakedb';
+} from '#/utils/fakedb';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '../../../src/exceptions';
+import { ERROR_CODE } from '@/exceptions';
 import { faker } from '@faker-js/faker';
-import { pick } from '../../../src/utils';
+import { pick } from '@/utils';
 
 const UpdateWeeklyE2ESpec = e2eSuite('PATCH /assos/:assoId/weekly/:weeklyId', (app) => {
   const userWithPermission = createUser(app);

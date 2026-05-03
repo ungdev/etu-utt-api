@@ -1,51 +1,50 @@
 import {
+  ImageMediaPreset,
+  Permission,
+  RawAnnalType,
+  RawApiApplication,
+  RawApiKey,
   RawAsso,
   RawAssoMembership,
-  RawAssoMembershipRole,
   RawAssoMembershipPermission,
+  RawAssoMembershipRole,
   RawBranch,
   RawBranchOption,
   RawCreditCategory,
   RawHomepageWidget,
+  RawImageMedia,
   RawSemester,
   RawTimetableEntry,
   RawTimetableEntryOverride,
   RawTimetableGroup,
   RawUe,
-  RawUeof,
-  RawAnnalType,
   RawUeComment,
   RawUeCommentReply,
   RawUeCommentUpvote,
   RawUeCredit,
-  RawUeofInfo,
   RawUeStarCriterion,
   RawUeStarVote,
   RawUeWorkTime,
+  RawUeof,
+  RawUeofInfo,
   RawUser,
   RawUserAddress,
   RawUserBranchSubscription,
   RawUserInfos,
   RawUserMailsPhones,
   RawUserPreference,
-  RawUserSocialNetwork,
-  RawUserUeSubscription,
-  Translation,
   RawUserPrivacy,
-  RawApiKey,
-  RawApiApplication,
-  RawImageMedia,
-} from '../../src/prisma/types';
+  RawUserSocialNetwork,
+ RawUserUeSubscription, Sex, TimetableEntryType, Translation, UserType } from '@/prisma/types';
 import { faker } from '@faker-js/faker';
-import { AuthService } from '../../src/auth/auth.service';
-import { PrismaService } from '../../src/prisma/prisma.service';
-import { AppProvider } from './test_utils';
-import { ImageMediaPreset, Permission, Sex, TimetableEntryType, UserType } from '../../src/prisma/types';
-import { CommentStatus } from '../../src/ue/comments/interfaces/comment.interface';
-import { UeAnnalFile } from '../../src/ue/annals/interfaces/annal.interface';
-import { omit, PermissionManager, pick, translationSelect } from '../../src/utils';
-import { DEFAULT_APPLICATION } from '../../prisma/seed/utils';
-import { AssoWeekly } from '../../src/assos/interfaces/weekly.interface';
+import { AuthService } from '@/auth/auth.service';
+import { PrismaService } from '@/prisma/prisma.service';
+import { AppProvider } from '#/utils/test_utils';
+import { CommentStatus } from '@/ue/comments/interfaces/comment.interface';
+import { UeAnnalFile } from '@/ue/annals/interfaces/annal.interface';
+import { PermissionManager, omit, pick, translationSelect } from '@/utils';
+import { DEFAULT_APPLICATION } from '#/../prisma/seed/utils';
+import { AssoWeekly } from '@/assos/interfaces/weekly.interface';
 
 /**
  * The fake entities can be used like normal entities in the <code>it(string, () => void)</code> functions.

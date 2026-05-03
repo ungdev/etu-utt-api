@@ -1,22 +1,22 @@
 import { Body, Controller, Delete, Get, Headers, Param, Put, Query, Res } from '@nestjs/common';
 import { HttpStatusCode } from 'axios';
 import type { Response } from 'express';
-import { UeSearchReqDto } from './dto/req/ue-search-req.dto';
-import { UeService } from './ue.service';
-import { GetUser, IsPublic, RequireApiPermission, RequireUserType } from '../auth/decorator';
-import { User } from '../users/interfaces/user.interface';
-import { UUIDParam } from '../app.pipe';
-import { AppException, ERROR_CODE } from '../exceptions';
-import { Ue, UeStarVoteEntry } from './interfaces/ue.interface';
-import { UeRateReqDto } from './dto/req/ue-rate-req.dto';
+import { UeSearchReqDto } from '@/ue/dto/req/ue-search-req.dto';
+import { UeService } from '@/ue/ue.service';
+import { GetUser, IsPublic, RequireApiPermission, RequireUserType } from '@/auth/decorator';
+import { User } from '@/users/interfaces/user.interface';
+import { UUIDParam } from '@/app.pipe';
+import { AppException, ERROR_CODE } from '@/exceptions';
+import { Ue, UeStarVoteEntry } from '@/ue/interfaces/ue.interface';
+import { UeRateReqDto } from '@/ue/dto/req/ue-rate-req.dto';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ApiAppErrorResponse, paginatedResponseDto } from '../app.dto';
-import { UeDetailResDto } from './dto/res/ue-detail-res.dto';
-import { UeOverviewResDto } from './dto/res/ue-overview-res.dto';
-import UeRateCriterionResDto from './dto/res/ue-rate-criterion-res.dto';
-import UeRateResDto from './dto/res/ue-rate-res.dto';
-import { Language, UserType } from '../prisma/types';
-import { UeRating } from './interfaces/rate.interface';
+import { ApiAppErrorResponse, paginatedResponseDto } from '@/app.dto';
+import { UeDetailResDto } from '@/ue/dto/res/ue-detail-res.dto';
+import { UeOverviewResDto } from '@/ue/dto/res/ue-overview-res.dto';
+import UeRateCriterionResDto from '@/ue/dto/res/ue-rate-criterion-res.dto';
+import UeRateResDto from '@/ue/dto/res/ue-rate-res.dto';
+import { Language, UserType } from '@/prisma/types';
+import { UeRating } from '@/ue/interfaces/rate.interface';
 
 @Controller('ue')
 @ApiTags('UE')

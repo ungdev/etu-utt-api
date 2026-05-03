@@ -2,8 +2,8 @@ import axios from 'axios';
 import nock from 'nock';
 import { HttpStatus } from '@nestjs/common';
 import { faker } from '@faker-js/faker';
-import { RegisterUserData } from '../../src/auth/auth.service';
-import { ConfigService } from '../../src/config/config.service';
+import { RegisterUserData } from '@/auth/auth.service';
+import { ConfigService } from '@/config/config.service';
 
 export let validService = '';
 export const validTicket = faker.string.uuid();
