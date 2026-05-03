@@ -97,7 +97,7 @@ export class ImageMediaService {
     const deletionsPromises = media.map((m) => this.deleteMediaFromDisk(m.id).catch(() => m)); // return media on failure
     const deletions = await Promise.all(deletionsPromises);
     const failedDeletions = deletions.filter((r): r is RawImageMedia => r !== undefined);
-    failedDeletions.map(this.rollbackMedia); // Restore failed media, no need to wait for completion
+    await Promise.all(failedDeletions.map(this.rollbackMedia));
   }
 
   /**
@@ -121,8 +121,6 @@ export class ImageMediaService {
   }
 
   private async deleteMediaFromDisk(mediaId: string): Promise<void> {
-    const promise = rm(`${this.config.MEDIA_UPLOAD_DIR}/image/${mediaId}.webp`, { force: true });
-    // Don't let a hanging promise with Jest
-    if (isTestEnv) await promise;
+    await rm(`${this.config.MEDIA_UPLOAD_DIR}/image/${mediaId}.webp`, { force: true });
   }
 }

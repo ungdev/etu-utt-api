@@ -9,6 +9,8 @@ import { ERROR_CODE } from '@/exceptions';
 import { ConfigService } from '@/config/config.service';
 import { LdapUser } from 'ldap-server-mock';
 import { mockLdapServer } from '#/external_services/ldap';
+import { DEFAULT_APPLICATION } from '@/../prisma/seed/utils';
+import { Permission } from '@/prisma/types';
 
 const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
   const list: LdapUser[] = [];
@@ -83,7 +85,7 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
       uv: [ueof.code],
     };
   };
-  const executeValidSignupRequest = async (personAttributes) => {
+  const executeValidSignupRequest = async (personAttributes, expectedApiPermissions: Permission[]) => {
     const firstName = faker.person.firstName();
     const lastName = faker.person.lastName();
     const login = personAttributes.uid;
@@ -102,12 +104,16 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
       })
       .created()
       .$expectRegexableJson({ token: JsonLike.STRING });
-    expect(await app().get(PrismaService).user.count({ where: { login } })).toEqual(1);
+    const user = await app().get(PrismaService).user.findUnique({ where: { login } });
+    expect(user).not.toBeNull();
+    const apiKeyPermissions = await app().get(PrismaService).apiKeyPermission.findMany({ where: { apiKey: { userId: user.id, applicationId: DEFAULT_APPLICATION.id } } });
+    expect(apiKeyPermissions.map(permission => permission.permission).sort()).toEqual(expectedApiPermissions);
+    list.pop(); // Remove the person we've added for this test
   };
 
   it('should successfully create the user and return a token', async () => {
     const personAttribute = getPersonAttributes('student');
-    await executeValidSignupRequest(personAttribute);
+    await executeValidSignupRequest(personAttribute, [Permission.API_GIVE_OPINIONS_UE, Permission.API_SEE_ANNALS, Permission.API_SEE_OPINIONS_UE, Permission.API_UPLOAD_ANNALS]);
     await app()
       .get(PrismaService)
       .user.deleteMany({ where: { login: personAttribute.uid } });
@@ -115,7 +121,7 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
 
   it('should successfully create the user and return a token (as a teacher)', async () => {
     const personAttribute = getPersonAttributes('faculty');
-    await executeValidSignupRequest(personAttribute);
+    await executeValidSignupRequest(personAttribute, []);
     await app()
       .get(PrismaService)
       .user.deleteMany({ where: { login: personAttribute.uid } });
@@ -132,7 +138,7 @@ const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {
       displayName: assoName,
       mail,
       gidNumber: '6000',
-    });
+    }, []);
     expect(
       await app()
         .get(PrismaService)
