@@ -30,6 +30,8 @@ export {
   UeComment as RawUeComment,
   UeCommentReply as RawUeCommentReply,
   UeCommentUpvote as RawUeCommentUpvote,
+  UeCommentReport as RawUeCommentReport,
+  UeCommentReplyReport as RawUeCommentReplyReport,
   UeAnnalType as RawAnnalType,
   UeAnnal as RawAnnal,
   UeCourse as RawUeCourse,
@@ -47,7 +49,7 @@ export {
   ApiApplication as RawApiApplication,
   ApiKey as RawApiKey,
   ImageMedia as RawImageMedia,
-
+  UeCommentReportReason as RawUeCommentReportReason
 } from './build/client';
 
 export { RawTranslation };

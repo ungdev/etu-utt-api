@@ -1,7 +1,8 @@
 import { Prisma, PrismaClient } from '../../../prisma/types';
 import { RequestType, generateCustomModel } from '../../../prisma/prisma.service';
-import { UeCommentReply, formatReply } from './comment-reply.interface';
+import { REPLY_SELECT_FILTER, UeCommentReply, formatReply } from './comment-reply.interface';
 import { omit } from '../../../utils';
+import { RawUeCommentReport } from 'src/prisma/types';
 
 const COMMENT_SELECT_FILTER = {
   select: {
@@ -17,7 +18,6 @@ const COMMENT_SELECT_FILTER = {
     createdAt: true,
     updatedAt: true,
     deletedAt: true,
-    validatedAt: true,
     semester: {
       select: {
         code: true,
@@ -35,28 +35,31 @@ const COMMENT_SELECT_FILTER = {
         },
       },
     },
-    answers: {
+    answers: REPLY_SELECT_FILTER,
+    upvotes: {
+      select: {
+        userId: true,
+      },
+    },
+    reports: {
       select: {
         id: true,
-        author: {
+        reportedBody: true,
+        body: true,
+        mitigated: true,
+        createdAt: true,
+        reason: {
+          select: {
+            name: true,
+          },
+        },
+        user: {
           select: {
             id: true,
             firstName: true,
             lastName: true,
           },
         },
-        body: true,
-        createdAt: true,
-        updatedAt: true,
-        deletedAt: true,
-      },
-      where: {
-        deletedAt: null,
-      },
-    },
-    upvotes: {
-      select: {
-        userId: true,
       },
     },
   },
@@ -72,24 +75,46 @@ const COMMENT_SELECT_FILTER = {
   ],
 } satisfies Partial<RequestType<'ueComment'>>;
 
-export type UEExtraArgs = {
-  includeDeletedReplied: boolean;
-  includeLastValidatedBody: boolean;
+export type UeExtraArgs = {
   userId: string;
+  /**
+   * If true this will include deleted comments and deleted replies
+   */
+  includeDeleted?: boolean;
+  /**
+   * If true this will include comments reports
+   */
+  includeReports?: boolean;
+  /**
+   * If true this will include comments which have been reported and are not yet mitigated by a moderator
+   */
+  includeHiddenComments?: boolean;
+  /**
+   * If true the owner of anonymous comments will be included
+   */
+  bypassAnonymousData?: boolean;
 };
 
-export type UnformattedUEComment = Prisma.UeCommentGetPayload<typeof COMMENT_SELECT_FILTER>;
+export type UeCommentReport = Omit<RawUeCommentReport, 'reason' | 'reasonId' | 'commentId' | 'comment' | 'userId'> & {
+  reason: string;
+  user: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
+};
+export type UnformattedUeComment = Prisma.UeCommentGetPayload<typeof COMMENT_SELECT_FILTER>;
 export type UeComment = Omit<
-  UnformattedUEComment,
-  'upvotes' | 'deletedAt' | 'validatedAt' | 'answers' | 'semester' | 'author'
+  UnformattedUeComment,
+  'upvotes' | 'deletedAt' | 'answers' | 'semester' | 'reports' | 'author'
 > & {
   upvotes: number;
   upvoted: boolean;
   status: CommentStatus;
   answers: UeCommentReply[];
-  lastValidatedBody?: string | undefined;
   semester: string;
-  author?: UnformattedUEComment['author'];
+  reports: UeCommentReport[];
+  author?: UnformattedUeComment['author'];
 };
 
 export function generateCustomCommentModel(prisma: PrismaClient) {
@@ -98,53 +123,58 @@ export function generateCustomCommentModel(prisma: PrismaClient) {
     'ueComment',
     COMMENT_SELECT_FILTER,
     formatComment,
-    async (query, args: UEExtraArgs) => {
-      Object.assign(query.select.answers, {
-        where: {
-          deletedAt: args.includeDeletedReplied ? undefined : null,
-          OR: [
-            {
-              reports: {
-                none: {
-                  mitigated: false,
-                },
-              },
-            },
-            {
-              authorId: args.includeDeletedReplied ? undefined : args.userId,
-            },
-          ],
-        },
-      });
-      Object.assign(query.select, { lastValidatedBody: args.includeLastValidatedBody });
+    async (query, args: UeExtraArgs) => {
+      if ('data' in query && !('where' in query)) {
+        // CREATE operation → skip where filters
+        return query;
+      }
+      const includeDeleted = !!args.includeDeleted;
+      const includeHiddenComments = !!args.includeHiddenComments;
+      if (query.where == null && !(includeDeleted && includeHiddenComments)) {
+        Object.assign(query, { ...query, where: {} });
+      }
+      if (!includeDeleted) {
+        Object.assign(query.where, { ...query.where, deletedAt: null });
+      }
+      if (!includeHiddenComments) {
+        Object.assign(query.where, { ...query.where, reports: { none: { mitigated: false } } });
+      }
       return query;
     },
   );
 }
 
-export function formatComment(prisma: PrismaClient, comment: UnformattedUEComment, args: UEExtraArgs): UeComment {
+export function formatComment(prisma: PrismaClient, comment: UnformattedUeComment, args: UeExtraArgs): UeComment {
+  const bypassAnonymousData = !!args.bypassAnonymousData;
+  const includeReports = !!args.includeReports;
   return {
     ...omit(
       comment,
       'deletedAt',
-      'validatedAt',
-      comment.isAnonymous &&
-        comment.author.id !== args.userId &&
-        !(args.includeDeletedReplied && args.includeLastValidatedBody)
-        ? 'author'
-        : undefined,
+      !comment.isAnonymous || bypassAnonymousData || args.userId === comment.author.id ? undefined : 'author',
     ),
-    answers: comment.answers.map((answer) => formatReply(prisma, answer)),
-    status: (comment.deletedAt && CommentStatus.DELETED) | (comment.validatedAt && CommentStatus.VALIDATED),
+    answers: comment.answers
+      .filter((answer) => args.includeDeleted || answer.deletedAt === null)
+      .map((answer) => {
+        const anwser = formatReply(prisma, answer);
+        if (!includeReports) anwser.reports = [];
+        return anwser;
+      }),
+    status:
+      (comment.reports.some((r) => !r.mitigated) && CommentStatus.HIDDEN) |
+      (comment.deletedAt && CommentStatus.DELETED),
     upvotes: comment.upvotes.length,
     upvoted: comment.upvotes.some((upvote) => upvote.userId == args.userId),
     semester: comment.semester.code,
+    reports: includeReports ? comment.reports.map((r) => ({ ...r, reason: r.reason.name })) : [],
   };
 }
 
 export const enum CommentStatus {
-  UNVERIFIED = 0b000, // For typing only
-  VALIDATED = 0b001,
-  PROCESSING = 0b010,
-  DELETED = 0b100,
+  ACTIVE = 0b00,
+  /**
+   * The comment has been reported and is temporarily hidden
+   */
+  HIDDEN = 0b01,
+  DELETED = 0b10,
 }

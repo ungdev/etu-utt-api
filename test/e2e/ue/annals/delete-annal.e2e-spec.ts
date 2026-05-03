@@ -12,9 +12,9 @@ import {
 } from '../../../utils/fakedb';
 import { Dummies, JsonLike, e2eSuite } from '../../../utils/test_utils';
 import { ERROR_CODE } from '../../../../src/exceptions';
-import { CommentStatus } from 'src/ue/comments/interfaces/comment.interface';
 import { PermissionManager, pick } from '../../../../src/utils';
 import { PrismaService } from '../../../../src/prisma/prisma.service';
+import { AnnalStatus } from 'src/ue/annals/interfaces/annal.interface';
 
 const DeleteAnnal = e2eSuite('DELETE /ue/annals/{annalId}', (app) => {
   const senderUser = createUser(app, { permissions: new PermissionManager().with('API_UPLOAD_ANNALS') });
@@ -68,7 +68,7 @@ const DeleteAnnal = e2eSuite('DELETE /ue/annals/{annalId}', (app) => {
       .expectUeAnnal({
         ...pick(annal_validated, 'id', 'semesterId'),
         type: annalType,
-        status: CommentStatus.DELETED | CommentStatus.VALIDATED,
+        status: AnnalStatus.DELETED | AnnalStatus.VALIDATED,
         sender: pick(senderUser, 'id', 'firstName', 'lastName'),
         createdAt: annal_validated.createdAt,
         updatedAt: JsonLike.DATE,

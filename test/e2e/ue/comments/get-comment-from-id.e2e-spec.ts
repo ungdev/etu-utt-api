@@ -61,14 +61,7 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
       .get(`/ue/comments/${comment.id}`)
       .expectUeComment({
         ueof,
-        ...(omit(
-          comment,
-          'semesterId',
-          'authorId',
-          'deletedAt',
-          'validatedAt',
-          'lastValidatedBody',
-        ) as Required<FakeComment>),
+        ...(omit(comment, 'semesterId', 'authorId', 'deletedAt') as Required<FakeComment>),
         answers: [
           {
             ...omit(reply, 'authorId', 'deletedAt', 'commentId'),
@@ -79,6 +72,7 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
             },
             createdAt: reply.createdAt,
             updatedAt: reply.updatedAt,
+            reports: [],
           },
         ],
         author: {
@@ -91,6 +85,7 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
         createdAt: comment.createdAt,
         semester: semester.code,
         upvotes: 1,
+        reports: [],
         upvoted: false,
       }));
 
@@ -101,14 +96,7 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
       .get(`/ue/comments/${comment.id}`)
       .expectUeComment({
         ueof,
-        ...(omit(
-          comment,
-          'semesterId',
-          'authorId',
-          'deletedAt',
-          'validatedAt',
-          'lastValidatedBody',
-        ) as Required<FakeComment>),
+        ...(omit(comment, 'semesterId', 'authorId', 'deletedAt') as Required<FakeComment>),
         answers: [
           {
             ...omit(reply, 'authorId', 'deletedAt', 'commentId'),
@@ -119,12 +107,14 @@ const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) =>
               firstName: user.firstName,
               lastName: user.lastName,
             },
+            reports: [],
           },
         ],
         updatedAt: comment.updatedAt,
         createdAt: comment.createdAt,
         semester: semester.code,
         upvotes: 1,
+        reports: [],
         upvoted: true,
       });
   });

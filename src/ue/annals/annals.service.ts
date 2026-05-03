@@ -220,6 +220,7 @@ export class AnnalsService {
       annal.semesterId.slice(0, 1) === 'A' ? 1 : 0, // P should be listed before A
       annal.type.name,
       annal.createdAt.getTime(),
+      annal.id,
     ]);
   }
 

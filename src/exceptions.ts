@@ -94,6 +94,8 @@ export const enum ERROR_CODE {
   NO_SUCH_ASSO_MEMBERSHIP = 4416,
   NO_SUCH_MEDIA = 4417,
   NO_SUCH_WEEKLY = 4418,
+  NO_SUCH_REPORT = 4419,
+  NO_SUCH_REPORT_REASON = 4420,
   ANNAL_ALREADY_UPLOADED = 4901,
   RESOURCE_UNAVAILABLE = 4902,
   RESOURCE_INVALID_TYPE = 4903,
@@ -433,6 +435,14 @@ export const ErrorData = Object.freeze({
     message: 'No such media: %',
     httpCode: HttpStatus.NOT_FOUND,
   },
+  [ERROR_CODE.NO_SUCH_REPORT]: {
+    message: 'The report does not exist',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
+  [ERROR_CODE.NO_SUCH_REPORT_REASON]: {
+    message: 'The report reason does not exist',
+    httpCode: HttpStatus.NOT_FOUND,
+  },
   [ERROR_CODE.ANNAL_ALREADY_UPLOADED]: {
     message: 'A file has alreay been uploaded for this annal',
     httpCode: HttpStatus.CONFLICT,
@@ -445,12 +455,12 @@ export const ErrorData = Object.freeze({
     message: 'Resource have incorrect type, expected %',
     httpCode: HttpStatus.BAD_REQUEST,
   },
-  [ERROR_CODE.CREDENTIALS_ALREADY_TAKEN]: {
-    message: 'The given credentials are already taken',
-    httpCode: HttpStatus.CONFLICT,
-  },
   [ERROR_CODE.ASSO_ROLE_ALREADY_MOVED]: {
     message: 'You should not try to update role position simultaneously',
+    httpCode: HttpStatus.CONFLICT,
+  },
+  [ERROR_CODE.CREDENTIALS_ALREADY_TAKEN]: {
+    message: 'The given credentials are already taken',
     httpCode: HttpStatus.CONFLICT,
   },
   [ERROR_CODE.SERVER_DISK_ERROR]: {

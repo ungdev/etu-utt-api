@@ -12,10 +12,9 @@ import {
 } from '../../../utils/fakedb';
 import { e2eSuite } from '../../../utils/test_utils';
 import { ERROR_CODE } from '../../../../src/exceptions';
-import { UeAnnalFile } from '../../../../src/ue/annals/interfaces/annal.interface';
+import { AnnalStatus, UeAnnalFile } from '../../../../src/ue/annals/interfaces/annal.interface';
 import { JsonLikeVariant } from 'test/declarations';
 import { PermissionManager, pick } from '../../../../src/utils';
-import { CommentStatus } from '../../../../src/ue/comments/interfaces/comment.interface';
 
 const GetAnnal = e2eSuite('GET /ue/annals', (app) => {
   const senderUser = createUser(app, { permissions: new PermissionManager().with('API_SEE_ANNALS') });
@@ -40,18 +39,18 @@ const GetAnnal = e2eSuite('GET /ue/annals', (app) => {
   const annal_not_validated = createAnnal(
     app,
     { semester, sender: senderUser, type: annalType, ueof },
-    { status: CommentStatus.UNVERIFIED },
+    { status: AnnalStatus.UNVERIFIED },
   );
   const annal_validated = createAnnal(app, { semester, sender: senderUser, type: annalType, ueof });
   const annal_not_uploaded = createAnnal(
     app,
     { semester, sender: senderUser, type: annalType, ueof },
-    { status: CommentStatus.UNVERIFIED | CommentStatus.PROCESSING },
+    { status: AnnalStatus.UNVERIFIED | AnnalStatus.PROCESSING },
   );
   const annal_deleted = createAnnal(
     app,
     { semester, sender: senderUser, type: annalType, ueof },
-    { status: CommentStatus.DELETED | CommentStatus.VALIDATED },
+    { status: AnnalStatus.DELETED | AnnalStatus.VALIDATED },
   );
 
   it('should return a 401 as user is not authenticated', () => {
@@ -87,7 +86,11 @@ const GetAnnal = e2eSuite('GET /ue/annals', (app) => {
       .withQueryParams({
         ueCode: ue.code,
       })
-      .expectUeAnnals([annal_not_validated, annal_validated, annal_not_uploaded].map(formatAnnalFile));
+      .expectUeAnnals(
+        [annal_not_validated, annal_validated, annal_not_uploaded]
+          .mappedSort((annal) => [annal.createdAt.getTime(), annal.id])
+          .map(formatAnnalFile),
+      );
     await pactum
       .spec()
       .withBearerToken(nonUeUser.token)
@@ -103,7 +106,11 @@ const GetAnnal = e2eSuite('GET /ue/annals', (app) => {
       .withQueryParams({
         ueCode: ue.code,
       })
-      .expectUeAnnals([annal_not_validated, annal_validated, annal_not_uploaded, annal_deleted].map(formatAnnalFile));
+      .expectUeAnnals(
+        [annal_not_validated, annal_deleted, annal_not_uploaded, annal_validated]
+          .mappedSort((annal) => [annal.createdAt.getTime(), annal.id])
+          .map(formatAnnalFile),
+      );
   });
 
   const formatAnnalFile = (from: Partial<UeAnnalFile>): JsonLikeVariant<UeAnnalFile> => {

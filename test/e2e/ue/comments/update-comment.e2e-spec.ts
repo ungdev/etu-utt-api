@@ -131,10 +131,10 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/:commentId', (app) => {
         isAnonymous: true,
         body: 'Cette  UE est troooop bien',
         answers: [],
+        reports: [],
         upvotes: 1,
         upvoted: false,
-        status: CommentStatus.UNVERIFIED,
-        lastValidatedBody: comment.body,
+        status: CommentStatus.ACTIVE,
       });
     await app().get(PrismaService).ueComment.deleteMany();
     await createComment(app, { ueof, user, semester }, comment, true);
@@ -164,10 +164,10 @@ const UpdateComment = e2eSuite('PATCH /ue/comments/:commentId', (app) => {
         isAnonymous: false,
         body: comment.body,
         answers: [],
+        reports: [],
         upvotes: 1,
         upvoted: false,
-        status: CommentStatus.VALIDATED,
-        lastValidatedBody: null,
+        status: CommentStatus.ACTIVE,
       });
     await app().get(PrismaService).ueComment.deleteMany();
     await createComment(app, { ueof, user, semester }, comment, true);

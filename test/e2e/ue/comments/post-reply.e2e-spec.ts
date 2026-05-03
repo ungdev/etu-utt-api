@@ -119,7 +119,8 @@ const PostCommmentReply = e2eSuite('POST /ue/comments/{commentId}/reply', (app) 
         body: 'heyhey',
         createdAt: JsonLike.DATE,
         updatedAt: JsonLike.DATE,
-        status: CommentStatus.VALIDATED,
+        status: CommentStatus.ACTIVE,
+        reports: [],
       });
     return app().get(PrismaService).ueCommentReply.deleteMany();
   });

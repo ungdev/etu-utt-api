@@ -85,7 +85,8 @@ const DeleteCommentReply = e2eSuite('DELETE /ue/comments/reply/{replyId}', (app)
         createdAt: reply.createdAt,
         updatedAt: reply.updatedAt,
         body: reply.body,
-        status: CommentStatus.DELETED | CommentStatus.VALIDATED,
+        status: CommentStatus.DELETED,
+        reports: [],
       });
     await app()
       .get(PrismaService)

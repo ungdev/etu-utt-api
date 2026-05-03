@@ -1,6 +1,5 @@
 import { Prisma, PrismaClient } from '../../../prisma/types';
 import { omit } from '../../../utils';
-import { CommentStatus } from '../../comments/interfaces/comment.interface';
 import { generateCustomModel } from '../../../prisma/prisma.service';
 
 const UE_ANNAL_SELECT_FILTER = {
@@ -31,7 +30,7 @@ const UE_ANNAL_SELECT_FILTER = {
 
 type UnformattedUeAnnal = Prisma.UeAnnalGetPayload<typeof UE_ANNAL_SELECT_FILTER>;
 export type UeAnnalFile = Omit<UnformattedUeAnnal, 'validatedAt' | 'deletedAt' | 'uploadComplete'> & {
-  status: CommentStatus;
+  status: AnnalStatus;
 };
 
 export function generateCustomUeAnnalModel(prisma: PrismaClient) {
@@ -42,8 +41,15 @@ export function formatAnnal(_: PrismaClient, annal: UnformattedUeAnnal): UeAnnal
   return {
     ...omit(annal, 'deletedAt', 'validatedAt', 'uploadComplete'),
     status:
-      (annal.deletedAt && CommentStatus.DELETED) |
-      (annal.validatedAt && CommentStatus.VALIDATED) |
-      (!annal.uploadComplete && CommentStatus.PROCESSING),
+      (annal.deletedAt && AnnalStatus.DELETED) |
+      (annal.validatedAt && AnnalStatus.VALIDATED) |
+      (!annal.uploadComplete && AnnalStatus.PROCESSING),
   };
+}
+
+export const enum AnnalStatus {
+  UNVERIFIED = 0b000, // For typing only
+  VALIDATED = 0b001,
+  PROCESSING = 0b010,
+  DELETED = 0b100,
 }

@@ -2,7 +2,7 @@ import { HttpStatus } from '@nestjs/common';
 import Spec from 'pactum/src/models/Spec';
 import { FakeAssoMembers, FakeUeWithOfs, JsonLikeVariant } from './declarations.d';
 import { ERROR_CODE, ErrorData, ExtrasTypeBuilder } from '../src/exceptions';
-import { UeComment } from '../src/ue/comments/interfaces/comment.interface';
+import { UeComment, UeCommentReport } from '../src/ue/comments/interfaces/comment.interface';
 import { UeCommentReply } from '../src/ue/comments/interfaces/comment-reply.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { UeRating } from 'src/ue/interfaces/rate.interface';
@@ -27,6 +27,7 @@ import { Language } from '../src/prisma/types';
 import { DEFAULT_APPLICATION } from '../prisma/seed/utils';
 import ApplicationResDto from '../src/auth/application/dto/res/application-res.dto';
 import PermissionsResDto from '../src/auth/permissions/dto/res/permissions.dto';
+import UeCommentResDto from 'src/ue/comments/dto/res/ue-comment-res.dto';
 
 function ueOverviewExpectation(ue: FakeUeWithOfs, spec: Spec) {
   return {
@@ -180,25 +181,14 @@ Spec.prototype.expectUeComment = function (this: Spec, obj) {
         language: obj.ueof.info.language,
       },
     },
-  });
+  } satisfies JsonLikeVariant<UeComment>);
 };
 Spec.prototype.expectUeComments = function (this: Spec, obj) {
   return this.$expectRegexableJson({
     itemCount: obj.itemCount,
     itemsPerPage: obj.itemsPerPage,
     items: obj.items.map((comment) => ({
-      ...pick(
-        comment,
-        'id',
-        'author',
-        'body',
-        'isAnonymous',
-        'lastValidatedBody',
-        'semester',
-        'status',
-        'upvoted',
-        'upvotes',
-      ),
+      ...omit(comment, 'ueof', 'ue'),
       ueof: {
         code: comment.ueof.code,
         info: {
@@ -211,11 +201,13 @@ Spec.prototype.expectUeComments = function (this: Spec, obj) {
         ...pick(answer, 'author', 'body', 'id', 'status'),
         createdAt: answer.createdAt,
         updatedAt: answer.updatedAt,
+        reports: []
       })),
     })),
-  } satisfies JsonLikeVariant<Pagination<UeComment>>);
+  } satisfies JsonLikeVariant<Pagination<UeCommentResDto>>);
 };
 Spec.prototype.expectUeCommentReply = $expectRegexableJson<UeCommentReply>;
+Spec.prototype.expectUeCommentReport = $expectRegexableJson<UeCommentReport>;
 Spec.prototype.expectUeCriteria = $expectRegexableJson<Criterion[]>;
 Spec.prototype.expectUeRate = $expectRegexableJson<UeRating>;
 Spec.prototype.expectUeRates = $expectRegexableJson<{ [criterion: string]: UeRating[] }>;

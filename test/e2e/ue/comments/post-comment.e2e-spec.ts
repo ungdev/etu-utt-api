@@ -128,10 +128,10 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
         isAnonymous: true,
         body: 'Cette  UE est troooop bien',
         answers: [],
+        reports: [],
         upvotes: 0,
         upvoted: false,
-        status: CommentStatus.UNVERIFIED,
-        lastValidatedBody: null,
+        status: CommentStatus.ACTIVE,
       });
     return app().get(PrismaService).ueComment.deleteMany();
   });
@@ -175,10 +175,10 @@ const PostCommment = e2eSuite('POST /ue/comments', (app) => {
         isAnonymous: false,
         body: 'Cette  UE est troooop bien',
         answers: [],
+        reports: [],
         upvotes: 0,
         upvoted: false,
-        status: CommentStatus.UNVERIFIED,
-        lastValidatedBody: null,
+        status: CommentStatus.ACTIVE,
       });
     return app().get(PrismaService).ueComment.deleteMany();
   });
