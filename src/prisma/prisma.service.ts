@@ -27,8 +27,8 @@ export class PrismaService extends PrismaClient<ReturnType<typeof prismaOptions>
     this.normalize = createNormalizedEntitiesUtility(this);
   }
 
-  onModuleDestroy(): any {
-    this.$disconnect();
+  async onModuleDestroy() {
+    await this.$disconnect();
   }
 }
 

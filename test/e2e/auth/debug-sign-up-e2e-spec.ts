@@ -15,8 +15,7 @@ const DebugSignUpE2ESpec = e2eSuite('POST (/vdev)/auth/signup', (app) => {
     tokenExpiresIn: 1000,
   } as AuthSignUpDebugReqDto;
 
-  // TODO: Deactivated, because for some reason it leaves a hanging promise
-  it.skip('should not exist in a production environment', async () => {
+  it('should not exist in a production environment', async () => {
     let prodApp: E2EApp;
     try {
       process.env.NODE_ENV = 'production';
