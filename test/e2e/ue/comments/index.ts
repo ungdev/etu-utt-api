@@ -1,4 +1,3 @@
-import { INestApplication } from '@nestjs/common';
 import GetCommentsE2ESpec from './get-comment.e2e-spec';
 import DeleteComment from './delete-comment.e2e-spec';
 import DeleteCommentReply from './delete-reply.e2e-spec';
@@ -9,8 +8,9 @@ import PostUpvote from './post-upvote.e2e-spec';
 import UpdateComment from './update-comment.e2e-spec';
 import UpdateCommentReply from './update-reply.e2e-spec';
 import GetCommentFromIdE2ESpec from './get-comment-from-id.e2e-spec';
+import { E2EAppProvider } from '../../../utils/test_utils';
 
-export default function CommentsE2ESpec(app: () => INestApplication) {
+export default function CommentsE2ESpec(app: E2EAppProvider) {
   describe('Comments', () => {
     GetCommentsE2ESpec(app);
     PostCommment(app);

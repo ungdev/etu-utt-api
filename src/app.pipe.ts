@@ -8,8 +8,7 @@ import {
   ValidationPipe,
   ParseIntPipe,
 } from '@nestjs/common';
-import { AppException, ERROR_CODE } from './exceptions';
-import { validationExceptionFactory } from './validation';
+import { AppException, ERROR_CODE, validationExceptionFactory } from './exceptions';
 
 /**
  * A validating pipe for regex.

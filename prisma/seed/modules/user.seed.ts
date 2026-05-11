@@ -1,6 +1,5 @@
 import { PrismaClient, Sex, RawUser } from '../../../src/prisma/types';
 import { faker } from '@faker-js/faker';
-import * as bcrypt from 'bcryptjs';
 import { DEFAULT_APPLICATION } from '../utils';
 import { AuthService } from '../../../src/auth/auth.service';
 
@@ -9,8 +8,6 @@ const FAKER_ROUNDS = 100;
 export async function userSeed(prisma: PrismaClient): Promise<RawUser[]> {
   console.log('Seeding users...');
   const users: Promise<RawUser>[] = [];
-  const saltRounds = Number.parseInt(process.env.SALT_ROUNDS);
-  const hash = await bcrypt.hash('etuutt', saltRounds);
   for (let i = 0; i < FAKER_ROUNDS; i++) {
     const firstName = faker.person.firstName();
     const lastName = faker.person.lastName();
@@ -22,7 +19,6 @@ export async function userSeed(prisma: PrismaClient): Promise<RawUser[]> {
           studentId: faker.number.int({ max: 99999 }),
           login: i === 0 ? 'student' : faker.internet.username(),
           userType: 'STUDENT',
-          hash,
           apiKeys: {
             create: {
               token: AuthService.generateToken(),

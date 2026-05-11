@@ -49,4 +49,8 @@ export default class ApplicationService {
     });
     return this.authService.signAuthenticationToken(updatedApiKey.token, tokenExpiresIn);
   }
+
+  formatRedirectUrl(application: Application, validationToken: string): string {
+    return `${application.redirectUrl}?${new URLSearchParams({ token: validationToken }).toString()}`;
+  }
 }

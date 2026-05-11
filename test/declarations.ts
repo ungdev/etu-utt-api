@@ -81,14 +81,24 @@ Spec.prototype.withApplication = function (application: string) {
   this.application = application;
   return <Spec>this;
 };
+Spec.prototype.version = '1';
+Spec.prototype.withVersion = function (this: Spec, version: string) {
+  this.version = version;
+  return this;
+};
+Spec.prototype.baseUrl = '';
+Spec.prototype.withBaseUrl = function (this: Spec, baseUrl: string) {
+  this.baseUrl = baseUrl;
+  return this;
+}
 // Spec.prototype.toss is the function called to execute the request.
 // Here, we modify it to include the special headers just before sending the request.
-Spec.prototype.toss = function () {
-  (<Spec>this)
-    .withHeaders('X-Language', (<Spec>this).language)
-    .withHeaders('X-Application', (<Spec>this).application)
+Spec.prototype.toss = function (this: Spec) {
+  this['_request'].url = this.baseUrl + `/v${this.version}` + this['_request'].url;
+  this.withHeaders('X-Language', this.language)
+    .withHeaders('X-Application', this.application)
     .expectStatus();
-  return baseToss.call(<Spec>this);
+  return baseToss.call(this);
 };
 Spec.prototype.expectAppError = function <ErrorCode extends ERROR_CODE>(
   errorCode: ErrorCode,

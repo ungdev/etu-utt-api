@@ -9,5 +9,7 @@
   },
   "collectCoverageFrom": ["**/*.ts", "!main.ts", "!**/*-res.dto.ts", "!**/*-req.dto.ts"],
   "coverageDirectory": "coverage",
-  "coverageReporters": ["html", "lcov", "text-summary"]
+  "coverageReporters": ["html", "lcov", "text-summary"],
+  // After way to much time discussing with Claude, he told me "wtf bro, just put forceExit, that's a weird thing with jest & nest, don't ask"
+  "forceExit": true
 }

@@ -9,48 +9,29 @@ jest.mock('@nestjs-modules/mailer/dist/adapters/ejs.adapter', () => ({
 import '../declarations';
 import '../../src/std.type';
 import * as testUtils from '../utils/test_utils';
-import { INestApplication, VersioningType } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
-import { AppModule } from '../../src/app.module';
 import * as pactum from 'pactum';
 import AuthE2ESpec from './auth';
 import ProfileE2ESpec from './profile';
 import UsersE2ESpec from './users';
 import TimetableE2ESpec from './timetable';
 import UeE2ESpec from './ue';
-import { AppValidationPipe } from '../../src/app.pipe';
 import * as cas from '../external_services/cas';
 import * as timetableProvider from '../external_services/timetable';
 import { ConfigService } from '../../src/config/config.service';
 import AssoE2ESpec from './assos';
 import MediaE2ESpec from './media';
+import { buildTestApp, E2EApp } from '../utils/test_utils';
 
 describe('EtuUTT API e2e testing', () => {
-  let app: INestApplication;
+  let app: E2EApp;
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-    app = moduleRef.createNestApplication();
-    app.setGlobalPrefix(process.env.API_PREFIX);
-    app.enableVersioning({
-      type: VersioningType.URI,
-      defaultVersion: '1',
-    });
-
-    app.useGlobalPipes(new AppValidationPipe());
-    await app.init();
-    await app.listen(3001);
-
+    app = await buildTestApp(3001);
     testUtils.init(() => app);
-    pactum.request.setBaseUrl(
-      `http://localhost:3001${process.env.API_PREFIX.startsWith('/') ? '' : '/'}${process.env.API_PREFIX}${
-        process.env.API_PREFIX.endsWith('/') ? '' : '/'
-      }v1`,
-    );
     cas.enable(app.get(ConfigService));
     timetableProvider.enable('https://monedt.utt.fr/calendrier');
+    // While the migration from pactum.spec() to app().spec() has not been made on all tests, keep default base url.
+    pactum.request.setBaseUrl(app.spec().baseUrl);
   });
 
   afterAll(async () => {

@@ -1,16 +1,13 @@
-import { Body, Controller, Get, Headers, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, Get, Headers, HttpCode, HttpStatus, Injectable, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import AuthSignInReqDto from './dto/req/auth-sign-in-req.dto';
-import AuthSignUpReqDto from './dto/req/auth-sign-up-req.dto';
 import { IsPublic } from './decorator';
 import { AppException, ERROR_CODE } from '../exceptions';
-import AuthCasSignInReqDto from './dto/req/auth-cas-sign-in-req.dto';
-import AuthCasSignUpReqDto from './dto/req/auth-cas-sign-up-req.dto';
+import AuthSignInReqDto from './dto/req/auth-sign-in-req.dto';
+import AuthSignUpReqDto from './dto/req/auth-sign-up-req.dto';
 import UsersService from '../users/users.service';
 import { ApiCreatedResponse, ApiHeader, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import AuthSigninResDto from './dto/res/auth-signin-res.dto';
 import TokenValidityResDto from './dto/res/token-validity-res.dto';
-import CasLoginResDto from './dto/res/cas-login-res.dto';
+import CasSignInResDto from './dto/res/cas-sign-in-res.dto';
 import { ApiAppErrorResponse } from '../app.dto';
 import { GetApplication } from './decorator/get-application.decorator';
 import CreateApiKeyReqDto from './dto/req/create-api-key-req.dto';
@@ -21,68 +18,16 @@ import { ConfigService } from '../config/config.service';
 import AuthTokenResDto from './dto/res/auth-token-res.dto';
 import AuthRedirectionResDto from './dto/res/auth-redirection-res.dto';
 
+@Injectable()
 @Controller('auth')
 @ApiTags('Authentication')
 export class AuthController {
   constructor(
-    private authService: AuthService,
-    private usersService: UsersService,
-    private applicationService: ApplicationService,
-    private config: ConfigService,
+    protected authService: AuthService,
+    protected usersService: UsersService,
+    protected applicationService: ApplicationService,
+    protected config: ConfigService,
   ) {}
-
-  @IsPublic()
-  @Post('signup')
-  @ApiOperation({
-    description: 'Signs up the user, and returns an authentication token. This token should be used as a Bearer token.',
-  })
-  @ApiCreatedResponse({
-    description: 'The account was created successfully, the user is now authenticated and the token is returned.',
-    type: AuthSigninResDto,
-  })
-  @ApiAppErrorResponse(
-    ERROR_CODE.CREDENTIALS_ALREADY_TAKEN,
-    'Login, email address or any field that should be unique is already taken',
-  )
-  async signup(@Body() dto: AuthSignUpReqDto, @GetApplication() application: Application): Promise<AuthSigninResDto> {
-    const token = await this.authService.signup(dto, application.id, false, dto.tokenExpiresIn);
-    const redirectUrl = `${application.redirectUrl}/${token}`;
-    return { signedIn: true, token, redirectUrl };
-  }
-
-  @HttpCode(HttpStatus.OK)
-  @IsPublic()
-  @Post('signin')
-  @ApiOperation({
-    description: 'Signs in the user, and returns an authentication token. This token should be used as a Bearer token.',
-  })
-  @ApiOkResponse({
-    description: 'The user was successfully authenticated, the token is returned.',
-    type: AuthSigninResDto,
-  })
-  @ApiAppErrorResponse(ERROR_CODE.INVALID_CREDENTIALS, 'Either the login or the password is incorrect')
-  async signin(@Body() dto: AuthSignInReqDto, @GetApplication() application: Application): Promise<AuthSigninResDto> {
-    const res = await this.authService.signin(dto.login, dto.password, application.id);
-    if (!res) throw new AppException(ERROR_CODE.INVALID_CREDENTIALS);
-    if (!res.apiKey)
-      return {
-        signedIn: false,
-        token: await this.authService.signRegisterApiKeyToken(res.userId, application.id, dto.tokenExpiresIn),
-        redirectUrl: null,
-      };
-    if (application.id === this.config.ETUUTT_WEBSITE_APPLICATION_ID)
-      return {
-        signedIn: true,
-        token: await this.authService.signApiKey(res.apiKey.id, dto.tokenExpiresIn),
-        redirectUrl: null,
-      };
-    const token = await this.authService.signValidationToken(res.apiKey.id, application.id, dto.tokenExpiresIn);
-    return {
-      signedIn: true,
-      token: null,
-      redirectUrl: this.formatRedirectUrl(application.redirectUrl, token),
-    };
-  }
 
   @HttpCode(HttpStatus.OK)
   @IsPublic()
@@ -117,7 +62,7 @@ export class AuthController {
   }
 
   @IsPublic()
-  @Post('signin/cas')
+  @Post('signin')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     description:
@@ -129,13 +74,13 @@ export class AuthController {
       "If status is 'ok', the user is authenticated. Either use the token to authenticate his requests (if application is the EtuUTT website) or pass it to `POST /auth/validate` (if application is not the EtuUTT website).\n" +
       "If the status is 'no_api_key', the user should use the token to register an api key for the application. See `POST /auth/api-key\n" +
       "If status is 'no_account', the user should use the token to sign up with `POST /auth/signup/cas`.",
-    type: CasLoginResDto,
+    type: CasSignInResDto,
   })
-  async casSignIn(
-    @Body() dto: AuthCasSignInReqDto,
+  async signIn(
+    @Body() dto: AuthSignInReqDto,
     @GetApplication() application: Application,
-  ): Promise<CasLoginResDto> {
-    const res = await this.authService.casSignIn(dto.ticket, application.id);
+  ): Promise<CasSignInResDto> {
+    const res = await this.authService.signIn(dto.ticket, application.id);
     if (!res) throw new AppException(ERROR_CODE.INVALID_CAS_TICKET);
     if (!res.userId)
       return {
@@ -165,12 +110,12 @@ export class AuthController {
     return {
       status: 'ok',
       token: null,
-      redirectUrl: this.formatRedirectUrl(application.redirectUrl, token),
+      redirectUrl: this.applicationService.formatRedirectUrl(application, token),
     };
   }
 
   @IsPublic()
-  @Post('signup/cas')
+  @Post('signup')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     description:
@@ -189,15 +134,15 @@ export class AuthController {
     ERROR_CODE.CREDENTIALS_ALREADY_TAKEN,
     'Login, email, or any other field that should be unique about a user is already bound to another user',
   )
-  async casSignUp(
-    @Body() dto: AuthCasSignUpReqDto,
+  async signUp(
+    @Body() dto: AuthSignUpReqDto,
     @GetApplication('id') application: string,
   ): Promise<AuthTokenResDto> {
     const data = this.authService.decodeRegisterUserToken(dto.registerToken);
     if (!data) throw new AppException(ERROR_CODE.INVALID_TOKEN_FORMAT);
     if (await this.usersService.doesUserExist({ login: data.login }))
       throw new AppException(ERROR_CODE.CREDENTIALS_ALREADY_TAKEN);
-    const token = await this.authService.signup(data, application, true, data.tokenExpiresIn);
+    const token = await this.authService.signUp(data, application, true, data.tokenExpiresIn);
     return { token };
   }
 
@@ -225,7 +170,7 @@ export class AuthController {
     if (!application) throw new AppException(ERROR_CODE.NO_SUCH_APPLICATION, data.applicationId); // Can only happen if application has been deleted
     const apiKey = await this.authService.createApiKey(data.userId, data.applicationId);
     const token = await this.authService.signValidationToken(apiKey.id, application.id, data.tokenExpiresIn);
-    const redirectUrl = this.formatRedirectUrl(application.redirectUrl, token);
+    const redirectUrl = this.applicationService.formatRedirectUrl(application, token);
     return { redirectUrl };
   }
 
@@ -256,9 +201,5 @@ export class AuthController {
     const token = await this.authService.signApiKey(data.apiKeyId, data.tokenExpiresIn);
     if (!token) throw new AppException(ERROR_CODE.INVALID_TOKEN_FORMAT);
     return { token };
-  }
-
-  private formatRedirectUrl(redirectUrl: string, validationToken: string): string {
-    return `${redirectUrl}?${new URLSearchParams({ token: validationToken }).toString()}`;
   }
 }

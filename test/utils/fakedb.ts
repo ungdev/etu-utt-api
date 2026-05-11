@@ -260,7 +260,7 @@ export interface FakeEntityMap {
   };
 }
 
-export type CreateUserParameters = FakeUser & { password: string };
+export type CreateUserParameters = FakeUser;
 /**
  * Creates a user in the database.
  * @param app The function that returns the app.
@@ -275,7 +275,6 @@ export const createUser = entityFaker(
     lastName: faker.person.lastName,
     firstName: faker.person.firstName,
     userType: 'STUDENT' as UserType,
-    password: faker.internet.password,
     infos: {
       sex: 'OTHER' as Sex,
       birthday: new Date(0),
@@ -298,7 +297,6 @@ export const createUser = entityFaker(
       .get(PrismaService)
       .user.create({
         data: {
-          hash: params.hash ?? (await app().get(AuthService).getHash(params.password)),
           ...pick(params, 'id', 'login', 'studentId', 'firstName', 'lastName', 'userType'),
           infos: {
             create: {

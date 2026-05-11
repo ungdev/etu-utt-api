@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { DynamicModule, INestApplication, VersioningType } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProfileModule } from './profile/profile.module';
@@ -17,42 +17,59 @@ import { TranslationInterceptor } from './app.interceptor';
 import { SemesterModule } from './semester/semester.module';
 import { ImageMediaModule } from './media/image/imagemedia.module';
 import { MailModule } from './mail/mail.module';
+import { AppValidationPipe } from './app.pipe';
+import { NotFoundFilter } from './exceptions';
 
-@Module({
-  imports: [
-    ConfigModule,
-    HttpModule,
-    PrismaModule,
-    ImageMediaModule,
-    MailModule,
-    SemesterModule,
-    AuthModule,
-    ProfileModule,
-    UsersModule,
-    UeModule,
-    TimetableModule,
-    BranchModule,
-    AssosModule,
-  ],
-  // The providers below are used for all the routes of the api.
-  // For example, the JwtGuard is used for all the routes and checks whether the user is authenticated.
-  providers: [
-    {
-      provide: APP_GUARD,
-      useClass: JwtGuard,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: PermissionGuard,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: RoleGuard,
-    },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: TranslationInterceptor,
-    },
-  ],
-})
-export class AppModule {}
+export class AppModule {
+  static register(): DynamicModule {
+    return {
+      module: AppModule,
+      imports: [
+        ConfigModule,
+        HttpModule,
+        PrismaModule,
+        ImageMediaModule,
+        MailModule,
+        SemesterModule,
+        AuthModule.register(),
+        ProfileModule,
+        UsersModule,
+        UeModule,
+        TimetableModule,
+        BranchModule,
+        AssosModule,
+      ],
+      // The providers below are used for all the routes of the api.
+      // For example, the JwtGuard is used for all the routes and checks whether the user is authenticated.
+      providers: [
+        {
+          provide: APP_GUARD,
+          useClass: JwtGuard,
+        },
+        {
+          provide: APP_GUARD,
+          useClass: PermissionGuard,
+        },
+        {
+          provide: APP_GUARD,
+          useClass: RoleGuard,
+        },
+        {
+          provide: APP_INTERCEPTOR,
+          useClass: TranslationInterceptor,
+        },
+      ],
+    }
+  }
+  static initApp(app: INestApplication) {
+    app.enableVersioning({
+      type: VersioningType.URI,
+      defaultVersion: '1',
+    });
+    // This env variable is not set in ConfigModule because we use it before modules are loaded
+    app.setGlobalPrefix(process.env.API_PREFIX);
+    app.useGlobalPipes(new AppValidationPipe());
+    app.useGlobalFilters(new NotFoundFilter())
+    app.enableCors({ origin: '*' });
+  }
+}

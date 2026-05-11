@@ -117,6 +117,10 @@ declare module './declarations' {
     language: Language;
     withApplication(application: string): this;
     application: string;
+    withVersion(version: string): this;
+    version: string;
+    withBaseUrl(withBaseUrl: string): this;
+    baseUrl: string;
 
     /** Does NOT check HTTP status */
     $expectRegexableJson<T>(obj: JsonLikeVariant<T>): this;

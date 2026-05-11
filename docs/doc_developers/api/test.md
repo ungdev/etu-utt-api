@@ -87,7 +87,7 @@ describe('E2E Spec', () => {
   let app: INestApplication;
   beforeAll(async () => {
     // Création de l'app
-    app = (await Test.createTestingModule({ imports: [AppModule] }).compile()).createNestApplication();
+    app = (await Test.createTestingModule({ imports: [AppModule.register()] }).compile()).createNestApplication();
     // ... Reste de l'initialisation de l'app.
   });
   GetUserFromIdE2ESpec(() => app);
