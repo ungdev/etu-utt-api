@@ -1,4 +1,3 @@
-import { INestApplication } from '@nestjs/common';
 import SearchE2ESpec from './search.e2e-spec';
 import GetAssoE2ESpec from './get-asso.e2e-spec';
 import UpdateAssoE2ESpec from './update-asso.e2e-spec';
@@ -14,8 +13,9 @@ import SearchWeekliesE2ESpec from './search-weeklies.e2e-spec';
 import UpdateWeeklyE2ESpec from './update-weekly.e2e-spec';
 import DeleteWeeklyE2ESpec from './delete-weekly.e2e-spec';
 import GetWeeklyInfoE2ESpec from './get-weekly-info.e2e-spec';
+import { E2EAppProvider } from '../../utils/test_utils';
 
-export default function AssoE2ESpec(app: () => INestApplication) {
+export default function AssoE2ESpec(app: E2EAppProvider) {
   describe('Assos', () => {
     SearchE2ESpec(app);
     GetAssoE2ESpec(app);

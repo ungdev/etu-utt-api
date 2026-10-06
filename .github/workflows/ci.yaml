@@ -79,7 +79,7 @@ jobs:
 
   test:
     runs-on: self-hosted
-    needs: docs
+    needs: build
     strategy:
       matrix:
         node-version: [22]
@@ -128,9 +128,8 @@ jobs:
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
     runs-on: self-hosted
     needs:
-      - lint
-      - build
       - test
+      - docs
     steps:
       - uses: actions/checkout@v5
       - name: Install docker

@@ -15,7 +15,7 @@ import '../../src/std.type';
 describe('EtuUTT API unit testing', () => {
   let app: TestingModule;
   beforeAll(async () => {
-    app = await Test.createTestingModule({ imports: [AppModule] }).compile();
+    app = await Test.createTestingModule({ imports: [AppModule.register()] }).compile();
   });
   afterAll(async () => {
     await app.close();

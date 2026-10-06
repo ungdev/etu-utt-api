@@ -1,17 +1,16 @@
 model User {
-  id              String  @id @default(uuid())
-  login           String  @unique @db.VarChar(50)
-  hash            String?
+  id              String @id @default(uuid())
+  login           String @unique @db.VarChar(50)
   // TODO : maybe a field accountType (that is either CAS or login-password), but this may be implemented in the centralized authentication
   studentId       Int?
   firstName       String
   lastName        String
-  rgpdId          String  @unique
-  preferenceId    String  @unique
-  infosId         String  @unique
-  mailsPhonesId   String  @unique
-  socialNetworkId String  @unique
-  privacyId       String  @unique
+  rgpdId          String @unique
+  preferenceId    String @unique
+  infosId         String @unique
+  mailsPhonesId   String @unique
+  socialNetworkId String @unique
+  privacyId       String @unique
 
   socialNetwork         UserSocialNetwork        @relation(fields: [socialNetworkId], references: [id])
   rgpd                  UserRGPD                 @relation(fields: [rgpdId], references: [id])

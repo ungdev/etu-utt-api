@@ -1,20 +1,11 @@
 import { NestFactory } from '@nestjs/core';
-import { VersioningType } from '@nestjs/common';
 import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { AppValidationPipe } from './app.pipe';
 import './std.type';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  app.enableVersioning({
-    type: VersioningType.URI,
-    defaultVersion: '1',
-  });
-  // This env variable is not set in ConfigService because we use it before modules are loaded
-  app.setGlobalPrefix(process.env.API_PREFIX);
-  app.useGlobalPipes(new AppValidationPipe());
-  app.enableCors({ origin: '*' });
+  const app = await NestFactory.create(AppModule.register());
+  AppModule.initApp(app);
 
   const config = new DocumentBuilder()
     .setTitle('EtuUTT - API')

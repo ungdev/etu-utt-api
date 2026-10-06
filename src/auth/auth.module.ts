@@ -1,4 +1,4 @@
-import { Global, Module } from '@nestjs/common';
+import { DynamicModule } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
@@ -10,12 +10,19 @@ import ApplicationController from './application/application.controller';
 import ApplicationService from './application/application.service';
 import PermissionsController from './permissions/permissions.controller';
 import PermissionsService from './permissions/permissions.service';
+import { AuthDebugController } from './auth-debug.controller';
+import { isProdEnv } from '../config/config.service';
 
-@Global()
-@Module({
-  imports: [JwtModule.register({}), UsersModule],
-  controllers: [AuthController, ApplicationController, PermissionsController],
-  providers: [AuthService, JwtStrategy, ApplicationService, LdapModule, UeService, PermissionsService],
-  exports: [],
-})
-export class AuthModule {}
+export class AuthModule {
+  static register(): DynamicModule {
+    const additionalControllers = isProdEnv() ? [] : [AuthDebugController];
+    return {
+      module: AuthModule,
+      global: true,
+      imports: [JwtModule.register({}), UsersModule],
+      controllers: [AuthController, ApplicationController, PermissionsController, ...additionalControllers],
+      providers: [AuthService, JwtStrategy, ApplicationService, LdapModule, UeService, PermissionsService],
+      exports: [],
+    };
+  }
+}

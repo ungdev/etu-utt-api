@@ -9,7 +9,7 @@ import { Application } from '../application/interfaces/application.interface';
  * @example
  * ```typescript
  * async casSignUp(
- *   @Body() dto: AuthCasSignUpReqDto,
+ *   @Body() dto: AuthSignUpReqDto,
  *   @GetApplication('id') application: string,
  * ) {
  *   ...

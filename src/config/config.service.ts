@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService as NestConfigService } from '@nestjs/config';
 
-export const isTestEnv = process.env.NODE_ENV === 'test';
-export const isProdEnv = process.env.NODE_ENV === 'production';
+export const isTestEnv = () => process.env.NODE_ENV === 'test';
+export const isProdEnv = () => process.env.NODE_ENV === 'production';
 
 @Injectable()
 export class ConfigService {
@@ -49,7 +49,7 @@ export class ConfigService {
     this.LDAP_URL = config.get('LDAP_URL');
     this.LDAP_USER = config.get('LDAP_USER');
     this.LDAP_PWD = config.get('LDAP_PWD');
-    this.IS_PROD_ENV = isProdEnv;
+    this.IS_PROD_ENV = isProdEnv();
     this.TIMETABLE_URL = config.get<string>('TIMETABLE_URL');
     this.ANNAL_UPLOAD_DIR = config.get<string>('ANNAL_UPLOAD_DIR');
     if (this.ANNAL_UPLOAD_DIR.endsWith('/')) this.ANNAL_UPLOAD_DIR = this.ANNAL_UPLOAD_DIR.slice(0, -1);
@@ -68,11 +68,11 @@ export class ConfigService {
     this.WEEKLY_SEND_DAY = Number.parseInt(config.get('WEEKLY_SEND_DAY'));
     this.WEEKLY_SEND_HOUR = Number.parseInt(config.get('WEEKLY_SEND_HOUR'));
 
-    this._FAKER_SEED = isTestEnv ? Number(config.get('FAKER_SEED')) : undefined;
+    this._FAKER_SEED = isTestEnv() ? Number(config.get('FAKER_SEED')) : undefined;
   }
 
   get FAKER_SEED() {
-    if (!isTestEnv) throw new Error('FAKER_SEED is a test-environment-only environment variable');
+    if (!isTestEnv()) throw new Error('FAKER_SEED is a test-environment-only environment variable');
     return this._FAKER_SEED;
   }
 
