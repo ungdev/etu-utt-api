@@ -17,6 +17,7 @@ import { TranslationInterceptor } from './app.interceptor';
 import { SemesterModule } from './semester/semester.module';
 import { ImageMediaModule } from './media/image/imagemedia.module';
 import { MailModule } from './mail/mail.module';
+import { LinkModule } from './link/link.module';
 import { AppValidationPipe } from './app.pipe';
 import { NotFoundFilter } from './exceptions';
 
@@ -38,6 +39,7 @@ export class AppModule {
         TimetableModule,
         BranchModule,
         AssosModule,
+        LinkModule,
       ],
       // The providers below are used for all the routes of the api.
       // For example, the JwtGuard is used for all the routes and checks whether the user is authenticated.

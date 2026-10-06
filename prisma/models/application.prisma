@@ -45,6 +45,7 @@ enum Permission {
   API_MODERATE_ANNALS // Moderate annals
   API_MODERATE_COMMENTS // Moderate comments
   API_UPLOAD_MEDIA // Upload to media enpoints
+  API_MODIFY_LINKS // Add / modify / delete links
 
   USER_SEE_DETAILS // See personal details about someone, even the ones the user decided to hide
   USER_UPDATE_DETAILS // Update personal details about someone

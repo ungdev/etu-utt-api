@@ -50,24 +50,28 @@ export function paginatedResponseDto<TBase extends Constructor>(Base: TBase) {
 
 @HasSomeAmong(...languages)
 export class TranslationReqDto {
-  @IsString()
   @IsOptional()
+  @IsString()
+  @ApiProperty({ description: "French" })
   fr?: string;
 
-  @IsString()
   @IsOptional()
+  @IsString()
+  @ApiProperty({ description: "English" })
   en?: string;
 
-  @IsString()
   @IsOptional()
+  @IsString()
+  @ApiProperty({ description: "Spanish" })
   es?: string;
 
-  @IsString()
   @IsOptional()
+  @IsString()
+  @ApiProperty({ description: "German" })
   de?: string;
 
-  @IsString()
   @IsOptional()
+  @IsString()
+  @ApiProperty({ description: "Chinese" })
   zh?: string;
 }
-

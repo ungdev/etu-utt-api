@@ -47,7 +47,7 @@ export {
   ApiApplication as RawApiApplication,
   ApiKey as RawApiKey,
   ImageMedia as RawImageMedia,
-
+  Link as RawLink,
 } from './build/client';
 
 export { RawTranslation };

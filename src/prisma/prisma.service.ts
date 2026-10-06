@@ -16,6 +16,7 @@ import { generateCustomAssoMembershipRoleModel } from '../assos/interfaces/membe
 import { generateCustomCreditCategoryModel } from '../ue/credit/interfaces/credit-category.interface';
 import { generateCustomApplicationModel } from '../auth/application/interfaces/application.interface';
 import { generateCustomAssoWeeklyModel } from '../assos/interfaces/weekly.interface';
+import { generateCustomLinkModel } from '../link/link.interface';
 
 @Injectable()
 export class PrismaService extends PrismaClient<ReturnType<typeof prismaOptions>> implements OnModuleDestroy {
@@ -56,6 +57,7 @@ function createNormalizedEntitiesUtility(prisma: PrismaClient) {
     ueCreditCategory: generateCustomCreditCategoryModel(prisma),
     apiApplication: generateCustomApplicationModel(prisma),
     assoWeekly: generateCustomAssoWeeklyModel(prisma),
+    link: generateCustomLinkModel(prisma),
   };
 }
 

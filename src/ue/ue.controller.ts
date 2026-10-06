@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Headers, Param, Put, Query, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Put, Query, Res } from '@nestjs/common';
 import { HttpStatusCode } from 'axios';
 import type { Response } from 'express';
 import { UeSearchReqDto } from './dto/req/ue-search-req.dto';
@@ -17,6 +17,7 @@ import UeRateCriterionResDto from './dto/res/ue-rate-criterion-res.dto';
 import UeRateResDto from './dto/res/ue-rate-res.dto';
 import { Language, UserType } from '../prisma/types';
 import { UeRating } from './interfaces/rate.interface';
+import { GetLanguage } from '../app.decorator';
 
 @Controller('ue')
 @ApiTags('UE')
@@ -31,7 +32,7 @@ export class UeController {
   @ApiOkResponse({ type: paginatedResponseDto(UeOverviewResDto) })
   async searchUe(
     @GetUser() user: User,
-    @Headers('language') language: Language,
+    @GetLanguage() language: Language,
     @Query() queryParams: UeSearchReqDto,
   ): Promise<Pagination<UeOverviewResDto>> {
     const res = await this.ueService.searchUes(queryParams, language);
@@ -129,7 +130,7 @@ export class UeController {
   @RequireUserType('STUDENT')
   @ApiOperation({ description: 'Get the UEs of the current user.' })
   @ApiOkResponse({ type: UeOverviewResDto, isArray: true })
-  async getMyUes(@GetUser() user: User, @Headers('language') language: Language): Promise<UeOverviewResDto[]> {
+  async getMyUes(@GetUser() user: User, @GetLanguage() language: Language): Promise<UeOverviewResDto[]> {
     return (await this.ueService.getUesOfUser(user.id)).map((ue) =>
       this.formatUeOverview(
         ue,
@@ -140,8 +141,8 @@ export class UeController {
   }
 
   /** This method chooses an UEOF and displays its basic data */
-  private formatUeOverview(ue: Ue, langPref: string[], branchOptionPref: string[]): UeOverviewResDto {
-    const lowerCasePref = langPref.map((lang) => lang.toLocaleLowerCase());
+  private formatUeOverview(ue: Ue, langPref: Language[], branchOptionPref: string[]): UeOverviewResDto {
+    const lowerCasePref = langPref.map((lang) => lang);
     // Filters ueofs with ueofs that can be taken with the preferred branch options
     const availableOf = ue.ueofs.filter((ueof) =>
       branchOptionPref.some((optionPref) =>
@@ -150,8 +151,8 @@ export class UeController {
     );
     // Chooses an UEOF : the only ueof if there is only one; the one with the preferred language if there is one; the first one otherwise
     const chosenOf = availableOf.length
-      ? availableOf.find((ueof) => lowerCasePref.includes(ueof.info.language))
-      : (ue.ueofs.find((ueof) => lowerCasePref.includes(ueof.info.language)) ?? ue.ueofs[0]);
+      ? availableOf.find((ueof) => lowerCasePref.includes(ueof.info.language as Language))
+      : (ue.ueofs.find((ueof) => lowerCasePref.includes(ueof.info.language as Language)) ?? ue.ueofs[0]);
     return {
       code: ue.code,
       name: chosenOf.name,

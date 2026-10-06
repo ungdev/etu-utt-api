@@ -19,6 +19,7 @@ import * as cas from '../external_services/cas';
 import * as timetableProvider from '../external_services/timetable';
 import { ConfigService } from '../../src/config/config.service';
 import AssoE2ESpec from './assos';
+import LinkE2ESpec from './link';
 import MediaE2ESpec from './media';
 import { buildTestApp, E2EApp } from '../utils/test_utils';
 
@@ -44,5 +45,6 @@ describe('EtuUTT API e2e testing', () => {
   TimetableE2ESpec(() => app); // Deactivated, see function
   UeE2ESpec(() => app);
   AssoE2ESpec(() => app);
+  LinkE2ESpec(() => app);
   MediaE2ESpec(() => app);
 });
