@@ -10,6 +10,7 @@ import {
   createUser,
 } from '#/utils/fakedb';
 import { ERROR_CODE } from '@/exceptions';
+import { it } from 'vitest';
 
 const GetMyUesE2ESpec = e2eSuite('GET ue/of/me', (app) => {
   const user = createUser(app);

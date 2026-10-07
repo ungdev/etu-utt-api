@@ -1,16 +1,10 @@
-// Ejs adapter should not be imported in a test environment (it lets hanging promises and things like this, + anyway we don't need it)
-jest.mock('@nestjs-modules/mailer/dist/adapters/ejs.adapter', () => ({
-  EjsAdapter: jest.fn().mockImplementation(() => ({
-    compile: jest.fn(),
-  })),
-}));
-
 import TimetableServiceUnitSpec from '#/unit/timetable/timetable.service.spec';
 import LexicalValidationUnitSpec from '#/unit/lexical/lexical-validation.spec';
 import LexicalGenerationUnitSpec from '#/unit/lexical/lexical-generation.spec';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '@/app.module';
 import '@/std.type';
+import { afterAll, beforeAll, describe } from 'vitest';
 
 describe('EtuUTT API unit testing', () => {
   let app: TestingModule;
@@ -19,7 +13,7 @@ describe('EtuUTT API unit testing', () => {
   });
   afterAll(async () => {
     await app.close();
-  })
+  });
   TimetableServiceUnitSpec(() => app);
   LexicalValidationUnitSpec(() => app);
   LexicalGenerationUnitSpec(() => app);

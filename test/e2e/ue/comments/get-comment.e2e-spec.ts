@@ -16,6 +16,7 @@ import { ConfigService } from '@/config/config.service';
 import { ERROR_CODE } from '@/exceptions';
 import { PrismaService } from '@/prisma/prisma.service';
 import { PermissionManager } from '@/utils';
+import { it } from 'vitest';
 
 const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
   const user = createUser(app, { permissions: new PermissionManager().with('API_SEE_OPINIONS_UE') });

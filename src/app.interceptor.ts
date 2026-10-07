@@ -1,6 +1,6 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Observable, map } from 'rxjs';
-import { Request } from 'express';
+import type { Request } from 'express';
 import { Language } from '@/prisma/types';
 import { getTranslation } from '@/utils';
 

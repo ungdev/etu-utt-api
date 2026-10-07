@@ -4,6 +4,7 @@ import { unitSuite } from '#/utils/test_utils';
 import * as fakedb from '#/utils/fakedb';
 import { createTimetableEntry, createTimetableEntryOverride } from '#/utils/fakedb';
 import { faker } from '@faker-js/faker';
+import { beforeAll, expect, it } from 'vitest';
 
 // This check is skipped, please remove the last argument to enable tests
 const TimetableServiceUnitSpec = unitSuite.skip('Timetable.service', (app) => {

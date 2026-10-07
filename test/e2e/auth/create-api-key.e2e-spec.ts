@@ -5,6 +5,7 @@ import { ERROR_CODE } from '@/exceptions';
 import * as fakedb from '#/utils/fakedb';
 import { pick } from '@/utils';
 import { PrismaService } from '@/prisma/prisma.service';
+import { expect, it } from 'vitest';
 
 const CreateApiKeyE2ESpec = e2eSuite('POST /auth/api-key', (app) => {
   const authService = () => app().get(AuthService);

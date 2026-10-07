@@ -2,6 +2,7 @@ import { Dummies, e2eSuite } from '#/utils/test_utils';
 import { createAsso } from '#/utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '@/exceptions';
+import { it } from 'vitest';
 
 const GetAssoE2ESpec = e2eSuite('GET /assos/:id', (app) => {
   const asso = createAsso(app);

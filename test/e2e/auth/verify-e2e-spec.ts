@@ -2,6 +2,7 @@ import * as pactum from 'pactum';
 import { e2eSuite } from '#/utils/test_utils';
 import { AuthService } from '@/auth/auth.service';
 import { ERROR_CODE } from '@/exceptions';
+import { it } from 'vitest';
 
 const VerifyE2ESpec = e2eSuite('GET /auth/signin', (app) => {
   it('should return a 400 if the token is missing', async () =>

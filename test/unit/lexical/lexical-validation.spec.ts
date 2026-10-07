@@ -10,6 +10,7 @@ import { $createAutoLinkNode, $createLinkNode } from '@lexical/link';
 import { $createHorizontalRuleNode } from '@lexical/extension';
 import { $createListItemNode, $createListNode } from '@lexical/list';
 import { $createTableCellNode, $createTableNode, $createTableRowNode } from '@lexical/table';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 const LexicalValidationUnitSpec = unitSuite('Lexical validation', (app) => {
   let lexicalModule: LexicalModule;

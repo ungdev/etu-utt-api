@@ -4,6 +4,7 @@ import { ERROR_CODE } from '@/exceptions';
 import { HomepageWidgetsUpdateElement } from '@/profile/dto/req/homepage-widgets-update-req.dto';
 import * as fakedb from '#/utils/fakedb';
 import { PrismaService } from '@/prisma/prisma.service';
+import { expect, it } from 'vitest';
 
 const SetHomepageWidgetsE2ESpec = e2eSuite('PUT /profile/homepage', (app) => {
   const user = fakedb.createUser(app);

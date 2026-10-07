@@ -3,6 +3,7 @@ import * as pactum from 'pactum';
 import { ERROR_CODE } from '@/exceptions';
 import { e2eSuite } from '#/utils/test_utils';
 import { ConfigService } from '@/config/config.service';
+import { beforeAll, it } from 'vitest';
 
 const SearchE2ESpec = e2eSuite('GET /assos', (app) => {
   const assos: FakeAsso[] = [];

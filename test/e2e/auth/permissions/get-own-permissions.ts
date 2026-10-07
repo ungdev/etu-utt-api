@@ -4,6 +4,7 @@ import * as fakedb from '#/utils/fakedb';
 import { ERROR_CODE } from '@/exceptions';
 import { Permission } from '@/prisma/types';
 import { PermissionManager } from '@/utils';
+import { it } from 'vitest';
 
 const GetOwnPermissionsE2ESpec = e2eSuite('GET /auth/permissions/current', (app) => {
   const user = fakedb.createUser(app, {

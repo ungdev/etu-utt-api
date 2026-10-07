@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Query, Response } from '@nestjs/common';
 import { ApiConsumes, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Response as ExpressResponse } from 'express';
+import type { Response as ExpressResponse } from 'express';
 import { FileSize, MulterWithMime, UploadRoute, UserFile } from '@/upload.interceptor';
 import { GetUser, IsPublic, RequireApiPermission, SkipApplicationCheck } from '@/auth/decorator';
 import { AppException, ERROR_CODE } from '@/exceptions';

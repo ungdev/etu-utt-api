@@ -4,6 +4,7 @@ import { ERROR_CODE } from '@/exceptions';
 import * as fakedb from '#/utils/fakedb';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '@/prisma/prisma.service';
+import { expect, it } from 'vitest';
 
 const UpdateApplicationTokenE2ESpec = e2eSuite('PATCH /auth/application/:applicationId/token', (app) => {
   const user = fakedb.createUser(app);

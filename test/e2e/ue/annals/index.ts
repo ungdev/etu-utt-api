@@ -5,6 +5,7 @@ import GetAnnal from '#/e2e/ue/annals/get-annals.e2e-spec';
 import EditAnnal from '#/e2e/ue/annals/patch-annal.e2e-spec';
 import PostAnnal from '#/e2e/ue/annals/upload-annal.e2e-spec';
 import { E2EAppProvider } from '#/utils/test_utils';
+import { describe } from 'vitest';
 
 export default function AnnalsE2ESpec(app: E2EAppProvider) {
   describe('Annals', () => {

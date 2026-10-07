@@ -14,6 +14,7 @@ import { e2eSuite } from '#/utils/test_utils';
 import { PrismaService } from '@/prisma/prisma.service';
 import { faker } from '@faker-js/faker';
 import { PermissionManager } from '@/utils';
+import { it } from 'vitest';
 
 const PutRate = e2eSuite('PUT /ue/ueof/{ueofCode}/rate', (app) => {
   const user = createUser(app, { permissions: new PermissionManager().with('API_GIVE_OPINIONS_UE') });

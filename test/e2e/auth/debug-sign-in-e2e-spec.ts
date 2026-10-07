@@ -7,6 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '@/prisma/prisma.service';
 import { DEFAULT_APPLICATION } from '&/prisma/seed/utils';
 import { AuthService } from '@/auth/auth.service';
+import { expect, it } from 'vitest';
 
 const DebugSignInE2ESpec = e2eSuite('POST (/vdev)/auth/signin', (app) => {
   const dto = {

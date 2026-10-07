@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ParagraphNode, TextNode } from 'lexical';
 import { createHeadlessEditor } from '@lexical/headless';
+import { withDOM } from '@lexical/headless/dom';
 import { $generateHtmlFromNodes } from '@lexical/html';
 import { AutoLinkNode, LinkNode } from '@lexical/link';
 import { HeadingNode, QuoteNode } from '@lexical/rich-text';
@@ -70,7 +71,7 @@ export class LexicalModule {
    * Generates HTML from lexical content. Nodes not included in the bundle are ignored. The output is sanitized (by happy-dom) and
    * contains inline-styles instead of classes, for email use. Inline style is defined in the {@link CustomStyles} (./nodes/index.ts).
    *
-   * This function can not be used in a jest context as it relies on happy-dom to provide a DOM implementation.
+   * This function can not be used in a Vitest context as it relies on happy-dom to provide a DOM implementation.
    *
    * @param lexicalContent the lexical content to convert
    * @param bundle the bundle of allowed nodes (default: full bundle)
@@ -78,9 +79,6 @@ export class LexicalModule {
    */
   async generateHTML(lexicalContent: string, bundle: keyof typeof BUNDLES = '@etuutt/full'): Promise<string> {
     let html = '';
-    const { withDOM } = (await new Function(
-      "return import('@lexical/headless/dom')",
-    )()) as typeof import('@lexical/headless/dom');
     withDOM(() => {
       const editor = createHeadlessEditor({
         nodes: BUNDLES[bundle],
@@ -127,14 +125,16 @@ export class LexicalModule {
       editor.read(() => (html = $generateHtmlFromNodes(editor)));
     });
     // Generated html contains multiple things that we want to minify:
-    return html
-      // class=""
-      .replaceAll('class=""', '')
-      // style="key1: value1; key2: value2" => style="key1:value1;key2:value2"
-      .replaceAll(/(?<=style="[^"]+[:;])\s/g, '')
-      // <p  style="key:value"> => <p style="key:value">
-      .replaceAll(/(?<=<\w+\s)\s/g, '')
-      // <p style="key:value" > => <p style="key:value">
-      .replaceAll(/\s(?=>)/g, '')
+    return (
+      html
+        // class=""
+        .replaceAll('class=""', '')
+        // style="key1: value1; key2: value2" => style="key1:value1;key2:value2"
+        .replaceAll(/(?<=style="[^"]+[:;])\s/g, '')
+        // <p  style="key:value"> => <p style="key:value">
+        .replaceAll(/(?<=<\w+\s)\s/g, '')
+        // <p style="key:value" > => <p style="key:value">
+        .replaceAll(/\s(?=>)/g, '')
+    );
   }
 }

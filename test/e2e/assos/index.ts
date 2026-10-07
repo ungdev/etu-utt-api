@@ -13,6 +13,7 @@ import SearchWeekliesE2ESpec from '#/e2e/assos/search-weeklies.e2e-spec';
 import UpdateWeeklyE2ESpec from '#/e2e/assos/update-weekly.e2e-spec';
 import DeleteWeeklyE2ESpec from '#/e2e/assos/delete-weekly.e2e-spec';
 import GetWeeklyInfoE2ESpec from '#/e2e/assos/get-weekly-info.e2e-spec';
+import { describe } from 'vitest';
 import { E2EAppProvider } from '#/utils/test_utils';
 
 export default function AssoE2ESpec(app: E2EAppProvider) {

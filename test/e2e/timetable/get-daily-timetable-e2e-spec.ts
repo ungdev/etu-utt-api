@@ -4,6 +4,7 @@ import { RawTimetableEntry } from '@/prisma/types';
 import { PrismaService } from '@/prisma/prisma.service';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '@/exceptions';
+import { beforeAll, it } from 'vitest';
 
 const GetDailyTimetableE2ESpec = e2eSuite('GET /timetable/current/daily/:day/:month/:year', (app) => {
   const user = fakedb.createUser(app);

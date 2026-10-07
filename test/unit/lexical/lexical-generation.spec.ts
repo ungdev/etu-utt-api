@@ -4,6 +4,7 @@ import { createHeadlessEditor } from '@lexical/headless';
 import { $createParagraphNode, $createTextNode, $getRoot, LexicalEditor } from 'lexical';
 import { $createImageNode } from '@/lexical/nodes/ImageNode';
 import { $createColorTextNode, Color } from '@/lexical/nodes/ColorTextNode';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 const LexicalGenerationUnitSpec = unitSuite('Lexical generation', (app) => {
   let lexicalModule: LexicalModule;
@@ -19,7 +20,6 @@ const LexicalGenerationUnitSpec = unitSuite('Lexical generation', (app) => {
     result: string,
   ) => {
     bundles.forEach((bundle) => {
-      // These steps are skipped as jest does not support yet pure-esm sub-dependencies
       describe(name, () => {
         it(bundle, async () => {
           const editor = createHeadlessEditor({
@@ -56,16 +56,19 @@ const LexicalGenerationUnitSpec = unitSuite('Lexical generation', (app) => {
   checkExportForBundles(
     'Image',
     ['@etuutt/full'],
-    () => $getRoot().append($createParagraphNode().append($createImageNode('https://etu.utt.fr/test.webp', 'An image', 69, 42))),
-    '<p style="margin:0px;"><span><img src="https://etu.utt.fr/test.webp" alt="An image" width="69" height="42"></span></p>'
-  )
+    () =>
+      $getRoot().append(
+        $createParagraphNode().append($createImageNode('https://etu.utt.fr/test.webp', 'An image', 69, 42)),
+      ),
+    '<p style="margin:0px;"><span><img src="https://etu.utt.fr/test.webp" alt="An image" width="69" height="42"></span></p>',
+  );
 
   checkExportForBundles(
     'Color text',
     ['@etuutt/full'],
     () => $getRoot().append($createParagraphNode().append($createColorTextNode('Hello World', 'blue'))),
-    `<p style="margin:0px;"><span style="color:${Color.blue};white-space:pre-wrap;">Hello World</span></p>`
-  )
+    `<p style="margin:0px;"><span style="color:${Color.blue};white-space:pre-wrap;">Hello World</span></p>`,
+  );
 });
 
 export default LexicalGenerationUnitSpec;

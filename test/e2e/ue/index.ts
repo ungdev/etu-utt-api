@@ -7,6 +7,7 @@ import DeleteRate from '#/e2e/ue/delete-rate.e2e-spec';
 import AnnalsE2ESpec from '#/e2e/ue/annals';
 import CommentsE2ESpec from '#/e2e/ue/comments';
 import GetMyUesE2ESpec from '#/e2e/ue/get-my-ues.e2e-spec';
+import { describe } from 'vitest';
 import { E2EAppProvider } from '#/utils/test_utils';
 import CreditE2ESpec from '#/e2e/ue/credit';
 

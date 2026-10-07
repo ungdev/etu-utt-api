@@ -5,6 +5,7 @@ import { ConfigService } from '@/config/config.service';
 import { createUser } from '#/utils/fakedb';
 import { ERROR_CODE } from '@/exceptions';
 import * as pactum from 'pactum';
+import { beforeAll, afterAll, it } from 'vitest';
 
 export const GetMediaE2ESpec = e2eSuite('GET /media/image/:mediaId', (app) => {
   const user = createUser(app);

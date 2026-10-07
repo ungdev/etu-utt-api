@@ -5,6 +5,7 @@ import { uuid } from 'pactum-matchers';
 import { PrismaService } from '@/prisma/prisma.service';
 import TimetableDeleteOccurrencesReqDto from '@/timetable/dto/req/timetable-delete-occurrences-req.dto';
 import { ERROR_CODE } from '@/exceptions';
+import { it } from 'vitest';
 
 const DeleteEntryE2ESpec = e2eSuite('DELETE /timetable/current/:entryId', (app) => {
   const user = fakedb.createUser(app);

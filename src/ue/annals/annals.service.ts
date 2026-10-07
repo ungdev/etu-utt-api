@@ -176,7 +176,7 @@ export class AnnalsService {
         },
       });
     });
-    // Jest cannot run async code
+    // Vitest cannot run async code
     if (isTestEnv) await promise;
     return fileEntry;
   }

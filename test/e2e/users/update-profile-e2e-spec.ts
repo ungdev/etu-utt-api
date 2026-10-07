@@ -1,3 +1,4 @@
+import { it } from 'vitest';
 import { Dummies, e2eSuite } from '#/utils/test_utils';
 import * as pactum from 'pactum';
 import { PrismaService } from '@/prisma/prisma.service';

@@ -2,6 +2,7 @@ import { JsonLike, e2eSuite } from '#/utils/test_utils';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '@/exceptions';
 import * as fakedb from '#/utils/fakedb';
+import { it } from 'vitest';
 
 const CreateApplicationE2ESpec = e2eSuite('POST /auth/application', (app) => {
   const user = fakedb.createUser(app);

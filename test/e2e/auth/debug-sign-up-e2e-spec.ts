@@ -6,6 +6,7 @@ import { UserType } from '@/prisma/types';
 import { createUser } from '#/utils/fakedb';
 import { JwtService } from '@nestjs/jwt';
 import { DEFAULT_APPLICATION } from '&/prisma/seed/utils';
+import { expect, it } from 'vitest';
 
 const DebugSignUpE2ESpec = e2eSuite('POST (/vdev)/auth/signup', (app) => {
   const dto = {
@@ -90,7 +91,9 @@ const DebugSignUpE2ESpec = e2eSuite('POST (/vdev)/auth/signup', (app) => {
     expect(user.lastName).toEqual(dto.lastName);
     expect(user.userType).toEqual(UserType.OTHER);
     expect(user.id).toMatch(/[a-z0-9-]{36}/);
-    const apiKeyPermissions = await app().get(PrismaService).apiKeyPermission.findMany({ where: { apiKey: { userId: user.id, applicationId: DEFAULT_APPLICATION.id } } });
+    const apiKeyPermissions = await app()
+      .get(PrismaService)
+      .apiKeyPermission.findMany({ where: { apiKey: { userId: user.id, applicationId: DEFAULT_APPLICATION.id } } });
     expect(apiKeyPermissions).toEqual([]);
     await app()
       .get(PrismaService)

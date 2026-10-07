@@ -28,10 +28,8 @@ function applyStylesToElement(element: HTMLElement, index: number, node?: Lexica
 /**
  * Patches the exportDOM method of a Lexical Node to inject inline styles based on class names.
  */
-export function patchNodeExportDOM(
-  NodeClass: new (...args: unknown[]) => LexicalNode,
-) {
-  const originalExportDOM: LexicalNode["exportDOM"] = NodeClass.prototype.exportDOM;
+export function patchNodeExportDOM(NodeClass: new (...args: unknown[]) => LexicalNode) {
+  const originalExportDOM: LexicalNode['exportDOM'] = NodeClass.prototype.exportDOM;
   NodeClass.prototype.exportDOM = function (this: LexicalNode, ...args: unknown[]) {
     const result: DOMExportOutput = originalExportDOM.apply(this, args);
     if (!result.element) return result;

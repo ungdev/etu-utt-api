@@ -15,6 +15,7 @@ import { ConfigService } from '@/config/config.service';
 import { CommentStatus } from '@/ue/comments/interfaces/comment.interface';
 import { PermissionManager, pick } from '@/utils';
 import { mkdirSync, rmSync } from 'fs';
+import { afterAll, beforeAll, describe, it } from 'vitest';
 
 const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
   const senderUser = createUser(app, { permissions: new PermissionManager().with('API_UPLOAD_ANNALS') });
