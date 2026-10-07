@@ -14,6 +14,7 @@ import { ERROR_CODE } from '@/exceptions';
 import { Dummies, e2eSuite } from '#/utils/test_utils';
 import { faker } from '@faker-js/faker';
 import { PermissionManager } from '@/utils';
+import { it } from 'vitest';
 
 const DeleteRate = e2eSuite('DELETE /ue/ueof/{ueofCode}/rate/{critetionId}', (app) => {
   const user = createUser(app, { permissions: new PermissionManager().with('API_GIVE_OPINIONS_UE') });

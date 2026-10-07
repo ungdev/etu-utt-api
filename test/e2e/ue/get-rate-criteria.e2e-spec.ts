@@ -3,6 +3,7 @@ import { FakeUeStarCriterion, createCriterion, createUser } from '#/utils/fakedb
 import { e2eSuite } from '#/utils/test_utils';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '@/exceptions';
+import { it } from 'vitest';
 
 const GetRateCriteria = e2eSuite('GET /ue/rate/criteria', (app) => {
   const userNoPermission = createUser(app);

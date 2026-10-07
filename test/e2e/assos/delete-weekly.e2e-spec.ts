@@ -1,6 +1,7 @@
 import { Dummies, e2eSuite } from '#/utils/test_utils';
 import {
-  createAsso, createAssoMembership,
+  createAsso,
+  createAssoMembership,
   createAssoMembershipPermission,
   createAssoMembershipRole,
   createAssoWeekly,
@@ -8,6 +9,7 @@ import {
 } from '#/utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '@/exceptions';
+import { it } from 'vitest';
 
 const DeleteWeeklyE2ESpec = e2eSuite('DELETE /assos/:assoId/weekly/:weeklyId', (app) => {
   const userWithPermission = createUser(app);
@@ -22,7 +24,12 @@ const DeleteWeeklyE2ESpec = e2eSuite('DELETE /assos/:assoId/weekly/:weeklyId', (
 
   const otherAsso = createAsso(app);
   const otherAssoRole = createAssoMembershipRole(app, { asso });
-  createAssoMembership(app, { asso: otherAsso, user: userWithPermission, role: otherAssoRole, permissions: [permissionManageAsso] });
+  createAssoMembership(app, {
+    asso: otherAsso,
+    user: userWithPermission,
+    role: otherAssoRole,
+    permissions: [permissionManageAsso],
+  });
 
   it('should return 401 as user is not authenticated', () =>
     pactum.spec().delete(`/assos/${asso.id}/weekly/${weekly.id}`).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
@@ -34,29 +41,33 @@ const DeleteWeeklyE2ESpec = e2eSuite('DELETE /assos/:assoId/weekly/:weeklyId', (
       .delete(`/assos/${Dummies.UUID}/weekly/${weekly.id}`)
       .expectAppError(ERROR_CODE.NO_SUCH_ASSO, Dummies.UUID));
 
-  it('should return a 403 as user does not have the permission to update the weeklies', () => pactum
-    .spec()
-    .withBearerToken(userWithoutPermission.token)
-    .delete(`/assos/${asso.id}/weekly/${weekly.id}`)
-    .expectAppError(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, 'weekly'));
+  it('should return a 403 as user does not have the permission to update the weeklies', () =>
+    pactum
+      .spec()
+      .withBearerToken(userWithoutPermission.token)
+      .delete(`/assos/${asso.id}/weekly/${weekly.id}`)
+      .expectAppError(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, 'weekly'));
 
-  it('should return a 404 as weekly is not found', () => pactum
-    .spec()
-    .withBearerToken(userWithPermission.token)
-    .delete(`/assos/${asso.id}/weekly/${Dummies.UUID}`)
-    .expectAppError(ERROR_CODE.NO_SUCH_WEEKLY, Dummies.UUID))
+  it('should return a 404 as weekly is not found', () =>
+    pactum
+      .spec()
+      .withBearerToken(userWithPermission.token)
+      .delete(`/assos/${asso.id}/weekly/${Dummies.UUID}`)
+      .expectAppError(ERROR_CODE.NO_SUCH_WEEKLY, Dummies.UUID));
 
-  it('should return a 404 as the weekly does not belong to the asso', () => pactum
-    .spec()
-    .withBearerToken(userWithPermission.token)
-    .delete(`/assos/${otherAsso.id}/weekly/${weekly.id}`)
-    .expectAppError(ERROR_CODE.NO_SUCH_WEEKLY, weekly.id));
+  it('should return a 404 as the weekly does not belong to the asso', () =>
+    pactum
+      .spec()
+      .withBearerToken(userWithPermission.token)
+      .delete(`/assos/${otherAsso.id}/weekly/${weekly.id}`)
+      .expectAppError(ERROR_CODE.NO_SUCH_WEEKLY, weekly.id));
 
-  it('should return a 400 as the weekly was already sent', () => pactum
-    .spec()
-    .withBearerToken(userWithPermission.token)
-    .delete(`/assos/${asso.id}/weekly/${oldWeekly.id}`)
-    .expectAppError(ERROR_CODE.WEEKLY_ALREADY_SENT));
+  it('should return a 400 as the weekly was already sent', () =>
+    pactum
+      .spec()
+      .withBearerToken(userWithPermission.token)
+      .delete(`/assos/${asso.id}/weekly/${oldWeekly.id}`)
+      .expectAppError(ERROR_CODE.WEEKLY_ALREADY_SENT));
 
   it('should delete the weekly', async () => {
     await pactum

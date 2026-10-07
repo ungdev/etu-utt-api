@@ -5,6 +5,7 @@ import { TestingModule } from '@nestjs/testing';
 import { faker } from '@faker-js/faker';
 import { ConfigService } from '@/config/config.service';
 import { clearUniqueValues, generateDefaultApplication } from '#/../prisma/seed/utils';
+import { beforeAll, describe } from 'vitest';
 
 /**
  * Initializes this file.

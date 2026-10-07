@@ -4,6 +4,7 @@ import * as pactum from 'pactum';
 import { ERROR_CODE } from '@/exceptions';
 import { setTimetable } from '#/external_services/timetable';
 import { PrismaService } from '@/prisma/prisma.service';
+import { expect, it } from 'vitest';
 
 const ImportTimetableE2ESpec = e2eSuite('POST /timetable/import', (app) => {
   const users = Array.from({ length: 10 }, () => fakedb.createUser(app));

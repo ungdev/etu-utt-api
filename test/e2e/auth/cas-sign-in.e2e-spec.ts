@@ -6,6 +6,7 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '@/prisma/prisma.service';
 import AuthCasSignInReqDto from '@/auth/dto/req/auth-cas-sign-in-req.dto';
 import { DEFAULT_APPLICATION } from '#/../prisma/seed/utils';
+import { expect, it } from 'vitest';
 
 const CasSignInE2ESpec = e2eSuite('POST /auth/signin/cas', (app) => {
   const body: AuthCasSignInReqDto = {

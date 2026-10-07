@@ -6,6 +6,7 @@ import { faker } from '@faker-js/faker';
 import { PrismaService } from '@/prisma/prisma.service';
 import TimetableUpdateEntryReqDto from '@/timetable/dto/req/timetable-update-entry-req.dto';
 import { ERROR_CODE } from '@/exceptions';
+import { it } from 'vitest';
 
 const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) => {
   const user = fakedb.createUser(app);

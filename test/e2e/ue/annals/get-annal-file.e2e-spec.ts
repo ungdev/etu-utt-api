@@ -14,6 +14,7 @@ import { Dummies, e2eSuite } from '#/utils/test_utils';
 import { ERROR_CODE } from '@/exceptions';
 import { CommentStatus } from '@/ue/comments/interfaces/comment.interface';
 import { PermissionManager } from '@/utils';
+import { it } from 'vitest';
 
 const GetAnnalFile = e2eSuite('GET /ue/annals/{annalId}', (app) => {
   const senderUser = createUser(app, { permissions: new PermissionManager().with('API_SEE_ANNALS') });

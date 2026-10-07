@@ -2,6 +2,7 @@ import { e2eSuite } from '#/utils/test_utils';
 import * as fakedb from '#/utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '@/exceptions';
+import { it } from 'vitest';
 
 const GetGroupsE2ESpec = e2eSuite('GET /timetable/current/groups', (app) => {
   const user1 = fakedb.createUser(app);

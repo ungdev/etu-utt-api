@@ -15,6 +15,7 @@ import { ERROR_CODE } from '@/exceptions';
 import { CommentStatus } from '@/ue/comments/interfaces/comment.interface';
 import { PermissionManager, pick } from '@/utils';
 import { PrismaService } from '@/prisma/prisma.service';
+import { it } from 'vitest';
 
 const DeleteAnnal = e2eSuite('DELETE /ue/annals/{annalId}', (app) => {
   const senderUser = createUser(app, { permissions: new PermissionManager().with('API_UPLOAD_ANNALS') });

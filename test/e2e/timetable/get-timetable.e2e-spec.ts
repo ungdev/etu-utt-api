@@ -3,6 +3,7 @@ import * as fakedb from '#/utils/fakedb';
 import * as pactum from 'pactum';
 import { createTimetableEntry, createTimetableGroup } from '#/utils/fakedb';
 import { ERROR_CODE } from '@/exceptions';
+import { it } from 'vitest';
 
 const GetTimetableE2ESpec = e2eSuite('GET /timetable/current/:daysCount/:day/:month/:year', (app) => {
   const user = fakedb.createUser(app);

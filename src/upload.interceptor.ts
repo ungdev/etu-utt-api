@@ -2,6 +2,7 @@ import { Injectable, ParseFilePipe, UploadedFile, UseInterceptors } from '@nestj
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { AppException, ERROR_CODE } from '@/exceptions';
+import { fileTypeFromBuffer } from 'file-type';
 
 export type MulterWithMime = {
   mime: string;
@@ -30,8 +31,7 @@ class FileValidationPipe extends ParseFilePipe {
     // to turn it into a require statement. Indeed file-type is
     // an ecmascript module and cannot be loaded with a 'require'
     // function.
-    const fileType = (await new Function("return import('file-type')")()) as typeof import('file-type');
-    const fileTypeResult = await fileType.fileTypeFromBuffer(file.buffer);
+    const fileTypeResult = await fileTypeFromBuffer(file.buffer);
     // Check file type using magic codes, also check local extension was correct.
     // The file is supposed to be renamed during upload but we check the extension to avoid a potential security issue.
     if (

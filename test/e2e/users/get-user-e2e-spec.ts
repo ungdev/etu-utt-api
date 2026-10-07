@@ -3,6 +3,7 @@ import { createUser } from '#/utils/fakedb';
 import * as pactum from 'pactum';
 import { PrismaService } from '@/prisma/prisma.service';
 import { ERROR_CODE } from '@/exceptions';
+import { it } from 'vitest';
 
 const GetUserE2ESpec = e2eSuite('GET /users/:userId', (app) => {
   const user = createUser(app);

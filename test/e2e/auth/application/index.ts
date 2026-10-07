@@ -5,6 +5,7 @@ import GetApplicationE2ESpec from '#/e2e/auth/application/get-application.e2e-sp
 import CreateApplicationE2ESpec from '#/e2e/auth/application/create-application.e2e-spec';
 import UpdateClientSecretE2ESpec from '#/e2e/auth/application/update-client-secret.e2e-spec';
 import UpdateApplicationTokenE2ESpec from '#/e2e/auth/application/update-application-token.e2e-spec';
+import { describe } from 'vitest';
 
 export default function ApplicationE2ESpec(app: E2EAppProvider) {
   describe('Application', () => {

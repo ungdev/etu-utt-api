@@ -4,6 +4,7 @@ import * as pactum from 'pactum';
 import { PrismaService } from '@/prisma/prisma.service';
 import { pick } from '@/utils';
 import { ERROR_CODE } from '@/exceptions';
+import { it } from 'vitest';
 
 const GetCurrentUserE2ESpec = e2eSuite('GET /users/current', (app) => {
   const user = createUser(app);

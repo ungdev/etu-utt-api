@@ -2,6 +2,7 @@ import { e2eSuite } from '#/utils/test_utils';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '@/exceptions';
 import * as fakedb from '#/utils/fakedb';
+import { it } from 'vitest';
 
 const GetHomepageWidgetsE2ESpec = e2eSuite('GET /profile/homepage', (app) => {
   const user = fakedb.createUser(app);

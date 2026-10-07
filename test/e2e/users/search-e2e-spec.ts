@@ -1,3 +1,4 @@
+import { it, beforeAll } from 'vitest';
 import * as pactum from 'pactum';
 import { e2eSuite } from '#/utils/test_utils';
 import * as fakedb from '#/utils/fakedb';

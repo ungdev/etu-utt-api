@@ -3,6 +3,7 @@ import { createUser } from '#/utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '@/exceptions';
 import { ConfigService } from '@/config/config.service';
+import { it } from 'vitest';
 
 const GetWeeklyInfoE2ESpec = e2eSuite('GET /assos/weekly/info', (app) => {
   const user = createUser(app);
@@ -15,7 +16,10 @@ const GetWeeklyInfoE2ESpec = e2eSuite('GET /assos/weekly/info', (app) => {
       .spec()
       .withBearerToken(user.token)
       .get('/assos/weekly/info')
-      .expectJson({ sendDay: app().get(ConfigService).WEEKLY_SEND_DAY, sendHour: app().get(ConfigService).WEEKLY_SEND_HOUR }));
+      .expectJson({
+        sendDay: app().get(ConfigService).WEEKLY_SEND_DAY,
+        sendHour: app().get(ConfigService).WEEKLY_SEND_HOUR,
+      }));
 });
 
 export default GetWeeklyInfoE2ESpec;

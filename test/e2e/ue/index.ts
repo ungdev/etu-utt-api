@@ -8,6 +8,8 @@ import DeleteRate from '#/e2e/ue/delete-rate.e2e-spec';
 import AnnalsE2ESpec from '#/e2e/ue/annals';
 import CommentsE2ESpec from '#/e2e/ue/comments';
 import GetMyUesE2ESpec from '#/e2e/ue/get-my-ues.e2e-spec';
+import CreditE2ESpec from './credit';
+import { describe } from 'vitest';
 
 export default function UeE2ESpec(app: () => INestApplication) {
   describe('UE', () => {
@@ -19,7 +21,7 @@ export default function UeE2ESpec(app: () => INestApplication) {
     DeleteRate(app);
     CommentsE2ESpec(app);
     AnnalsE2ESpec(app);
-    // CreditE2ESpec(app);
+    CreditE2ESpec(app);
     GetMyUesE2ESpec(app);
   });
 }

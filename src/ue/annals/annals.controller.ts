@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Response } from '@nestjs/common';
 import { AnnalsService } from '@/ue/annals/annals.service';
 import { UeService } from '@/ue/ue.service';
-import { Response as ExpressResponse } from 'express';
+import type { Response as ExpressResponse } from 'express';
 import { UUIDParam } from '@/app.pipe';
 import { GetUser, RequireApiPermission } from '@/auth/decorator';
 import { AppException, ERROR_CODE } from '@/exceptions';

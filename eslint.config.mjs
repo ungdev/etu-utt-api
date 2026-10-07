@@ -19,7 +19,6 @@ export default defineConfig([globalIgnores(['eslint.config.mjs']),
     languageOptions: {
       globals: {
         ...globals.node,
-        ...globals.jest,
       },
 
       parser: tsParser,

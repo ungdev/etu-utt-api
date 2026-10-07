@@ -12,6 +12,7 @@ import { PrismaService } from '@/prisma/prisma.service';
 import { faker } from '@faker-js/faker';
 import { DEFAULT_APPLICATION } from '#/../prisma/seed/utils';
 import { AuthService } from '@/auth/auth.service';
+import { it } from 'vitest';
 
 const UpdateAssoMemberE2ESpec = e2eSuite('PATCH /assos/:id/members/:id', (app) => {
   const userNotAllowed = createUser(app);

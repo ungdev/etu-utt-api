@@ -14,6 +14,7 @@ import { Dummies, JsonLike, e2eSuite } from '#/utils/test_utils';
 import { ERROR_CODE } from '@/exceptions';
 import { CommentStatus } from '@/ue/comments/interfaces/comment.interface';
 import { PermissionManager, pick } from '@/utils';
+import { it } from 'vitest';
 
 const EditAnnal = e2eSuite('PATCH /ue/annals/{annalId}', (app) => {
   const senderUser = createUser(app, { permissions: new PermissionManager().with('API_UPLOAD_ANNALS') });

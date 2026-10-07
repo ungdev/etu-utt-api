@@ -5,6 +5,7 @@ import GetUserAssociationE2ESpec from '#/e2e/users/get-user_assos-e2e-spec';
 import { E2EAppProvider } from '#/utils/test_utils';
 import GetTodaysBirthdaysE2ESpec from '#/e2e/users/get-todays-birthdays.e2e-spec';
 import UpdateProfile from '#/e2e/users/update-profile-e2e-spec';
+import { describe } from 'vitest';
 
 export default function UsersE2ESpec(app: E2EAppProvider) {
   describe('User', () => {

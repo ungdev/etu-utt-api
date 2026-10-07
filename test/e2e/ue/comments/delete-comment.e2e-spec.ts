@@ -14,6 +14,7 @@ import { ERROR_CODE } from '@/exceptions';
 import { CommentStatus } from '@/ue/comments/interfaces/comment.interface';
 import { PrismaService } from '@/prisma/prisma.service';
 import { PermissionManager } from '@/utils';
+import { it } from 'vitest';
 
 const DeleteComment = e2eSuite('DELETE /ue/comments/:commentId', (app) => {
   const user = createUser(app, { permissions: new PermissionManager().with('API_GIVE_OPINIONS_UE') });

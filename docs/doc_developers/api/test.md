@@ -1,9 +1,9 @@
 # Test
 
-Pour les tests, nous utilisons Jest.
+Pour les tests, nous utilisons Vitest.
 
-Dans la CLI, quand on exécute les tests, il faut absolument passer le paramètre `--runInBand`, pour éviter que les tests
-ne s’exécutent en parallèle. Le paramètre est passé par défaut dans les commandes `package.json`
+Dans la CLI, quand on exécute les tests, il faut absolument passer le paramètre `fileParallelism: false`, pour éviter que les tests
+ne s’exécutent en parallèle. Le paramètre est passé par défaut via le fichier de config `vitest.config.ts`
 
 Les tests sont divisés en 2 parties :
 
@@ -29,9 +29,9 @@ Pour lancer tous les tests ayant le pattern souhaité. Cette syntaxe peut être 
 suivent.
 
 ```bash
-pnpm test <pattern>
+pnpm test:grep <pattern>
 # Par exemple, pour lancer les tests de la route GET /users/:userId :
-pnpm test "GET /users/:userId"
+pnpm test:grep "GET /users/:userId"
 ```
 
 Pour lancer les tests E2E ou unitaires :
@@ -53,7 +53,7 @@ pnpm test:watch
 pnpm test:cov
 ```
 
-Le résultat sera un site web : `src/coverage/lcov-report/index.html`.
+Le résultat sera un site web : `coverage/lcov-report/index.html`.
 
 ### Pour arrêter les tests dès le premier fail
 
@@ -74,6 +74,7 @@ E2E / `E2EAppProvider`, et les suites unitaires / `UnitAppProvider`. Voici donc 
 tester la route `GET /users/:id` :
 
 ```ts
+import { describe, beforeAll } from 'vitest';
 import { e2eSuite, E2EAppProvider } from '../../utils/test_utils';
 
 const GetUserFromIdE2ESpec = e2eSuite('GET /users/:userId', (app: E2EAppProvider) => {
@@ -172,12 +173,10 @@ Les fake functions sont toutes définies de la même façon :
   valeurs sont définies plus tard). Ce paramètre est optionnel, si vous n’avez pas besoin de passer d’argument,
   omettez-le.
 - Le quatrième argument (`onTheFly`) permet de définir le comportement de la fonction :
-
   - S’il vaut `true`, on crée l’entité directement.
   - S’il vaut `false`, l’entité sera créée dans un bloc `beforeAll`.
 
   L’argument est optionnel, et vaut par défaut `false`. Donc :
-
   - Si vous appelez la fonction dans un `describe` (ou équivalent), ne passez pas cet argument.
   - Si vous appelez la fonction dans un `it`, donnez la valeur `true` au paramètre.
 

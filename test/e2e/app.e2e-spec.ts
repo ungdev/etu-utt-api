@@ -1,11 +1,4 @@
-// Ejs adapter should not be imported in a test environment (it lets hanging promises and things like this, + anyway we don't need it)
-jest.mock('@nestjs-modules/mailer/dist/adapters/ejs.adapter', () => ({
-  EjsAdapter: jest.fn().mockImplementation(() => ({
-    __esModule: true,
-    compile: jest.fn(),
-  })),
-}));
-
+import { describe, beforeAll, afterAll } from 'vitest';
 import '#/declarations';
 import '@/std.type';
 import * as testUtils from '#/utils/test_utils';
@@ -24,6 +17,7 @@ import * as timetableProvider from '#/external_services/timetable';
 import { ConfigService } from '@/config/config.service';
 import AssoE2ESpec from '#/e2e/assos';
 import MediaE2ESpec from '#/e2e/media';
+import BranchE2ESpec from './branch';
 
 describe('EtuUTT API e2e testing', () => {
   let app: INestApplication;
@@ -64,4 +58,5 @@ describe('EtuUTT API e2e testing', () => {
   UeE2ESpec(() => app);
   AssoE2ESpec(() => app);
   MediaE2ESpec(() => app);
+  BranchE2ESpec(() => app);
 });

@@ -6,6 +6,7 @@ import * as fakedb from '#/utils/fakedb';
 import { PrismaService } from '@/prisma/prisma.service';
 import { DEFAULT_APPLICATION } from '#/../prisma/seed/utils';
 import { JwtService } from '@nestjs/jwt';
+import { expect, it } from 'vitest';
 
 const ValidateLoginE2ESpec = e2eSuite('POST /auth/login/validate', (app) => {
   const authService = () => app().get(AuthService);

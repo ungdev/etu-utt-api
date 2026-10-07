@@ -9,6 +9,7 @@ import PostUpvote from '#/e2e/ue/comments/post-upvote.e2e-spec';
 import UpdateComment from '#/e2e/ue/comments/update-comment.e2e-spec';
 import UpdateCommentReply from '#/e2e/ue/comments/update-reply.e2e-spec';
 import GetCommentFromIdE2ESpec from '#/e2e/ue/comments/get-comment-from-id.e2e-spec';
+import { describe } from 'vitest';
 
 export default function CommentsE2ESpec(app: () => INestApplication) {
   describe('Comments', () => {

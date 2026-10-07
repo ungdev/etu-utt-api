@@ -7,6 +7,7 @@ import CreateEntryE2ESpec from '#/e2e/timetable/create-entry.e2e-spec';
 import UpdateEntryE2ESpec from '#/e2e/timetable/update-entry.e2e-spec';
 import DeleteEntryE2ESpec from '#/e2e/timetable/delete-occurrences.e2e-spec';
 import ImportTimetableE2ESpec from '#/e2e/timetable/import-timetable.e2e-spec';
+import { describe } from 'vitest';
 
 // These tests are deactivated by describe.skip
 export default function TimetableE2ESpec(app: E2EAppProvider) {

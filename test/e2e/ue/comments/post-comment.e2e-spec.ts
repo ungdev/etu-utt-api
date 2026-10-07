@@ -14,6 +14,7 @@ import { JsonLike, e2eSuite } from '#/utils/test_utils';
 import { PrismaService } from '@/prisma/prisma.service';
 import { CommentStatus } from '@/ue/comments/interfaces/comment.interface';
 import { PermissionManager } from '@/utils';
+import { it } from 'vitest';
 
 const PostCommment = e2eSuite('POST /ue/comments', (app) => {
   const userNotDoneUe = createUser(app, { permissions: new PermissionManager().with('API_GIVE_OPINIONS_UE') });

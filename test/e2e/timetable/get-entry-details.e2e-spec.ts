@@ -3,6 +3,7 @@ import * as pactum from 'pactum';
 import { ERROR_CODE } from '@/exceptions';
 import * as fakedb from '#/utils/fakedb';
 import { regex } from '@/app.pipe';
+import { beforeAll, it } from 'vitest';
 
 const GetEntryDetailsE2ESpec = e2eSuite('GET /timetable/:entryId', (app) => {
   const user1 = fakedb.createUser(app);

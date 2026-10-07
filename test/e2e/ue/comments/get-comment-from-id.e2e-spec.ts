@@ -5,6 +5,7 @@ import { ERROR_CODE } from '@/exceptions';
 import { faker } from '@faker-js/faker';
 import { PermissionManager, omit } from '@/utils';
 import { FakeComment } from '#/utils/fakedb';
+import { it } from 'vitest';
 
 const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) => {
   const user = fakedb.createUser(app, { permissions: new PermissionManager().with('API_SEE_OPINIONS_UE') });

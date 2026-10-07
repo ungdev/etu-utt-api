@@ -6,6 +6,7 @@ import { JsonLike, e2eSuite } from '#/utils/test_utils';
 import { ConfigService } from '@/config/config.service';
 import { PermissionManager } from '@/utils';
 import * as pactum from 'pactum';
+import { afterAll, beforeAll, describe, it } from 'vitest';
 
 export const UploadMediaE2ESpec = e2eSuite('POST /media/image', (app) => {
   const user = createUser(app, { permissions: new PermissionManager().with('API_UPLOAD_MEDIA') });

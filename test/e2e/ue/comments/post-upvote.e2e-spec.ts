@@ -13,6 +13,7 @@ import { ERROR_CODE } from '@/exceptions';
 import { Dummies, e2eSuite } from '#/utils/test_utils';
 import { PrismaService } from '@/prisma/prisma.service';
 import { PermissionManager } from '@/utils';
+import { it } from 'vitest';
 
 const PostUpvote = e2eSuite('POST /ue/comments/{commentId}/upvote', (app) => {
   const user = createUser(app, { permissions: new PermissionManager().with('API_GIVE_OPINIONS_UE') });

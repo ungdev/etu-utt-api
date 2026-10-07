@@ -8,6 +8,7 @@ import CreateApiKeyE2ESpec from '#/e2e/auth/create-api-key.e2e-spec';
 import ApplicationE2ESpec from '#/e2e/auth/application';
 import ValidateLoginE2ESpec from '#/e2e/auth/validate-login.e2e-spec';
 import PermissionsE2ESpec from '#/e2e/auth/permissions';
+import { describe } from 'vitest';
 
 export default function AuthE2ESpec(app: E2EAppProvider) {
   describe('Auth', () => {
