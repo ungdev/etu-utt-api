@@ -9,6 +9,7 @@ export class ConfigService {
   // BOTH DEV AND TEST ENVIRONMENTS
   public readonly PAGINATION_PAGE_SIZE: number;
   public readonly DATABASE_URL: string;
+  public readonly DATABASE_TEXT_PROTOCOL: boolean;
   public readonly JWT_SECRET: string;
   public readonly JWT_EXPIRES_IN: string;
   public readonly SALT_ROUNDS: number;
@@ -41,6 +42,7 @@ export class ConfigService {
   constructor(config: NestConfigService) {
     this.PAGINATION_PAGE_SIZE = Number(config.get('PAGINATION_PAGE_SIZE'));
     this.DATABASE_URL = config.get('DATABASE_URL');
+    this.DATABASE_TEXT_PROTOCOL = config.get<string>('DATABASE_TEXT_PROTOCOL') === 'true';
     this.JWT_SECRET = config.get('JWT_SECRET');
     this.JWT_EXPIRES_IN = config.get('JWT_EXPIRES_IN');
     this.SALT_ROUNDS = Number(config.get('SALT_ROUNDS'));

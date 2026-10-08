@@ -32,7 +32,9 @@ export class PrismaService extends PrismaClient<ReturnType<typeof prismaOptions>
   }
 }
 
-const prismaOptions = (config: ConfigService) => ({ adapter: new PrismaMariaDb(config.DATABASE_URL) });
+const prismaOptions = (config: ConfigService) => ({
+  adapter: new PrismaMariaDb(config.DATABASE_URL, { useTextProtocol: config.DATABASE_TEXT_PROTOCOL }),
+});
 
 /**
  * @typedef {import('@/prisma/types').Prisma.UserDelegate} UserDelegate
