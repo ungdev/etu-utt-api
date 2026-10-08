@@ -126,6 +126,10 @@ pouvez alors changer les valeurs en vous référant à la documentation pour cha
 Créez une copie du fichier `.env.test.dist` et nommez-la `.env.test`. De même, les valeurs sont documentées directement
 dans le fichier.
 
+```{important}
+Si vos tests sont lents (>100s), configurez DATABASE_TEXT_PROTOCOL=true dans vos fichiers .env.
+```
+
 ## Utiliser les commandes du projet
 
 ### Installer les dépendances
