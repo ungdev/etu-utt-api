@@ -1,5 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
-import Spec from 'pactum/src/models/Spec';
+import Spec from 'pactum/src/models/Spec.js';
 import { FakeAssoMembers, FakeUeWithOfs, JsonLikeVariant } from '#/declarations.d.js';
 import { ERROR_CODE, ErrorData, ExtrasTypeBuilder } from '@/exceptions.js';
 import { UeComment } from '@/ue/comments/interfaces/comment.interface.js';
@@ -25,8 +25,8 @@ import { PermissionManager, getTranslation, omit, pick } from '@/utils.js';
 import { int, regex, string, uuid } from 'pactum-matchers';
 import { Language } from '@/prisma/types.js';
 import { DEFAULT_APPLICATION } from '#/../prisma/seed/utils.js';
-import ApplicationResDto from '@/auth/application/dto/res/application-res.dto.js';
-import PermissionsResDto from '@/auth/permissions/dto/res/permissions.dto.js';
+import { ApplicationResDto } from '@/auth/application/dto/res/application-res.dto.js';
+import { PermissionsResDto } from '@/auth/permissions/dto/res/permissions.dto.js';
 
 function ueOverviewExpectation(ue: FakeUeWithOfs, spec: Spec) {
   return {

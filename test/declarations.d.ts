@@ -12,7 +12,11 @@ import {
   FakeHomepageWidget,
   FakeImageMedia,
   FakeUe,
- FakeUeAnnalType, FakeUeCreditCategory, FakeUeof, FakeUser } from './utils/fakedb';
+  FakeUeAnnalType,
+  FakeUeCreditCategory,
+  FakeUeof,
+  FakeUser,
+} from './utils/fakedb';
 import { UeAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
 import { Criterion } from 'src/ue/interfaces/criterion.interface';
 import { AppProvider } from './utils/test_utils';
@@ -44,7 +48,7 @@ type FakeAssoMembers = {
  *
  * This way, the Spec class can be extended with custom methods (actually added in ./declarations.ts)
  */
-declare module './declarations' {
+declare module './declarations.js' {
   interface Spec {
     /** Checks for HTTP 201 Status. If omitted, status check will be 200 */
     created(): this;
