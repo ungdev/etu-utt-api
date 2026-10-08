@@ -135,7 +135,6 @@ export class LexicalModule {
         .replaceAll(/(?<=<\w+\s)\s/g, '')
         // <p style="key:value" > => <p style="key:value">
         .replaceAll(/\s(?=>)/g, '')
-        .replaceAll(/<\s*script/giu, '')
     );
   }
 }
