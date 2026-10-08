@@ -29,6 +29,7 @@ export const ApiAppErrorResponse = (error: ERROR_CODE, description = '') => {
     error = ErrorData[error].message;
   }
   const ResponseDtoMixin = mixin(ResponseDto, `AppErrorResDto$${error}`);
+  // eslint-disable-next-line import/namespace
   return applyDecorators(ApiResponses[`Api${toPascalCase}Response`]({ type: ResponseDtoMixin, description }));
 };
 
