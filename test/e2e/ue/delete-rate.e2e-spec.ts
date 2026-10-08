@@ -8,12 +8,12 @@ import {
   createUeSubscription,
   createUeof,
   createUser,
-} from '#/utils/fakedb';
+} from '#/utils/fakedb.js';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '@/exceptions';
-import { Dummies, e2eSuite } from '#/utils/test_utils';
+import { ERROR_CODE } from '@/exceptions.js';
+import { Dummies, e2eSuite } from '#/utils/test_utils.js';
 import { faker } from '@faker-js/faker';
-import { PermissionManager } from '@/utils';
+import { PermissionManager } from '@/utils.js';
 import { it } from 'vitest';
 
 const DeleteRate = e2eSuite('DELETE /ue/ueof/{ueofCode}/rate/{critetionId}', (app) => {

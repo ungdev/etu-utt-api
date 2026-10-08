@@ -1,10 +1,10 @@
-import { Dummies, e2eSuite } from '#/utils/test_utils';
-import * as fakedb from '#/utils/fakedb';
+import { Dummies, e2eSuite } from '#/utils/test_utils.js';
+import * as fakedb from '#/utils/fakedb.js';
 import * as pactum from 'pactum';
 import { uuid } from 'pactum-matchers';
-import { PrismaService } from '@/prisma/prisma.service';
-import TimetableDeleteOccurrencesReqDto from '@/timetable/dto/req/timetable-delete-occurrences-req.dto';
-import { ERROR_CODE } from '@/exceptions';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import TimetableDeleteOccurrencesReqDto from '@/timetable/dto/req/timetable-delete-occurrences-req.dto.js';
+import { ERROR_CODE } from '@/exceptions.js';
 import { it } from 'vitest';
 
 const DeleteEntryE2ESpec = e2eSuite('DELETE /timetable/current/:entryId', (app) => {

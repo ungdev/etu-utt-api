@@ -1,9 +1,9 @@
-import { e2eSuite } from '#/utils/test_utils';
+import { e2eSuite } from '#/utils/test_utils.js';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '@/exceptions';
-import { HomepageWidgetsUpdateElement } from '@/profile/dto/req/homepage-widgets-update-req.dto';
-import * as fakedb from '#/utils/fakedb';
-import { PrismaService } from '@/prisma/prisma.service';
+import { ERROR_CODE } from '@/exceptions.js';
+import { HomepageWidgetsUpdateElement } from '@/profile/dto/req/homepage-widgets-update-req.dto.js';
+import * as fakedb from '#/utils/fakedb.js';
+import { PrismaService } from '@/prisma/prisma.service.js';
 import { expect, it } from 'vitest';
 
 const SetHomepageWidgetsE2ESpec = e2eSuite('PUT /profile/homepage', (app) => {

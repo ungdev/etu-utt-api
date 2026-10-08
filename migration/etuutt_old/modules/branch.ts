@@ -1,5 +1,5 @@
-import { PrismaClient, PrismaOperationResult, getOperationResults } from '../make-migration';
-import { RawBranch, RawBranchOption } from '@/prisma/types';
+import { PrismaClient, PrismaOperationResult, getOperationResults } from '../make-migration.js';
+import { RawBranch, RawBranchOption } from '@/prisma/types.js';
 
 export async function createBranches(prisma: PrismaClient) {
   const operations: Promise<{

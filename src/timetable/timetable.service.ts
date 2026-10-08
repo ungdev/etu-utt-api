@@ -1,20 +1,20 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '@/prisma/prisma.service';
+import { PrismaService } from '@/prisma/prisma.service.js';
 import {
   DetailedTimetableEntry,
   TimetableEntryGroupForUser,
   TimetableEntryOccurrence,
-} from '@/timetable/interfaces/timetable.interface';
-import { CourseEvent } from '@/timetable/interfaces/ical.interface';
-import { RawTimetableEntry, RawTimetableEntryOverride, RawTimetableGroup } from '@/prisma/types';
-import { omit } from '@/utils';
-import TimetableCreateEntryReqDto from '@/timetable/dto/req/timetable-create-entry-req.dto';
-import TimetableUpdateEntryReqDto from '@/timetable/dto/req/timetable-update-entry-req.dto';
-import TimetableDeleteOccurrencesReqDto from '@/timetable/dto/req/timetable-delete-occurrences-req.dto';
-import { AppException, ERROR_CODE } from '@/exceptions';
+} from '@/timetable/interfaces/timetable.interface.js';
+import { CourseEvent } from '@/timetable/interfaces/ical.interface.js';
+import { RawTimetableEntry, RawTimetableEntryOverride, RawTimetableGroup } from '@/prisma/types.js';
+import { omit } from '@/utils.js';
+import { TimetableCreateEntryReqDto } from '@/timetable/dto/req/timetable-create-entry-req.dto.js';
+import { TimetableUpdateEntryReqDto } from '@/timetable/dto/req/timetable-update-entry-req.dto.js';
+import { TimetableDeleteOccurrencesReqDto } from '@/timetable/dto/req/timetable-delete-occurrences-req.dto.js';
+import { AppException, ERROR_CODE } from '@/exceptions.js';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
-import { ConfigService } from '@/config/config.service';
+import { ConfigService } from '@/config/config.service.js';
 
 /**
  * The inclusions to use when fetching a {@link DetailedTimetableEntry}.
@@ -34,7 +34,7 @@ const detailedEntryInclusions = (userId: string) => ({
  * Service for everything related to timetables.
  */
 @Injectable()
-export default class TimetableService {
+export class TimetableService {
   constructor(
     private prisma: PrismaService,
     private http: HttpService,
@@ -217,7 +217,7 @@ export default class TimetableService {
                 override.occurrenceDuration !== null
                   ? occurrenceStart.getTime() + override.occurrenceDuration
                   : (occurrences[occurrencePosition] ?? occurrencesNoOverride[occurrencePosition]).end.getTime() -
-                    (occurrences[occurrencePosition] ?? occurrencesNoOverride[occurrencePosition]).start.getTime(),
+                      (occurrences[occurrencePosition] ?? occurrencesNoOverride[occurrencePosition]).start.getTime(),
               ),
               entryId: override.id,
               index: occurrenceIndex,

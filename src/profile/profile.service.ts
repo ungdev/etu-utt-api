@@ -1,6 +1,6 @@
-import { PrismaService } from '@/prisma/prisma.service';
-import { RawHomepageWidget } from '@/prisma/types';
-import { HomepageWidgetsUpdateElement } from '@/profile/dto/req/homepage-widgets-update-req.dto';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { RawHomepageWidget } from '@/prisma/types.js';
+import { HomepageWidgetsUpdateElement } from '@/profile/dto/req/homepage-widgets-update-req.dto.js';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()

@@ -1,10 +1,10 @@
 import * as pactum from 'pactum';
-import * as fakedb from '#/utils/fakedb';
-import { e2eSuite } from '#/utils/test_utils';
-import { ERROR_CODE } from '@/exceptions';
+import * as fakedb from '#/utils/fakedb.js';
+import { e2eSuite } from '#/utils/test_utils.js';
+import { ERROR_CODE } from '@/exceptions.js';
 import { faker } from '@faker-js/faker';
-import { PermissionManager, omit } from '@/utils';
-import { FakeComment } from '#/utils/fakedb';
+import { PermissionManager, omit } from '@/utils.js';
+import { FakeComment } from '#/utils/fakedb.js';
 import { it } from 'vitest';
 
 const GetCommentFromIdE2ESpec = e2eSuite('GET /ue/comments/:commentId', (app) => {

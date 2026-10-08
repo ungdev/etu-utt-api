@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { PrismaModule } from '@/prisma/prisma.module';
-import TimetableService from '@/timetable/timetable.service';
-import { TimetableController } from '@/timetable/timetable.controller';
-import { UeModule } from '@/ue/ue.module';
+import { PrismaModule } from '@/prisma/prisma.module.js';
+import { TimetableService } from '@/timetable/timetable.service.js';
+import { TimetableController } from '@/timetable/timetable.controller.js';
+import { UeModule } from '@/ue/ue.module.js';
 
 @Module({
   controllers: [TimetableController],

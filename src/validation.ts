@@ -1,5 +1,5 @@
 import { Validate, ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
-import { AppException, ERROR_CODE } from '@/exceptions';
+import { AppException, ERROR_CODE } from '@/exceptions.js';
 import { ValidationError } from '@nestjs/common/interfaces/external/validation-error.interface';
 
 /**
@@ -37,7 +37,7 @@ const mappedErrors = {
   [constraint: string]: ERROR_CODE;
 };
 
-const errorsOnMultipleFields: string[] = ['hasEither']
+const errorsOnMultipleFields: string[] = ['hasEither'];
 
 export const validationExceptionFactory = (errors: ValidationError[]) => {
   // Map errors by constraint name
@@ -47,7 +47,9 @@ export const validationExceptionFactory = (errors: ValidationError[]) => {
       return validationExceptionFactory(error.children);
     }
     for (const constraint of Object.keys(error.constraints)) {
-      const field = errorsOnMultipleFields.includes(constraint as string) ? error.constraints[constraint] : error.property
+      const field = errorsOnMultipleFields.includes(constraint as string)
+        ? error.constraints[constraint]
+        : error.property;
       if (constraint in errorsByType) {
         errorsByType[constraint].push(field);
       } else {
@@ -111,16 +113,20 @@ export const IsFutureDate = ({ each = false } = {}) => Validate(FutureDate, { ea
 export const IsWeekDate = ({ each = false } = {}) => Validate(WeekDate, { each });
 
 /** Checks whether at least one of the given properties is provided. Use this decorator on any property EXCEPT those contained in the constraint list. */
-export function HasSomeAmong<T>(...fields: ((keyof T) & string)[]) {
+export function HasSomeAmong<T>(...fields: (keyof T & string)[]) {
   return (target: { prototype: T }) => {
     // Define a new property on the class.
     // This property will be used to apply the validator HasEither.
     // It will not be possible to fill it in the request with the GhostProperty validator.
-    const propertyName = "_internalHasSomeAmong";
-    const propertySymbol = Symbol(propertyName)
+    const propertyName = '_internalHasSomeAmong';
+    const propertySymbol = Symbol(propertyName);
     Object.defineProperty(target.prototype, propertyName, {
-      get() { return this[propertySymbol]; },
-      set(value) { this[propertySymbol] = value; },
+      get() {
+        return this[propertySymbol];
+      },
+      set(value) {
+        this[propertySymbol] = value;
+      },
       enumerable: false,
       configurable: true,
     });

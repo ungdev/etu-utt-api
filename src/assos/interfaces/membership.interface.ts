@@ -1,5 +1,5 @@
-import { Prisma, PrismaClient } from '@/prisma/types';
-import { generateCustomModel } from '@/prisma/prisma.service';
+import { Prisma, PrismaClient } from '@/prisma/types.js';
+import { generateCustomModel } from '@/prisma/prisma.service.js';
 
 const ASSO_MEMBERSHIP_SELECT_FILTER = {
   select: {

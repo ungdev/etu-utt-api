@@ -1,10 +1,10 @@
-import AuthSignUpReqDto from '@/auth/dto/req/auth-sign-up-req.dto';
+import AuthSignUpReqDto from '@/auth/dto/req/auth-sign-up-req.dto.js';
 import * as pactum from 'pactum';
-import { PrismaService } from '@/prisma/prisma.service';
-import { e2eSuite } from '#/utils/test_utils';
-import { ERROR_CODE } from '@/exceptions';
-import { UserType } from '@/prisma/types';
-import { createUser } from '#/utils/fakedb';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { e2eSuite } from '#/utils/test_utils.js';
+import { ERROR_CODE } from '@/exceptions.js';
+import { UserType } from '@/prisma/types.js';
+import { createUser } from '#/utils/fakedb.js';
 import { JwtService } from '@nestjs/jwt';
 import { DEFAULT_APPLICATION } from '../../../prisma/seed/utils';
 import { expect, it } from 'vitest';

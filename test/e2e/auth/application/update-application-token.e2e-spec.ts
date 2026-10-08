@@ -1,9 +1,9 @@
-import { e2eSuite } from '#/utils/test_utils';
+import { e2eSuite } from '#/utils/test_utils.js';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '@/exceptions';
-import * as fakedb from '#/utils/fakedb';
+import { ERROR_CODE } from '@/exceptions.js';
+import * as fakedb from '#/utils/fakedb.js';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from '@/prisma/prisma.service';
+import { PrismaService } from '@/prisma/prisma.service.js';
 import { expect, it } from 'vitest';
 
 const UpdateApplicationTokenE2ESpec = e2eSuite('PATCH /auth/application/:applicationId/token', (app) => {

@@ -1,3 +1,3 @@
-export default class AuthTokenResDto {
+export class AuthTokenResDto {
   token: string;
 }

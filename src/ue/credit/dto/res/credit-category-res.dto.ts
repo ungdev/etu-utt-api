@@ -1,4 +1,4 @@
-export default class CreditCategoryResDto {
+export class CreditCategoryResDto {
   id: string;
   name: string;
 }

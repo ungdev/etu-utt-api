@@ -1,8 +1,8 @@
-import TimetableServiceUnitSpec from '#/unit/timetable/timetable.service.spec';
-import LexicalValidationUnitSpec from '#/unit/lexical/lexical-validation.spec';
-import LexicalGenerationUnitSpec from '#/unit/lexical/lexical-generation.spec';
+import TimetableServiceUnitSpec from '#/unit/timetable/timetable.service.spec.js';
+import LexicalValidationUnitSpec from '#/unit/lexical/lexical-validation.spec.js';
+import LexicalGenerationUnitSpec from '#/unit/lexical/lexical-generation.spec.js';
 import { Test, TestingModule } from '@nestjs/testing';
-import { AppModule } from '@/app.module';
+import { AppModule } from '@/app.module.js';
 import '@/std.type';
 import { afterAll, beforeAll, describe } from 'vitest';
 

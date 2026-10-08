@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '@/prisma/prisma.service';
-import { RawUserUeSubscription } from '@/prisma/types';
-import UeCommentPostReqDto from '@/ue/comments/dto/req/ue-comment-post-req.dto';
-import CommentReplyReqDto from '@/ue/comments/dto/req/ue-comment-reply-req.dto';
-import UeCommentUpdateReqDto from '@/ue/comments/dto/req/ue-comment-update-req.dto';
-import GetUeCommentsReqDto from '@/ue/comments/dto/req/ue-get-comments-req.dto';
-import { UeCommentReply } from '@/ue/comments/interfaces/comment-reply.interface';
-import { CommentStatus, UeComment } from '@/ue/comments/interfaces/comment.interface';
-import { ConfigService } from '@/config/config.service';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { RawUserUeSubscription } from '@/prisma/types.js';
+import { UeCommentPostReqDto } from '@/ue/comments/dto/req/ue-comment-post-req.dto.js';
+import { CommentReplyReqDto } from '@/ue/comments/dto/req/ue-comment-reply-req.dto.js';
+import { UeCommentUpdateReqDto } from '@/ue/comments/dto/req/ue-comment-update-req.dto.js';
+import { GetUeCommentsReqDto } from '@/ue/comments/dto/req/ue-get-comments-req.dto.js';
+import { UeCommentReply } from '@/ue/comments/interfaces/comment-reply.interface.js';
+import { CommentStatus, UeComment } from '@/ue/comments/interfaces/comment.interface.js';
+import { ConfigService } from '@/config/config.service.js';
 
 @Injectable()
 export class CommentsService {

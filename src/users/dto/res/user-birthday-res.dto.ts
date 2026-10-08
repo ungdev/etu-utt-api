@@ -1,4 +1,4 @@
-export default class UserBirthdayResDto {
+export class UserBirthdayResDto {
   id: string;
   firstName: string;
   lastName: string;

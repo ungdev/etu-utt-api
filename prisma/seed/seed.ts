@@ -1,21 +1,21 @@
 import { PrismaMariaDb } from '@prisma/adapter-mariadb';
-import { PrismaClient } from '@/prisma/types';
-import ueSeed from './modules/ue.seed';
-import { userSeed } from './modules/user.seed';
+import { PrismaClient } from '@/prisma/types.js';
+import ueSeed from './modules/ue.seed.js';
+import { userSeed } from './modules/user.seed.js';
 import { faker } from '@faker-js/faker';
-import semesterSeed from './modules/semester.seed';
-import branchSeed from './modules/branch.seed';
-import branchOptionSeed from './modules/branchOption.seed';
-import creditCategorySeed from './modules/creditCategory.seed';
-import { cleanDb } from '#/utils/test_utils';
-import ueCommentSeed from './modules/ueComment.seed';
-import ueStarCriterionSeed from './modules/ueStarCriterion.seed';
-import ueStarVotesSeed from './modules/ueStarVotes.seed';
-import ueSubscriptionSeed from './modules/ueSubscription.seed';
-import assoSeed from './modules/asso.seed';
-import assoMembershipRoleSeed from './modules/assoMembershipRole.seed';
-import assoMembershipSeed from './modules/assoMembership.seed';
-import { generateDefaultApplication } from './utils';
+import semesterSeed from './modules/semester.seed.js';
+import branchSeed from './modules/branch.seed.js';
+import branchOptionSeed from './modules/branchOption.seed.js';
+import creditCategorySeed from './modules/creditCategory.seed.js';
+import { cleanDb } from '#/utils/test_utils.js';
+import ueCommentSeed from './modules/ueComment.seed.js';
+import ueStarCriterionSeed from './modules/ueStarCriterion.seed.js';
+import ueStarVotesSeed from './modules/ueStarVotes.seed.js';
+import ueSubscriptionSeed from './modules/ueSubscription.seed.js';
+import assoSeed from './modules/asso.seed.js';
+import assoMembershipRoleSeed from './modules/assoMembershipRole.seed.js';
+import assoMembershipSeed from './modules/assoMembership.seed.js';
+import { generateDefaultApplication } from './utils.js';
 
 const prisma = new PrismaClient({ adapter: new PrismaMariaDb(process.env.DATABASE_URL) });
 async function main() {

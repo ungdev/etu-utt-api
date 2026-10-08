@@ -7,12 +7,12 @@ import {
   createUe,
   createUeof,
   createUser,
-} from '#/utils/fakedb';
+} from '#/utils/fakedb.js';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '@/exceptions';
-import { Dummies, e2eSuite } from '#/utils/test_utils';
-import { PrismaService } from '@/prisma/prisma.service';
-import { PermissionManager } from '@/utils';
+import { ERROR_CODE } from '@/exceptions.js';
+import { Dummies, e2eSuite } from '#/utils/test_utils.js';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { PermissionManager } from '@/utils.js';
 import { it } from 'vitest';
 
 const PostUpvote = e2eSuite('POST /ue/comments/{commentId}/upvote', (app) => {

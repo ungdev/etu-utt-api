@@ -37,13 +37,13 @@ l'erreur, ainsi que les éventuels arguments de l'erreur.
 pactum
   .spec()
   .post('/auth/signin')
-  .withBody({...dto, login: undefined})
+  .withBody({ ...dto, login: undefined })
   .expectAppError(ERROR_CODE.PARAM_MISSING, 'login');
 ```
 
 ## Créer un nouveau type d'erreur
 
-Pour créer un nouveau type d'erreur, allez dans le fichier `src/exceptions.ts`, et ajoutez une entrée à l'_enum_
+Pour créer un nouveau type d'erreur, allez dans le fichier `@/exceptions.ts`, et ajoutez une entrée à l'_enum_
 `ERROR_CODE` (essayez de trouver un emplacement logique par rapport à ce qui existe déjà).
 Puis, ajoutez une entrée à l'objet `ErrorData` pour définir le message à renvoyer, et le code HTTP. Dans le message,
 vous pouvez utiliser le caractère % pour demander à recevoir un paramètre. Ce paramètre sera demandé automatiquement par

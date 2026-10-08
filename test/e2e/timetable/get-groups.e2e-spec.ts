@@ -1,7 +1,7 @@
-import { e2eSuite } from '#/utils/test_utils';
-import * as fakedb from '#/utils/fakedb';
+import { e2eSuite } from '#/utils/test_utils.js';
+import * as fakedb from '#/utils/fakedb.js';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '@/exceptions';
+import { ERROR_CODE } from '@/exceptions.js';
 import { it } from 'vitest';
 
 const GetGroupsE2ESpec = e2eSuite('GET /timetable/current/groups', (app) => {

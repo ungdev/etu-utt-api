@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { PrismaClient, RawBranch, RawBranchOption } from '@/prisma/types';
+import { PrismaClient, RawBranch, RawBranchOption } from '@/prisma/types.js';
 
 const MAX_FAKER_ROUNDS = 4;
 

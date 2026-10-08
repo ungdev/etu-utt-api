@@ -1,8 +1,8 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Observable, map } from 'rxjs';
 import type { Request } from 'express';
-import { Language } from '@/prisma/types';
-import { getTranslation } from '@/utils';
+import { Language } from '@/prisma/types.js';
+import { getTranslation } from '@/utils.js';
 
 @Injectable()
 export class TranslationInterceptor implements NestInterceptor {

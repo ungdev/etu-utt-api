@@ -1,4 +1,4 @@
-import { Dummies, JsonLike, e2eSuite } from '#/utils/test_utils';
+import { Dummies, JsonLike, e2eSuite } from '#/utils/test_utils.js';
 import {
   createAsso,
   createAssoMembership,
@@ -6,11 +6,11 @@ import {
   createAssoMembershipRole,
   createAssoWeekly,
   createUser,
-} from '#/utils/fakedb';
+} from '#/utils/fakedb.js';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '@/exceptions';
-import AssosPostWeeklyReqDto from '@/assos/weekly/dto/req/weekly-req.dto';
-import { PrismaService } from '@/prisma/prisma.service';
+import { ERROR_CODE } from '@/exceptions.js';
+import AssosPostWeeklyReqDto from '@/assos/weekly/dto/req/weekly-req.dto.js';
+import { PrismaService } from '@/prisma/prisma.service.js';
 import { it } from 'vitest';
 
 const CreateWeeklyE2ESpec = e2eSuite('POST /assos/:assoId/weekly', (app) => {

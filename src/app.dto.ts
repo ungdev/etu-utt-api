@@ -1,13 +1,13 @@
-import { ERROR_CODE, ErrorData } from '@/exceptions';
+import { ERROR_CODE, ErrorData } from '@/exceptions.js';
 import { HttpStatus, Injectable, applyDecorators } from '@nestjs/common';
 import * as ApiResponses from '@nestjs/swagger';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from '@nestjs/common/interfaces/type.interface';
 import { IsOptional, IsString } from 'class-validator';
-import { HasSomeAmong } from '@/validation';
-import { languages } from '@/utils';
+import { HasSomeAmong } from '@/validation.js';
+import { languages } from '@/utils.js';
 
-// Redefine the mixin function in node_modules/.pnpm/@nestjs+common@<version>_class-transformer@<version>_class-validator@<version>_reflect-metadata@<version>_rxjs@<version>/node_modules/@nestjs/common/decorators/core/injectable.decorator.js
+// Redefine the mixin function in node_modules/.pnpm/@nestjs+common@<version>_class-transformer@<version>_class-validator@<version>_reflect-metadata@<version>_rxjs@<version>/node_modules/@nestjs/common/decorators/core/injectable.decorator/index.js
 // This implementation allows to give a name to the class
 function mixin<T>(class_: Type<T>, newClassName: string): Type<T> {
   Object.defineProperty(class_, 'name', { value: newClassName });
@@ -70,4 +70,3 @@ export class TranslationReqDto {
   @IsOptional()
   zh?: string;
 }
-

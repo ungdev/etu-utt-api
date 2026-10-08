@@ -1,9 +1,13 @@
 import type { EditorThemeClasses } from 'lexical';
-export { ColorTextNode } from '@/lexical/nodes/ColorTextNode';
-export { ImageNode } from '@/lexical/nodes/ImageNode';
-import '@/lexical/nodes/NodeStyleInjector';
+export { ColorTextNode } from '@/lexical/nodes/ColorTextNode.js';
+export { ImageNode } from '@/lexical/nodes/ImageNode.js';
+import '@/lexical/nodes/NodeStyleInjector.js';
 
-export type RegisteredStyleMap<SubEditorThemeClasses = EditorThemeClasses> = {[K in keyof SubEditorThemeClasses]: SubEditorThemeClasses[K] extends Record<string, unknown> ? RegisteredStyleMap<SubEditorThemeClasses[K]> : keyof typeof CustomStyles};
+export type RegisteredStyleMap<SubEditorThemeClasses = EditorThemeClasses> = {
+  [K in keyof SubEditorThemeClasses]: SubEditorThemeClasses[K] extends Record<string, unknown>
+    ? RegisteredStyleMap<SubEditorThemeClasses[K]>
+    : keyof typeof CustomStyles;
+};
 
 /**
  * Style to apply to elements of lexical content during HTML export.

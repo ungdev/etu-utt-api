@@ -1,6 +1,6 @@
-import { Translation } from '@/prisma/types';
+import { Translation } from '@/prisma/types.js';
 
-export default class WeeklyResDto {
+export class WeeklyResDto {
   id: string;
   assoId: string;
   createdAt: Date;

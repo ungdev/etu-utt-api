@@ -1,16 +1,16 @@
-import { JsonLike, e2eSuite } from '#/utils/test_utils';
+import { JsonLike, e2eSuite } from '#/utils/test_utils.js';
 import * as pactum from 'pactum';
 import { faker } from '@faker-js/faker';
 import { JwtService } from '@nestjs/jwt';
-import * as fakedb from '#/utils/fakedb';
-import { AuthService } from '@/auth/auth.service';
-import { PrismaService } from '@/prisma/prisma.service';
-import { ERROR_CODE } from '@/exceptions';
-import { ConfigService } from '@/config/config.service';
+import * as fakedb from '#/utils/fakedb.js';
+import { AuthService } from '@/auth/auth.service.js';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { ERROR_CODE } from '@/exceptions.js';
+import { ConfigService } from '@/config/config.service.js';
 import { LdapUser } from 'ldap-server-mock';
-import { mockLdapServer } from '#/external_services/ldap';
-import { DEFAULT_APPLICATION } from '@/../prisma/seed/utils';
-import { Permission } from '@/prisma/types';
+import { mockLdapServer } from '#/external_services/ldap.js';
+import { DEFAULT_APPLICATION } from '@/../prisma/seed/utils.js';
+import { Permission } from '@/prisma/types.js';
 import { expect, it } from 'vitest';
 
 const CasSignUpE2ESpec = e2eSuite('POST /auth/signup/cas', (app) => {

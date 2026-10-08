@@ -1,4 +1,4 @@
-import { RawTimetableEntry, RawTimetableEntryOverride, RawTimetableGroup } from '@/prisma/types';
+import { RawTimetableEntry, RawTimetableEntryOverride, RawTimetableGroup } from '@/prisma/types.js';
 
 /**
  * Represents a single occurrence in the timetable.

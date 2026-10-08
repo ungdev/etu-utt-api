@@ -2,7 +2,7 @@ import { IsAlphanumeric, IsInt, IsNotEmpty, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
-export default class AuthSignInReqDto {
+export class AuthSignInReqDto {
   @IsNotEmpty()
   @IsAlphanumeric()
   login: string;

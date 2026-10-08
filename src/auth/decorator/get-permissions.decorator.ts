@@ -1,5 +1,5 @@
 import { ExecutionContext, createParamDecorator } from '@nestjs/common';
-import { RequestAuthData } from '@/auth/interfaces/request-auth-data.interface';
+import { RequestAuthData } from '@/auth/interfaces/request-auth-data.interface.js';
 
 /**
  * Get the permissions of a user.

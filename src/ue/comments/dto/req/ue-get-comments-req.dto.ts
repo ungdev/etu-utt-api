@@ -14,7 +14,7 @@ import {
  * Query parameters to get comments.
  * @property page The page number to get. Defaults to 1 (Starting at 1).
  */
-export default class GetUeCommentsReqDto {
+export class GetUeCommentsReqDto {
   @Type(() => Number)
   @IsInt()
   @IsPositive()

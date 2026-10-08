@@ -1,23 +1,23 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
-import ApplicationResDto from '@/auth/application/dto/res/application-res.dto';
+import { ApplicationResDto } from '@/auth/application/dto/res/application-res.dto.js';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import ApplicationService from '@/auth/application/application.service';
-import { GetUser, IsPublic } from '@/auth/decorator';
-import { Application } from '@/auth/application/interfaces/application.interface';
-import CreateApplicationReqDto from '@/auth/application/dto/req/create-application-req.dto';
-import UpdateTokenReqDto from '@/auth/application/dto/req/update-token-req.dto';
-import { PermissionManager, pick } from '@/utils';
-import AuthTokenResDto from '@/auth/dto/res/auth-token-res.dto';
-import { GetPermissions } from '@/auth/decorator/get-permissions.decorator';
-import { AppException, ERROR_CODE } from '@/exceptions';
-import { Permission } from '@/prisma/types';
-import ApplicationClientSecretResDto from '@/auth/application/dto/res/application-client-secret-res.dto';
-import { ApiAppErrorResponse } from '@/app.dto';
-import ApplicationSensibleResDto from '@/auth/application/dto/res/application-sensible-res.dto';
+import { ApplicationService } from '@/auth/application/application.service.js';
+import { GetUser, IsPublic } from '@/auth/decorator/index.js';
+import { Application } from '@/auth/application/interfaces/application.interface.js';
+import { CreateApplicationReqDto } from '@/auth/application/dto/req/create-application-req.dto.js';
+import { UpdateTokenReqDto } from '@/auth/application/dto/req/update-token-req.dto.js';
+import { PermissionManager, pick } from '@/utils.js';
+import { AuthTokenResDto } from '@/auth/dto/res/auth-token-res.dto.js';
+import { GetPermissions } from '@/auth/decorator/get-permissions.decorator.js';
+import { AppException, ERROR_CODE } from '@/exceptions.js';
+import { Permission } from '@/prisma/types.js';
+import { ApplicationClientSecretResDto } from '@/auth/application/dto/res/application-client-secret-res.dto.js';
+import { ApiAppErrorResponse } from '@/app.dto.js';
+import { ApplicationSensibleResDto } from '@/auth/application/dto/res/application-sensible-res.dto.js';
 
 @Controller('auth/application')
 @ApiTags('Application')
-export default class ApplicationController {
+export class ApplicationController {
   constructor(private applicationService: ApplicationService) {}
 
   @Get('/of/me')

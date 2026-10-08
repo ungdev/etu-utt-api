@@ -1,11 +1,11 @@
 import { HttpStatus } from '@nestjs/common';
 import Spec from 'pactum/src/models/Spec';
-import { FakeAssoMembers, FakeUeWithOfs, JsonLikeVariant } from '#/declarations.d';
-import { ERROR_CODE, ErrorData, ExtrasTypeBuilder } from '@/exceptions';
-import { UeComment } from '@/ue/comments/interfaces/comment.interface';
-import { UeCommentReply } from '@/ue/comments/interfaces/comment-reply.interface';
-import { Criterion } from '@/ue/interfaces/criterion.interface';
-import { UeRating } from '@/ue/interfaces/rate.interface';
+import { FakeAssoMembers, FakeUeWithOfs, JsonLikeVariant } from '#/declarations.d.js';
+import { ERROR_CODE, ErrorData, ExtrasTypeBuilder } from '@/exceptions.js';
+import { UeComment } from '@/ue/comments/interfaces/comment.interface.js';
+import { UeCommentReply } from '@/ue/comments/interfaces/comment-reply.interface.js';
+import { Criterion } from '@/ue/interfaces/criterion.interface.js';
+import { UeRating } from '@/ue/interfaces/rate.interface.js';
 import {
   FakeApiApplication,
   FakeAsso,
@@ -17,16 +17,16 @@ import {
   FakeUeAnnalType,
   FakeUeCreditCategory,
   FakeUser,
-} from '#/utils/fakedb';
-import { UeAnnalFile } from '@/ue/annals/interfaces/annal.interface';
-import { ConfigService } from '@/config/config.service';
-import { AppProvider, JsonLike } from '#/utils/test_utils';
-import { PermissionManager, getTranslation, omit, pick } from '@/utils';
+} from '#/utils/fakedb.js';
+import { UeAnnalFile } from '@/ue/annals/interfaces/annal.interface.js';
+import { ConfigService } from '@/config/config.service.js';
+import { AppProvider, JsonLike } from '#/utils/test_utils.js';
+import { PermissionManager, getTranslation, omit, pick } from '@/utils.js';
 import { int, regex, string, uuid } from 'pactum-matchers';
-import { Language } from '@/prisma/types';
-import { DEFAULT_APPLICATION } from '#/../prisma/seed/utils';
-import ApplicationResDto from '@/auth/application/dto/res/application-res.dto';
-import PermissionsResDto from '@/auth/permissions/dto/res/permissions.dto';
+import { Language } from '@/prisma/types.js';
+import { DEFAULT_APPLICATION } from '#/../prisma/seed/utils.js';
+import ApplicationResDto from '@/auth/application/dto/res/application-res.dto.js';
+import PermissionsResDto from '@/auth/permissions/dto/res/permissions.dto.js';
 
 function ueOverviewExpectation(ue: FakeUeWithOfs, spec: Spec) {
   return {
@@ -335,10 +335,15 @@ Spec.prototype.expectAssoWeekly = function (this: Spec, weekly: JsonLikeVariant<
   return this.expectStatus(created ? HttpStatus.CREATED : HttpStatus.OK).$expectRegexableJson({
     ...pick(weekly, 'id', 'assoId', 'createdAt', 'date'),
     title: weekly.title[this.language],
-    message: weekly.message[this.language]
+    message: weekly.message[this.language],
   });
 };
-Spec.prototype.expectAssoWeeklies = function (this: Spec, app: AppProvider, weeklies: JsonLikeVariant<FakeAssoWeekly>[], count: number) {
+Spec.prototype.expectAssoWeeklies = function (
+  this: Spec,
+  app: AppProvider,
+  weeklies: JsonLikeVariant<FakeAssoWeekly>[],
+  count: number,
+) {
   return this.expectStatus(HttpStatus.OK).$expectRegexableJson({
     items: weeklies.map((weekly) => ({
       ...pick(weekly, 'id', 'assoId', 'createdAt', 'date'),

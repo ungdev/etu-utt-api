@@ -1,7 +1,7 @@
-import { UserPermission } from '@/auth/interfaces/permissions.interface';
-import { Permission } from '@/prisma/types';
+import { UserPermission } from '@/auth/interfaces/permissions.interface.js';
+import { Permission } from '@/prisma/types.js';
 
-export default class PermissionsResDto {
+export class PermissionsResDto {
   hardPermissions: Permission[];
   softPermissions: PermissionsResDto_SoftPermissions[];
 }

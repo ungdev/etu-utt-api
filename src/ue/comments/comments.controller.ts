@@ -1,22 +1,25 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Patch, Post, Query } from '@nestjs/common';
-import { UUIDParam } from '@/app.pipe';
-import { GetUser, RequireApiPermission } from '@/auth/decorator';
-import { AppException, ERROR_CODE } from '@/exceptions';
-import UeCommentPostReqDto from '@/ue/comments/dto/req/ue-comment-post-req.dto';
-import CommentReplyReqDto from '@/ue/comments/dto/req/ue-comment-reply-req.dto';
-import UeCommentUpdateReqDto from '@/ue/comments/dto/req/ue-comment-update-req.dto';
-import GetUeCommentsReqDto from '@/ue/comments/dto/req/ue-get-comments-req.dto';
-import { UeService } from '@/ue/ue.service';
-import { User } from '@/users/interfaces/user.interface';
-import { CommentsService } from '@/ue/comments/comments.service';
-import UeCommentResDto from '@/ue/comments/dto/res/ue-comment-res.dto';
+import { UUIDParam } from '@/app.pipe.js';
+import { GetUser, RequireApiPermission } from '@/auth/decorator/index.js';
+import { AppException, ERROR_CODE } from '@/exceptions.js';
+import { UeCommentPostReqDto } from '@/ue/comments/dto/req/ue-comment-post-req.dto.js';
+import { CommentReplyReqDto } from '@/ue/comments/dto/req/ue-comment-reply-req.dto.js';
+import { UeCommentUpdateReqDto } from '@/ue/comments/dto/req/ue-comment-update-req.dto.js';
+import { GetUeCommentsReqDto } from '@/ue/comments/dto/req/ue-get-comments-req.dto.js';
+import { UeService } from '@/ue/ue.service.js';
+import { User } from '@/users/interfaces/user.interface.js';
+import { CommentsService } from '@/ue/comments/comments.service.js';
+import { UeCommentResDto } from '@/ue/comments/dto/res/ue-comment-res.dto.js';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ApiAppErrorResponse, paginatedResponseDto } from '@/app.dto';
-import { UeCommentUpvoteResDto$False, UeCommentUpvoteResDto$True } from '@/ue/comments/dto/res/ue-comment-upvote-res.dto';
-import UeCommentReplyResDto from '@/ue/comments/dto/res/ue-comment-reply-res.dto';
-import { Permission } from '@/prisma/types';
-import { GetPermissions } from '@/auth/decorator/get-permissions.decorator';
-import { PermissionManager } from '@/utils';
+import { ApiAppErrorResponse, paginatedResponseDto } from '@/app.dto.js';
+import {
+  UeCommentUpvoteResDto$False,
+  UeCommentUpvoteResDto$True,
+} from '@/ue/comments/dto/res/ue-comment-upvote-res.dto.js';
+import { UeCommentReplyResDto } from '@/ue/comments/dto/res/ue-comment-reply-res.dto.js';
+import { Permission } from '@/prisma/types.js';
+import { GetPermissions } from '@/auth/decorator/get-permissions.decorator.js';
+import { PermissionManager } from '@/utils.js';
 
 @Controller('ue/comments')
 @ApiTags('UE Comment')

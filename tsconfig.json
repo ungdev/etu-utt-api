@@ -11,10 +11,9 @@
     "target": "ESNext",
     "sourceMap": true,
     "outDir": "./dist",
-    "rootDir": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "#/*": ["test/*"]
+      "@/*": ["./src/*"],
+      "#/*": ["./test/*"]
     },
     "incremental": true,
     "skipLibCheck": true,
@@ -23,7 +22,8 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": false,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "strict": false
   },
   "ts-node": {
     "files": true

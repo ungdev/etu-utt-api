@@ -1,23 +1,23 @@
 import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
-import UsersSearchReqDto from '@/users/dto/req/users-search-req.dto';
-import { UserUpdateReqDto } from '@/users/dto/req/users-update-req.dto';
-import { GetUser } from '@/auth/decorator';
-import { User } from '@/users/interfaces/user.interface';
-import UsersService from '@/users/users.service';
-import { AppException, ERROR_CODE } from '@/exceptions';
-import { pick } from '@/utils';
+import { UsersSearchReqDto } from '@/users/dto/req/users-search-req.dto.js';
+import { UserUpdateReqDto } from '@/users/dto/req/users-update-req.dto.js';
+import { GetUser } from '@/auth/decorator/index.js';
+import { User } from '@/users/interfaces/user.interface.js';
+import { UsersService } from '@/users/users.service.js';
+import { AppException, ERROR_CODE } from '@/exceptions.js';
+import { pick } from '@/utils.js';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import UserOverviewResDto from '@/users/dto/res/user-overview-res.dto';
-import { ApiAppErrorResponse, paginatedResponseDto } from '@/app.dto';
-import UserDetailResDto from '@/users/dto/res/user-detail-res.dto';
-import UserBirthdayResDto from '@/users/dto/res/user-birthday-res.dto';
-import UserAssoMembershipResDto from '@/users/dto/res/user-asso-membership-res.dto';
-import { ImageMediaService } from '@/media/image/imagemedia.service';
-import { ImageMediaPreset } from '@/prisma/types';
+import { UserOverviewResDto } from '@/users/dto/res/user-overview-res.dto.js';
+import { ApiAppErrorResponse, paginatedResponseDto } from '@/app.dto.js';
+import { UserDetailResDto } from '@/users/dto/res/user-detail-res.dto.js';
+import { UserBirthdayResDto } from '@/users/dto/res/user-birthday-res.dto.js';
+import { UserAssoMembershipResDto } from '@/users/dto/res/user-asso-membership-res.dto.js';
+import { ImageMediaService } from '@/media/image/imagemedia.service.js';
+import { ImageMediaPreset } from '@/prisma/types.js';
 
 @Controller('users')
 @ApiTags('User')
-export default class UsersController {
+export class UsersController {
   constructor(
     private usersService: UsersService,
     private mediaService: ImageMediaService,

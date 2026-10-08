@@ -1,4 +1,4 @@
-export default class AuthSigninResDto {
+export class AuthSigninResDto {
   signedIn: boolean;
   token: string | null;
   redirectUrl: string | null;

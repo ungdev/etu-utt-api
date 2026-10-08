@@ -7,13 +7,13 @@ import {
   createUe,
   createUeof,
   createUser,
-} from '#/utils/fakedb';
-import { Dummies, e2eSuite } from '#/utils/test_utils';
+} from '#/utils/fakedb.js';
+import { Dummies, e2eSuite } from '#/utils/test_utils.js';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '@/exceptions';
-import { CommentStatus } from '@/ue/comments/interfaces/comment.interface';
-import { PrismaService } from '@/prisma/prisma.service';
-import { PermissionManager } from '@/utils';
+import { ERROR_CODE } from '@/exceptions.js';
+import { CommentStatus } from '@/ue/comments/interfaces/comment.interface.js';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { PermissionManager } from '@/utils.js';
 import { it } from 'vitest';
 
 const DeleteComment = e2eSuite('DELETE /ue/comments/:commentId', (app) => {

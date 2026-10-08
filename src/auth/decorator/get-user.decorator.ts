@@ -1,6 +1,6 @@
 import { ExecutionContext, createParamDecorator } from '@nestjs/common';
-import { User } from '@/users/interfaces/user.interface';
-import { RequestAuthData } from '@/auth/interfaces/request-auth-data.interface';
+import { User } from '@/users/interfaces/user.interface.js';
+import { RequestAuthData } from '@/auth/interfaces/request-auth-data.interface.js';
 
 /**
  * Get the user from the request.

@@ -1,4 +1,4 @@
-export default class UeRateCriterionResDto {
+export class UeRateCriterionResDto {
   id: string;
   name: string;
 }

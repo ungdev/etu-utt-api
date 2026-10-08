@@ -1,13 +1,13 @@
 import { Body, Controller, Get, Put } from '@nestjs/common';
-import { GetUser } from '@/auth/decorator';
-import { User } from '@/users/interfaces/user.interface';
-import { AppException, ERROR_CODE } from '@/exceptions';
-import { ProfileService } from '@/profile/profile.service';
-import { HomepageWidgetsUpdateReqDto } from '@/profile/dto/req/homepage-widgets-update-req.dto';
-import { RawHomepageWidget } from '@/prisma/types';
+import { GetUser } from '@/auth/decorator/index.js';
+import { User } from '@/users/interfaces/user.interface.js';
+import { AppException, ERROR_CODE } from '@/exceptions.js';
+import { ProfileService } from '@/profile/profile.service.js';
+import { HomepageWidgetsUpdateReqDto } from '@/profile/dto/req/homepage-widgets-update-req.dto.js';
+import { RawHomepageWidget } from '@/prisma/types.js';
 import { ApiBody, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import HomepageWidgetResDto from '@/profile/dto/res/homepage-widget-res.dto';
-import { ApiAppErrorResponse } from '@/app.dto';
+import { HomepageWidgetResDto } from '@/profile/dto/res/homepage-widget-res.dto.js';
+import { ApiAppErrorResponse } from '@/app.dto.js';
 
 @Controller('profile')
 @ApiTags('Profile')

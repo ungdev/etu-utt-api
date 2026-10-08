@@ -40,16 +40,16 @@ import {
   TimetableEntryType,
   Translation,
   UserType,
-} from '@/prisma/types';
+} from '@/prisma/types.js';
 import { faker } from '@faker-js/faker';
-import { AuthService } from '@/auth/auth.service';
-import { PrismaService } from '@/prisma/prisma.service';
-import { AppProvider } from '#/utils/test_utils';
-import { CommentStatus } from '@/ue/comments/interfaces/comment.interface';
-import { UeAnnalFile } from '@/ue/annals/interfaces/annal.interface';
-import { PermissionManager, omit, pick, translationSelect } from '@/utils';
-import { DEFAULT_APPLICATION } from '#/../prisma/seed/utils';
-import { AssoWeekly } from '@/assos/interfaces/weekly.interface';
+import { AuthService } from '@/auth/auth.service.js';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { AppProvider } from '#/utils/test_utils.js';
+import { CommentStatus } from '@/ue/comments/interfaces/comment.interface.js';
+import { UeAnnalFile } from '@/ue/annals/interfaces/annal.interface.js';
+import { PermissionManager, omit, pick, translationSelect } from '@/utils.js';
+import { DEFAULT_APPLICATION } from '#/../prisma/seed/utils.js';
+import { AssoWeekly } from '@/assos/interfaces/weekly.interface.js';
 import { beforeAll } from 'vitest';
 
 /**

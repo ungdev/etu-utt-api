@@ -1,12 +1,12 @@
 import { ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
-import { IsPublic, SkipApplicationCheck } from '@/auth/decorator';
-import { AppException, ERROR_CODE } from '@/exceptions';
-import { RequestAuthData } from '@/auth/interfaces/request-auth-data.interface';
-import { PrismaService } from '@/prisma/prisma.service';
-import { PermissionManager } from '@/utils';
-import { RawApiApplication } from '@/prisma/types';
+import { IsPublic, SkipApplicationCheck } from '@/auth/decorator/index.js';
+import { AppException, ERROR_CODE } from '@/exceptions.js';
+import { RequestAuthData } from '@/auth/interfaces/request-auth-data.interface.js';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { PermissionManager } from '@/utils.js';
+import { RawApiApplication } from '@/prisma/types.js';
 
 @Injectable()
 export class JwtGuard extends AuthGuard('jwt') {

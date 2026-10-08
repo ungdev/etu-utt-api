@@ -9,12 +9,12 @@ import {
   createUeSubscription,
   createUeof,
   createUser,
-} from '#/utils/fakedb';
-import { Dummies, JsonLike, e2eSuite } from '#/utils/test_utils';
-import { ERROR_CODE } from '@/exceptions';
-import { CommentStatus } from '@/ue/comments/interfaces/comment.interface';
-import { PermissionManager, pick } from '@/utils';
-import { PrismaService } from '@/prisma/prisma.service';
+} from '#/utils/fakedb.js';
+import { Dummies, JsonLike, e2eSuite } from '#/utils/test_utils.js';
+import { ERROR_CODE } from '@/exceptions.js';
+import { CommentStatus } from '@/ue/comments/interfaces/comment.interface.js';
+import { PermissionManager, pick } from '@/utils.js';
+import { PrismaService } from '@/prisma/prisma.service.js';
 import { it } from 'vitest';
 
 const DeleteAnnal = e2eSuite('DELETE /ue/annals/{annalId}', (app) => {

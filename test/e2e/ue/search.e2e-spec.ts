@@ -1,10 +1,10 @@
-import { createBranch, createBranchOption, createSemester, createUe, createUeof, createUser } from '#/utils/fakedb';
+import { createBranch, createBranchOption, createSemester, createUe, createUeof, createUser } from '#/utils/fakedb.js';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '@/exceptions';
-import { e2eSuite } from '#/utils/test_utils';
-import { registerUniqueValue } from '#/../prisma/seed/utils';
-import { ConfigService } from '@/config/config.service';
-import { FakeUeWithOfs } from '#/declarations';
+import { ERROR_CODE } from '@/exceptions.js';
+import { e2eSuite } from '#/utils/test_utils.js';
+import { registerUniqueValue } from '#/../prisma/seed/utils.js';
+import { ConfigService } from '@/config/config.service.js';
+import { FakeUeWithOfs } from '#/declarations.js';
 import { it } from 'vitest';
 
 const SearchE2ESpec = e2eSuite('GET /ue', (app) => {

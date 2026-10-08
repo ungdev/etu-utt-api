@@ -1,5 +1,5 @@
-import { PrismaClient, PrismaOperationResult, getOperationResults } from '../make-migration';
-import { RawCreditCategory } from '@/prisma/types';
+import { PrismaClient, PrismaOperationResult, getOperationResults } from '../make-migration.js';
+import { RawCreditCategory } from '@/prisma/types.js';
 
 export async function createCreditCategories(prisma: PrismaClient) {
   const creditCategoriesData = [

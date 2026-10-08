@@ -1,7 +1,7 @@
-import { Translation } from '@/prisma/types';
+import { Translation } from '@/prisma/types.js';
 import { ApiProperty } from '@nestjs/swagger';
 
-export default class UserAssoMembershipResDto {
+export class UserAssoMembershipResDto {
   role: string;
   startAt: Date;
   endAt: Date;

@@ -1,10 +1,10 @@
-import { PrismaService } from '@/prisma/prisma.service';
-import { PrismaClient } from '@/prisma/types';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { PrismaClient } from '@/prisma/types.js';
 import { INestApplication } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { faker } from '@faker-js/faker';
-import { ConfigService } from '@/config/config.service';
-import { clearUniqueValues, generateDefaultApplication } from '#/../prisma/seed/utils';
+import { ConfigService } from '@/config/config.service.js';
+import { clearUniqueValues, generateDefaultApplication } from '#/../prisma/seed/utils.js';
 import { beforeAll, describe } from 'vitest';
 
 /**

@@ -1,14 +1,14 @@
 import { INestApplication } from '@nestjs/common';
-import SearchE2ESpec from '#/e2e/ue/search.e2e-spec';
-import GetE2ESpec from '#/e2e/ue/get.e2e-spec';
-import GetRateCriteria from '#/e2e/ue/get-rate-criteria.e2e-spec';
-import GetRateE2ESpec from '#/e2e/ue/get-ue-rate.e2e-spec';
-import PutRate from '#/e2e/ue/put-rate.e2e-spec';
-import DeleteRate from '#/e2e/ue/delete-rate.e2e-spec';
-import AnnalsE2ESpec from '#/e2e/ue/annals';
-import CommentsE2ESpec from '#/e2e/ue/comments';
-import GetMyUesE2ESpec from '#/e2e/ue/get-my-ues.e2e-spec';
-import CreditE2ESpec from './credit';
+import SearchE2ESpec from '#/e2e/ue/search.e2e-spec.js';
+import GetE2ESpec from '#/e2e/ue/get.e2e-spec.js';
+import GetRateCriteria from '#/e2e/ue/get-rate-criteria.e2e-spec.js';
+import GetRateE2ESpec from '#/e2e/ue/get-ue-rate.e2e-spec.js';
+import PutRate from '#/e2e/ue/put-rate.e2e-spec.js';
+import DeleteRate from '#/e2e/ue/delete-rate.e2e-spec.js';
+import AnnalsE2ESpec from '#/e2e/ue/annals/index.js';
+import CommentsE2ESpec from '#/e2e/ue/comments/index.js';
+import GetMyUesE2ESpec from '#/e2e/ue/get-my-ues.e2e-spec.js';
+import CreditE2ESpec from '#/e2e/ue/credit/index.js';
 import { describe } from 'vitest';
 
 export default function UeE2ESpec(app: () => INestApplication) {

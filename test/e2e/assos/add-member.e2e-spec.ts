@@ -1,17 +1,17 @@
-import { Dummies, JsonLike, e2eSuite } from '#/utils/test_utils';
+import { Dummies, JsonLike, e2eSuite } from '#/utils/test_utils.js';
 import {
   createAsso,
   createAssoMembership,
   createAssoMembershipPermission,
   createAssoMembershipRole,
   createUser,
-} from '#/utils/fakedb';
+} from '#/utils/fakedb.js';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '@/exceptions';
-import { PrismaService } from '@/prisma/prisma.service';
+import { ERROR_CODE } from '@/exceptions.js';
+import { PrismaService } from '@/prisma/prisma.service.js';
 import { faker } from '@faker-js/faker';
-import { DEFAULT_APPLICATION } from '@/../prisma/seed/utils';
-import { AuthService } from '@/auth/auth.service';
+import { DEFAULT_APPLICATION } from '@/../prisma/seed/utils.js';
+import { AuthService } from '@/auth/auth.service.js';
 import { it } from 'vitest';
 
 const AddAssoMemberE2ESpec = e2eSuite('POST /assos/:id/members', (app) => {

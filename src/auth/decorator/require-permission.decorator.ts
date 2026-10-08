@@ -1,6 +1,6 @@
 import { ExecutionContext, SetMetadata } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { ApiPermission } from '@/auth/interfaces/permissions.interface';
+import { ApiPermission } from '@/auth/interfaces/permissions.interface.js';
 
 export const REQUIRED_PERMISSIONS_KEY = 'requiredPermissions';
 /**

@@ -7,13 +7,13 @@ import {
   createUeSubscription,
   createUeof,
   createUser,
-} from '#/utils/fakedb';
+} from '#/utils/fakedb.js';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '@/exceptions';
-import { e2eSuite } from '#/utils/test_utils';
-import { PrismaService } from '@/prisma/prisma.service';
+import { ERROR_CODE } from '@/exceptions.js';
+import { e2eSuite } from '#/utils/test_utils.js';
+import { PrismaService } from '@/prisma/prisma.service.js';
 import { faker } from '@faker-js/faker';
-import { PermissionManager } from '@/utils';
+import { PermissionManager } from '@/utils.js';
 import { it } from 'vitest';
 
 const PutRate = e2eSuite('PUT /ue/ueof/{ueofCode}/rate', (app) => {

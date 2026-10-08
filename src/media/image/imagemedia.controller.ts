@@ -1,16 +1,16 @@
 import { Controller, Get, Post, Query, Response } from '@nestjs/common';
 import { ApiConsumes, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Response as ExpressResponse } from 'express';
-import { FileSize, MulterWithMime, UploadRoute, UserFile } from '@/upload.interceptor';
-import { GetUser, IsPublic, RequireApiPermission, SkipApplicationCheck } from '@/auth/decorator';
-import { AppException, ERROR_CODE } from '@/exceptions';
-import { ApiAppErrorResponse } from '@/app.dto';
-import { ImageMediaService } from '@/media/image/imagemedia.service';
-import { UUIDParam } from '@/app.pipe';
-import { omit } from '@/utils';
-import { User } from '@/users/interfaces/user.interface';
-import ImageMediaUploadReqDto from '@/media/image/dto/req/imagemedia-upload-req.dto';
-import ImageMediaUploadResDto from '@/media/image/dto/res/imagemedia-upload-res.dto';
+import { FileSize, MulterWithMime, UploadRoute, UserFile } from '@/upload.interceptor.js';
+import { GetUser, IsPublic, RequireApiPermission, SkipApplicationCheck } from '@/auth/decorator/index.js';
+import { AppException, ERROR_CODE } from '@/exceptions.js';
+import { ApiAppErrorResponse } from '@/app.dto.js';
+import { ImageMediaService } from '@/media/image/imagemedia.service.js';
+import { UUIDParam } from '@/app.pipe.js';
+import { omit } from '@/utils.js';
+import { User } from '@/users/interfaces/user.interface.js';
+import { ImageMediaUploadReqDto } from '@/media/image/dto/req/imagemedia-upload-req.dto.js';
+import { ImageMediaUploadResDto } from '@/media/image/dto/res/imagemedia-upload-res.dto.js';
 
 @Controller('media/image')
 @ApiTags('Media')

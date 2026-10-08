@@ -1,4 +1,4 @@
-import { CourseEvent } from '@/timetable/interfaces/ical.interface';
+import { CourseEvent } from '@/timetable/interfaces/ical.interface.js';
 
 export interface UeCourse {
   /**

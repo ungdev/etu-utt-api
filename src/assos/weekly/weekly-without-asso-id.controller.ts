@@ -1,11 +1,11 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import WeeklyInfoResDto from '@/assos/weekly/dto/res/weekly-info-res.dto';
-import { ConfigService } from '@/config/config.service';
+import { WeeklyInfoResDto } from '@/assos/weekly/dto/res/weekly-info-res.dto.js';
+import { ConfigService } from '@/config/config.service.js';
 
 @Controller('assos/weekly')
 @ApiTags('Weekly')
-export default class WeeklyWithoutAssoIdController {
+export class WeeklyWithoutAssoIdController {
   constructor(readonly config: ConfigService) {}
 
   @Get('/info')

@@ -1,8 +1,8 @@
 import { IsArray, IsDate, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 import { Type } from 'class-transformer';
-import { IsFutureDate } from '@/validation';
+import { IsFutureDate } from '@/validation.js';
 
-export default class AssosMemberCreateReqDto {
+export class AssosMemberCreateReqDto {
   @IsString()
   @IsNotEmpty()
   @IsUUID()

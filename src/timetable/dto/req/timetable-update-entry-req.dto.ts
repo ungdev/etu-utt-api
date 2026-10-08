@@ -10,7 +10,7 @@ import {
   Min,
 } from 'class-validator';
 
-export default class TimetableUpdateEntryReqDto {
+export class TimetableUpdateEntryReqDto {
   @IsString()
   @IsOptional()
   location?: string;

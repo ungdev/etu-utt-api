@@ -1,6 +1,6 @@
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule as NestConfigModule } from '@nestjs/config';
-import { ConfigService, isTestEnv } from '@/config/config.service';
+import { ConfigService, isTestEnv } from '@/config/config.service.js';
 
 @Global()
 @Module({

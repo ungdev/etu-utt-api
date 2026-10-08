@@ -1,6 +1,6 @@
-import { e2eSuite } from '#/utils/test_utils';
+import { e2eSuite } from '#/utils/test_utils.js';
 import * as pactum from 'pactum';
-import { createUeCreditCategory } from '#/utils/fakedb';
+import { createUeCreditCategory } from '#/utils/fakedb.js';
 import { it } from 'vitest';
 
 const GetAllCreditCategories = e2eSuite('GET /ue/credit', (app) => {

@@ -1,6 +1,6 @@
 import { ExecutionContext, createParamDecorator } from '@nestjs/common';
-import { RequestAuthData } from '@/auth/interfaces/request-auth-data.interface';
-import { Application } from '@/auth/application/interfaces/application.interface';
+import { RequestAuthData } from '@/auth/interfaces/request-auth-data.interface.js';
+import { Application } from '@/auth/application/interfaces/application.interface.js';
 
 /**
  * Get the application that made the request.

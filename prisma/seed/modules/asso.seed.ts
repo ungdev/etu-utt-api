@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { PrismaClient, UserType } from '@/prisma/types';
+import { PrismaClient, UserType } from '@/prisma/types.js';
 
 export default function assoSeed(prisma: PrismaClient) {
   console.log('Seeding assos...');

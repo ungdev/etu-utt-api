@@ -1,23 +1,27 @@
 import { Body, Controller, Delete, Get, Patch, Post, Query } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiQuery } from '@nestjs/swagger';
-import WeeklyResDto from '@/assos/weekly/dto/res/weekly-res.dto';
-import { ApiAppErrorResponse, paginatedResponseDto } from '@/app.dto';
-import { AppException, ERROR_CODE } from '@/exceptions';
-import { ParamAsso } from '@/assos/decorator/get-asso';
-import { Asso } from '@/assos/interfaces/asso.interface';
-import AssoGetWeeklyReqDto from '@/assos/weekly/dto/req/weekly-search-req.dto';
-import { GetUser } from '@/auth/decorator/get-user.decorator';
-import { User } from '@/users/interfaces/user.interface';
-import AssosPostWeeklyReqDto from '@/assos/weekly/dto/req/weekly-req.dto';
-import { UUIDParam } from '@/app.pipe';
-import { AssoWeekly } from '@/assos/interfaces/weekly.interface';
-import { ConfigService } from '@/config/config.service';
-import WeeklyService from '@/assos/weekly/weekly.service';
-import { AssosService } from '@/assos/assos.service';
+import { WeeklyResDto } from '@/assos/weekly/dto/res/weekly-res.dto.js';
+import { ApiAppErrorResponse, paginatedResponseDto } from '@/app.dto.js';
+import { AppException, ERROR_CODE } from '@/exceptions.js';
+import { ParamAsso } from '@/assos/decorator/get-asso.js';
+import { Asso } from '@/assos/interfaces/asso.interface.js';
+import { AssoGetWeeklyReqDto } from '@/assos/weekly/dto/req/weekly-search-req.dto.js';
+import { GetUser } from '@/auth/decorator/get-user.decorator.js';
+import { User } from '@/users/interfaces/user.interface.js';
+import { AssosPostWeeklyReqDto } from '@/assos/weekly/dto/req/weekly-req.dto.js';
+import { UUIDParam } from '@/app.pipe.js';
+import { AssoWeekly } from '@/assos/interfaces/weekly.interface.js';
+import { ConfigService } from '@/config/config.service.js';
+import { WeeklyService } from '@/assos/weekly/weekly.service.js';
+import { AssosService } from '@/assos/assos.service.js';
 
 @Controller('assos/:assoId/weekly')
 export class WeeklyWithAssoIdController {
-  constructor(readonly weeklyService: WeeklyService, readonly assosService: AssosService, readonly config: ConfigService) {}
+  constructor(
+    readonly weeklyService: WeeklyService,
+    readonly assosService: AssosService,
+    readonly config: ConfigService,
+  ) {}
 
   @Get()
   @ApiOperation({ description: 'Get weeklies from query parameter `from` to query parameter `to`.' })
@@ -56,7 +60,10 @@ export class WeeklyWithAssoIdController {
     'The user issuing the request does not have the permission weekly',
   )
   @ApiAppErrorResponse(ERROR_CODE.WEEKLY_ALREADY_SENT_FOR_WEEK, 'The weekly was already sent for the specified week')
-  @ApiAppErrorResponse(ERROR_CODE.WEEKLY_ALREADY_PLANNED_FOR_WEEK, 'The asso already has a weekly planned for the requested week')
+  @ApiAppErrorResponse(
+    ERROR_CODE.WEEKLY_ALREADY_PLANNED_FOR_WEEK,
+    'The asso already has a weekly planned for the requested week',
+  )
   async createWeekly(
     @ParamAsso() asso: Asso,
     @Body() dto: AssosPostWeeklyReqDto,
@@ -82,7 +89,10 @@ export class WeeklyWithAssoIdController {
   @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_WEEKLY, 'The weekly does not exist for the specified asso')
   @ApiAppErrorResponse(ERROR_CODE.WEEKLY_ALREADY_SENT, 'The weekly that is beeing modified was already sent')
   @ApiAppErrorResponse(ERROR_CODE.WEEKLY_ALREADY_SENT_FOR_WEEK, 'The weekly was already sent for the specified week')
-  @ApiAppErrorResponse(ERROR_CODE.WEEKLY_ALREADY_PLANNED_FOR_WEEK, 'The asso already has a weekly planned for the requested week')
+  @ApiAppErrorResponse(
+    ERROR_CODE.WEEKLY_ALREADY_PLANNED_FOR_WEEK,
+    'The asso already has a weekly planned for the requested week',
+  )
   async updateWeekly(
     @ParamAsso() asso: Asso,
     @UUIDParam('weeklyId') weeklyId: string,

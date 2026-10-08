@@ -1,4 +1,4 @@
-import { PrismaClient, RawSemester } from '@/prisma/types';
+import { PrismaClient, RawSemester } from '@/prisma/types.js';
 
 export default function semesterSeed(prisma: PrismaClient): Promise<RawSemester[]> {
   console.log('Seeding semesters...');

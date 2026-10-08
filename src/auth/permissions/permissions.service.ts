@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '@/prisma/prisma.service';
-import { UserPermission } from '@/auth/interfaces/permissions.interface';
-import { PermissionManager } from '@/utils';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { UserPermission } from '@/auth/interfaces/permissions.interface.js';
+import { PermissionManager } from '@/utils.js';
 
 @Injectable()
-export default class PermissionsService {
+export class PermissionsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getPermissionsFromApiKeyId(apiKeyId: string): Promise<PermissionManager> {

@@ -1,9 +1,9 @@
-import { Dummies, e2eSuite } from '#/utils/test_utils';
-import * as fakedb from '#/utils/fakedb';
+import { Dummies, e2eSuite } from '#/utils/test_utils.js';
+import * as fakedb from '#/utils/fakedb.js';
 import { cpSync, mkdirSync, rmSync } from 'fs';
-import { ConfigService } from '@/config/config.service';
-import { createUser } from '#/utils/fakedb';
-import { ERROR_CODE } from '@/exceptions';
+import { ConfigService } from '@/config/config.service.js';
+import { createUser } from '#/utils/fakedb.js';
+import { ERROR_CODE } from '@/exceptions.js';
 import * as pactum from 'pactum';
 import { beforeAll, afterAll, it } from 'vitest';
 
