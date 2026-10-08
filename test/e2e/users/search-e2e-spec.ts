@@ -1,9 +1,9 @@
 import { it, beforeAll } from 'vitest';
 import * as pactum from 'pactum';
-import { e2eSuite } from '#/utils/test_utils';
-import * as fakedb from '#/utils/fakedb';
-import { ERROR_CODE } from '@/exceptions';
-import { ConfigService } from '@/config/config.service';
+import { e2eSuite } from '#/utils/test_utils.js';
+import * as fakedb from '#/utils/fakedb.js';
+import { ERROR_CODE } from '@/exceptions.js';
+import { ConfigService } from '@/config/config.service.js';
 
 const SearchE2ESpec = e2eSuite('GET /users', (app) => {
   const user = fakedb.createUser(app, {

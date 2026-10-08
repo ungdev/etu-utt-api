@@ -3,13 +3,13 @@ import { createReadStream, createWriteStream } from 'fs';
 import { writeFile } from 'fs/promises';
 import sharp from 'sharp';
 import PDFDocument from 'pdfkit';
-import { PrismaService } from '@/prisma/prisma.service';
-import { MulterWithMime } from '@/upload.interceptor';
-import { CreateAnnalReqDto } from '@/ue/annals/dto/req/create-annal-req.dto';
-import { UpdateAnnalReqDto } from '@/ue/annals/dto/req/update-annal-req.dto';
-import { ConfigService, isTestEnv } from '@/config/config.service';
-import { User } from '@/users/interfaces/user.interface';
-import { RawSemester } from '@/prisma/types';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { MulterWithMime } from '@/upload.interceptor.js';
+import { CreateAnnalReqDto } from '@/ue/annals/dto/req/create-annal-req.dto.js';
+import { UpdateAnnalReqDto } from '@/ue/annals/dto/req/update-annal-req.dto.js';
+import { ConfigService, isTestEnv } from '@/config/config.service.js';
+import { User } from '@/users/interfaces/user.interface.js';
+import { RawSemester } from '@/prisma/types.js';
 
 @Injectable()
 export class AnnalsService {

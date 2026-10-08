@@ -1,4 +1,4 @@
-import { Language, Translation as RawTranslation } from '@/prisma/build/client';
+import { Language, Translation as RawTranslation } from '@/prisma/build/client.js';
 
 export {
   Prisma,
@@ -47,8 +47,7 @@ export {
   ApiApplication as RawApiApplication,
   ApiKey as RawApiKey,
   ImageMedia as RawImageMedia,
-
-} from '@/prisma/build/client';
+} from '@/prisma/build/client.js';
 
 export { RawTranslation };
 export type Translation = Pick<Partial<RawTranslation>, Language>;

@@ -1,20 +1,20 @@
 import { describe, beforeAll, afterAll } from 'vitest';
-import '#/declarations';
-import '@/std.type';
-import * as testUtils from '#/utils/test_utils';
+import '#/declarations.js';
+import '@/std.type.js';
+import * as testUtils from '#/utils/test_utils.js';
 import * as pactum from 'pactum';
-import AuthE2ESpec from '#/e2e/auth';
-import ProfileE2ESpec from '#/e2e/profile';
-import UsersE2ESpec from '#/e2e/users';
-import TimetableE2ESpec from '#/e2e/timetable';
-import UeE2ESpec from '#/e2e/ue';
-import * as cas from '#/external_services/cas';
-import * as timetableProvider from '#/external_services/timetable';
-import { ConfigService } from '@/config/config.service';
-import AssoE2ESpec from '#/e2e/assos';
-import MediaE2ESpec from '#/e2e/media';
-import BranchE2ESpec from '#/e2e/branch';
-import { buildTestApp, E2EApp } from '#/utils/test_utils';
+import AuthE2ESpec from '#/e2e/auth/index.js';
+import ProfileE2ESpec from '#/e2e/profile/index.js';
+import UsersE2ESpec from '#/e2e/users/index.js';
+import TimetableE2ESpec from '#/e2e/timetable/index.js';
+import UeE2ESpec from '#/e2e/ue/index.js';
+import * as cas from '#/external_services/cas.js';
+import * as timetableProvider from '#/external_services/timetable.js';
+import { ConfigService } from '@/config/config.service.js';
+import AssoE2ESpec from '#/e2e/assos/index.js';
+import MediaE2ESpec from '#/e2e/media/index.js';
+import BranchE2ESpec from '#/e2e/branch/index.js';
+import { buildTestApp, E2EApp } from '#/utils/test_utils.js';
 
 describe('EtuUTT API e2e testing', () => {
   let app: E2EApp;

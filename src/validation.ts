@@ -43,16 +43,20 @@ export const IsFutureDate = ({ each = false } = {}) => Validate(FutureDate, { ea
 export const IsWeekDate = ({ each = false } = {}) => Validate(WeekDate, { each });
 
 /** Checks whether at least one of the given properties is provided. Use this decorator on any property EXCEPT those contained in the constraint list. */
-export function HasSomeAmong<T>(...fields: ((keyof T) & string)[]) {
+export function HasSomeAmong<T>(...fields: (keyof T & string)[]) {
   return (target: { prototype: T }) => {
     // Define a new property on the class.
     // This property will be used to apply the validator HasEither.
     // It will not be possible to fill it in the request with the GhostProperty validator.
-    const propertyName = "_internalHasSomeAmong";
-    const propertySymbol = Symbol(propertyName)
+    const propertyName = '_internalHasSomeAmong';
+    const propertySymbol = Symbol(propertyName);
     Object.defineProperty(target.prototype, propertyName, {
-      get() { return this[propertySymbol]; },
-      set(value) { this[propertySymbol] = value; },
+      get() {
+        return this[propertySymbol];
+      },
+      set(value) {
+        this[propertySymbol] = value;
+      },
       enumerable: false,
       configurable: true,
     });

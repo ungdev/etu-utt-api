@@ -1,4 +1,4 @@
-import { Dummies, e2eSuite } from '#/utils/test_utils';
+import { Dummies, e2eSuite } from '#/utils/test_utils.js';
 import {
   createAsso,
   createAssoMembership,
@@ -6,9 +6,9 @@ import {
   createAssoMembershipRole,
   createAssoWeekly,
   createUser,
-} from '#/utils/fakedb';
+} from '#/utils/fakedb.js';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '@/exceptions';
+import { ERROR_CODE } from '@/exceptions.js';
 import { it } from 'vitest';
 
 const DeleteWeeklyE2ESpec = e2eSuite('DELETE /assos/:assoId/weekly/:weeklyId', (app) => {

@@ -1,6 +1,6 @@
 import { TableCellNode } from '@lexical/table';
 import { DOMExportOutput, LexicalNode } from 'lexical';
-import { CustomStyles } from '.';
+import { CustomStyles } from './index.js';
 
 /** Applies style to a specific Node */
 function applyStylesToElement(element: HTMLElement, index: number, node?: LexicalNode) {

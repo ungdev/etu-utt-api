@@ -6,7 +6,7 @@ import { IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
  * @property {string} q - The query to search. Can be part of a name, mail or description in any language.
  * @property {number} page - The page of the results. Optional. Must be a positive number.
  */
-export default class AssosSearchReqDto {
+export class AssosSearchReqDto {
   @IsString()
   @IsOptional()
   q?: string;

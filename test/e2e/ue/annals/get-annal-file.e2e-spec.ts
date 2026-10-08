@@ -9,11 +9,11 @@ import {
   createUeSubscription,
   createUeof,
   createUser,
-} from '#/utils/fakedb';
-import { Dummies, e2eSuite } from '#/utils/test_utils';
-import { ERROR_CODE } from '@/exceptions';
-import { CommentStatus } from '@/ue/comments/interfaces/comment.interface';
-import { PermissionManager } from '@/utils';
+} from '#/utils/fakedb.js';
+import { Dummies, e2eSuite } from '#/utils/test_utils.js';
+import { ERROR_CODE } from '@/exceptions.js';
+import { CommentStatus } from '@/ue/comments/interfaces/comment.interface.js';
+import { PermissionManager } from '@/utils.js';
 import { it } from 'vitest';
 
 const GetAnnalFile = e2eSuite('GET /ue/annals/{annalId}', (app) => {

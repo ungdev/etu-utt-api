@@ -1,7 +1,7 @@
-import { Dummies, JsonLike, e2eSuite } from '#/utils/test_utils';
-import { createAsso, createAssoMembership, createAssoMembershipRole, createUser } from '#/utils/fakedb';
+import { Dummies, JsonLike, e2eSuite } from '#/utils/test_utils.js';
+import { createAsso, createAssoMembership, createAssoMembershipRole, createUser } from '#/utils/fakedb.js';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '@/exceptions';
+import { ERROR_CODE } from '@/exceptions.js';
 import { it } from 'vitest';
 
 const GetAssoMembersE2ESpec = e2eSuite('GET /assos/:id/members', (app) => {

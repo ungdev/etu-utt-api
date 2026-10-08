@@ -1,10 +1,10 @@
 import { it } from 'vitest';
-import { Dummies, e2eSuite } from '#/utils/test_utils';
+import { Dummies, e2eSuite } from '#/utils/test_utils.js';
 import * as pactum from 'pactum';
-import { PrismaService } from '@/prisma/prisma.service';
-import { createImageMedia, createUser } from '#/utils/fakedb';
-import { ERROR_CODE } from '@/exceptions';
-import { ImageMediaPreset } from '@/prisma/types';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { createImageMedia, createUser } from '#/utils/fakedb.js';
+import { ERROR_CODE } from '@/exceptions.js';
+import { ImageMediaPreset } from '@/prisma/types.js';
 
 const UpdateProfile = e2eSuite('PATCH /users/current', (app) => {
   const user = createUser(app);

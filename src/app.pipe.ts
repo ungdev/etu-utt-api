@@ -8,7 +8,7 @@ import {
   Type,
   ValidationPipe,
 } from '@nestjs/common';
-import { AppException, ERROR_CODE, validationExceptionFactory } from './exceptions';
+import { AppException, ERROR_CODE, validationExceptionFactory } from '@/exceptions.js';
 
 /**
  * A validating pipe for regex.

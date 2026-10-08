@@ -10,12 +10,12 @@ import {
   createUe,
   createUeof,
   createUser,
-} from '#/utils/fakedb';
-import { e2eSuite } from '#/utils/test_utils';
-import { ConfigService } from '@/config/config.service';
-import { ERROR_CODE } from '@/exceptions';
-import { PrismaService } from '@/prisma/prisma.service';
-import { PermissionManager } from '@/utils';
+} from '#/utils/fakedb.js';
+import { e2eSuite } from '#/utils/test_utils.js';
+import { ConfigService } from '@/config/config.service.js';
+import { ERROR_CODE } from '@/exceptions.js';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { PermissionManager } from '@/utils.js';
 import { it } from 'vitest';
 
 const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {

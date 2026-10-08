@@ -1,6 +1,6 @@
-import { PrismaClient, RawSemester, RawUe, RawUser, RawUserUeSubscription } from '@/prisma/types';
+import { PrismaClient, RawSemester, RawUe, RawUser, RawUserUeSubscription } from '@/prisma/types.js';
 import { faker } from '@faker-js/faker';
-import { OF_SUFFIX } from './ue.seed';
+import { OF_SUFFIX } from './ue.seed.js';
 
 export default function ueSubscriptionSeed(
   prisma: PrismaClient,

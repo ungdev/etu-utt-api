@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { PrismaService } from '@/prisma/prisma.service';
-import { ConfigService } from '@/config/config.service';
-import { RequestAuthData } from '@/auth/interfaces/request-auth-data.interface';
-import { PermissionManager } from '@/utils';
-import { UserPermission } from '@/auth/interfaces/permissions.interface';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { ConfigService } from '@/config/config.service.js';
+import { RequestAuthData } from '@/auth/interfaces/request-auth-data.interface.js';
+import { PermissionManager } from '@/utils.js';
+import { UserPermission } from '@/auth/interfaces/permissions.interface.js';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {

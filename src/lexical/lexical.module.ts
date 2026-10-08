@@ -9,8 +9,8 @@ import { CodeHighlightNode, CodeNode } from '@lexical/code';
 import { TableCellNode, TableNode, TableRowNode } from '@lexical/table';
 import { ListItemNode, ListNode } from '@lexical/list';
 import { HorizontalRuleNode } from '@lexical/extension';
-import { ColorTextNode, ImageNode, RegisteredStyleMap } from '@/lexical/nodes';
-import { patchNodeExportDOM } from '@/lexical/nodes/NodeStyleInjector';
+import { ColorTextNode, ImageNode, RegisteredStyleMap } from '@/lexical/nodes/index.js';
+import { patchNodeExportDOM } from '@/lexical/nodes/NodeStyleInjector.js';
 
 /** @internal */
 export const BUNDLES = {

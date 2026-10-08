@@ -1,24 +1,24 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Response } from '@nestjs/common';
-import { AnnalsService } from '@/ue/annals/annals.service';
-import { UeService } from '@/ue/ue.service';
+import { AnnalsService } from '@/ue/annals/annals.service.js';
+import { UeService } from '@/ue/ue.service.js';
 import type { Response as ExpressResponse } from 'express';
-import { UUIDParam } from '@/app.pipe';
-import { GetUser, RequireApiPermission } from '@/auth/decorator';
-import { AppException, ERROR_CODE } from '@/exceptions';
-import { FileSize, MulterWithMime, UploadRoute, UserFile } from '@/upload.interceptor';
-import { CommentStatus } from '@/ue/comments/interfaces/comment.interface';
-import { CreateAnnalReqDto } from '@/ue/annals/dto/req/create-annal-req.dto';
-import { UpdateAnnalReqDto } from '@/ue/annals/dto/req/update-annal-req.dto';
-import { User } from '@/users/interfaces/user.interface';
-import { GetFromUeReqDto } from '@/ue/annals/dto/req/get-from-ue-req.dto';
-import UploadAnnalReqDto from '@/ue/annals/dto/req/upload-annal-req.dto';
+import { UUIDParam } from '@/app.pipe.js';
+import { GetUser, RequireApiPermission } from '@/auth/decorator/index.js';
+import { AppException, ERROR_CODE } from '@/exceptions.js';
+import { FileSize, MulterWithMime, UploadRoute, UserFile } from '@/upload.interceptor.js';
+import { CommentStatus } from '@/ue/comments/interfaces/comment.interface.js';
+import { CreateAnnalReqDto } from '@/ue/annals/dto/req/create-annal-req.dto.js';
+import { UpdateAnnalReqDto } from '@/ue/annals/dto/req/update-annal-req.dto.js';
+import { User } from '@/users/interfaces/user.interface.js';
+import { GetFromUeReqDto } from '@/ue/annals/dto/req/get-from-ue-req.dto.js';
+import { UploadAnnalReqDto } from '@/ue/annals/dto/req/upload-annal-req.dto.js';
 import { ApiBody, ApiConsumes, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ApiAppErrorResponse } from '@/app.dto';
-import UeAnnalResDto from '@/ue/annals/dto/res/ue-annal-res.dto';
-import UeAnnalMetadataResDto from '@/ue/annals/dto/res/ue-annal-metadata-res.dto';
-import { GetPermissions } from '@/auth/decorator/get-permissions.decorator';
-import { Permission } from '@/prisma/types';
-import { PermissionManager, omit } from '@/utils';
+import { ApiAppErrorResponse } from '@/app.dto.js';
+import { UeAnnalResDto } from '@/ue/annals/dto/res/ue-annal-res.dto.js';
+import { UeAnnalMetadataResDto } from '@/ue/annals/dto/res/ue-annal-metadata-res.dto.js';
+import { GetPermissions } from '@/auth/decorator/get-permissions.decorator.js';
+import { Permission } from '@/prisma/types.js';
+import { PermissionManager, omit } from '@/utils.js';
 
 @Controller('ue/annals')
 @ApiTags('Annal')

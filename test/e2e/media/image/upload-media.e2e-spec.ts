@@ -1,10 +1,10 @@
-import { ImageMediaPreset } from '@/prisma/types';
+import { ImageMediaPreset } from '@/prisma/types.js';
 import { mkdirSync, rmSync } from 'fs';
-import { ERROR_CODE } from '@/exceptions';
-import { createUser } from '#/utils/fakedb';
-import { JsonLike, e2eSuite } from '#/utils/test_utils';
-import { ConfigService } from '@/config/config.service';
-import { PermissionManager } from '@/utils';
+import { ERROR_CODE } from '@/exceptions.js';
+import { createUser } from '#/utils/fakedb.js';
+import { JsonLike, e2eSuite } from '#/utils/test_utils.js';
+import { ConfigService } from '@/config/config.service.js';
+import { PermissionManager } from '@/utils.js';
 import * as pactum from 'pactum';
 import { afterAll, beforeAll, describe, it } from 'vitest';
 

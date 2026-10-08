@@ -1,4 +1,4 @@
-export default class AssoMembershipResDto {
+export class AssoMembershipResDto {
   id: string;
   roleId: string;
   userId: string;

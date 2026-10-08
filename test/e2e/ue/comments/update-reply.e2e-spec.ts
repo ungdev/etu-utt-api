@@ -7,13 +7,13 @@ import {
   createUe,
   createUeof,
   createUser,
-} from '#/utils/fakedb';
+} from '#/utils/fakedb.js';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '@/exceptions';
-import { Dummies, JsonLike, e2eSuite } from '#/utils/test_utils';
-import { PrismaService } from '@/prisma/prisma.service';
-import { CommentStatus } from '@/ue/comments/interfaces/comment.interface';
-import { PermissionManager } from '@/utils';
+import { ERROR_CODE } from '@/exceptions.js';
+import { Dummies, JsonLike, e2eSuite } from '#/utils/test_utils.js';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { CommentStatus } from '@/ue/comments/interfaces/comment.interface.js';
+import { PermissionManager } from '@/utils.js';
 import { it } from 'vitest';
 
 const UpdateCommentReply = e2eSuite('PATCH /ue/comments/reply/{replyId}', (app) => {

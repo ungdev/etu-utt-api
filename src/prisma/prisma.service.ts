@@ -1,21 +1,21 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { PrismaMariaDb } from '@prisma/adapter-mariadb';
-import { PrismaClient } from '@/prisma/types';
-import { ConfigService } from '@/config/config.service';
-import { generateCustomUserModel } from '@/users/interfaces/user.interface';
-import { omit } from '@/utils';
-import { generateCustomCommentModel } from '@/ue/comments/interfaces/comment.interface';
-import { generateCustomCriterionModel } from '@/ue/interfaces/criterion.interface';
-import { generateCustomRateModel } from '@/ue/interfaces/rate.interface';
-import { generateCustomUeModel } from '@/ue/interfaces/ue.interface';
-import { generateCustomUeAnnalModel } from '@/ue/annals/interfaces/annal.interface';
-import { generateCustomUeCommentReplyModel } from '@/ue/comments/interfaces/comment-reply.interface';
-import { generateCustomAssoModel } from '@/assos/interfaces/asso.interface';
-import { generateCustomAssoMembershipModel } from '@/assos/interfaces/membership.interface';
-import { generateCustomAssoMembershipRoleModel } from '@/assos/interfaces/membership-role.interface';
-import { generateCustomCreditCategoryModel } from '@/ue/credit/interfaces/credit-category.interface';
-import { generateCustomApplicationModel } from '@/auth/application/interfaces/application.interface';
-import { generateCustomAssoWeeklyModel } from '@/assos/interfaces/weekly.interface';
+import { PrismaClient } from '@/prisma/types.js';
+import { ConfigService } from '@/config/config.service.js';
+import { generateCustomUserModel } from '@/users/interfaces/user.interface.js';
+import { omit } from '@/utils.js';
+import { generateCustomCommentModel } from '@/ue/comments/interfaces/comment.interface.js';
+import { generateCustomCriterionModel } from '@/ue/interfaces/criterion.interface.js';
+import { generateCustomRateModel } from '@/ue/interfaces/rate.interface.js';
+import { generateCustomUeModel } from '@/ue/interfaces/ue.interface.js';
+import { generateCustomUeAnnalModel } from '@/ue/annals/interfaces/annal.interface.js';
+import { generateCustomUeCommentReplyModel } from '@/ue/comments/interfaces/comment-reply.interface.js';
+import { generateCustomAssoModel } from '@/assos/interfaces/asso.interface.js';
+import { generateCustomAssoMembershipModel } from '@/assos/interfaces/membership.interface.js';
+import { generateCustomAssoMembershipRoleModel } from '@/assos/interfaces/membership-role.interface.js';
+import { generateCustomCreditCategoryModel } from '@/ue/credit/interfaces/credit-category.interface.js';
+import { generateCustomApplicationModel } from '@/auth/application/interfaces/application.interface.js';
+import { generateCustomAssoWeeklyModel } from '@/assos/interfaces/weekly.interface.js';
 
 @Injectable()
 export class PrismaService extends PrismaClient<ReturnType<typeof prismaOptions>> implements OnModuleDestroy {

@@ -1,7 +1,7 @@
-import { Prisma, PrismaClient } from '@/prisma/types';
-import { omit } from '@/utils';
-import { CommentStatus } from '@/ue/comments/interfaces/comment.interface';
-import { generateCustomModel } from '@/prisma/prisma.service';
+import { Prisma, PrismaClient } from '@/prisma/types.js';
+import { omit } from '@/utils.js';
+import { CommentStatus } from '@/ue/comments/interfaces/comment.interface.js';
+import { generateCustomModel } from '@/prisma/prisma.service.js';
 
 const UE_ANNAL_SELECT_FILTER = {
   select: {

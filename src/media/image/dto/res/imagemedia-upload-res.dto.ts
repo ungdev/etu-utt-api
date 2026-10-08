@@ -1,7 +1,7 @@
-import { ImageMediaPreset } from '@/prisma/types';
+import { ImageMediaPreset } from '@/prisma/types.js';
 import { ApiResponseProperty } from '@nestjs/swagger';
 
-export default class ImageMediaUploadResDto {
+export class ImageMediaUploadResDto {
   @ApiResponseProperty({ format: 'uuid' })
   id: string;
   @ApiResponseProperty({ example: 256 })

@@ -7,11 +7,11 @@ import {
   createUeRating,
   createUeof,
   createUser,
-} from '#/utils/fakedb';
+} from '#/utils/fakedb.js';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '@/exceptions';
-import { e2eSuite } from '#/utils/test_utils';
-import { PermissionManager } from '@/utils';
+import { ERROR_CODE } from '@/exceptions.js';
+import { e2eSuite } from '#/utils/test_utils.js';
+import { PermissionManager } from '@/utils.js';
 import { it } from 'vitest';
 
 const GetRateE2ESpec = e2eSuite('GET /ue/:ueCode/rate', (app) => {

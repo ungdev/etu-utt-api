@@ -1,9 +1,9 @@
-import { e2eSuite } from '#/utils/test_utils';
+import { e2eSuite } from '#/utils/test_utils.js';
 import * as pactum from 'pactum';
-import * as fakedb from '#/utils/fakedb';
-import { ERROR_CODE } from '@/exceptions';
-import { Permission } from '@/prisma/types';
-import { PermissionManager } from '@/utils';
+import * as fakedb from '#/utils/fakedb.js';
+import { ERROR_CODE } from '@/exceptions.js';
+import { Permission } from '@/prisma/types.js';
+import { PermissionManager } from '@/utils.js';
 import { it } from 'vitest';
 
 const GetPermissionsE2ESpec = e2eSuite('GET /auth/permissions/:apiKey', (app) => {

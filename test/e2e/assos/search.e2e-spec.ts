@@ -1,8 +1,8 @@
-import { FakeAsso, createAsso } from '#/utils/fakedb';
+import { FakeAsso, createAsso } from '#/utils/fakedb.js';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '@/exceptions';
-import { e2eSuite } from '#/utils/test_utils';
-import { ConfigService } from '@/config/config.service';
+import { ERROR_CODE } from '@/exceptions.js';
+import { e2eSuite } from '#/utils/test_utils.js';
+import { ConfigService } from '@/config/config.service.js';
 import { beforeAll, it } from 'vitest';
 
 const SearchE2ESpec = e2eSuite('GET /assos', (app) => {

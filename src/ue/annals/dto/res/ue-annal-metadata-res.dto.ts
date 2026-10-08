@@ -1,6 +1,6 @@
-import UeAnnalTypeResDto from '@/ue/annals/dto/res/ue-annal-type-res.dto';
+import { UeAnnalTypeResDto } from '@/ue/annals/dto/res/ue-annal-type-res.dto.js';
 
-export default class UeAnnalMetadataResDto {
+export class UeAnnalMetadataResDto {
   types: UeAnnalTypeResDto[];
   semesters: string[];
 }

@@ -1,33 +1,38 @@
 import { Body, Controller, Delete, Get, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ApiAppErrorResponse, paginatedResponseDto } from '@/app.dto';
-import { AssoMembershipRole } from '@/assos/interfaces/membership-role.interface';
-import { ImageMediaService } from '@/media/image/imagemedia.service';
-import { AssoMembership } from '@/assos/interfaces/membership.interface';
-import { ParamAsso } from '@/assos/decorator/get-asso';
-import { GetUser, IsPublic } from '@/auth/decorator';
-import { AssosService } from '@/assos/assos.service';
-import { AppException, ERROR_CODE } from '@/exceptions';
-import { ParamMember } from '@/assos/decorator/get-member';
-import { Asso } from '@/assos/interfaces/asso.interface';
-import { User } from '@/users/interfaces/user.interface';
-import { pick } from '@/utils';
-import { UUIDParam } from '@/app.pipe';
-import AssosSearchReqDto from '@/assos/dto/req/assos-search-req.dto';
-import AssoOverviewResDto from '@/assos/dto/res/asso-overview-res.dto';
-import AssoDetailResDto from '@/assos/dto/res/asso-detail-res.dto';
-import AssoMembersResDto from '@/assos/dto/res/asso-members-res.dto';
-import AssosRoleCreateReqDto from '@/assos/dto/req/assos-role-create.dto';
-import AssoRoleOverviewResDto, { AssoRole, AssoRoleListResDto, AssoRoleResDto } from '@/assos/dto/res/assos-role-res.dto';
-import AssosRoleUpdateReqDto from '@/assos/dto/req/assos-role-update.dto';
-import AssosMemberCreateReqDto from '@/assos/dto/req/assos-member-create.dto';
-import AssosMemberUpdateReqDto from '@/assos/dto/req/assos-member-update.dto';
-import AssoMembershipResDto from '@/assos/dto/res/assos-membership-res.dto';
-import UsersService from '@/users/users.service';
-import { ConfigService } from '@/config/config.service';
-import AssosUpdateReqDto from '@/assos/dto/req/assos-update-req.dto';
-import { ImageMediaPreset } from '@/prisma/types';
-import { LexicalModule } from '@/lexical/lexical.module';
+import { ApiAppErrorResponse, paginatedResponseDto } from '@/app.dto.js';
+import { AssoMembershipRole } from '@/assos/interfaces/membership-role.interface.js';
+import { ImageMediaService } from '@/media/image/imagemedia.service.js';
+import { AssoMembership } from '@/assos/interfaces/membership.interface.js';
+import { ParamAsso } from '@/assos/decorator/get-asso.js';
+import { GetUser, IsPublic } from '@/auth/decorator/index.js';
+import { AssosService } from '@/assos/assos.service.js';
+import { AppException, ERROR_CODE } from '@/exceptions.js';
+import { ParamMember } from '@/assos/decorator/get-member.js';
+import { Asso } from '@/assos/interfaces/asso.interface.js';
+import { User } from '@/users/interfaces/user.interface.js';
+import { pick } from '@/utils.js';
+import { UUIDParam } from '@/app.pipe.js';
+import { AssosSearchReqDto } from '@/assos/dto/req/assos-search-req.dto.js';
+import { AssoOverviewResDto } from '@/assos/dto/res/asso-overview-res.dto.js';
+import { AssoDetailResDto } from '@/assos/dto/res/asso-detail-res.dto.js';
+import { AssoMembersResDto } from '@/assos/dto/res/asso-members-res.dto.js';
+import { AssosRoleCreateReqDto } from '@/assos/dto/req/assos-role-create.dto.js';
+import {
+  AssoRoleOverviewResDto,
+  AssoRole,
+  AssoRoleListResDto,
+  AssoRoleResDto,
+} from '@/assos/dto/res/assos-role-res.dto.js';
+import { AssosRoleUpdateReqDto } from '@/assos/dto/req/assos-role-update.dto.js';
+import { AssosMemberCreateReqDto } from '@/assos/dto/req/assos-member-create.dto.js';
+import { AssosMemberUpdateReqDto } from '@/assos/dto/req/assos-member-update.dto.js';
+import { AssoMembershipResDto } from '@/assos/dto/res/assos-membership-res.dto.js';
+import { UsersService } from '@/users/users.service.js';
+import { ConfigService } from '@/config/config.service.js';
+import { AssosUpdateReqDto } from '@/assos/dto/req/assos-update-req.dto.js';
+import { ImageMediaPreset } from '@/prisma/types.js';
+import { LexicalModule } from '@/lexical/lexical.module.js';
 
 @Controller('assos')
 @ApiTags('Assos')

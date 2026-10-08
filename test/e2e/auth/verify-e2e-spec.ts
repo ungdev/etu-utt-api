@@ -1,7 +1,7 @@
 import * as pactum from 'pactum';
-import { e2eSuite } from '#/utils/test_utils';
-import { AuthService } from '@/auth/auth.service';
-import { ERROR_CODE } from '@/exceptions';
+import { e2eSuite } from '#/utils/test_utils.js';
+import { AuthService } from '@/auth/auth.service.js';
+import { ERROR_CODE } from '@/exceptions.js';
 import { it } from 'vitest';
 
 const VerifyE2ESpec = e2eSuite('GET /auth/signin', (app) => {

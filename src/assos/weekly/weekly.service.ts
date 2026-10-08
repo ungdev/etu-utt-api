@@ -1,22 +1,34 @@
 import { Injectable } from '@nestjs/common';
-import { AssoWeekly } from '@/assos/interfaces/weekly.interface';
-import { Prisma } from '@/prisma/build/client';
-import { Translation } from '@/prisma/types';
-import WeeklyResDto from '@/assos/weekly/dto/res/weekly-res.dto';
-import { PrismaService } from '@/prisma/prisma.service';
-import { ConfigService } from '@/config/config.service';
+import { AssoWeekly } from '@/assos/interfaces/weekly.interface.js';
+import { Prisma } from '@/prisma/build/client.js';
+import { Translation } from '@/prisma/types.js';
+import { WeeklyResDto } from '@/assos/weekly/dto/res/weekly-res.dto.js';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { ConfigService } from '@/config/config.service.js';
 
 @Injectable()
-export default class WeeklyService {
-  constructor(readonly prisma: PrismaService, readonly config: ConfigService) {}
+export class WeeklyService {
+  constructor(
+    readonly prisma: PrismaService,
+    readonly config: ConfigService,
+  ) {}
 
-  async searchWeeklies(assoId: string, from: Date, to: Date, page: number): Promise<{ weeklies: AssoWeekly[], count: number }> {
+  async searchWeeklies(
+    assoId: string,
+    from: Date,
+    to: Date,
+    page: number,
+  ): Promise<{ weeklies: AssoWeekly[]; count: number }> {
     const where = {
       assoId,
       date: { gte: from, lte: to },
     } satisfies Prisma.AssoWeeklyWhereInput;
     const count = await this.prisma.assoWeekly.count({ where });
-    const weeklies = await this.prisma.normalize.assoWeekly.findMany({ where, skip: (page - 1) * this.config.PAGINATION_PAGE_SIZE, take: this.config.PAGINATION_PAGE_SIZE });
+    const weeklies = await this.prisma.normalize.assoWeekly.findMany({
+      where,
+      skip: (page - 1) * this.config.PAGINATION_PAGE_SIZE,
+      take: this.config.PAGINATION_PAGE_SIZE,
+    });
     return { weeklies, count };
   }
 
@@ -27,7 +39,7 @@ export default class WeeklyService {
         titleTranslation: { create: title },
         bodyTranslation: { create: message },
         date,
-      }
+      },
     });
   }
 
@@ -39,8 +51,8 @@ export default class WeeklyService {
         sendWeek.getUTCDate() + this.config.WEEKLY_SEND_DAY,
         this.config.WEEKLY_SEND_HOUR,
         0,
-        -Date.getTimezoneOffset('Europe/Paris')
-      )
+        -Date.getTimezoneOffset('Europe/Paris'),
+      ),
     );
   }
 
@@ -49,23 +61,28 @@ export default class WeeklyService {
   }
 
   async hasWeekly(assoId: string, date: Date, exclude: string = undefined): Promise<boolean> {
-    return (await this.prisma.assoWeekly.count({
-      where: {
-        assoId,
-        date,
-        ...(exclude ? { id: { not: exclude } } : {})
-      }
-    })) > 0;
+    return (
+      (await this.prisma.assoWeekly.count({
+        where: {
+          assoId,
+          date,
+          ...(exclude ? { id: { not: exclude } } : {}),
+        },
+      })) > 0
+    );
   }
 
-  async updateWeekly(weeklyId: string, fields: { title: Translation, message: Translation, date: Date }): Promise<AssoWeekly> {
+  async updateWeekly(
+    weeklyId: string,
+    fields: { title: Translation; message: Translation; date: Date },
+  ): Promise<AssoWeekly> {
     return this.prisma.normalize.assoWeekly.update({
       where: { id: weeklyId },
       data: {
         titleTranslation: { update: fields.title },
         bodyTranslation: { update: fields.message },
         date: fields.date,
-      }
+      },
     });
   }
 

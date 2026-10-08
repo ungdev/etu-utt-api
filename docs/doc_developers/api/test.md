@@ -110,7 +110,7 @@ de `FakeEntityMap`, voir plus bas). Les valeurs de cet objet sont des noms de co
 je veux générer le nom d’un semestre, je peux faire :
 
 ```ts
-import faker from '@/faker-js/faker';
+import faker from '@/faker-js/faker.js';
 
 const semestre: string = faker.db.semester.code();
 ```
@@ -288,9 +288,7 @@ const createBranchOption = <OnTheFly extends boolean = false>(
     } as Params<'branchOption'>;
     // Création de l'entité
     const entity = await app().get(PrismaService).uTTBranchOption.create({
-      data: {
-        /* Paramètres de création */
-      },
+      data: {/* Paramètres de création */},
     });
     // On injecte la valeur en entity dans lazyEntity, de manière à modifier la valeur de la référence
     // Si on avait directement fait lazyEntity = entity, on aurait modifié la valeur pointée par la variable
@@ -322,9 +320,7 @@ export const createBranchOption = entityFaker(
   },
   async (app, dependencies, params) =>
     app().get(PrismaService).uTTBranchOption.create({
-      data: {
-        /* Paramètres de création */
-      },
+      data: {/* Paramètres de création */},
     }),
 );
 ```

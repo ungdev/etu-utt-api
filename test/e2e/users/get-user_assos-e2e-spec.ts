@@ -1,9 +1,9 @@
-import { e2eSuite } from '#/utils/test_utils';
-import { createAsso, createAssoMembership, createAssoMembershipRole, createUser } from '#/utils/fakedb';
+import { e2eSuite } from '#/utils/test_utils.js';
+import { createAsso, createAssoMembership, createAssoMembershipRole, createUser } from '#/utils/fakedb.js';
 import * as pactum from 'pactum';
-import { PrismaService } from '@/prisma/prisma.service';
-import { omit } from '@/utils';
-import { ERROR_CODE } from '@/exceptions';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { omit } from '@/utils.js';
+import { ERROR_CODE } from '@/exceptions.js';
 import { it } from 'vitest';
 
 const GetUserAssociationE2ESpec = e2eSuite('GET /users/:userId/associations', (app) => {

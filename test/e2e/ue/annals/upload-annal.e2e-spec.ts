@@ -8,12 +8,12 @@ import {
   createUeSubscription,
   createUeof,
   createUser,
-} from '#/utils/fakedb';
-import { JsonLike, e2eSuite } from '#/utils/test_utils';
-import { ERROR_CODE } from '@/exceptions';
-import { ConfigService } from '@/config/config.service';
-import { CommentStatus } from '@/ue/comments/interfaces/comment.interface';
-import { PermissionManager, pick } from '@/utils';
+} from '#/utils/fakedb.js';
+import { JsonLike, e2eSuite } from '#/utils/test_utils.js';
+import { ERROR_CODE } from '@/exceptions.js';
+import { ConfigService } from '@/config/config.service.js';
+import { CommentStatus } from '@/ue/comments/interfaces/comment.interface.js';
+import { PermissionManager, pick } from '@/utils.js';
 import { mkdirSync, rmSync } from 'fs';
 import { afterAll, beforeAll, describe, it } from 'vitest';
 

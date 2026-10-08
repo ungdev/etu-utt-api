@@ -1,9 +1,9 @@
-import { unitSuite } from '#/utils/test_utils';
-import { BUNDLES, LexicalModule } from '@/lexical/lexical.module';
+import { unitSuite } from '#/utils/test_utils.js';
+import { BUNDLES, LexicalModule } from '@/lexical/lexical.module.js';
 import { createHeadlessEditor } from '@lexical/headless';
 import { $createParagraphNode, $createTextNode, $getRoot, LexicalEditor } from 'lexical';
-import { $createImageNode } from '@/lexical/nodes/ImageNode';
-import { $createColorTextNode, Color } from '@/lexical/nodes/ColorTextNode';
+import { $createImageNode } from '@/lexical/nodes/ImageNode.js';
+import { $createColorTextNode, Color } from '@/lexical/nodes/ColorTextNode.js';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 const LexicalGenerationUnitSpec = unitSuite('Lexical generation', (app) => {

@@ -8,11 +8,11 @@ import {
   createUeSubscription,
   createUeof,
   createUser,
-} from '#/utils/fakedb';
-import { e2eSuite } from '#/utils/test_utils';
-import { ERROR_CODE } from '@/exceptions';
-import { Permission } from '@/prisma/types';
-import { PermissionManager } from '@/utils';
+} from '#/utils/fakedb.js';
+import { e2eSuite } from '#/utils/test_utils.js';
+import { ERROR_CODE } from '@/exceptions.js';
+import { Permission } from '@/prisma/types.js';
+import { PermissionManager } from '@/utils.js';
 import { it } from 'vitest';
 
 const GetAnnalMetadata = e2eSuite('GET /ue/annals/metadata', (app) => {

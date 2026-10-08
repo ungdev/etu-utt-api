@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma , RawAssoMembershipRole } from '@/prisma/types';
-import { ConfigService } from '@/config/config.service';
-import { PrismaService } from '@/prisma/prisma.service';
-import { Asso } from '@/assos/interfaces/asso.interface';
-import { AssoMembership } from '@/assos/interfaces/membership.interface';
-import { AssoMembershipRole } from '@/assos/interfaces/membership-role.interface';
-import AssosSearchReqDto from '@/assos/dto/req/assos-search-req.dto';
-import AssosMemberUpdateReqDto from '@/assos/dto/req/assos-member-update.dto';
-import { AppException, ERROR_CODE } from '@/exceptions';
-import AssosUpdateReqDto from '@/assos/dto/req/assos-update-req.dto';
+import { Prisma, RawAssoMembershipRole } from '@/prisma/types.js';
+import { ConfigService } from '@/config/config.service.js';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { Asso } from '@/assos/interfaces/asso.interface.js';
+import { AssoMembership } from '@/assos/interfaces/membership.interface.js';
+import { AssoMembershipRole } from '@/assos/interfaces/membership-role.interface.js';
+import { AssosSearchReqDto } from '@/assos/dto/req/assos-search-req.dto.js';
+import { AssosMemberUpdateReqDto } from '@/assos/dto/req/assos-member-update.dto.js';
+import { AppException, ERROR_CODE } from '@/exceptions.js';
+import { AssosUpdateReqDto } from '@/assos/dto/req/assos-update-req.dto.js';
 
 @Injectable()
 export class AssosService {
@@ -123,12 +123,14 @@ export class AssosService {
               data: { descriptionForAssos: { disconnect: { id: assoId } } },
             }),
           ),
-          ...additions.filter((x) => existingAdditionIds.includes(x)).map((id) =>
-            this.prisma.imageMedia.update({
-              where: { id },
-              data: { descriptionForAssos: { connect: { id: assoId } } },
-            }),
-          ),
+          ...additions
+            .filter((x) => existingAdditionIds.includes(x))
+            .map((id) =>
+              this.prisma.imageMedia.update({
+                where: { id },
+                data: { descriptionForAssos: { connect: { id: assoId } } },
+              }),
+            ),
         ]);
     }
     return updated;

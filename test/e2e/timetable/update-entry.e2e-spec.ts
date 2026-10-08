@@ -1,11 +1,11 @@
-import { Dummies, e2eSuite } from '#/utils/test_utils';
-import * as fakedb from '#/utils/fakedb';
+import { Dummies, e2eSuite } from '#/utils/test_utils.js';
+import * as fakedb from '#/utils/fakedb.js';
 import * as pactum from 'pactum';
 import { uuid } from 'pactum-matchers';
 import { faker } from '@faker-js/faker';
-import { PrismaService } from '@/prisma/prisma.service';
-import TimetableUpdateEntryReqDto from '@/timetable/dto/req/timetable-update-entry-req.dto';
-import { ERROR_CODE } from '@/exceptions';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import TimetableUpdateEntryReqDto from '@/timetable/dto/req/timetable-update-entry-req.dto.js';
+import { ERROR_CODE } from '@/exceptions.js';
 import { it } from 'vitest';
 
 const UpdateEntryE2ESpec = e2eSuite('PATCH /timetable/current/:entryId', (app) => {

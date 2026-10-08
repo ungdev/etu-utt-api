@@ -1,12 +1,12 @@
 import { ReadStream, createReadStream } from 'fs';
 import { rm, writeFile } from 'fs/promises';
 import { Injectable } from '@nestjs/common';
-import { ImageMediaPreset, RawImageMedia } from '@/prisma/types';
-import { ConfigService, isTestEnv } from '@/config/config.service';
-import { PrismaService } from '@/prisma/prisma.service';
-import { MulterWithMime } from '@/upload.interceptor';
-import { User } from '@/users/interfaces/user.interface';
-import ImageMediaUploadReqDto from '@/media/image/dto/req/imagemedia-upload-req.dto';
+import { ImageMediaPreset, RawImageMedia } from '@/prisma/types.js';
+import { ConfigService, isTestEnv } from '@/config/config.service.js';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { MulterWithMime } from '@/upload.interceptor.js';
+import { User } from '@/users/interfaces/user.interface.js';
+import { ImageMediaUploadReqDto } from '@/media/image/dto/req/imagemedia-upload-req.dto.js';
 import sharp from 'sharp';
 
 export type ConversionOptions = Omit<ImageMediaUploadReqDto, 'public'>;
