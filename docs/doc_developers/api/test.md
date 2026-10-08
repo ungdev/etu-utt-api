@@ -110,7 +110,7 @@ de `FakeEntityMap`, voir plus bas). Les valeurs de cet objet sont des noms de co
 je veux générer le nom d’un semestre, je peux faire :
 
 ```ts
-import faker from '@/faker-js/faker.js';
+import faker from '@/faker-js/faker';
 
 const semestre: string = faker.db.semester.code();
 ```
