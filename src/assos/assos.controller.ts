@@ -32,7 +32,7 @@ import { UsersService } from '@/users/users.service.js';
 import { ConfigService } from '@/config/config.service.js';
 import { AssosUpdateReqDto } from '@/assos/dto/req/assos-update-req.dto.js';
 import { ImageMediaPreset } from '@/prisma/types.js';
-import { LexicalModule } from '@/lexical/lexical.module.js';
+import { isValidLexicalContent } from '@ungdev/rich-turbo-editor';
 
 @Controller('assos')
 @ApiTags('Assos')
@@ -42,7 +42,6 @@ export class AssosController {
     readonly userService: UsersService,
     readonly config: ConfigService,
     readonly mediaService: ImageMediaService,
-    readonly lexicalModule: LexicalModule,
   ) {}
 
   @Get()
@@ -90,7 +89,7 @@ export class AssosController {
     if (!(await this.assosService.hasSomeAssoPermission(asso, user.id, 'manage_infos')))
       throw new AppException(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, 'manage_infos');
     for (const key in body.description)
-      if (body.description[key] && !this.lexicalModule.isValidLexicalContent(body.description[key]))
+      if (body.description[key] && !isValidLexicalContent(body.description[key]))
         throw new AppException(ERROR_CODE.PARAM_LEXICAL_ILLEGAL, `description.${key}`);
     if (body.logo) {
       const media = await this.mediaService.getMedia(body.logo);

@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { AssosController } from '@/assos/assos.controller.js';
 import { AssosService } from '@/assos/assos.service.js';
 import { ImageMediaModule } from '@/media/image/imagemedia.module.js';
-import { LexicalModule } from '@/lexical/lexical.module.js';
 import { UsersService } from '@/users/users.service.js';
 import { WeeklyWithoutAssoIdController } from '@/assos/weekly/weekly-without-asso-id.controller.js';
 import { WeeklyWithAssoIdController } from '@/assos/weekly/weekly-with-asso-id.controller.js';
@@ -15,6 +14,6 @@ import { WeeklyService } from '@/assos/weekly/weekly.service.js';
 @Module({
   controllers: [AssosController, WeeklyWithoutAssoIdController, WeeklyWithAssoIdController],
   providers: [AssosService, WeeklyService, UsersService],
-  imports: [ImageMediaModule, LexicalModule],
+  imports: [ImageMediaModule],
 })
 export class AssosModule {}

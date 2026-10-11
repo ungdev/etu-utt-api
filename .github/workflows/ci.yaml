@@ -24,7 +24,11 @@ jobs:
           package-manager-cache: false
           node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
-      - run: pnpm install --frozen-lockfile
+      - name: Logging to registry
+        run: pnpm config set "//npm.pkg.github.com/:_authToken" $NODE_AUTH_TOKEN
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: pnpm install --no-optional --frozen-lockfile
       - run: pnpm prisma generate
       - run: pnpm lint
 
@@ -47,7 +51,11 @@ jobs:
           package-manager-cache: false
           node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
-      - run: pnpm install --frozen-lockfile
+      - name: Logging to registry
+        run: pnpm config set "//npm.pkg.github.com/:_authToken" $NODE_AUTH_TOKEN
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: pnpm install --no-optional --frozen-lockfile
       - run: pnpm prisma generate
       - run: pnpm build
 
@@ -116,7 +124,11 @@ jobs:
           package-manager-cache: false
           node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
-      - run: pnpm install --frozen-lockfile
+      - name: Logging to registry
+        run: pnpm config set "//npm.pkg.github.com/:_authToken" $NODE_AUTH_TOKEN
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: pnpm install --no-optional --frozen-lockfile
       - run: cp .env.test.dist .env.test
       - run: pnpm test:db:reset
       - run: pnpm test:cov
@@ -145,5 +157,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
+          build-args: |
+            NODE_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }}
           tags: |
             ${{ secrets.REGISTRY_URL }}/etuutt/api:${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}
