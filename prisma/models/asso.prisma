@@ -10,7 +10,6 @@ model Asso {
   deletedAt                     DateTime?
   descriptionShortTranslationId String?   @unique
   descriptionTranslationId      String?   @unique
-  assoAccountId                 String    @unique // User account of the asso
 
   logo                        ImageMedia?          @relation("logo", fields: [logoMediaId], references: [id], onDelete: SetNull)
   descriptionImages           ImageMedia[]         @relation("descriptionImages")
@@ -20,7 +19,32 @@ model Asso {
   weeklies                    AssoWeekly[]
   events                      Event[]
   assoMembershipRoles         AssoMembershipRole[]
-  assoAccount                 User                 @relation(fields: [assoAccountId], references: [id], onDelete: Cascade)
+}
+
+model AssoSympa {
+    id   String @id @default(uuid())
+    name String @unique @db.VarChar(100)
+    mail String @unique @db.VarChar(100)
+}
+
+model AssoAccessAttempt {
+  id                   String    @id @default(uuid())
+  createdAt            DateTime  @default(now())
+  userId               String
+  assoEmail            String    @db.VarChar(100)
+  action               String?   @db.VarChar(10)
+  accepted             Boolean
+  status               String    @default("REQUESTED") @db.VarChar(20)
+  reason               String?   @db.VarChar(100)
+  tokenId              String?   @unique @db.VarChar(36)
+  assoId               String?   @db.Char(36)
+  confirmedAt          DateTime?
+  confirmationReason   String?   @db.VarChar(100)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([assoEmail, createdAt])
 }
 
 model AssoMembership {

@@ -25,9 +25,16 @@ import AssosMemberUpdateReqDto from './dto/req/assos-member-update.dto';
 import AssoMembershipResDto from './dto/res/assos-membership-res.dto';
 import UsersService from '../users/users.service';
 import { ConfigService } from '../config/config.service';
+import { MailService } from '../mail/mail.service';
 import AssosUpdateReqDto from './dto/req/assos-update-req.dto';
+import AssosAccessRequestReqDto from './dto/req/assos-access-request.dto';
+import AssosAccessConfirmReqDto from './dto/req/assos-access-confirm.dto';
+import AssosAccessInfoResDto from './dto/res/assos-access-info-res.dto';
+import AssosAccessRequestResDto from './dto/res/assos-access-request-res.dto';
+import AssosAccessConfirmResDto from './dto/res/assos-access-confirm-res.dto';
 import { ImageMediaPreset } from '../prisma/types';
 import { LexicalModule } from '../lexical/lexical.module';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Controller('assos')
 @ApiTags('Assos')
@@ -36,9 +43,73 @@ export class AssosController {
     readonly assosService: AssosService,
     readonly userService: UsersService,
     readonly config: ConfigService,
+    readonly prisma: PrismaService,
     readonly mediaService: ImageMediaService,
     readonly lexicalModule: LexicalModule,
+    readonly mailService: MailService,
   ) {}
+
+  @Post('/access/request')
+  @ApiOperation({ description: 'Request a signed email validation link to create or claim an association access.' })
+  @ApiOkResponse({ type: AssosAccessRequestResDto })
+  async requestAssoAccess(@GetUser() user: User, @Body() body: AssosAccessRequestReqDto) {
+    const { action, token, email } = await this.assosService.requestAssoAccess(user, body.email);
+
+    const application = await this.prisma.apiApplication.findUnique({
+      where: { id: this.config.ETUUTT_WEBSITE_APPLICATION_ID },
+      select: { redirectUrl: true },
+    });
+    if (!application) throw new Error('The EtuUTT website application does not exist');
+    const link = new URL('/assos/access', application.redirectUrl);
+    link.searchParams.set('token', token);
+    await this.mailService.send(
+      email,
+      'Validation d’accès association',
+      undefined,
+      { action, email },
+      `Pour valider votre demande, utilisez ce lien : ${link}`,
+    );
+
+    return { action, email };
+  }
+
+  @Get('/access/info')
+  @ApiOperation({ description: 'Retrieve the currently valid association access action from a signed token.' })
+  @ApiOkResponse({ type: AssosAccessInfoResDto })
+  async getAssoAccessInfo(@GetUser() user: User, @Query('token') token: string): Promise<AssosAccessInfoResDto> {
+    const payload = this.assosService.decodeAssoAccessToken(token);
+    if (!payload) throw new AppException(ERROR_CODE.INVALID_ASSO_ACCESS_TOKEN);
+    if (payload.userId !== user.id) throw new AppException(ERROR_CODE.FORBIDDEN_ASSO_ACCESS);
+
+    return this.assosService.getAssoInfo(token);
+  }
+
+  @Post('/access/confirm')
+  @ApiOperation({ description: 'Confirm the association creation or claim flow using the signed validation token.' })
+  @ApiOkResponse({ type: AssosAccessConfirmResDto })
+  async confirmAssoAccess(
+    @GetUser() user: User,
+    @Body() body: AssosAccessConfirmReqDto,
+  ): Promise<AssosAccessConfirmResDto> {
+    const result = await this.assosService.confirmAssoAccess(user, body.token, body.name);
+    const actionLabel = result.action === 'CREATE' ? 'créée' : 'réclamée';
+    await this.mailService.send(
+      result.asso.mail,
+      `Association ${actionLabel} sur EtuUTT`,
+      undefined,
+      { action: result.action, asso: result.asso, user },
+      `Bonjour,\n\nL'association "${result.asso.name}" a été ${actionLabel} sur le site EtuUTT par ${user.firstName} ${user.lastName}.`,
+    );
+
+    return {
+      action: result.action,
+      asso: {
+        id: result.asso.id,
+        name: result.asso.name,
+        email: result.asso.mail,
+      },
+    };
+  }
 
   @Get()
   @IsPublic()

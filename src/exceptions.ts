@@ -61,6 +61,10 @@ export const enum ERROR_CODE {
   INVALID_CREDENTIALS = 3005,
   FORBIDDEN_INVALID_ROLE = 3006,
   INVALID_CAS_TICKET = 3007,
+  INVALID_ASSO_ACCESS_TOKEN = 3008,
+  EXPIRED_ASSO_ACCESS_TOKEN = 3009,
+  FORBIDDEN_ASSO_ACCESS = 3010,
+  NO_INSTITUTIONAL_EMAIL = 3011,
   FORBIDDEN_ALREADY_COMMENTED = 3101,
   FORBIDDEN_ALREADY_UPVOTED = 3102,
   FORBIDDEN_NOT_UPVOTED = 3103,
@@ -101,8 +105,11 @@ export const enum ERROR_CODE {
   RESOURCE_UNAVAILABLE = 4902,
   RESOURCE_INVALID_TYPE = 4903,
   ASSO_ROLE_ALREADY_MOVED = 4904,
+  ASSO_ACCESS_RATE_LIMIT = 4905,
+  ASSO_ACCESS_ALREADY_MANAGED = 4906,
   CREDENTIALS_ALREADY_TAKEN = 5001,
   SERVER_DISK_ERROR = 8001,
+  MAIL_SEND_FAILED = 8002,
   HIDDEN_DUCK = 9999,
 }
 
@@ -300,6 +307,22 @@ export const ErrorData = Object.freeze({
     message: 'The ticket is invalid',
     httpCode: HttpStatus.UNAUTHORIZED,
   },
+  [ERROR_CODE.INVALID_ASSO_ACCESS_TOKEN]: {
+    message: 'The association access token is invalid',
+    httpCode: HttpStatus.UNAUTHORIZED,
+  },
+  [ERROR_CODE.EXPIRED_ASSO_ACCESS_TOKEN]: {
+    message: 'The association access token has expired',
+    httpCode: HttpStatus.GONE,
+  },
+  [ERROR_CODE.FORBIDDEN_ASSO_ACCESS]: {
+    message: 'You are not allowed to use this association access request',
+    httpCode: HttpStatus.FORBIDDEN,
+  },
+  [ERROR_CODE.NO_INSTITUTIONAL_EMAIL]: {
+    message: 'No institutional email is available for the authenticated user',
+    httpCode: HttpStatus.FORBIDDEN,
+  },
   [ERROR_CODE.FORBIDDEN_ALREADY_COMMENTED]: {
     message: 'You have already posted a comment for this UE',
     httpCode: HttpStatus.FORBIDDEN,
@@ -464,8 +487,20 @@ export const ErrorData = Object.freeze({
     message: 'You should not try to update role position simultaneously',
     httpCode: HttpStatus.CONFLICT,
   },
+  [ERROR_CODE.ASSO_ACCESS_RATE_LIMIT]: {
+    message: 'Too many association access requests',
+    httpCode: HttpStatus.TOO_MANY_REQUESTS,
+  },
+  [ERROR_CODE.ASSO_ACCESS_ALREADY_MANAGED]: {
+    message: 'This association already has a manager',
+    httpCode: HttpStatus.CONFLICT,
+  },
   [ERROR_CODE.SERVER_DISK_ERROR]: {
     message: 'An error occurred while accessing the server disk',
+    httpCode: HttpStatus.SERVICE_UNAVAILABLE,
+  },
+  [ERROR_CODE.MAIL_SEND_FAILED]: {
+    message: 'Unable to send the validation email',
     httpCode: HttpStatus.SERVICE_UNAVAILABLE,
   },
   [ERROR_CODE.HIDDEN_DUCK]: {
@@ -551,7 +586,7 @@ const mappedErrors = {
   [constraint: string]: ERROR_CODE;
 };
 
-const errorsOnMultipleFields: string[] = ['hasEither']
+const errorsOnMultipleFields: string[] = ['hasEither'];
 
 export const validationExceptionFactory = (errors: ValidationError[]) => {
   // Map errors by constraint name
@@ -561,7 +596,9 @@ export const validationExceptionFactory = (errors: ValidationError[]) => {
       return validationExceptionFactory(error.children);
     }
     for (const constraint of Object.keys(error.constraints)) {
-      const field = errorsOnMultipleFields.includes(constraint as string) ? error.constraints[constraint] : error.property
+      const field = errorsOnMultipleFields.includes(constraint as string)
+        ? error.constraints[constraint]
+        : error.property;
       if (constraint in errorsByType) {
         errorsByType[constraint].push(field);
       } else {

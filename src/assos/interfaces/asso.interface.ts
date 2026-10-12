@@ -12,7 +12,6 @@ const ASSO_SELECT_FILTER = {
     logo: true,
     descriptionTranslation: translationSelect,
     descriptionShortTranslation: translationSelect,
-    assoAccountId: true,
   },
   orderBy: {
     name: 'asc',
