@@ -144,10 +144,6 @@ export class AssosService {
     let action: AssoAccessAction | undefined;
     let tokenId: string | undefined;
     try {
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(assoEmail)) {
-        throw new AppException(ERROR_CODE.PARAM_MALFORMED, 'email');
-      }
-
       this.checkRateLimit('asso', assoEmail, 3);
       this.checkRateLimit('user', user.id, 5);
 
