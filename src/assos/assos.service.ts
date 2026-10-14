@@ -10,7 +10,7 @@ import { AssoMembership } from './interfaces/membership.interface';
 import { AssoMembershipRole } from './interfaces/membership-role.interface';
 import { User } from '../users/interfaces/user.interface';
 import AssosSearchReqDto from './dto/req/assos-search-req.dto';
-import AssosMemberUpdateReqDto from './dto/req/assos-member-update.dto';
+import AssosMemberUpdateReqDto from './dto/req/assos-member-update-req.dto';
 import { AppException, ERROR_CODE } from '../exceptions';
 import AssosUpdateReqDto from './dto/req/assos-update-req.dto';
 
