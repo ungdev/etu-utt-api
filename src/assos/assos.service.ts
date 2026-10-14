@@ -131,13 +131,13 @@ export class AssosService {
     let action: AssoAccessAction | undefined;
     let tokenId: string | undefined;
     try {
-      this.checkRateLimit('asso', assoEmail, 3);
-      this.checkRateLimit('user', user.id, 5);
+      this.checkRateLimit('asso', assoEmail, this.config.ASSOS_MAX_CLAIMS_PER_ASSO);
+      this.checkRateLimit('user', user.id, this.config.ASSOS_MAX_CLAIMS_PER_USER);
 
       action = await this.getAssoAccessAction(assoEmail);
       const asso = await this.getAssoByEmail(assoEmail);
 
-      const expiresIn = 15 * 60;
+      const expiresIn = this.config.ASSOS_CLAIM_TOKEN_EXPIRATION;
       tokenId = randomUUID();
       const token = await this.jwt.signAsync(
         {
