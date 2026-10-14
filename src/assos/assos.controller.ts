@@ -49,10 +49,24 @@ export class AssosController {
     readonly mailService: MailService,
   ) {}
 
+  @Get('/access/info')
+  @ApiOperation({ description: 'Retrieve the currently valid association access action from a signed token.' })
+  @ApiOkResponse({ type: AssosAccessInfoResDto })
+  async getAssoAccessInfo(@GetUser() user: User, @Query('token') token: string): Promise<AssosAccessInfoResDto> {
+    const payload = this.assosService.decodeAssoAccessToken(token);
+    if (!payload) throw new AppException(ERROR_CODE.INVALID_ASSO_ACCESS_TOKEN);
+    if (payload.userId !== user.id) throw new AppException(ERROR_CODE.FORBIDDEN_ASSO_ACCESS);
+
+    return this.assosService.getAssoInfo(token);
+  }
+
   @Post('/access/request')
   @ApiOperation({ description: 'Request a signed email validation link to create or claim an association access.' })
   @ApiOkResponse({ type: AssosAccessRequestResDto })
-  async requestAssoAccess(@GetUser() user: User, @Body() body: AssosAccessRequestReqDto) {
+  async requestAssoAccess(
+    @GetUser() user: User,
+    @Body() body: AssosAccessRequestReqDto,
+  ): Promise<AssosAccessRequestResDto> {
     const { action, token, email } = await this.assosService.requestAssoAccess(user, body.email);
 
     const application = await this.prisma.apiApplication.findUnique({
@@ -71,17 +85,6 @@ export class AssosController {
     );
 
     return { action, email };
-  }
-
-  @Get('/access/info')
-  @ApiOperation({ description: 'Retrieve the currently valid association access action from a signed token.' })
-  @ApiOkResponse({ type: AssosAccessInfoResDto })
-  async getAssoAccessInfo(@GetUser() user: User, @Query('token') token: string): Promise<AssosAccessInfoResDto> {
-    const payload = this.assosService.decodeAssoAccessToken(token);
-    if (!payload) throw new AppException(ERROR_CODE.INVALID_ASSO_ACCESS_TOKEN);
-    if (payload.userId !== user.id) throw new AppException(ERROR_CODE.FORBIDDEN_ASSO_ACCESS);
-
-    return this.assosService.getAssoInfo(token);
   }
 
   @Post('/access/confirm')
