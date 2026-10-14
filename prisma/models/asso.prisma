@@ -34,7 +34,7 @@ model AssoAccessAttempt {
   assoEmail            String    @db.VarChar(100)
   action               String?   @db.VarChar(10)
   accepted             Boolean
-  status               String    @default("REQUESTED") @db.VarChar(20)
+  status               AssoAccessAttemptStatus    @default(REQUESTED)
   reason               String?   @db.VarChar(100)
   tokenId              String?   @unique @db.VarChar(36)
   assoId               String?   @db.Char(36)
@@ -129,4 +129,11 @@ model EventCategory {
   name String @unique @db.VarChar(100)
 
   events Event[]
+}
+
+enum AssoAccessAttemptStatus {
+  REQUESTED
+  REJECTED
+  CONFIRMED
+  CONFIRM_FAILED
 }

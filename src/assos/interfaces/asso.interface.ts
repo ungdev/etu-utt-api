@@ -45,3 +45,25 @@ export async function formatAsso(prisma: PrismaClient, asso: UnformattedAsso): P
     },
   };
 }
+
+export enum AssoAccessAction {
+  CREATE = 'CREATE',
+  CLAIM = 'CLAIM',
+}
+
+export enum AssoAccessAttemptStatus {
+  REQUESTED = 'REQUESTED',
+  REJECTED = 'REJECTED',
+  CONFIRMED = 'CONFIRMED',
+  CONFIRM_FAILED = 'CONFIRM_FAILED',
+}
+
+export type AssoAccessTokenData = {
+  userId: string;
+  assoEmail: string;
+  assoId?: string;
+  action: AssoAccessAction;
+  jti: string;
+  iat: number;
+  exp: number;
+};

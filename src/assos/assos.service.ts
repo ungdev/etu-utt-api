@@ -5,7 +5,7 @@ import { Prisma } from '../prisma/types';
 import { ConfigService } from '../config/config.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { RawAssoMembershipRole } from '../prisma/types';
-import { Asso } from './interfaces/asso.interface';
+import { Asso, AssoAccessAction, AssoAccessAttemptStatus, AssoAccessTokenData } from './interfaces/asso.interface';
 import { AssoMembership } from './interfaces/membership.interface';
 import { AssoMembershipRole } from './interfaces/membership-role.interface';
 import { User } from '../users/interfaces/user.interface';
@@ -13,19 +13,6 @@ import AssosSearchReqDto from './dto/req/assos-search-req.dto';
 import AssosMemberUpdateReqDto from './dto/req/assos-member-update.dto';
 import { AppException, ERROR_CODE } from '../exceptions';
 import AssosUpdateReqDto from './dto/req/assos-update-req.dto';
-
-export type AssoAccessAction = 'CREATE' | 'CLAIM';
-export type AssoAccessAttemptStatus = 'REQUESTED' | 'REJECTED' | 'CONFIRMED' | 'CONFIRM_FAILED';
-
-export type AssoAccessTokenData = {
-  userId: string;
-  assoEmail: string;
-  assoId?: string;
-  action: AssoAccessAction;
-  jti: string;
-  iat: number;
-  exp: number;
-};
 
 @Injectable()
 export class AssosService {
@@ -49,7 +36,7 @@ export class AssosService {
     action?: AssoAccessAction,
     reason?: string,
     tokenId?: string,
-    status: AssoAccessAttemptStatus = 'REQUESTED',
+    status: AssoAccessAttemptStatus = AssoAccessAttemptStatus.REQUESTED,
   ): Promise<void> {
     try {
       await this.prisma.assoAccessAttempt.create({
@@ -64,7 +51,7 @@ export class AssosService {
     try {
       await this.prisma.assoAccessAttempt.update({
         where: { tokenId },
-        data: { status: 'CONFIRMED', assoId, action, confirmedAt: new Date() },
+        data: { status: AssoAccessAttemptStatus.CONFIRMED, assoId, action, confirmedAt: new Date() },
       });
     } catch (error) {
       this.logger.error('Unable to mark the association access attempt as confirmed', error);
@@ -75,7 +62,7 @@ export class AssosService {
     try {
       await this.prisma.assoAccessAttempt.update({
         where: { tokenId },
-        data: { status: 'CONFIRM_FAILED', confirmationReason: reason },
+        data: { status: AssoAccessAttemptStatus.CONFIRM_FAILED, confirmationReason: reason },
       });
     } catch (error) {
       this.logger.error('Unable to mark the association access confirmation as failed', error);
@@ -128,12 +115,12 @@ export class AssosService {
       if (!(await this.getAssoSympaByEmail(email))) {
         throw new AppException(ERROR_CODE.NO_SUCH_ASSO, email);
       }
-      return 'CREATE';
+      return AssoAccessAction.CREATE;
     }
     if (await this.hasAnyAssoManager(asso.id)) {
       throw new AppException(ERROR_CODE.ASSO_ACCESS_ALREADY_MANAGED);
     }
-    return 'CLAIM';
+    return AssoAccessAction.CLAIM;
   }
 
   async requestAssoAccess(
@@ -178,7 +165,7 @@ export class AssosService {
         action,
         error instanceof Error ? error.name : 'UnknownError',
         tokenId,
-        'REJECTED',
+        AssoAccessAttemptStatus.REJECTED,
       );
       this.logger.warn(`Association access refused for user ${user.id} and ${assoEmail}`);
       throw error;
@@ -205,7 +192,7 @@ export class AssosService {
       if (
         typeof payload.userId !== 'string' ||
         typeof payload.assoEmail !== 'string' ||
-        (action !== 'CREATE' && action !== 'CLAIM')
+        (action !== AssoAccessAction.CREATE && action !== AssoAccessAction.CLAIM)
       )
         return null;
 
@@ -229,11 +216,11 @@ export class AssosService {
   async resolveAssoAccessAction(data: AssoAccessTokenData): Promise<AssoAccessAction> {
     const currentAsso = data.assoId ? await this.getAsso(data.assoId) : await this.getAssoByEmail(data.assoEmail);
 
-    if (!currentAsso) return 'CREATE';
+    if (!currentAsso) return AssoAccessAction.CREATE;
     if (await this.hasAnyAssoManager(currentAsso.id)) {
       throw new AppException(ERROR_CODE.ASSO_ACCESS_ALREADY_MANAGED);
     }
-    return 'CLAIM';
+    return AssoAccessAction.CLAIM;
   }
 
   async getAssoInfo(token: string) {
@@ -273,9 +260,9 @@ export class AssosService {
   private async confirmAssoAccessAfterValidation(user: User, data: AssoAccessTokenData, name?: string) {
     const action = await this.resolveAssoAccessAction(data);
     const existingAsso = await this.getAssoByEmail(data.assoEmail);
-    const assoSympa = action === 'CREATE' ? await this.getAssoSympaByEmail(data.assoEmail) : null;
+    const assoSympa = action === AssoAccessAction.CREATE ? await this.getAssoSympaByEmail(data.assoEmail) : null;
 
-    if (action === 'CREATE') {
+    if (action === AssoAccessAction.CREATE) {
       const cleanName = name?.trim() || assoSympa?.name;
       if (!cleanName) {
         throw new AppException(ERROR_CODE.PARAM_MISSING, 'name');
@@ -318,7 +305,7 @@ export class AssosService {
       });
 
       await this.markAccessAttemptConfirmed(data.jti, createdAsso.id, action);
-      return { action: 'CREATE' as const, asso: createdAsso };
+      return { action: AssoAccessAction.CREATE as const, asso: createdAsso };
     }
 
     if (!existingAsso) {
