@@ -1,10 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { randomUUID } from 'crypto';
-import { Prisma } from '../prisma/types';
 import { ConfigService } from '../config/config.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { RawAssoMembershipRole } from '../prisma/types';
+import { Prisma, RawAssoMembershipRole, RawAssoSympa } from '../prisma/types';
 import { Asso, AssoAccessAction, AssoAccessAttemptStatus, AssoAccessTokenData } from './interfaces/asso.interface';
 import { AssoMembership } from './interfaces/membership.interface';
 import { AssoMembershipRole } from './interfaces/membership-role.interface';
@@ -89,7 +88,7 @@ export class AssosService {
     });
   }
 
-  async getAssoSympaByEmail(email: string) {
+  async getAssoSympaByEmail(email: string): Promise<RawAssoSympa | null> {
     return this.prisma.assoSympa.findUnique({
       where: { mail: email.trim().toLowerCase() },
     });
