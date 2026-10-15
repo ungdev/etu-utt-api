@@ -11,24 +11,29 @@ jobs:
     strategy:
       matrix:
         node-version: [22]
-        pnpm-version: [10]
+        pnpm-version: [11]
+    permissions:
+      packages: read
     steps:
-      - uses: actions/checkout@v5
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v7
+      - name: Install NodeJS
+        uses: pnpm/setup@v3
         with:
-          version: ${{ matrix.pnpm-version }}
-      - name: Use Node.js
-        uses: actions/setup-node@v6
-        with:
-          package-manager-cache: false
-          node-version: ${{ matrix.node-version }}
-          cache: 'pnpm'
-      - name: Logging to registry
-        run: pnpm config set "//npm.pkg.github.com/:_authToken" $NODE_AUTH_TOKEN
+          runtime: node@${{ matrix.node-version }}
+          require-lockfile: true
+          version: ^${{ matrix.pnpm-version }}
+          run-install:
+            args:
+              - --no-optional
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: pnpm install --no-optional --frozen-lockfile
+          pnpm_config__auth: |
+            {
+              "https://npm.pkg.github.com": {
+                "@ungdev": {
+                  "authToken": ${{ toJSON(secrets.GITHUB_TOKEN) }}
+                }
+              }
+            }
       - run: pnpm prisma generate
       - run: pnpm lint
 
@@ -38,24 +43,29 @@ jobs:
     strategy:
       matrix:
         node-version: [22]
-        pnpm-version: [10]
+        pnpm-version: [11]
+    permissions:
+      packages: read
     steps:
-      - uses: actions/checkout@v5
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v7
+      - name: Install NodeJS
+        uses: pnpm/setup@v3
         with:
-          version: ${{ matrix.pnpm-version }}
-      - name: Use Node.js
-        uses: actions/setup-node@v6
-        with:
-          package-manager-cache: false
-          node-version: ${{ matrix.node-version }}
-          cache: 'pnpm'
-      - name: Logging to registry
-        run: pnpm config set "//npm.pkg.github.com/:_authToken" $NODE_AUTH_TOKEN
+          runtime: node@${{ matrix.node-version }}
+          require-lockfile: true
+          version: ^${{ matrix.pnpm-version }}
+          run-install:
+            args:
+              - --no-optional
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: pnpm install --no-optional --frozen-lockfile
+          pnpm_config__auth: |
+            {
+              "https://npm.pkg.github.com": {
+                "@ungdev": {
+                  "authToken": ${{ toJSON(secrets.GITHUB_TOKEN) }}
+                }
+              }
+            }
       - run: pnpm prisma generate
       - run: pnpm build
 
@@ -65,7 +75,7 @@ jobs:
     strategy:
       matrix:
         node-version: [22]
-        pnpm-version: [10]
+        pnpm-version: [11]
     steps:
       - uses: actions/checkout@v5
       - name: Install pnpm
@@ -91,7 +101,9 @@ jobs:
     strategy:
       matrix:
         node-version: [22]
-        pnpm-version: [10]
+        pnpm-version: [11]
+    permissions:
+      packages: read
     env:
       DATABASE_URL: mysql://dev:dev@localhost:3306/etuutt_test
     services:
@@ -113,22 +125,25 @@ jobs:
           --tmpfs /var/lib/mysql:rw
 
     steps:
-      - uses: actions/checkout@v5
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v7
+      - name: Install NodeJS
+        uses: pnpm/setup@v3
         with:
-          version: ${{ matrix.pnpm-version }}
-      - name: Use Node.js
-        uses: actions/setup-node@v6
-        with:
-          package-manager-cache: false
-          node-version: ${{ matrix.node-version }}
-          cache: 'pnpm'
-      - name: Logging to registry
-        run: pnpm config set "//npm.pkg.github.com/:_authToken" $NODE_AUTH_TOKEN
+          runtime: node@${{ matrix.node-version }}
+          require-lockfile: true
+          version: ^${{ matrix.pnpm-version }}
+          run-install:
+            args:
+              - --no-optional
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: pnpm install --no-optional --frozen-lockfile
+          pnpm_config__auth: |
+            {
+              "https://npm.pkg.github.com": {
+                "@ungdev": {
+                  "authToken": ${{ toJSON(secrets.GITHUB_TOKEN) }}
+                }
+              }
+            }
       - run: cp .env.test.dist .env.test
       - run: pnpm test:db:reset
       - run: pnpm test:cov
