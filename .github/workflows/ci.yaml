@@ -7,7 +7,7 @@ on:
 
 jobs:
   lint:
-    runs-on: sia-static-runners
+    runs-on: sia-autoscale-runners
     strategy:
       matrix:
         node-version: [22]
@@ -40,7 +40,7 @@ jobs:
       - run: pnpm lint
 
   build:
-    runs-on: sia-static-runners
+    runs-on: sia-autoscale-runners
     needs: lint
     strategy:
       matrix:
@@ -74,7 +74,7 @@ jobs:
       - run: pnpm build
 
   docs:
-    runs-on: sia-static-runners
+    runs-on: sia-autoscale-runners
     needs: build
     strategy:
       matrix:
