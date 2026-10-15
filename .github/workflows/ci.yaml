@@ -7,7 +7,7 @@ on:
 
 jobs:
   lint:
-    runs-on: self-hosted
+    runs-on: sia-static-runners
     strategy:
       matrix:
         node-version: [22]
@@ -16,6 +16,8 @@ jobs:
       packages: read
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: Install NodeJS
         uses: pnpm/setup@v3
         with:
@@ -38,7 +40,7 @@ jobs:
       - run: pnpm lint
 
   build:
-    runs-on: self-hosted
+    runs-on: sia-static-runners
     needs: lint
     strategy:
       matrix:
@@ -48,6 +50,8 @@ jobs:
       packages: read
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: Install NodeJS
         uses: pnpm/setup@v3
         with:
@@ -70,33 +74,37 @@ jobs:
       - run: pnpm build
 
   docs:
-    runs-on: self-hosted
+    runs-on: sia-static-runners
     needs: build
     strategy:
       matrix:
         node-version: [22]
         pnpm-version: [11]
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           version: ${{ matrix.pnpm-version }}
       - name: Use Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           package-manager-cache: false
           node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
       - name: Use Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: '3.14'
       - run: pnpm build:docs:configure
       - run: pnpm build:docs
 
   test:
-    runs-on: self-hosted
+    runs-on: sia-static-runners
     needs: docs
     strategy:
       matrix:
@@ -126,6 +134,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: Install NodeJS
         uses: pnpm/setup@v3
         with:
@@ -153,23 +163,27 @@ jobs:
 
   deploy:
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
-    runs-on: self-hosted
+    runs-on: sia-static-runners
     needs:
       - lint
       - build
       - test
+    permissions:
+      packages: read
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: Install docker
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
       - name: Login to registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ secrets.REGISTRY_URL }}
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_TOKEN }}
       - name: Build and push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           push: true
           build-args: |
