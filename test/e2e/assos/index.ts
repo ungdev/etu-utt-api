@@ -13,6 +13,7 @@ import SearchWeekliesE2ESpec from './search-weeklies.e2e-spec';
 import UpdateWeeklyE2ESpec from './update-weekly.e2e-spec';
 import DeleteWeeklyE2ESpec from './delete-weekly.e2e-spec';
 import GetWeeklyInfoE2ESpec from './get-weekly-info.e2e-spec';
+import AssoAccessE2ESpec from './access.e2e-spec';
 import { E2EAppProvider } from '../../utils/test_utils';
 
 export default function AssoE2ESpec(app: E2EAppProvider) {
@@ -32,5 +33,6 @@ export default function AssoE2ESpec(app: E2EAppProvider) {
     CreateWeeklyE2ESpec(app);
     UpdateWeeklyE2ESpec(app);
     DeleteWeeklyE2ESpec(app);
+    AssoAccessE2ESpec(app);
   });
 }

@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
 import { AssosController } from './assos.controller';
 import { AssosService } from './assos.service';
 import { ImageMediaModule } from '../media/image/imagemedia.module';
@@ -15,6 +16,6 @@ import WeeklyService from './weekly/weekly.service';
 @Module({
   controllers: [AssosController, WeeklyWithoutAssoidController, WeeklyWithAssoIdController],
   providers: [AssosService, WeeklyService, UsersService],
-  imports: [ImageMediaModule, LexicalModule],
+  imports: [ImageMediaModule, LexicalModule, JwtModule.register({})],
 })
 export class AssosModule {}

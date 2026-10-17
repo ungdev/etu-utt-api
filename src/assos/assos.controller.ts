@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Patch, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiAppErrorResponse, paginatedResponseDto } from '../app.dto';
 import { AssoMembershipRole } from './interfaces/membership-role.interface';
@@ -17,17 +17,25 @@ import AssosSearchReqDto from './dto/req/assos-search-req.dto';
 import AssoOverviewResDto from './dto/res/asso-overview-res.dto';
 import AssoDetailResDto from './dto/res/asso-detail-res.dto';
 import AssoMembersResDto from './dto/res/asso-members-res.dto';
-import AssosRoleCreateReqDto from './dto/req/assos-role-create.dto';
+import AssosRoleCreateReqDto from './dto/req/assos-role-create-req.dto';
 import AssoRoleOverviewResDto, { AssoRole, AssoRoleListResDto, AssoRoleResDto } from './dto/res/assos-role-res.dto';
-import AssosRoleUpdateReqDto from './dto/req/assos-role-update.dto';
-import AssosMemberCreateReqDto from './dto/req/assos-member-create.dto';
-import AssosMemberUpdateReqDto from './dto/req/assos-member-update.dto';
+import AssosRoleUpdateReqDto from './dto/req/assos-role-update-req.dto';
+import AssosMemberCreateReqDto from './dto/req/assos-member-create-req.dto';
+import AssosMemberUpdateReqDto from './dto/req/assos-member-update-req.dto';
 import AssoMembershipResDto from './dto/res/assos-membership-res.dto';
 import UsersService from '../users/users.service';
 import { ConfigService } from '../config/config.service';
+import { MailService } from '../mail/mail.service';
 import AssosUpdateReqDto from './dto/req/assos-update-req.dto';
+import AssosAccessRequestReqDto from './dto/req/assos-access-request-req.dto';
+import AssosAccessConfirmReqDto from './dto/req/assos-access-confirm-req.dto';
+import AssosAccessInfoResDto from './dto/res/assos-access-info-res.dto';
+import AssosAccessRequestResDto from './dto/res/assos-access-request-res.dto';
+import AssosAccessConfirmResDto from './dto/res/assos-access-confirm-res.dto';
+import AssosAccessAttemptResDto from './dto/res/assos-access-attempt-res.dto';
 import { ImageMediaPreset } from '../prisma/types';
 import { LexicalModule } from '../lexical/lexical.module';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Controller('assos')
 @ApiTags('Assos')
@@ -36,8 +44,10 @@ export class AssosController {
     readonly assosService: AssosService,
     readonly userService: UsersService,
     readonly config: ConfigService,
+    readonly prisma: PrismaService,
     readonly mediaService: ImageMediaService,
     readonly lexicalModule: LexicalModule,
+    readonly mailService: MailService,
   ) {}
 
   @Get()
@@ -255,6 +265,87 @@ export class AssosController {
       throw new AppException(ERROR_CODE.PARAM_TOO_HIGH, 'position');
     const updatedRoles = await this.assosService.updateAssoRole(role.id, asso.id, pick(body, 'name', 'position'));
     return { roles: updatedRoles.map(this.formatPartialAssoMembershipRole) };
+  }
+
+  @Get('/access/info')
+  @ApiOperation({ description: 'Retrieve the currently valid association access action from a signed token.' })
+  @ApiOkResponse({ type: AssosAccessInfoResDto })
+  async getAssoAccessInfo(@GetUser() user: User, @Query('token') token: string): Promise<AssosAccessInfoResDto> {
+    const payload = this.assosService.decodeAssoAccessToken(token);
+    if (payload.userId !== user.id) throw new AppException(ERROR_CODE.FORBIDDEN_ASSO_ACCESS);
+
+    return this.assosService.getAssoInfo(payload);
+  }
+
+  @Post('/access/request')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ description: 'Request a signed email validation link to create or claim an association access.' })
+  @ApiOkResponse({ type: AssosAccessRequestResDto })
+  async requestAssoAccess(
+    @GetUser() user: User,
+    @Body() body: AssosAccessRequestReqDto,
+  ): Promise<AssosAccessRequestResDto> {
+    const { action, token, email } = await this.assosService.requestAssoAccess(user, body.email);
+
+    const application = await this.prisma.apiApplication.findUnique({
+      where: { id: this.config.ETUUTT_WEBSITE_APPLICATION_ID },
+      select: { redirectUrl: true },
+    });
+    if (!application) throw new Error('The EtuUTT website application does not exist');
+    const link = new URL('/assos/access', application.redirectUrl);
+    link.searchParams.set('token', token);
+    this.mailService.send(
+      email,
+      'Validation d’accès association',
+      undefined,
+      { action, email },
+      `Pour valider votre demande, utilisez ce lien : ${link}`,
+    );
+
+    return { action, email };
+  }
+
+  @Post('/access/confirm')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ description: 'Confirm the association creation or claim flow using the signed validation token.' })
+  @ApiOkResponse({ type: AssosAccessConfirmResDto })
+  async confirmAssoAccess(
+    @GetUser() user: User,
+    @Body() body: AssosAccessConfirmReqDto,
+  ): Promise<AssosAccessConfirmResDto> {
+    const result = await this.assosService.confirmAssoAccess(user, body.token, body.name);
+    const actionLabel = result.action === 'CREATE' ? 'créée' : 'réclamée';
+    this.mailService.send(
+      result.asso.mail,
+      `Association ${actionLabel} sur EtuUTT`,
+      undefined,
+      { action: result.action, asso: result.asso, user },
+      `Bonjour,\n\nL'association "${result.asso.name}" a été ${actionLabel} sur le site EtuUTT par ${user.firstName} ${user.lastName}.`,
+    );
+
+    return {
+      action: result.action,
+      asso: {
+        id: result.asso.id,
+        name: result.asso.name,
+        email: result.asso.mail,
+      },
+    };
+  }
+
+  @Get('/:assoId/access/attempts')
+  @ApiOperation({ description: 'Get all access attempts for an association.' })
+  @ApiOkResponse({ type: AssosAccessAttemptResDto, isArray: true })
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_ASSO, 'There is no asso with the given id')
+  @ApiAppErrorResponse(
+    ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS,
+    'The user has no permission to view access attempts for this asso',
+  )
+  async getAssoAccessAttempts(@ParamAsso() asso: Asso, @GetUser() user: User): Promise<AssosAccessAttemptResDto[]> {
+    if (!(await this.assosService.hasSomeAssoPermission(asso, user.id, 'manage_roles')))
+      throw new AppException(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, 'manage_roles');
+
+    return this.assosService.getAssoAccessAttempts(asso);
   }
 
   formatAssoOverview(asso: Asso): AssoOverviewResDto {

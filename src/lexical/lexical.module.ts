@@ -127,14 +127,16 @@ export class LexicalModule {
       editor.read(() => (html = $generateHtmlFromNodes(editor)));
     });
     // Generated html contains multiple things that we want to minify:
-    return html
-      // class=""
-      .replaceAll('class=""', '')
-      // style="key1: value1; key2: value2" => style="key1:value1;key2:value2"
-      .replaceAll(/(?<=style="[^"]+[:;])\s/g, '')
-      // <p  style="key:value"> => <p style="key:value">
-      .replaceAll(/(?<=<\w+\s)\s/g, '')
-      // <p style="key:value" > => <p style="key:value">
-      .replaceAll(/\s(?=>)/g, '')
+    return (
+      html
+        // class=""
+        .replaceAll('class=""', '')
+        // style="key1: value1; key2: value2" => style="key1:value1;key2:value2"
+        .replaceAll(/(?<=style="[^"]+[:;])\s/g, '')
+        // <p  style="key:value"> => <p style="key:value">
+        .replaceAll(/(?<=<\w+\s)\s/g, '')
+        // <p style="key:value" > => <p style="key:value">
+        .replaceAll(/\s(?=>)/g, '')
+    );
   }
 }

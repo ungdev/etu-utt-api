@@ -32,7 +32,7 @@ type JsonLikeVariant<T> = Partial<{
 type FakeUeWithOfs = FakeUe & { ueofs: FakeUeof[] };
 
 type FakeAssoMembers = {
-  role: FakeRole;
+  role: FakeAssoMembershipRole;
   users: {
     user: FakeUser;
     permissions: FakeAssoMembershipPermission[];

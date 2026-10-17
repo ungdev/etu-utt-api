@@ -56,9 +56,6 @@ export default function assoSeed(prisma: PrismaClient) {
               en: faker.lorem.paragraph(),
             },
           },
-          assoAccount: {
-            connect: { id: userId },
-          },
         },
       });
     });
