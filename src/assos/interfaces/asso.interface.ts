@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from '../../prisma/types';
+import { Prisma, PrismaClient, RawAssoMembership, RawAsso } from '../../prisma/types';
 import { generateCustomModel } from '../../prisma/prisma.service';
 import { translationSelect } from '../../utils';
 
@@ -51,6 +51,10 @@ export enum AssoAccessAction {
   CLAIM = 'CLAIM',
 }
 
+export type AssoAccessActionAndAssoId =
+  | { action: AssoAccessAction.CREATE; assoId: null }
+  | { action: AssoAccessAction.CLAIM; assoId: string };
+
 export enum AssoAccessAttemptStatus {
   REQUESTED = 'REQUESTED',
   REJECTED = 'REJECTED',
@@ -66,4 +70,17 @@ export type AssoAccessTokenData = {
   jti: string;
   iat: number;
   exp: number;
+};
+
+export type AssoAccessConfirmation =
+  | { action: AssoAccessAction.CREATE; asso: RawAsso }
+  | { action: AssoAccessAction.CLAIM; asso: Asso; membership: RawAssoMembership };
+
+export type TranslationWithoutId = Omit<Prisma.TranslationGetPayload<Prisma.TranslationDefaultArgs>, 'id'>;
+
+export type AssoInfo = {
+  action: AssoAccessAction;
+  email: string;
+  name: string;
+  description: TranslationWithoutId;
 };

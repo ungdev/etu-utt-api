@@ -107,6 +107,7 @@ export const enum ERROR_CODE {
   ASSO_ROLE_ALREADY_MOVED = 4904,
   ASSO_ACCESS_RATE_LIMIT = 4905,
   ASSO_ACCESS_ALREADY_MANAGED = 4906,
+  ASSO_NAME_ALREADY_TAKEN = 4907,
   CREDENTIALS_ALREADY_TAKEN = 5001,
   SERVER_DISK_ERROR = 8001,
   MAIL_SEND_FAILED = 8002,
@@ -495,6 +496,10 @@ export const ErrorData = Object.freeze({
     message: 'This association already has a manager',
     httpCode: HttpStatus.CONFLICT,
   },
+  [ERROR_CODE.ASSO_NAME_ALREADY_TAKEN]: {
+    message: 'The association name % is already taken',
+    httpCode: HttpStatus.CONFLICT,
+  },
   [ERROR_CODE.SERVER_DISK_ERROR]: {
     message: 'An error occurred while accessing the server disk',
     httpCode: HttpStatus.SERVICE_UNAVAILABLE,
@@ -536,16 +541,19 @@ export type ExtrasTypeBuilder<S extends string> = S extends `${infer Part1}%${in
  * throw new AppException(ERROR_CODE.PARAM_DOES_NOT_MATCH_REGEX, '^[0-9]{10}$', 'phoneNumber');  // The error message will be : "The following parameters must match the regex "^[0-9]{10}$": phoneNumber"
  */
 export class AppException<ErrorCode extends ERROR_CODE> extends HttpException {
-  constructor(code: ErrorCode, ...extraMessages: ExtrasTypeBuilder<(typeof ErrorData)[ErrorCode]['message']>) {
+  constructor(
+    public readonly errorCode: ErrorCode,
+    ...extraMessages: ExtrasTypeBuilder<(typeof ErrorData)[ErrorCode]['message']>
+  ) {
     super(
       {
-        errorCode: code,
+        errorCode,
         error: (extraMessages as string[]).reduce(
           (message, extra) => message.replace('%', extra),
-          ErrorData[code].message,
+          ErrorData[errorCode].message,
         ),
       },
-      ErrorData[code].httpCode,
+      ErrorData[errorCode].httpCode,
     );
   }
 }

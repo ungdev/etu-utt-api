@@ -9,11 +9,10 @@ import typescriptPlugin from 'typescript-eslint';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export default defineConfig([globalIgnores(['eslint.config.mjs']),
+export default defineConfig([
+  globalIgnores(['eslint.config.mjs']),
   {
-    extends: [
-      typescriptPlugin.configs.recommended, eslintConfigPrettier
-    ],
+    extends: [typescriptPlugin.configs.recommended, eslintConfigPrettier],
 
     languageOptions: {
       globals: {
@@ -37,6 +36,6 @@ export default defineConfig([globalIgnores(['eslint.config.mjs']),
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
     },
-    files: ['**/*.ts']
+    files: ['**/*.ts'],
   },
 ]);

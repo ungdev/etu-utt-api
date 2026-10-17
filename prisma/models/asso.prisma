@@ -22,24 +22,24 @@ model Asso {
 }
 
 model AssoSympa {
-    id   String @id @default(uuid())
-    name String @unique @db.VarChar(100)
-    mail String @unique @db.VarChar(100)
+  id   String @id @default(uuid())
+  name String @unique @db.VarChar(100)
+  mail String @unique @db.VarChar(100)
 }
 
 model AssoAccessAttempt {
-  id                   String    @id @default(uuid())
-  createdAt            DateTime  @default(now())
-  userId               String
-  assoEmail            String    @db.VarChar(100)
-  action               String?   @db.VarChar(10)
-  accepted             Boolean
-  status               AssoAccessAttemptStatus    @default(REQUESTED)
-  reason               String?   @db.VarChar(100)
-  tokenId              String?   @unique @db.VarChar(36)
-  assoId               String?   @db.Char(36)
-  confirmedAt          DateTime?
-  confirmationReason   String?   @db.VarChar(100)
+  id                        String                  @id @default(uuid())
+  createdAt                 DateTime                @default(now())
+  userId                    String
+  assoEmail                 String                  @db.VarChar(100)
+  action                    String?                 @db.VarChar(10)
+  accepted                  Boolean
+  status                    AssoAccessAttemptStatus @default(REQUESTED)
+  failureReason             Int?                    @db.UnsignedSmallInt
+  tokenId                   String?                 @unique @db.VarChar(36)
+  assoId                    String?                 @db.Char(36)
+  confirmedAt               DateTime?
+  confirmationFailureReason Int?                    @db.UnsignedSmallInt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

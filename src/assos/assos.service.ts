@@ -4,7 +4,15 @@ import { randomUUID } from 'crypto';
 import { ConfigService } from '../config/config.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, RawAssoMembershipRole, RawAssoSympa } from '../prisma/types';
-import { Asso, AssoAccessAction, AssoAccessAttemptStatus, AssoAccessTokenData } from './interfaces/asso.interface';
+import {
+  Asso,
+  AssoAccessAction,
+  AssoAccessAttemptStatus,
+  AssoAccessTokenData,
+  AssoAccessConfirmation,
+  AssoInfo,
+  AssoAccessActionAndAssoId,
+} from './interfaces/asso.interface';
 import { AssoMembership } from './interfaces/membership.interface';
 import { AssoMembershipRole } from './interfaces/membership-role.interface';
 import { User } from '../users/interfaces/user.interface';
@@ -12,6 +20,7 @@ import AssosSearchReqDto from './dto/req/assos-search-req.dto';
 import AssosMemberUpdateReqDto from './dto/req/assos-member-update-req.dto';
 import { AppException, ERROR_CODE } from '../exceptions';
 import AssosUpdateReqDto from './dto/req/assos-update-req.dto';
+import AssosAccessAttemptResDto from './dto/res/assos-access-attempt-res.dto';
 
 @Injectable()
 export class AssosService {
@@ -32,40 +41,32 @@ export class AssosService {
     userId: string,
     assoEmail: string,
     accepted: boolean,
-    action?: AssoAccessAction,
-    reason?: string,
+    action: AssoAccessAction,
+    failureReason?: number,
     tokenId?: string,
+    assoId?: string,
     status: AssoAccessAttemptStatus = AssoAccessAttemptStatus.REQUESTED,
   ): Promise<void> {
-    try {
-      await this.prisma.assoAccessAttempt.create({
-        data: { userId, assoEmail, accepted, action, reason, tokenId, status },
-      });
-    } catch (error) {
-      this.logger.error('Unable to persist an association access attempt', error);
-    }
+    await this.prisma.assoAccessAttempt.create({
+      data: { userId, assoEmail, accepted, action, failureReason, tokenId, ...(assoId ? { assoId } : {}), status },
+    });
   }
 
   private async markAccessAttemptConfirmed(tokenId: string, assoId: string, action: AssoAccessAction): Promise<void> {
-    try {
-      await this.prisma.assoAccessAttempt.update({
-        where: { tokenId },
-        data: { status: AssoAccessAttemptStatus.CONFIRMED, assoId, action, confirmedAt: new Date() },
-      });
-    } catch (error) {
-      this.logger.error('Unable to mark the association access attempt as confirmed', error);
-    }
+    await this.prisma.assoAccessAttempt.update({
+      where: { tokenId },
+      data: { status: AssoAccessAttemptStatus.CONFIRMED, assoId, action, confirmedAt: new Date() },
+    });
   }
 
-  private async markAccessAttemptConfirmationFailed(tokenId: string, reason: string): Promise<void> {
-    try {
-      await this.prisma.assoAccessAttempt.update({
-        where: { tokenId },
-        data: { status: AssoAccessAttemptStatus.CONFIRM_FAILED, confirmationReason: reason },
-      });
-    } catch (error) {
-      this.logger.error('Unable to mark the association access confirmation as failed', error);
-    }
+  private async markAccessAttemptConfirmationFailed(tokenId: string, confirmationFailureReason: number): Promise<void> {
+    await this.prisma.assoAccessAttempt.update({
+      where: { tokenId },
+      data: {
+        status: AssoAccessAttemptStatus.CONFIRM_FAILED,
+        confirmationFailureReason,
+      },
+    });
   }
 
   private checkRateLimit(scope: 'user' | 'asso', value: string, maxPerHour: number): void {
@@ -85,6 +86,12 @@ export class AssosService {
   async getAssoByEmail(email: string): Promise<Asso | null> {
     return this.prisma.normalize.asso.findUnique({
       where: { mail: email.trim().toLowerCase() },
+    });
+  }
+
+  async getAssoByName(name: string): Promise<Asso | null> {
+    return this.prisma.normalize.asso.findUnique({
+      where: { name: name.trim() },
     });
   }
 
@@ -108,18 +115,18 @@ export class AssosService {
     return managerCount > 0;
   }
 
-  async getAssoAccessAction(email: string): Promise<AssoAccessAction> {
-    const asso = await this.getAssoByEmail(email);
-    if (!asso) {
+  async getAssoAccessAction(email: string, asso?: Asso | null): Promise<AssoAccessActionAndAssoId> {
+    const existingAsso = asso === undefined ? await this.getAssoByEmail(email) : asso;
+    if (!existingAsso) {
       if (!(await this.getAssoSympaByEmail(email))) {
         throw new AppException(ERROR_CODE.NO_SUCH_ASSO, email);
       }
-      return AssoAccessAction.CREATE;
+      return { action: AssoAccessAction.CREATE, assoId: null };
     }
-    if (await this.hasAnyAssoManager(asso.id)) {
+    if (await this.hasAnyAssoManager(existingAsso.id)) {
       throw new AppException(ERROR_CODE.ASSO_ACCESS_ALREADY_MANAGED);
     }
-    return AssoAccessAction.CLAIM;
+    return { action: AssoAccessAction.CLAIM, assoId: existingAsso.id };
   }
 
   async requestAssoAccess(
@@ -129,12 +136,19 @@ export class AssosService {
     const assoEmail = email.trim().toLowerCase();
     let action: AssoAccessAction | undefined;
     let tokenId: string | undefined;
+    let assoId: string | undefined;
     try {
-      this.checkRateLimit('asso', assoEmail, this.config.ASSOS_MAX_CLAIMS_PER_ASSO);
       this.checkRateLimit('user', user.id, this.config.ASSOS_MAX_CLAIMS_PER_USER);
 
-      action = await this.getAssoAccessAction(assoEmail);
-      const asso = await this.getAssoByEmail(assoEmail);
+      const existingAsso = await this.getAssoByEmail(assoEmail);
+      assoId = existingAsso?.id;
+      if (existingAsso) action = AssoAccessAction.CLAIM;
+
+      const access = await this.getAssoAccessAction(assoEmail, existingAsso);
+      action = access.action;
+      assoId = access.assoId;
+
+      this.checkRateLimit('asso', assoEmail, this.config.ASSOS_MAX_CLAIMS_PER_ASSO);
 
       const expiresIn = this.config.ASSOS_CLAIM_TOKEN_EXPIRATION;
       tokenId = randomUUID();
@@ -142,7 +156,7 @@ export class AssosService {
         {
           userId: user.id,
           assoEmail,
-          ...(asso ? { assoId: asso.id } : {}),
+          ...(assoId ? { assoId } : {}),
           action,
           jti: tokenId,
         },
@@ -153,17 +167,18 @@ export class AssosService {
         },
       );
 
-      await this.recordAccessAttempt(user.id, assoEmail, true, action, undefined, tokenId);
+      await this.recordAccessAttempt(user.id, assoEmail, true, action, undefined, tokenId, assoId);
       this.logger.log(`Association access requested by user ${user.id} for ${assoEmail}; action=${action}`);
       return { action, token, email: assoEmail };
-    } catch (error) {
+    } catch (error: unknown) {
       await this.recordAccessAttempt(
         user.id,
         assoEmail,
         false,
         action,
-        error instanceof Error ? error.name : 'UnknownError',
+        error instanceof AppException ? error.errorCode : null,
         tokenId,
+        assoId,
         AssoAccessAttemptStatus.REJECTED,
       );
       this.logger.warn(`Association access refused for user ${user.id} and ${assoEmail}`);
@@ -171,43 +186,70 @@ export class AssosService {
     }
   }
 
-  decodeAssoAccessToken(token: string): AssoAccessTokenData | null {
+  async getAssoAccessAttempts(asso: Asso): Promise<AssosAccessAttemptResDto[]> {
+    const attempts = await this.prisma.assoAccessAttempt.findMany({
+      where: { assoId: asso.id },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return attempts.map((attempt) => ({
+      ...attempt,
+      status: attempt.status as AssoAccessAttemptStatus,
+    }));
+  }
+
+  decodeAssoAccessToken(token: string): AssoAccessTokenData {
     try {
-      const payload = this.jwt.verify(token, {
+      const payload: unknown = this.jwt.verify(token, {
         secret: this.config.JWT_SECRET,
         algorithms: ['HS256'],
       });
 
-      if (!payload || typeof payload !== 'object') return null;
-      if (!('userId' in payload) || !('assoEmail' in payload) || !('jti' in payload)) return null;
-
-      const exp = Number(payload.exp);
-      if (!Number.isFinite(exp)) return null;
-      if (Date.now() / 1000 >= exp) {
-        throw new AppException(ERROR_CODE.EXPIRED_ASSO_ACCESS_TOKEN);
+      if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+        throw new AppException(ERROR_CODE.INVALID_ASSO_ACCESS_TOKEN);
       }
 
-      const action = payload.action;
+      const data = payload as Record<string, unknown>;
+      const { userId, assoEmail, assoId, action, jti, iat, exp } = data;
+
       if (
-        typeof payload.userId !== 'string' ||
-        typeof payload.assoEmail !== 'string' ||
-        (action !== AssoAccessAction.CREATE && action !== AssoAccessAction.CLAIM)
-      )
-        return null;
+        typeof userId !== 'string' ||
+        !userId ||
+        typeof assoEmail !== 'string' ||
+        !assoEmail.trim() ||
+        typeof jti !== 'string' ||
+        !jti ||
+        (action !== AssoAccessAction.CREATE && action !== AssoAccessAction.CLAIM) ||
+        (assoId !== undefined && typeof assoId !== 'string') ||
+        typeof exp !== 'number' ||
+        !Number.isFinite(exp) ||
+        (iat !== undefined && (typeof iat !== 'number' || !Number.isFinite(iat)))
+      ) {
+        throw new AppException(ERROR_CODE.INVALID_ASSO_ACCESS_TOKEN);
+      }
+
+      const issuedAt = typeof iat === 'number' ? iat : Math.floor(Date.now() / 1000);
+
+      const associationId: string | undefined = typeof assoId === 'string' ? assoId : undefined;
 
       return {
-        userId: String(payload.userId),
-        assoEmail: String(payload.assoEmail),
-        ...(payload.assoId ? { assoId: String(payload.assoId) } : {}),
+        userId,
+        assoEmail: assoEmail.trim().toLowerCase(),
+        ...(associationId !== undefined ? { assoId: associationId } : {}),
         action,
-        jti: String(payload.jti),
-        iat: Number(payload.iat ?? Date.now() / 1000),
+        jti,
+        iat: issuedAt,
         exp,
       };
-    } catch (error) {
+    } catch (error: unknown) {
+      if (error instanceof AppException) {
+        throw error;
+      }
+
       if (error instanceof Error && error.name === 'TokenExpiredError') {
         throw new AppException(ERROR_CODE.EXPIRED_ASSO_ACCESS_TOKEN);
       }
+
       throw new AppException(ERROR_CODE.INVALID_ASSO_ACCESS_TOKEN);
     }
   }
@@ -222,11 +264,8 @@ export class AssosService {
     return AssoAccessAction.CLAIM;
   }
 
-  async getAssoInfo(token: string) {
+  async getAssoInfo(token: string): Promise<AssoInfo> {
     const data = this.decodeAssoAccessToken(token);
-    if (!data) {
-      throw new AppException(ERROR_CODE.INVALID_ASSO_ACCESS_TOKEN);
-    }
 
     const asso = await this.getAssoByEmail(data.assoEmail);
     const assoSympa = !asso ? await this.getAssoSympaByEmail(data.assoEmail) : null;
@@ -234,12 +273,12 @@ export class AssosService {
     return {
       action: await this.resolveAssoAccessAction(data),
       email: data.assoEmail,
-      name: asso?.name ?? assoSympa?.name ?? null,
+      name: asso?.name ?? assoSympa?.name,
       description: asso?.descriptionTranslation ?? null,
     };
   }
 
-  async confirmAssoAccess(user: User, token: string, name?: string) {
+  async confirmAssoAccess(user: User, token: string, name?: string): Promise<AssoAccessConfirmation> {
     const data = this.decodeAssoAccessToken(token);
     if (!data) {
       throw new AppException(ERROR_CODE.INVALID_ASSO_ACCESS_TOKEN);
@@ -251,12 +290,16 @@ export class AssosService {
     try {
       return await this.confirmAssoAccessAfterValidation(user, data, name);
     } catch (error) {
-      await this.markAccessAttemptConfirmationFailed(data.jti, error instanceof Error ? error.name : 'UnknownError');
+      await this.markAccessAttemptConfirmationFailed(data.jti, error instanceof AppException ? error.errorCode : null);
       throw error;
     }
   }
 
-  private async confirmAssoAccessAfterValidation(user: User, data: AssoAccessTokenData, name?: string) {
+  private async confirmAssoAccessAfterValidation(
+    user: User,
+    data: AssoAccessTokenData,
+    name?: string,
+  ): Promise<AssoAccessConfirmation> {
     const action = await this.resolveAssoAccessAction(data);
     const existingAsso = await this.getAssoByEmail(data.assoEmail);
     const assoSympa = action === AssoAccessAction.CREATE ? await this.getAssoSympaByEmail(data.assoEmail) : null;
@@ -265,6 +308,9 @@ export class AssosService {
       const cleanName = name?.trim() || assoSympa?.name;
       if (!cleanName) {
         throw new AppException(ERROR_CODE.PARAM_MISSING, 'name');
+      }
+      if (await this.getAssoByName(cleanName)) {
+        throw new AppException(ERROR_CODE.ASSO_NAME_ALREADY_TAKEN, cleanName);
       }
       if (existingAsso) {
         return this.confirmAssoAccessAfterValidation(user, data, cleanName);
@@ -343,7 +389,7 @@ export class AssosService {
     });
 
     await this.markAccessAttemptConfirmed(data.jti, existingAsso.id, action);
-    return { action: 'CLAIM' as const, asso: existingAsso, membership: createdMembership };
+    return { action: AssoAccessAction.CLAIM, asso: existingAsso, membership: createdMembership };
   }
 
   /**

@@ -32,6 +32,7 @@ import AssosAccessConfirmReqDto from './dto/req/assos-access-confirm-req.dto';
 import AssosAccessInfoResDto from './dto/res/assos-access-info-res.dto';
 import AssosAccessRequestResDto from './dto/res/assos-access-request-res.dto';
 import AssosAccessConfirmResDto from './dto/res/assos-access-confirm-res.dto';
+import AssosAccessAttemptResDto from './dto/res/assos-access-attempt-res.dto';
 import { ImageMediaPreset } from '../prisma/types';
 import { LexicalModule } from '../lexical/lexical.module';
 import { PrismaService } from '../prisma/prisma.service';
@@ -76,7 +77,7 @@ export class AssosController {
     if (!application) throw new Error('The EtuUTT website application does not exist');
     const link = new URL('/assos/access', application.redirectUrl);
     link.searchParams.set('token', token);
-    await this.mailService.send(
+    this.mailService.send(
       email,
       'Validation d’accès association',
       undefined,
@@ -96,7 +97,7 @@ export class AssosController {
   ): Promise<AssosAccessConfirmResDto> {
     const result = await this.assosService.confirmAssoAccess(user, body.token, body.name);
     const actionLabel = result.action === 'CREATE' ? 'créée' : 'réclamée';
-    await this.mailService.send(
+    this.mailService.send(
       result.asso.mail,
       `Association ${actionLabel} sur EtuUTT`,
       undefined,
@@ -112,6 +113,21 @@ export class AssosController {
         email: result.asso.mail,
       },
     };
+  }
+
+  @Get('/:assoId/access/attempts')
+  @ApiOperation({ description: 'Get all access attempts for an association.' })
+  @ApiOkResponse({ type: AssosAccessAttemptResDto, isArray: true })
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_ASSO, 'There is no asso with the given id')
+  @ApiAppErrorResponse(
+    ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS,
+    'The user has no permission to view access attempts for this asso',
+  )
+  async getAssoAccessAttempts(@ParamAsso() asso: Asso, @GetUser() user: User): Promise<AssosAccessAttemptResDto[]> {
+    if (!(await this.assosService.hasSomeAssoPermission(asso, user.id, 'manage_roles')))
+      throw new AppException(ERROR_CODE.FORBIDDEN_ASSOS_PERMISSIONS, asso.id, 'manage_roles');
+
+    return this.assosService.getAssoAccessAttempts(asso);
   }
 
   @Get()

@@ -1,6 +1,7 @@
+/// <reference path="./declarations.d.ts" />
+
 import { HttpStatus } from '@nestjs/common';
 import Spec from 'pactum/src/models/Spec';
-import { FakeAssoMembers, FakeUeWithOfs, JsonLikeVariant } from './declarations.d';
 import { ERROR_CODE, ErrorData, ExtrasTypeBuilder } from '../src/exceptions';
 import { UeComment } from '../src/ue/comments/interfaces/comment.interface';
 import { UeCommentReply } from '../src/ue/comments/interfaces/comment-reply.interface';
@@ -15,8 +16,11 @@ import {
   FakeApiApplication,
   FakeAssoMembershipRole,
   FakeAssoMembership,
+  FakeAssoMembershipPermission,
   FakeImageMedia,
   FakeAssoWeekly,
+  FakeUe,
+  FakeUeof,
 } from './utils/fakedb';
 import { UeAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
 import { ConfigService } from '../src/config/config.service';
@@ -27,6 +31,24 @@ import { Language } from '../src/prisma/types';
 import { DEFAULT_APPLICATION } from '../prisma/seed/utils';
 import ApplicationResDto from '../src/auth/application/dto/res/application-res.dto';
 import PermissionsResDto from '../src/auth/permissions/dto/res/permissions.dto';
+
+type JsonLikeVariant<T> = Partial<{
+  [K in keyof T]: T[K] extends string | Date
+    ? symbol | RegExp | T[K]
+    : T[K] extends number
+      ? symbol | number
+      : T[K] extends (infer R)[]
+        ? JsonLikeVariant<R>[]
+        : JsonLikeVariant<T[K]>;
+}>;
+type FakeUeWithOfs = FakeUe & { ueofs: FakeUeof[] };
+type FakeAssoMembers = {
+  role: FakeAssoMembershipRole;
+  users: {
+    user: FakeUser;
+    permissions: FakeAssoMembershipPermission[];
+  }[];
+}[];
 
 function ueOverviewExpectation(ue: FakeUeWithOfs, spec: Spec) {
   return {
@@ -90,14 +112,12 @@ Spec.prototype.baseUrl = '';
 Spec.prototype.withBaseUrl = function (this: Spec, baseUrl: string) {
   this.baseUrl = baseUrl;
   return this;
-}
+};
 // Spec.prototype.toss is the function called to execute the request.
 // Here, we modify it to include the special headers just before sending the request.
 Spec.prototype.toss = function (this: Spec) {
   this['_request'].url = this.baseUrl + `/v${this.version}` + this['_request'].url;
-  this.withHeaders('X-Language', this.language)
-    .withHeaders('X-Application', this.application)
-    .expectStatus();
+  this.withHeaders('X-Language', this.language).withHeaders('X-Application', this.application).expectStatus();
   return baseToss.call(this);
 };
 Spec.prototype.expectAppError = function <ErrorCode extends ERROR_CODE>(
@@ -345,10 +365,15 @@ Spec.prototype.expectAssoWeekly = function (this: Spec, weekly: JsonLikeVariant<
   return this.expectStatus(created ? HttpStatus.CREATED : HttpStatus.OK).$expectRegexableJson({
     ...pick(weekly, 'id', 'assoId', 'createdAt', 'date'),
     title: weekly.title[this.language],
-    message: weekly.message[this.language]
+    message: weekly.message[this.language],
   });
 };
-Spec.prototype.expectAssoWeeklies = function (this: Spec, app: AppProvider, weeklies: JsonLikeVariant<FakeAssoWeekly>[], count: number) {
+Spec.prototype.expectAssoWeeklies = function (
+  this: Spec,
+  app: AppProvider,
+  weeklies: JsonLikeVariant<FakeAssoWeekly>[],
+  count: number,
+) {
   return this.expectStatus(HttpStatus.OK).$expectRegexableJson({
     items: weeklies.map((weekly) => ({
       ...pick(weekly, 'id', 'assoId', 'createdAt', 'date'),
