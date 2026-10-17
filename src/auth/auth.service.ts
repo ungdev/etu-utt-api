@@ -62,7 +62,7 @@ export class AuthService {
     const branch: string[] = [];
     const branchOption: string[] = [];
     const ues: string[] = [];
-    let type: UserType = UserType.OTHER;
+    let type: UserType = UserType.STUDENT;
     let studentId: number | undefined;
     const currentSemester = await this.semesterService.getCurrentSemester();
 
