@@ -81,6 +81,6 @@ export type TranslationWithoutId = Omit<Prisma.TranslationGetPayload<Prisma.Tran
 export type AssoInfo = {
   action: AssoAccessAction;
   email: string;
-  name: string;
-  description: TranslationWithoutId;
+  name: string | null;
+  description: TranslationWithoutId | null;
 };

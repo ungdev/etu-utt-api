@@ -108,6 +108,7 @@ export const enum ERROR_CODE {
   ASSO_ACCESS_RATE_LIMIT = 4905,
   ASSO_ACCESS_ALREADY_MANAGED = 4906,
   ASSO_NAME_ALREADY_TAKEN = 4907,
+  ASSO_ALREADY_EXISTS = 4908,
   CREDENTIALS_ALREADY_TAKEN = 5001,
   SERVER_DISK_ERROR = 8001,
   MAIL_SEND_FAILED = 8002,
@@ -263,6 +264,10 @@ export const ErrorData = Object.freeze({
   [ERROR_CODE.FILE_TOO_HEAVY]: {
     message: 'Invalid file size: max size %',
     httpCode: HttpStatus.BAD_REQUEST,
+  },
+  [ERROR_CODE.ASSO_ALREADY_EXISTS]: {
+    message: 'The association already exists',
+    httpCode: HttpStatus.CONFLICT,
   },
   [ERROR_CODE.WIDGET_OVERLAPPING]: {
     message: 'Widgets at index % and % are overlapping',

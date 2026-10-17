@@ -1,11 +1,5 @@
 import { e2eSuite } from '../../utils/test_utils';
-import {
-  createAsso,
-  createAssoMembership,
-  createAssoMembershipPermission,
-  createAssoMembershipRole,
-  createUser,
-} from '../../utils/fakedb';
+import { createAsso, createAssoMembership, createAssoMembershipRole, createUser } from '../../utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
 import { PrismaService } from '../../../src/prisma/prisma.service';
@@ -27,12 +21,16 @@ const AssoAccessE2ESpec = e2eSuite('POST/GET /assos/access', (app) => {
 
   const claimAsso = createAsso(app, { name: 'E2E claim association', mail: 'e2e-claim@utt.fr' });
   const managedAsso = createAsso(app, { name: 'E2E managed association', mail: 'e2e-managed@utt.fr' });
-  const managedRole = createAssoMembershipRole(app, { asso: managedAsso });
-  const manageInfos = createAssoMembershipPermission(app, { id: 'e2e_manage_infos' });
-  createAssoMembership(app, { asso: managedAsso, role: managedRole, user: managedUser, permissions: [manageInfos] });
+  const managedRole = createAssoMembershipRole(app, { asso: managedAsso }, { isPresident: true });
+  createAssoMembership(app, { asso: managedAsso, role: managedRole, user: managedUser });
   const duplicateNameAsso = createAsso(app, { name: 'E2E duplicate name', mail: 'e2e-duplicate-existing@utt.fr' });
 
   beforeAll(async () => {
+    await app()
+      .get(PrismaService)
+      .assoMembershipPermission.createMany({
+        data: [{ id: 'manage_infos' }, { id: 'manage_members' }, { id: 'manage_roles' }, { id: 'weekly' }],
+      });
     await app()
       .get(PrismaService)
       .assoSympa.create({
@@ -111,9 +109,13 @@ const AssoAccessE2ESpec = e2eSuite('POST/GET /assos/access', (app) => {
       .withBearerToken(createUserForAccess.token)
       .post('/assos/access/confirm')
       .withBody({ token, name: 'E2E created association' })
-      .expectBody({
+      .expectJsonLike({
         action: 'CREATE',
-        asso: { name: 'E2E created association', email: 'e2e-create-confirm@utt.fr' },
+        asso: {
+          id: /^[0-9a-f-]{36}$/,
+          name: 'E2E created association',
+          email: 'e2e-create-confirm@utt.fr',
+        },
       });
     expect(
       await app()
@@ -159,7 +161,12 @@ const AssoAccessE2ESpec = e2eSuite('POST/GET /assos/access', (app) => {
       .withBearerToken(claimUser.token)
       .get('/assos/access/info')
       .withQueryParams('token', token)
-      .expectBody({ action: 'CLAIM', email: claimAsso.mail, name: claimAsso.name });
+      .expectBody({
+        action: 'CLAIM',
+        email: claimAsso.mail,
+        name: claimAsso.name,
+        description: claimAsso.descriptionTranslation.fr,
+      });
 
     await pactum
       .spec()

@@ -264,16 +264,14 @@ export class AssosService {
     return AssoAccessAction.CLAIM;
   }
 
-  async getAssoInfo(token: string): Promise<AssoInfo> {
-    const data = this.decodeAssoAccessToken(token);
-
+  async getAssoInfo(data: AssoAccessTokenData): Promise<AssoInfo> {
     const asso = await this.getAssoByEmail(data.assoEmail);
     const assoSympa = !asso ? await this.getAssoSympaByEmail(data.assoEmail) : null;
 
     return {
       action: await this.resolveAssoAccessAction(data),
       email: data.assoEmail,
-      name: asso?.name ?? assoSympa?.name,
+      name: asso?.name ?? assoSympa?.name ?? null,
       description: asso?.descriptionTranslation ?? null,
     };
   }
@@ -313,7 +311,7 @@ export class AssosService {
         throw new AppException(ERROR_CODE.ASSO_NAME_ALREADY_TAKEN, cleanName);
       }
       if (existingAsso) {
-        return this.confirmAssoAccessAfterValidation(user, data, cleanName);
+        throw new AppException(ERROR_CODE.ASSO_ALREADY_EXISTS);
       }
 
       const createdAsso = await this.prisma.$transaction(async (tx) => {

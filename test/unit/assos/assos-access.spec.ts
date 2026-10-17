@@ -67,7 +67,7 @@ async function expectAppError(promise: Promise<unknown>, errorCode: ERROR_CODE) 
   });
 }
 
-const AssosAccessUnitSpec = unitSuite('Association access', (app) => {
+const AssosAccessUnitSpec = unitSuite('Association access', () => {
   it('allows CREATE only when the email exists in AssoSympa', async () => {
     const { service, prisma } = createService();
     prisma.normalize.asso.findUnique.mockResolvedValue(null);
@@ -280,7 +280,7 @@ const AssosAccessUnitSpec = unitSuite('Association access', (app) => {
     prisma.normalize.asso.findUnique.mockResolvedValue(null);
     prisma.assoSympa.findUnique.mockResolvedValue({ name: 'Club UTT', mail: assoEmail });
 
-    await expect(service.getAssoInfo('token')).resolves.toEqual({
+    await expect(service.getAssoInfo(service.decodeAssoAccessToken('token'))).resolves.toEqual({
       action: 'CREATE',
       email: assoEmail,
       name: 'Club UTT',
@@ -307,7 +307,7 @@ const AssosAccessUnitSpec = unitSuite('Association access', (app) => {
     prisma.normalize.asso.findUnique.mockResolvedValue(existingAsso);
     prisma.assoMembership.count.mockResolvedValue(0);
 
-    await expect(service.getAssoInfo('token')).resolves.toEqual({
+    await expect(service.getAssoInfo(service.decodeAssoAccessToken('token'))).resolves.toEqual({
       action: AssoAccessAction.CLAIM,
       email: assoEmail,
       name: existingAsso.name,
