@@ -76,11 +76,8 @@ export type AssoAccessConfirmation =
   | { action: AssoAccessAction.CREATE; asso: RawAsso }
   | { action: AssoAccessAction.CLAIM; asso: Asso; membership: RawAssoMembership };
 
-export type TranslationWithoutId = Omit<Prisma.TranslationGetPayload<Prisma.TranslationDefaultArgs>, 'id'>;
-
 export type AssoInfo = {
   action: AssoAccessAction;
   email: string;
   name: string | null;
-  description: TranslationWithoutId | null;
 };

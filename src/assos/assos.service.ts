@@ -272,7 +272,6 @@ export class AssosService {
       action: await this.resolveAssoAccessAction(data),
       email: data.assoEmail,
       name: asso?.name ?? assoSympa?.name ?? null,
-      description: asso?.descriptionTranslation ?? null,
     };
   }
 

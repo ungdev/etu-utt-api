@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Translation } from '../../../prisma/types';
 
 export default class AssosAccessInfoResDto {
   @ApiProperty({ enum: ['CREATE', 'CLAIM'] })
@@ -10,7 +9,4 @@ export default class AssosAccessInfoResDto {
 
   @ApiProperty()
   name: string | null;
-
-  @ApiProperty({ nullable: true, type: Object })
-  description: Translation | null;
 }
