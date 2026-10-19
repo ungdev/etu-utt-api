@@ -76,7 +76,6 @@ const AssoAccessE2ESpec = e2eSuite('POST/GET /assos/access', (app) => {
         action: 'CREATE',
         email: 'e2e-create@utt.fr',
         name: 'E2E create association',
-        description: null,
       });
     sendSpy.mockRestore();
   });
@@ -165,7 +164,6 @@ const AssoAccessE2ESpec = e2eSuite('POST/GET /assos/access', (app) => {
         action: 'CLAIM',
         email: claimAsso.mail,
         name: claimAsso.name,
-        description: claimAsso.descriptionTranslation.fr,
       });
 
     await pactum

@@ -36,6 +36,7 @@ export class ConfigService {
   public readonly ASSOS_MAX_CLAIMS_PER_ASSO: number;
   public readonly ASSOS_MAX_CLAIMS_PER_USER: number;
   public readonly ASSOS_CLAIM_TOKEN_EXPIRATION: number;
+  public readonly ASSOS_CLAIM_ROLE_EXPIRATION: number;
   // DEV ENVIRONMENT ONLY
 
   // TEST ENVIRONMENT ONLY
@@ -73,6 +74,7 @@ export class ConfigService {
     this.ASSOS_MAX_CLAIMS_PER_ASSO = Number.parseInt(config.get('ASSOS_MAX_CLAIMS_PER_ASSO'));
     this.ASSOS_MAX_CLAIMS_PER_USER = Number.parseInt(config.get('ASSOS_MAX_CLAIMS_PER_USER'));
     this.ASSOS_CLAIM_TOKEN_EXPIRATION = Number.parseInt(config.get('ASSOS_CLAIM_TOKEN_EXPIRATION'));
+    this.ASSOS_CLAIM_ROLE_EXPIRATION = Number.parseInt(config.get('ASSOS_CLAIM_ROLE_EXPIRATION'));
 
     this._FAKER_SEED = isTestEnv() ? Number(config.get('FAKER_SEED')) : undefined;
   }

@@ -284,7 +284,6 @@ const AssosAccessUnitSpec = unitSuite('Association access', () => {
       action: 'CREATE',
       email: assoEmail,
       name: 'Club UTT',
-      description: null,
     });
   });
 
@@ -294,7 +293,6 @@ const AssosAccessUnitSpec = unitSuite('Association access', () => {
       id: 'asso-id',
       name: 'Club UTT',
       mail: assoEmail,
-      descriptionTranslation: { fr: 'Description' },
     };
     jwt.verify.mockReturnValue({
       userId: user.id,
@@ -311,7 +309,6 @@ const AssosAccessUnitSpec = unitSuite('Association access', () => {
       action: AssoAccessAction.CLAIM,
       email: assoEmail,
       name: existingAsso.name,
-      description: existingAsso.descriptionTranslation,
     });
   });
 

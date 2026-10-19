@@ -336,7 +336,7 @@ export class AssosService {
             userId: user.id,
             roleId: role.id,
             startAt: new Date(),
-            endAt: new Date(new Date().getTime() + 365 * 24 * 60 * 60 * 1000),
+            endAt: new Date(new Date().getTime() + this.config.ASSOS_CLAIM_ROLE_EXPIRATION),
             permissions: {
               connect: [{ id: 'manage_infos' }, { id: 'manage_members' }, { id: 'manage_roles' }, { id: 'weekly' }],
             },
