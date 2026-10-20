@@ -23,7 +23,7 @@ export const GetBranchesE2ESpec = e2eSuite('GET /branch', (app) => {
           {
             code: branch2.code,
             name: branch2.name,
-            options: [
+            branchOptions: [
               {
                 code: branchOption1.code,
                 name: branchOption1.name,
