@@ -65,8 +65,6 @@
     "file-type": "^22.2.0",
     "ldapts": "9.2.0",
     "multer": "2.4.0",
-    "node-addon-api": "^8.7.0",
-    "node-gyp": "^12.3.0",
     "pactum-matchers": "^1.2.0",
     "passport-jwt": "^4.0.1",
     "pdfkit": "^0.20.2",
