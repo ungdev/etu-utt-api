@@ -7,9 +7,9 @@ import { getTranslation } from './utils';
 @Injectable()
 export class TranslationInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    const headerLanguage = context.switchToHttp().getRequest<Request>().header('language');
+    const headerLanguage = context.switchToHttp().getRequest<Request>().header('x-language');
     const language = headerLanguage in Language ? (headerLanguage as Language) : 'fr';
-    context.switchToHttp().getRequest<Request>().headers['language'] = language;
+    context.switchToHttp().getRequest<Request>().headers['x-language'] = language;
     return next.handle().pipe(map((item) => this.transform(item, language)));
   }
 

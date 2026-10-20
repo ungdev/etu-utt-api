@@ -4,11 +4,11 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { faker } from '@faker-js/faker';
 import { ConfigService } from '../../src/config/config.service';
-import { clearUniqueValues, generateDefaultApplication } from '../../prisma/seed/utils';
+import { clearFakerExtension, generateDefaultApplication } from '../../prisma/seed/utils';
 import Spec from 'pactum/src/models/Spec';
 import { AppModule } from '../../src/app.module';
 import * as pactum from 'pactum';
-import '../declarations.d.ts'
+import '../declarations.d.ts';
 
 export async function buildTestApp(port: number): Promise<E2EApp> {
   const moduleRef = await Test.createTestingModule({
@@ -18,9 +18,12 @@ export async function buildTestApp(port: number): Promise<E2EApp> {
   AppModule.initApp(nestApp);
   await nestApp.listen(port);
 
-  nestApp['spec'] = () => pactum.spec().withBaseUrl(
-    `http://localhost:${port}${process.env.API_PREFIX.startsWith('/') ? '' : '/'}${process.env.API_PREFIX.endsWith('/') ? process.env.API_PREFIX.slice(0, -1) : process.env.API_PREFIX}`,
-  );
+  nestApp['spec'] = () =>
+    pactum
+      .spec()
+      .withBaseUrl(
+        `http://localhost:${port}${process.env.API_PREFIX.startsWith('/') ? '' : '/'}${process.env.API_PREFIX.endsWith('/') ? process.env.API_PREFIX.slice(0, -1) : process.env.API_PREFIX}`,
+      );
   return nestApp as unknown as E2EApp;
 }
 
@@ -36,7 +39,7 @@ export function init(app: AppProvider) {
 /**
  * Extended INestApplication, with utility function spec() which sets up a {@link Spec} object for calling a route of the app.
  */
-export type E2EApp = INestApplication & { spec(): Spec }
+export type E2EApp = INestApplication & { spec(): Spec };
 
 /**
  * A function returning the app, for e2e testing ({@link INestApplication}).
@@ -68,7 +71,7 @@ function suite<T extends AppProvider>(name: string, func: (app: T) => void) {
       beforeAll(async () => {
         const prisma = app().get(PrismaService);
         await cleanDb(prisma);
-        clearUniqueValues();
+        clearFakerExtension();
         await generateDefaultApplication(prisma);
       }, 15000);
       func(app);

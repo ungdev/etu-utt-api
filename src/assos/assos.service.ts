@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '../prisma/types';
 import { ConfigService } from '../config/config.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { RawAssoMembershipRole } from '../prisma/types';
@@ -8,7 +7,6 @@ import { AssoMembership } from './interfaces/membership.interface';
 import { AssoMembershipRole } from './interfaces/membership-role.interface';
 import AssosSearchReqDto from './dto/req/assos-search-req.dto';
 import AssosMemberUpdateReqDto from './dto/req/assos-member-update.dto';
-import { AppException, ERROR_CODE } from '../exceptions';
 import AssosUpdateReqDto from './dto/req/assos-update-req.dto';
 
 @Injectable()
@@ -232,46 +230,27 @@ export class AssosService {
     assoId: string,
     newData: Partial<Pick<AssoMembershipRole, 'name' | 'position'>>,
   ): Promise<RawAssoMembershipRole[]> {
-    // This poll must be performed the closest possible to the transaction
-    try {
-      const [{ position }, { count }] = await this.prisma.$transaction([
-        this.prisma.assoMembershipRole.findFirstOrThrow({
-          where: { id: roleId, assoId, position: { gte: 0 } },
-          select: { position: true },
-        }),
-        this.prisma.assoMembershipRole.updateMany({
-          where: { id: roleId, position: { gte: 0 } },
-          data: { position: -1 },
-        }),
-      ]);
-      if (count < 1) throw new AppException(ERROR_CODE.ASSO_ROLE_ALREADY_MOVED);
-      await this.prisma.$transaction([
-        this.prisma.assoMembershipRole.updateMany({
-          where: {
-            position: {
-              gte: Math.min(position, newData.position),
-              lte: Math.max(position, newData.position),
-            },
-          },
-          data: {
-            position: {
-              increment: newData.position !== position ? (newData.position > position ? -1 : 1) : 0,
-            },
-          },
-        }),
-        this.prisma.assoMembershipRole.update({
-          where: { id: roleId },
-          data: {
-            position: newData.position,
-            name: newData.name,
-          },
-        }),
-      ]);
-    } catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2025')
-        throw new AppException(ERROR_CODE.ASSO_ROLE_ALREADY_MOVED);
-      throw e;
+    // Update position
+    if (newData.position !== undefined) {
+      const { position: currentPosition } = await this.prisma.assoMembershipRole.findUniqueOrThrow({ where: { id: roleId, assoId } });
+      if (currentPosition > newData.position) {
+        await this.prisma.$transaction([
+          this.prisma.assoMembershipRole.updateMany({ where: { position: { gte: newData.position, lt: currentPosition } }, data: { position: { increment: 1 } } }),
+          this.prisma.assoMembershipRole.update({where: { id: roleId, assoId }, data: { position: newData.position } }),
+        ]);
+      } else if (currentPosition < newData.position) {
+        await this.prisma.$transaction([
+          this.prisma.assoMembershipRole.updateMany({ where: { position: { gt: currentPosition, lte: newData.position } }, data: { position: { decrement: 1 } } }),
+          this.prisma.assoMembershipRole.update({ where: { id: roleId, assoId }, data: { position: newData.position } }),
+        ]);
+      }
     }
+    // Update the rest (only name in this case)
+    await this.prisma.assoMembershipRole.update({
+      where: { id: roleId, assoId },
+      data: { name: newData.name },
+    });
+    // Return all roles for this asso
     return this.prisma.assoMembershipRole.findMany({
       where: { assoId },
       orderBy: { position: 'asc' },
