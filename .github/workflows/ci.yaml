@@ -29,7 +29,7 @@ jobs:
             {
               "https://npm.pkg.github.com": {
                 "@ungdev": {
-                  "authToken": ${{ secrets.GITHUB_TOKEN }}
+                  "authToken": "${{ secrets.GITHUB_TOKEN }}"
                 }
               }
             }
@@ -60,7 +60,7 @@ jobs:
             {
               "https://npm.pkg.github.com": {
                 "@ungdev": {
-                  "authToken": ${{ secrets.GITHUB_TOKEN }}
+                  "authToken": "${{ secrets.GITHUB_TOKEN }}"
                 }
               }
             }
@@ -141,7 +141,7 @@ jobs:
             {
               "https://npm.pkg.github.com": {
                 "@ungdev": {
-                  "authToken": ${{ secrets.GITHUB_TOKEN }}
+                  "authToken": "${{ secrets.GITHUB_TOKEN }}"
                 }
               }
             }
