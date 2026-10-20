@@ -1,5 +1,4 @@
-import { IsAlphanumeric, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { IsPositive } from 'class-validator';
+import { IsAlphanumeric, IsNotEmpty, IsOptional, IsString , IsPositive } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export default class AuthSignUpDebugReqDto {
