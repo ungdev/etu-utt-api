@@ -126,8 +126,10 @@ pouvez alors changer les valeurs en vous référant à la documentation pour cha
 Créez une copie du fichier `.env.test.dist` et nommez-la `.env.test`. De même, les valeurs sont documentées directement
 dans le fichier.
 
-```{important}
-Si vos tests sont lents (>100s), configurez DATABASE_TEXT_PROTOCOL=true dans vos fichiers .env.
+```{tip}
+Si tes tests sont lents (>100s), configure `DATABASE_TEXT_PROTOCOL=true` dans les fichiers `.env`. Cela permet de ne pas utiliser le protocole binaire qui pourrait être mal supporté par ton moteur de base de données.
+
+Si ta db ne répond plus à vos requêtes, ajoutez `?allowPublicKeyRetrieval=true&connectionLimit=3` à la fin de votre `DATABASE_URL`
 ```
 
 ## Utiliser les commandes du projet

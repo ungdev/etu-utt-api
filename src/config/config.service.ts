@@ -42,7 +42,7 @@ export class ConfigService {
   constructor(config: NestConfigService) {
     this.PAGINATION_PAGE_SIZE = Number(config.get('PAGINATION_PAGE_SIZE'));
     this.DATABASE_URL = config.get('DATABASE_URL');
-    this.DATABASE_TEXT_PROTOCOL = config.get<string>('DATABASE_TEXT_PROTOCOL') === 'true';
+    this.DATABASE_TEXT_PROTOCOL = this.getBoolean(config.get('DATABASE_TEXT_PROTOCOL'));
     this.JWT_SECRET = config.get('JWT_SECRET');
     this.JWT_EXPIRES_IN = config.get('JWT_EXPIRES_IN');
     this.SALT_ROUNDS = Number(config.get('SALT_ROUNDS'));
@@ -83,9 +83,9 @@ export class ConfigService {
   }
 
   private getBoolean(value: string): boolean {
-    if (value == 'true') {
+    if (value === 'true') {
       return true;
-    } else if (value == 'false') {
+    } else if (value === 'false') {
       return false;
     } else {
       throw new Error('Environment variable SMTP_REJECT_UNAUTHORIZED must be "true" or "false"');

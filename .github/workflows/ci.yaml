@@ -24,9 +24,6 @@ jobs:
           runtime: node@${{ matrix.node-version }}
           require-lockfile: true
           version: ^${{ matrix.pnpm-version }}
-          run-install:
-            args:
-              - --no-optional
         env:
           pnpm_config__auth: |
             {
@@ -58,9 +55,6 @@ jobs:
           runtime: node@${{ matrix.node-version }}
           require-lockfile: true
           version: ^${{ matrix.pnpm-version }}
-          run-install:
-            args:
-              - --no-optional
         env:
           pnpm_config__auth: |
             {
@@ -142,9 +136,6 @@ jobs:
           runtime: node@${{ matrix.node-version }}
           require-lockfile: true
           version: ^${{ matrix.pnpm-version }}
-          run-install:
-            args:
-              - --no-optional
         env:
           pnpm_config__auth: |
             {
