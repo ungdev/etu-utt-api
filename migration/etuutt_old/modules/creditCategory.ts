@@ -1,4 +1,4 @@
-import { PrismaClient, PrismaOperationResult, getOperationResults } from '../make-migration';
+import { PrismaClient, PrismaOperationResult, getOperationResults } from '&/migration/etuutt_old/make-migration';
 import { RawCreditCategory } from '@/prisma/types';
 
 export async function createCreditCategories(prisma: PrismaClient) {

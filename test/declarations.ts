@@ -24,7 +24,7 @@ import { AppProvider, JsonLike } from '#/utils/test_utils';
 import { PermissionManager, getTranslation, omit, pick } from '@/utils';
 import { int, regex, string, uuid } from 'pactum-matchers';
 import { Language } from '@/prisma/types';
-import { DEFAULT_APPLICATION } from '#/../prisma/seed/utils';
+import { DEFAULT_APPLICATION } from '&/prisma/seed/utils';
 import ApplicationResDto from '@/auth/application/dto/res/application-res.dto';
 import PermissionsResDto from '@/auth/permissions/dto/res/permissions.dto';
 

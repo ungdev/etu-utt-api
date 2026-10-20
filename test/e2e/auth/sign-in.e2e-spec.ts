@@ -5,7 +5,7 @@ import * as pactum from 'pactum';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '@/prisma/prisma.service';
 import AuthSignInReqDto from '@/auth/dto/req/auth-sign-in-req.dto';
-import { DEFAULT_APPLICATION } from '#/../prisma/seed/utils';
+import { DEFAULT_APPLICATION } from '&/prisma/seed/utils';
 
 const SignInE2eSpec = e2eSuite('POST /auth/signin', (app) => {
   const body: AuthSignInReqDto = {

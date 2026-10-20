@@ -1,4 +1,4 @@
-import { PrismaClient, PrismaOperationResult, QueryFunction , getOperationResults } from '../make-migration';
+import { PrismaClient, PrismaOperationResult, QueryFunction , getOperationResults } from '&/migration/etuutt_old/make-migration';
 import { RawSemester, RawUeComment } from '@/prisma/types';
 
 export async function migrateUeComments(query: QueryFunction, prisma: PrismaClient, semesters: RawSemester[]) {

@@ -5,7 +5,7 @@ import * as fakedb from '#/utils/fakedb';
 import { ERROR_CODE } from '@/exceptions';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '@/prisma/prisma.service';
-import { DEFAULT_APPLICATION } from '#/../prisma/seed/utils';
+import { DEFAULT_APPLICATION } from '&/prisma/seed/utils';
 import { AuthService } from '@/auth/auth.service';
 
 const DebugSignInE2ESpec = e2eSuite('POST (/vdev)/auth/signin', (app) => {

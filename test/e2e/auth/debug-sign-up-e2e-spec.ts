@@ -5,7 +5,7 @@ import { ERROR_CODE } from '@/exceptions';
 import { UserType } from '@/prisma/types';
 import { createUser } from '#/utils/fakedb';
 import { JwtService } from '@nestjs/jwt';
-import { DEFAULT_APPLICATION } from '../../../prisma/seed/utils';
+import { DEFAULT_APPLICATION } from '&/prisma/seed/utils';
 
 const DebugSignUpE2ESpec = e2eSuite('POST (/vdev)/auth/signup', (app) => {
   const dto = {

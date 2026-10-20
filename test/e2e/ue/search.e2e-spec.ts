@@ -2,7 +2,7 @@ import { createBranch, createBranchOption, createSemester, createUe, createUeof,
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '@/exceptions';
 import { e2eSuite } from '#/utils/test_utils';
-import { registerUniqueValue } from '#/../prisma/seed/utils';
+import { registerUniqueValue } from '&/prisma/seed/utils';
 import { ConfigService } from '@/config/config.service';
 import { FakeUeWithOfs } from '#/declarations';
 

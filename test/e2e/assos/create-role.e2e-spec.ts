@@ -10,7 +10,7 @@ import * as pactum from 'pactum';
 import { ERROR_CODE } from '@/exceptions';
 import { PrismaService } from '@/prisma/prisma.service';
 import { faker } from '@faker-js/faker';
-import { DEFAULT_APPLICATION } from '#/../prisma/seed/utils';
+import { DEFAULT_APPLICATION } from '&/prisma/seed/utils';
 import { AuthService } from '@/auth/auth.service';
 
 const CreateAssoRoleE2ESpec = e2eSuite('POST /assos/:id/roles', (app) => {

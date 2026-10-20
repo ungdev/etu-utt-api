@@ -74,7 +74,7 @@ E2E / `E2EAppProvider`, et les suites unitaires / `UnitAppProvider`. Voici donc 
 tester la route `GET /users/:id` :
 
 ```ts
-import { e2eSuite, E2EAppProvider } from '../../utils/test_utils';
+import { e2eSuite, E2EAppProvider } from '#/utils/test_utils';
 
 const GetUserFromIdE2ESpec = e2eSuite('GET /users/:userId', (app: E2EAppProvider) => {
   // Insérez les tests ici : initialisation, it(), ...
@@ -184,7 +184,7 @@ Les fake functions sont toutes définies de la même façon :
 Voici plusieurs exemples d’utilisation de ces fonctions :
 
 ```ts
-import * as fakedb from '../../utils/fakedb';
+import * as fakedb from '#/utils/fakedb';
 
 e2eSuite('Foo', (app) => {
   // Vous pouvez aussi utiliser unitSuite, ou n'importe quoi d'autre, tant que c'est équivalent à un describe() et que vous pouvez avoir l'app.

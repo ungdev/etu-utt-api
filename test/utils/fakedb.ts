@@ -43,7 +43,7 @@ import { AppProvider } from '#/utils/test_utils';
 import { CommentStatus } from '@/ue/comments/interfaces/comment.interface';
 import { UeAnnalFile } from '@/ue/annals/interfaces/annal.interface';
 import { PermissionManager, omit, pick, translationSelect } from '@/utils';
-import { DEFAULT_APPLICATION } from '#/../prisma/seed/utils';
+import { DEFAULT_APPLICATION } from '&/prisma/seed/utils';
 import { AssoWeekly } from '@/assos/interfaces/weekly.interface';
 
 /**

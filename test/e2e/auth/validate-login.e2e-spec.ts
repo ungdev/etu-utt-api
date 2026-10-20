@@ -4,7 +4,7 @@ import { AuthService } from '@/auth/auth.service';
 import { ERROR_CODE } from '@/exceptions';
 import * as fakedb from '#/utils/fakedb';
 import { PrismaService } from '@/prisma/prisma.service';
-import { DEFAULT_APPLICATION } from '#/../prisma/seed/utils';
+import { DEFAULT_APPLICATION } from '&/prisma/seed/utils';
 import { JwtService } from '@nestjs/jwt';
 
 const ValidateLoginE2ESpec = e2eSuite('POST /auth/login/validate', (app) => {

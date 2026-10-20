@@ -1,4 +1,4 @@
-import { PrismaClient, PrismaOperationResult, QueryFunction , getOperationResults } from '../make-migration';
+import { PrismaClient, PrismaOperationResult, QueryFunction , getOperationResults } from '&/migration/etuutt_old/make-migration';
 import { RawUe } from '@/prisma/types';
 
 export function findLegacyUeofName(ueCode: string, comment: string) {

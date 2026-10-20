@@ -1,15 +1,15 @@
 import { IsPublic } from './decorator';
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
-import { AppException, ERROR_CODE } from '../exceptions';
-import { ApiAppErrorResponse } from '../app.dto';
+import { AppException, ERROR_CODE } from '@/exceptions';
+import { ApiAppErrorResponse } from '@/app.dto';
 import AuthSignUpDebugReqDto from './dto/req/auth-sign-up-debug-req.dto';
 import { GetApplication } from './decorator/get-application.decorator';
 import { Application } from './application/interfaces/application.interface';
 import AuthSignInDebugResDto from './dto/res/auth-sign-in-debug-res.dto';
 import AuthSignInDebugReqDto from './dto/req/auth-sign-in-debug-req.dto';
 import { AuthService } from './auth.service';
-import { ConfigService } from '../config/config.service';
+import { ConfigService } from '@/config/config.service';
 import ApplicationService from './application/application.service';
 
 @Controller({ path: 'auth', version: 'dev' })

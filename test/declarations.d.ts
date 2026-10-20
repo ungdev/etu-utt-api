@@ -1,7 +1,7 @@
-import { ERROR_CODE, ErrorData, ExtrasTypeBuilder } from '../src/exceptions';
-import { UeComment } from 'src/ue/comments/interfaces/comment.interface';
-import { UeCommentReply } from 'src/ue/comments/interfaces/comment-reply.interface';
-import { UeRating } from 'src/ue/interfaces/rate.interface';
+import { ERROR_CODE, ErrorData, ExtrasTypeBuilder } from '@/exceptions';
+import { UeComment } from '@/ue/comments/interfaces/comment.interface';
+import { UeCommentReply } from '@/ue/comments/interfaces/comment-reply.interface';
+import { UeRating } from '@/ue/interfaces/rate.interface';
 import {
   FakeApiApplication,
   FakeAsso,
@@ -12,12 +12,12 @@ import {
   FakeHomepageWidget,
   FakeImageMedia,
   FakeUe,
- FakeUeAnnalType, FakeUeCreditCategory, FakeUeof, FakeUser } from './utils/fakedb';
-import { UeAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
-import { Criterion } from 'src/ue/interfaces/criterion.interface';
-import { AppProvider } from './utils/test_utils';
-import { Language } from '../src/prisma/types';
-import { PermissionManager } from '../src/utils';
+ FakeUeAnnalType, FakeUeCreditCategory, FakeUeof, FakeUser } from '#/utils/fakedb';
+import { UeAnnalFile } from '@/ue/annals/interfaces/annal.interface';
+import { Criterion } from '@/ue/interfaces/criterion.interface';
+import { AppProvider } from '#/utils/test_utils';
+import { Language } from '@/prisma/types';
+import { PermissionManager } from '@/utils';
 
 type JsonLikeVariant<T> = Partial<{
   [K in keyof T]: T[K] extends string | Date

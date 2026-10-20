@@ -4,7 +4,7 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { faker } from '@faker-js/faker';
 import { ConfigService } from '@/config/config.service';
-import { clearUniqueValues, generateDefaultApplication } from '#/../prisma/seed/utils';
+import { clearUniqueValues, generateDefaultApplication } from '&/prisma/seed/utils';
 import Spec from 'pactum/src/models/Spec';
 import { AppModule } from '@/app.module';
 import * as pactum from 'pactum';

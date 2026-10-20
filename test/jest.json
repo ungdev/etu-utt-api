@@ -9,7 +9,8 @@
   },
   "moduleNameMapper": {
     "^@/(.*)": "<rootDir>/src/$1",
-    "^#/(.*)": "<rootDir>/test/$1"
+    "^#/(.*)": "<rootDir>/test/$1",
+    "^&/(.*)": "<rootDir>/$1"
   },
   "collectCoverageFrom": ["**/*.ts", "!main.ts", "!**/*-res.dto.ts", "!**/*-req.dto.ts"],
   "coverageDirectory": "coverage",

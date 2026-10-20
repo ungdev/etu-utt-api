@@ -9,7 +9,7 @@ import { ERROR_CODE } from '@/exceptions';
 import { ConfigService } from '@/config/config.service';
 import { LdapUser } from 'ldap-server-mock';
 import { mockLdapServer } from '#/external_services/ldap';
-import { DEFAULT_APPLICATION } from '@/../prisma/seed/utils';
+import { DEFAULT_APPLICATION } from '&/prisma/seed/utils';
 import { Permission } from '@/prisma/types';
 
 const SignUpE2eSpec = e2eSuite('POST /auth/signup', (app) => {
