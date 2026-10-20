@@ -38,7 +38,7 @@ model Link {
   position  Int     @unique
   nameId    String  @unique
   tooltipId String  @unique
-  hyperlink String  @unique
+  url       String  @unique
   public    Boolean // If you need to be connected to see the link
 
   name    Translation @relation(name: "linkNameTranslation", fields: [nameId], references: [id])

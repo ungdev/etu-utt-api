@@ -7,7 +7,7 @@ export class LinkResDto {
   name: Translation;
   @ApiProperty({ type: String })
   tooltip: Translation;
-  hyperlink: string;
+  url: string;
 
   // Admin information
   @ApiProperty({ description: 'Only with permission API_MODIFY_LINKS.' })

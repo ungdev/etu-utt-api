@@ -14,7 +14,7 @@ const CreateLinksE2ESpec = e2eSuite('POST /link', (app) => {
   const userNoPermission = fakedb.createUser(app);
 
   const body: LinkReqDto = {
-    hyperlink: faker.db.link.hyperlink(),
+    url: faker.db.link.url(),
     name: faker.db.translation(faker.company.name),
     tooltip: faker.db.translation(faker.company.catchPhrase),
   };
@@ -34,7 +34,7 @@ const CreateLinksE2ESpec = e2eSuite('POST /link', (app) => {
       .spec()
       .post('/link')
       .withBearerToken(user.token)
-      .withBody({ ...body, hyperlink: existingLink.hyperlink })
+      .withBody({ ...body, url: existingLink.url })
       .expectAppError(ERROR_CODE.LINK_ALREADY_EXISTS));
 
   it('should successfully create the link', async () => {

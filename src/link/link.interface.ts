@@ -8,7 +8,7 @@ const LINK_SELECT_FILTER = {
     position: true,
     name: translationSelect,
     tooltip: translationSelect,
-    hyperlink: true,
+    url: true,
     public: true,
   },
 } as const satisfies Prisma.LinkFindManyArgs;

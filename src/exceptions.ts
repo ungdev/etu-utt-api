@@ -471,7 +471,7 @@ export const ErrorData = Object.freeze({
     httpCode: HttpStatus.CONFLICT,
   },
   [ERROR_CODE.LINK_ALREADY_EXISTS]: {
-    message: 'This hyperlink already exists',
+    message: 'This url already exists',
     httpCode: HttpStatus.CONFLICT,
   },
   [ERROR_CODE.SERVER_DISK_ERROR]: {

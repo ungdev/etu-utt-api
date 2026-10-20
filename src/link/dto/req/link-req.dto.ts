@@ -24,7 +24,7 @@ export class LinkReqDto {
 
   @IsUrl()
   @IsNotEmpty()
-  hyperlink: string;
+  url: string;
 
   @IsBoolean()
   @IsOptional()

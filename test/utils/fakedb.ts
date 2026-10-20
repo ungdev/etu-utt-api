@@ -1161,7 +1161,7 @@ export const createLink = entityFaker(
   {
     name: () => faker.db.translation(faker.company.name),
     tooltip: () => faker.db.translation(faker.company.catchPhrase),
-    hyperlink: faker.db.link.hyperlink,
+    url: faker.db.link.url,
     public: true,
     position: faker.db.link.position,
   },
@@ -1170,7 +1170,7 @@ export const createLink = entityFaker(
     .get(PrismaService)
       .normalize.link.create({
         data: {
-          ...pick(params, 'id', 'hyperlink', 'public', 'position'),
+          ...pick(params, 'id', 'url', 'public', 'position'),
           name: { create: params.name },
           tooltip: { create: params.tooltip },
         },

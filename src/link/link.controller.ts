@@ -34,8 +34,8 @@ export class LinkController {
   @ApiOperation({ description: 'Creates a link.' })
   @ApiAppErrorResponse(ERROR_CODE.LINK_ALREADY_EXISTS, 'This link already exists')
   public async create(@Body() dto: LinkReqDto) {
-    if (await this.linkService.hyperlinkExists(dto.hyperlink)) throw new AppException(ERROR_CODE.LINK_ALREADY_EXISTS);
-    const link = await this.linkService.create(dto.name, dto.tooltip, dto.hyperlink, dto.public, dto.position);
+    if (await this.linkService.urlExists(dto.url)) throw new AppException(ERROR_CODE.LINK_ALREADY_EXISTS);
+    const link = await this.linkService.create(dto.name, dto.tooltip, dto.url, dto.public, dto.position);
     return this.formatLink(link, true);
   }
 
@@ -46,7 +46,7 @@ export class LinkController {
   public async update(@UUIDParam('id') id: string, @Body() dto: LinkReqDto) {
     if (!(await this.linkService.idExists(id))) throw new AppException(ERROR_CODE.NO_SUCH_LINK, id);
     const link = await this.linkService.update(id, {
-      ...pick(dto, 'name', 'tooltip', 'hyperlink', 'position'),
+      ...pick(dto, 'name', 'tooltip', 'url', 'position'),
       public_: dto.public,
     });
     return this.formatLink(link, true);
@@ -64,7 +64,7 @@ export class LinkController {
 
   formatLink(link: Link, admin: boolean): LinkResDto {
     return {
-      ...pick(link, 'id', 'name', 'tooltip', 'hyperlink'),
+      ...pick(link, 'id', 'name', 'tooltip', 'url'),
       ...(admin ? { public: link.public } : {}),
     };
   }

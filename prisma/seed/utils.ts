@@ -156,7 +156,7 @@ declare module '@faker-js/faker' {
         name: () => string;
       };
       link: {
-        hyperlink: () => string;
+        url: () => string;
         position: () => number;
       },
     };
@@ -218,7 +218,7 @@ Faker.prototype.db = {
     name: () => fakeSafeUniqueData('association', 'name', faker.person.firstName),
   },
   link: {
-    hyperlink: () => fakeSafeUniqueData('link', 'hyperlink', faker.internet.url),
+    url: () => fakeSafeUniqueData('link', 'url', faker.internet.url),
     position: () => fakeCounterData('link', 'position'),
   }
 };

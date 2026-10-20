@@ -23,30 +23,41 @@ export class LinkService {
   }
 
   /**
-   * Checks if an hyperlink exists in the database.
-   * @param hyperlink Hyperlink to search.
+   * Checks if an URL exists in the database.
+   * @param url URL to search.
    */
-  public async hyperlinkExists(hyperlink: string): Promise<boolean> {
-    return (await this.prisma.link.count({ where: { hyperlink } })) > 0;
+  public async urlExists(url: string): Promise<boolean> {
+    return (await this.prisma.link.count({ where: { url } })) > 0;
   }
 
   /**
    * Creates a new link in the database.
    * @param name Name of the new link.
    * @param tooltip Small description of the new link.
-   * @param hyperlink Hyperlink of the new link.
+   * @param url URL of the new link.
    * @param public If non-connected people can access the link it.
    * @param position 0-based position of the link.
    * @returns The new link.
    */
-  public async create(name: Translation, tooltip: Translation, hyperlink: string, public_: boolean, position = undefined): Promise<Link> {
+  public async create(
+    name: Translation,
+    tooltip: Translation,
+    url: string,
+    public_: boolean,
+    position = undefined,
+  ): Promise<Link> {
     const linkCount = await this.count();
     if (position === undefined || position > linkCount) {
       position = linkCount;
     } else {
-      await this.prisma.link.updateMany({ where: { position: { gte: position } }, data: { position: { increment: 1 } } });
+      await this.prisma.link.updateMany({
+        where: { position: { gte: position } },
+        data: { position: { increment: 1 } },
+      });
     }
-    return this.prisma.normalize.link.create({ data: { position: position, name: { create: name }, tooltip: { create: tooltip }, hyperlink, public: public_ } })
+    return this.prisma.normalize.link.create({
+      data: { position: position, name: { create: name }, tooltip: { create: tooltip }, url, public: public_ },
+    });
   }
 
   /**
@@ -54,28 +65,46 @@ export class LinkService {
    * @param id Id of the link to modify.
    * @param name Name of the link to modify, or undefined if that shouldn't be modified.
    * @param tooltip New tooltip of the link, or undefined if that shouldn't be modified.
-   * @param hyperlink New hyperlink of the link, or undefined if that shouldn't be modified.
+   * @param url New URL of the link, or undefined if that shouldn't be modified.
    * @param position 0-based position of the link.
    * @param public_ If the link is visible for not-connected users.
    * @returns The updated link.
    */
-  public async update(id: string, { name, tooltip, hyperlink, position, public_ }: { name?: Translation, tooltip?: Translation, hyperlink?: string, position?: number, public_?: boolean }): Promise<Link> {
+  public async update(
+    id: string,
+    {
+      name,
+      tooltip,
+      url,
+      position,
+      public_,
+    }: { name?: Translation; tooltip?: Translation; url?: string; position?: number; public_?: boolean },
+  ): Promise<Link> {
     // Manage position separately
     if (position !== undefined) {
       const { position: currentPosition } = await this.prisma.link.findUnique({ where: { id } });
       if (currentPosition > position) {
         await this.prisma.$transaction([
-          this.prisma.link.updateMany({ where: { position: { gte: position, lt: currentPosition } }, data: { position: { increment: 1 } } }),
-          this.prisma.link.update({where: { id }, data: { position } }),
-      ]);
+          this.prisma.link.updateMany({
+            where: { position: { gte: position, lt: currentPosition } },
+            data: { position: { increment: 1 } },
+          }),
+          this.prisma.link.update({ where: { id }, data: { position } }),
+        ]);
       } else if (currentPosition < position) {
         await this.prisma.$transaction([
-          this.prisma.link.updateMany({ where: { position: { gt: currentPosition, lte: position } }, data: { position: { decrement: 1 } } }),
+          this.prisma.link.updateMany({
+            where: { position: { gt: currentPosition, lte: position } },
+            data: { position: { decrement: 1 } },
+          }),
           this.prisma.link.update({ where: { id }, data: { position } }),
         ]);
       }
     }
-    return this.prisma.normalize.link.update({ where: { id }, data: { name: { create: name }, tooltip: { create: tooltip }, hyperlink, public: public_ } });
+    return this.prisma.normalize.link.update({
+      where: { id },
+      data: { name: { create: name }, tooltip: { create: tooltip }, url, public: public_ },
+    });
   }
 
   /**
@@ -84,7 +113,10 @@ export class LinkService {
    */
   public async delete(id: string): Promise<Link> {
     const link = await this.prisma.normalize.link.delete({ where: { id } });
-    await this.prisma.link.updateMany({ where: { position: { gt: link.position } }, data: { position: { decrement: 1 } } });
+    await this.prisma.link.updateMany({
+      where: { position: { gt: link.position } },
+      data: { position: { decrement: 1 } },
+    });
     return link;
   }
 
