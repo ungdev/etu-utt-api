@@ -145,8 +145,9 @@ jobs:
                 }
               }
             }
-      - run: cp .env.test.dist .env.test
       - run: pnpm test:db:reset
+      - name: Apply CI environment
+        run: sed 's/DATABASE_TEXT_PROTOCOL=false/DATABASE_TEXT_PROTOCOL=true/g' .env.test.dist > .env.test
       - run: pnpm test:cov
       - uses: codecov/codecov-action@v4
         with:
