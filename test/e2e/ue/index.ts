@@ -9,8 +9,7 @@ import CommentsE2ESpec from '#/e2e/ue/comments/index.js';
 import GetMyUesE2ESpec from '#/e2e/ue/get-my-ues.e2e-spec.js';
 import CreditE2ESpec from '#/e2e/ue/credit/index.js';
 import { describe } from 'vitest';
-import { E2EAppProvider } from '#/utils/test_utils';
-import CreditE2ESpec from '#/e2e/ue/credit';
+import { E2EAppProvider } from '#/utils/test_utils.js';
 
 export default function UeE2ESpec(app: E2EAppProvider) {
   describe('UE', () => {

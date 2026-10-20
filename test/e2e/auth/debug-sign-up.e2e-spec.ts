@@ -1,5 +1,4 @@
 import AuthSignUpDebugReqDto from '@/auth/dto/req/auth-sign-up-debug-req.dto.js';
-import * as pactum from 'pactum';
 import { PrismaService } from '@/prisma/prisma.service.js';
 import { buildTestApp, E2EApp, e2eSuite } from '#/utils/test_utils.js';
 import { ERROR_CODE } from '@/exceptions.js';

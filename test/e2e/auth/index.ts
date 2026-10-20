@@ -1,6 +1,6 @@
-import DebugSignUpE2ESpec from '#/e2e/auth/debug-sign-up-e2e-spec.js';
-import DebugSignInE2ESpec from '#/e2e/auth/debug-sign-in-e2e-spec.js';
-import VerifyE2ESpec from '#/e2e/auth/verify-e2e-spec.js';
+import DebugSignUpE2ESpec from '#/e2e/auth/debug-sign-up.e2e-spec.js';
+import DebugSignInE2ESpec from '#/e2e/auth/debug-sign-in.e2e-spec.js';
+import VerifyE2ESpec from '#/e2e/auth/verify.e2e-spec.js';
 import { E2EAppProvider } from '#/utils/test_utils.js';
 import SignInE2ESpec from '#/e2e/auth/sign-in.e2e-spec.js';
 import SignUpE2ESpec from '#/e2e/auth/sign-up.e2e-spec.js';

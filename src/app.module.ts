@@ -17,8 +17,8 @@ import { TranslationInterceptor } from '@/app.interceptor.js';
 import { SemesterModule } from '@/semester/semester.module.js';
 import { ImageMediaModule } from '@/media/image/imagemedia.module.js';
 import { MailModule } from '@/mail/mail.module.js';
-import { AppValidationPipe } from '@/app.pipe';
-import { NotFoundFilter } from '@/exceptions';
+import { AppValidationPipe } from '@/app.pipe.js';
+import { NotFoundFilter } from '@/exceptions.js';
 
 export class AppModule {
   static register(): DynamicModule {

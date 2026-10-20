@@ -1,5 +1,4 @@
-import AuthSignInDebugReqDto from '@/auth/dto/req/auth-sign-in-debug-req.dto.js';
-import AuthSignInDebugReqDto from '@/auth/dto/req/auth-sign-in-debug-req.dto';
+import { AuthSignInDebugReqDto } from '@/auth/dto/req/auth-sign-in-debug-req.dto.js';
 import * as pactum from 'pactum';
 import { buildTestApp, E2EApp, e2eSuite, JsonLike } from '#/utils/test_utils.js';
 import * as fakedb from '#/utils/fakedb.js';

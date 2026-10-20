@@ -42,7 +42,7 @@ export class ConfigService {
   constructor(config: NestConfigService) {
     this.PAGINATION_PAGE_SIZE = Number(config.get('PAGINATION_PAGE_SIZE'));
     this.DATABASE_URL = config.get('DATABASE_URL');
-    this.DATABASE_TEXT_PROTOCOL = this.getBoolean(config.get('DATABASE_TEXT_PROTOCOL'));
+    this.DATABASE_TEXT_PROTOCOL = this.getBoolean(config, 'DATABASE_TEXT_PROTOCOL');
     this.JWT_SECRET = config.get('JWT_SECRET');
     this.JWT_EXPIRES_IN = config.get('JWT_EXPIRES_IN');
     this.SALT_ROUNDS = Number(config.get('SALT_ROUNDS'));
@@ -63,7 +63,7 @@ export class ConfigService {
     this.SMTP_PORT = config.get<number>('SMTP_PORT');
     this.SMTP_USER = config.get<string>('SMTP_USER');
     this.SMTP_PASSWORD = config.get<string>('SMTP_PASSWORD');
-    this.SMTP_REJECT_UNAUTHORIZED = this.getBoolean(config.get('SMTP_REJECT_UNAUTHORIZED'));
+    this.SMTP_REJECT_UNAUTHORIZED = this.getBoolean(config, 'SMTP_REJECT_UNAUTHORIZED');
     this.SMTP_SERVER_NAME = config.get<string>('SMTP_SERVER_NAME');
     this.SMTP_SENDING_NAME = config.get<string>('SMTP_SENDING_NAME');
     this.SMTP_SENDING_EMAIL = config.get<string>('SMTP_SENDING_EMAIL');
@@ -82,13 +82,14 @@ export class ConfigService {
     return this[key];
   }
 
-  private getBoolean(value: string): boolean {
+  private getBoolean(config: NestConfigService, name: string): boolean {
+    const value = config.get(name);
     if (value === 'true') {
       return true;
     } else if (value === 'false') {
       return false;
     } else {
-      throw new Error('Environment variable SMTP_REJECT_UNAUTHORIZED must be "true" or "false"');
+      throw new Error(`Environment variable ${name} must be "true" or "false", got "${value}" instead`);
     }
   }
 }

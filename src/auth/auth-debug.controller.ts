@@ -1,16 +1,16 @@
-import { IsPublic } from './decorator';
+import { IsPublic } from '@/auth/decorator/index.js';
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiCreatedResponse, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
-import { AppException, ERROR_CODE } from '@/exceptions';
-import { ApiAppErrorResponse } from '@/app.dto';
-import AuthSignUpDebugReqDto from './dto/req/auth-sign-up-debug-req.dto';
-import { GetApplication } from './decorator/get-application.decorator';
-import { Application } from './application/interfaces/application.interface';
-import AuthSignInDebugResDto from './dto/res/auth-sign-in-debug-res.dto';
-import AuthSignInDebugReqDto from './dto/req/auth-sign-in-debug-req.dto';
-import { AuthService } from './auth.service';
-import { ConfigService } from '@/config/config.service';
-import ApplicationService from './application/application.service';
+import { AppException, ERROR_CODE } from '@/exceptions.js';
+import { ApiAppErrorResponse } from '@/app.dto.js';
+import AuthSignUpDebugReqDto from '@/auth/dto/req/auth-sign-up-debug-req.dto.js';
+import { GetApplication } from '@/auth/decorator/get-application.decorator.js';
+import { Application } from '@/auth/application/interfaces/application.interface.js';
+import AuthSignInDebugResDto from '@/auth/dto/res/auth-sign-in-debug-res.dto.js';
+import { AuthSignInDebugReqDto } from '@/auth/dto/req/auth-sign-in-debug-req.dto.js';
+import { AuthService } from '@/auth/auth.service.js';
+import { ConfigService } from '@/config/config.service.js';
+import { ApplicationService } from '@/auth/application/application.service.js';
 
 @Controller({ path: 'auth', version: 'dev' })
 export class AuthDebugController {
