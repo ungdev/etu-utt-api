@@ -1,6 +1,7 @@
-import { e2eSuite } from '#/utils/test_utils';
-import * as fakedb from '#/utils/fakedb';
+import { e2eSuite } from '#/utils/test_utils.js';
+import * as fakedb from '#/utils/fakedb.js';
 import * as pactum from 'pactum';
+import { it } from 'vitest';
 
 export const GetBranchesE2ESpec = e2eSuite('GET /branch', (app) => {
   const branch1 = fakedb.createBranch(app);
@@ -22,7 +23,7 @@ export const GetBranchesE2ESpec = e2eSuite('GET /branch', (app) => {
           {
             code: branch2.code,
             name: branch2.name,
-            options: [
+            branchOptions: [
               {
                 code: branchOption1.code,
                 name: branchOption1.name,

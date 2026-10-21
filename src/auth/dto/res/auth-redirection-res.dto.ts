@@ -1,3 +1,3 @@
-export default class AuthRedirectionResDto {
+export class AuthRedirectionResDto {
   redirectUrl: string;
 }

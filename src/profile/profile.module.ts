@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { ProfileController } from '@/profile/profile.controller';
-import { ProfileService } from '@/profile/profile.service';
-import { PrismaModule } from '@/prisma/prisma.module';
-import { UsersModule } from '@/users/users.module';
+import { ProfileController } from '@/profile/profile.controller.js';
+import { ProfileService } from '@/profile/profile.service.js';
+import { PrismaModule } from '@/prisma/prisma.module.js';
+import { UsersModule } from '@/users/users.module.js';
 
 @Module({
   controllers: [ProfileController],

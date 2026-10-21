@@ -1,9 +1,9 @@
-import { CreditService } from '@/ue/credit/credit.service';
+import { CreditService } from '@/ue/credit/credit.service.js';
 import { Controller, Get } from '@nestjs/common';
-import { IsPublic } from '@/auth/decorator';
-import { CreditCategory } from '@/ue/credit/interfaces/credit-category.interface';
+import { IsPublic } from '@/auth/decorator/index.js';
+import { CreditCategory } from '@/ue/credit/interfaces/credit-category.interface.js';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import CreditCategoryResDto from '@/ue/credit/dto/res/credit-category-res.dto';
+import { CreditCategoryResDto } from '@/ue/credit/dto/res/credit-category-res.dto.js';
 
 @Controller('ue/credit')
 @ApiTags('UE Credit')

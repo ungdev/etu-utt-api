@@ -1,5 +1,5 @@
 import { PrismaMariaDb } from '@prisma/adapter-mariadb';
-import { PrismaClient } from '@/prisma/types';
+import { PrismaClient } from '@/prisma/types.js';
 
 const prisma = new PrismaClient({ adapter: new PrismaMariaDb(process.env.DATABASE_URL) });
 

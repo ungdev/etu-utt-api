@@ -1,6 +1,6 @@
-import { User } from '@/users/interfaces/user.interface';
-import { RawApiApplication } from '@/prisma/types';
-import { PermissionManager } from '@/utils';
+import { User } from '@/users/interfaces/user.interface.js';
+import { RawApiApplication } from '@/prisma/types.js';
+import { PermissionManager } from '@/utils.js';
 
 export interface RequestAuthData {
   application: RawApiApplication;

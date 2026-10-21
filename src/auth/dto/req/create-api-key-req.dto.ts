@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
-export default class CreateApiKeyReqDto {
+export class CreateApiKeyReqDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty({

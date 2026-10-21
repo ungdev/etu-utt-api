@@ -1,1 +1,1 @@
-export * from '@/auth/guard/jwt.guard';
+export * from '@/auth/guard/jwt.guard.js';

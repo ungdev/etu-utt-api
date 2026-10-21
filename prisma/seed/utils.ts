@@ -1,7 +1,7 @@
 import { Faker, faker } from '@faker-js/faker';
-import { Entity, FakeEntityMap } from '#/utils/fakedb';
-import { PrismaClient , Translation, UserType } from '@/prisma/types';
-import { PrismaService } from '@/prisma/prisma.service';
+import { Entity, FakeEntityMap } from '#/utils/fakedb.js';
+import { PrismaClient, Translation, UserType } from '@/prisma/types.js';
+import { PrismaService } from '@/prisma/prisma.service.js';
 
 // While waiting to be able to recover the real data
 export const branchesCode = ['ISI', 'GM', 'RT', 'MTE', 'GI', 'SN', 'A2I', 'MM'];

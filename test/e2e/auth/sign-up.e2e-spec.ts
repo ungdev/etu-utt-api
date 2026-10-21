@@ -1,16 +1,17 @@
-import { JsonLike, e2eSuite } from '#/utils/test_utils';
+import { JsonLike, e2eSuite } from '#/utils/test_utils.js';
 import * as pactum from 'pactum';
 import { faker } from '@faker-js/faker';
 import { JwtService } from '@nestjs/jwt';
-import * as fakedb from '#/utils/fakedb';
-import { AuthService } from '@/auth/auth.service';
-import { PrismaService } from '@/prisma/prisma.service';
-import { ERROR_CODE } from '@/exceptions';
-import { ConfigService } from '@/config/config.service';
+import * as fakedb from '#/utils/fakedb.js';
+import { AuthService } from '@/auth/auth.service.js';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { ERROR_CODE } from '@/exceptions.js';
+import { ConfigService } from '@/config/config.service.js';
 import { LdapUser } from 'ldap-server-mock';
-import { mockLdapServer } from '#/external_services/ldap';
-import { DEFAULT_APPLICATION } from '&/prisma/seed/utils';
-import { Permission } from '@/prisma/types';
+import { mockLdapServer } from '#/external_services/ldap.js';
+import { DEFAULT_APPLICATION } from '&/prisma/seed/utils.js';
+import { Permission } from '@/prisma/types.js';
+import { expect, it } from 'vitest';
 
 const SignUpE2eSpec = e2eSuite('POST /auth/signup', (app) => {
   const list: LdapUser[] = [];
@@ -106,14 +107,21 @@ const SignUpE2eSpec = e2eSuite('POST /auth/signup', (app) => {
       .$expectRegexableJson({ token: JsonLike.STRING });
     const user = await app().get(PrismaService).user.findUnique({ where: { login } });
     expect(user).not.toBeNull();
-    const apiKeyPermissions = await app().get(PrismaService).apiKeyPermission.findMany({ where: { apiKey: { userId: user.id, applicationId: DEFAULT_APPLICATION.id } } });
-    expect(apiKeyPermissions.map(permission => permission.permission).sort()).toEqual(expectedApiPermissions);
+    const apiKeyPermissions = await app()
+      .get(PrismaService)
+      .apiKeyPermission.findMany({ where: { apiKey: { userId: user.id, applicationId: DEFAULT_APPLICATION.id } } });
+    expect(apiKeyPermissions.map((permission) => permission.permission).sort()).toEqual(expectedApiPermissions);
     list.pop(); // Remove the person we've added for this test
   };
 
   it('should successfully create the user and return a token', async () => {
     const personAttribute = getPersonAttributes('student');
-    await executeValidSignupRequest(personAttribute, [Permission.API_GIVE_OPINIONS_UE, Permission.API_SEE_ANNALS, Permission.API_SEE_OPINIONS_UE, Permission.API_UPLOAD_ANNALS]);
+    await executeValidSignupRequest(personAttribute, [
+      Permission.API_GIVE_OPINIONS_UE,
+      Permission.API_SEE_ANNALS,
+      Permission.API_SEE_OPINIONS_UE,
+      Permission.API_UPLOAD_ANNALS,
+    ]);
     await app()
       .get(PrismaService)
       .user.deleteMany({ where: { login: personAttribute.uid } });
@@ -133,12 +141,15 @@ const SignUpE2eSpec = e2eSuite('POST /auth/signup', (app) => {
     const login = faker.internet.displayName().replaceAll(/[^A-Za-z1-9]/g, '');
     const mail = faker.internet.email();
     const assoName = faker.company.name();
-    await executeValidSignupRequest({
-      uid: login,
-      displayName: assoName,
-      mail,
-      gidNumber: '6000',
-    }, []);
+    await executeValidSignupRequest(
+      {
+        uid: login,
+        displayName: assoName,
+        mail,
+        gidNumber: '6000',
+      },
+      [],
+    );
     expect(
       await app()
         .get(PrismaService)

@@ -1,6 +1,6 @@
-import UserMicroResDto from '@/users/dto/res/user-micro-res.dto';
+import { UserMicroResDto } from '@/users/dto/res/user-micro-res.dto.js';
 
-export default class ApplicationSensibleResDto {
+export class ApplicationSensibleResDto {
   id: string;
   name: string;
   redirectUrl: string;

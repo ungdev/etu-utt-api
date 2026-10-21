@@ -1,5 +1,5 @@
-import { Language, Permission , Translation } from '@/prisma/types';
-import { ApiPermission, UserPermission } from '@/auth/interfaces/permissions.interface';
+import { Language, Permission, Translation } from '@/prisma/types.js';
+import { ApiPermission, UserPermission } from '@/auth/interfaces/permissions.interface.js';
 
 /**
  * Returns a new object built from the given object with only the specified keys.
@@ -56,10 +56,9 @@ export const translationSelect = {
   },
 };
 
-const exhaustiveLanguage = <CheckArray extends readonly Language[]>(array: (
-  [Language] extends [CheckArray[number]]
-    ? CheckArray
-    : 'Missing some values from Language')) => array;
+const exhaustiveLanguage = <CheckArray extends readonly Language[]>(
+  array: [Language] extends [CheckArray[number]] ? CheckArray : 'Missing some values from Language',
+) => array;
 export const languages = exhaustiveLanguage(['fr', 'en', 'es', 'de', 'zh']);
 
 export class PermissionManager {

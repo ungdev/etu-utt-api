@@ -1,16 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '@/prisma/prisma.service';
-import { Prisma, RawApiKey, UserType, Permission } from '@/prisma/types';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { Prisma, RawApiKey, UserType, Permission } from '@/prisma/types.js';
 import { JwtService } from '@nestjs/jwt';
-import { AppException, ERROR_CODE } from '@/exceptions';
-import { ConfigService } from '@/config/config.service';
+import { AppException, ERROR_CODE } from '@/exceptions.js';
+import { ConfigService } from '@/config/config.service.js';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import { XMLParser } from 'fast-xml-parser';
-import { doesEntryIncludeSome, omit } from '@/utils';
-import { LdapModule } from '@/ldap/ldap.module';
-import { LdapAccountGroup } from '@/ldap/ldap.interface';
-import { SemesterService } from '@/semester/semester.service';
+import { doesEntryIncludeSome, omit } from '@/utils.js';
+import { LdapModule } from '@/ldap/ldap.module.js';
+import { LdapAccountGroup } from '@/ldap/ldap.interface.js';
+import { SemesterService } from '@/semester/semester.service.js';
 import crypto from 'crypto';
 
 export type RegisterUserData = {
@@ -102,7 +102,7 @@ export class AuthService {
             create: {
               token: AuthService.generateToken(),
               application: { connect: { id: applicationId } },
-              apiKeyPermissions: { createMany: { data: [] } }
+              apiKeyPermissions: { createMany: { data: [] } },
             },
           },
           ...(branch.length && branchOption.length && currentSemester
@@ -220,9 +220,9 @@ export class AuthService {
                   { permission: Permission.API_SEE_ANNALS, userId: user.id },
                   { permission: Permission.API_UPLOAD_ANNALS, userId: user.id },
                 ],
-              }
-            }
-          }
+              },
+            },
+          },
         });
       }
       return this.signAuthenticationToken(user.apiKeys[0].token, tokenExpiresIn);

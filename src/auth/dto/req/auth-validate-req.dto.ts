@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
-export default class AuthValidateReqDto {
+export class AuthValidateReqDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty({

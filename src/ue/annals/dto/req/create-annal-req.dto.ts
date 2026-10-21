@@ -8,7 +8,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { HasSomeAmong } from '@/validation';
+import { HasSomeAmong } from '@/validation.js';
 
 @HasSomeAmong('ueCode', 'ueof')
 export class CreateAnnalReqDto {

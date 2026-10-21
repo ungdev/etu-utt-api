@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
-    "module": "CommonJS",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "resolvePackageJsonExports": true,
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
@@ -9,10 +11,9 @@
     "target": "ESNext",
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "#/*": ["test/*"],
+      "@/*": ["./src/*"],
+      "#/*": ["./test/*"],
       "&/*": ["./*"]
     },
     "incremental": true,
@@ -22,9 +23,8 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": false,
-    "esModuleInterop": true,
     "resolveJsonModule": true,
-    "moduleResolution": "Node"
+    "strict": false
   },
   "ts-node": {
     "files": true

@@ -1,4 +1,4 @@
-export default class BranchResDto {
+export class BranchResDto {
   code: string;
   name: string;
   branchOptions: BranchResDto_BranchOption[];

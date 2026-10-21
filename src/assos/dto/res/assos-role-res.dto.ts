@@ -1,6 +1,6 @@
-import UserMicroResDto from '@/users/dto/res/user-micro-res.dto';
+import { UserMicroResDto } from '@/users/dto/res/user-micro-res.dto.js';
 
-export default class AssoRoleOverviewResDto {
+export class AssoRoleOverviewResDto {
   id: string;
   name: string;
   position: number;

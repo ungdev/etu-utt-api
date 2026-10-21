@@ -1,4 +1,4 @@
-export default class UeAnnalTypeResDto {
+export class UeAnnalTypeResDto {
   id: string;
   name: string;
 }

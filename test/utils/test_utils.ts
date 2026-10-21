@@ -1,12 +1,13 @@
-import { PrismaService } from '@/prisma/prisma.service';
-import { PrismaClient } from '@/prisma/types';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { PrismaClient } from '@/prisma/types.js';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { faker } from '@faker-js/faker';
-import { ConfigService } from '@/config/config.service';
-import { clearUniqueValues, generateDefaultApplication } from '&/prisma/seed/utils';
-import Spec from 'pactum/src/models/Spec';
-import { AppModule } from '@/app.module';
+import { ConfigService } from '@/config/config.service.js';
+import { clearUniqueValues, generateDefaultApplication } from '&/prisma/seed/utils.js';
+import { beforeAll, describe } from 'vitest';
+import Spec from 'pactum/src/models/Spec.js';
+import { AppModule } from '@/app.module.js';
 import * as pactum from 'pactum';
 import '#/declarations.d.ts'
 

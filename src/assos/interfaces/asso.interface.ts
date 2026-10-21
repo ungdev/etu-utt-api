@@ -1,6 +1,6 @@
-import { Prisma, PrismaClient } from '@/prisma/types';
-import { generateCustomModel } from '@/prisma/prisma.service';
-import { translationSelect } from '@/utils';
+import { Prisma, PrismaClient } from '@/prisma/types.js';
+import { generateCustomModel } from '@/prisma/prisma.service.js';
+import { translationSelect } from '@/utils.js';
 
 const ASSO_SELECT_FILTER = {
   select: {

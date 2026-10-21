@@ -35,16 +35,22 @@ import {
   RawUserPreference,
   RawUserPrivacy,
   RawUserSocialNetwork,
- RawUserUeSubscription, Sex, TimetableEntryType, Translation, UserType } from '@/prisma/types';
+  RawUserUeSubscription,
+  Sex,
+  TimetableEntryType,
+  Translation,
+  UserType,
+} from '@/prisma/types.js';
 import { faker } from '@faker-js/faker';
-import { AuthService } from '@/auth/auth.service';
-import { PrismaService } from '@/prisma/prisma.service';
-import { AppProvider } from '#/utils/test_utils';
-import { CommentStatus } from '@/ue/comments/interfaces/comment.interface';
-import { UeAnnalFile } from '@/ue/annals/interfaces/annal.interface';
-import { PermissionManager, omit, pick, translationSelect } from '@/utils';
-import { DEFAULT_APPLICATION } from '&/prisma/seed/utils';
-import { AssoWeekly } from '@/assos/interfaces/weekly.interface';
+import { AuthService } from '@/auth/auth.service.js';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { AppProvider } from '#/utils/test_utils.js';
+import { CommentStatus } from '@/ue/comments/interfaces/comment.interface.js';
+import { UeAnnalFile } from '@/ue/annals/interfaces/annal.interface.js';
+import { PermissionManager, omit, pick, translationSelect } from '@/utils.js';
+import { DEFAULT_APPLICATION } from '&/prisma/seed/utils.js';
+import { AssoWeekly } from '@/assos/interfaces/weekly.interface.js';
+import { beforeAll } from 'vitest';
 
 /**
  * The fake entities can be used like normal entities in the <code>it(string, () => void)</code> functions.
@@ -150,7 +156,7 @@ export interface FakeEntityMap {
     entity: FakeAssoWeekly;
     params: CreateAssoWeeklyParameters;
     deps: { asso: FakeAsso };
-  }
+  };
   timetableEntryOverride: {
     entity: Partial<FakeTimetableEntryOverride>;
     params: CreateTimetableEntryOverrideParameters;
@@ -557,7 +563,7 @@ export type CreateAssoWeeklyParameters = FakeAssoWeekly;
 export const createAssoWeekly = entityFaker(
   'assoWeekly',
   {
-    date: new Date,
+    date: new Date(),
     title: {
       fr: faker.company.catchPhrase,
       en: faker.company.catchPhrase,
@@ -571,19 +577,21 @@ export const createAssoWeekly = entityFaker(
       es: faker.company.catchPhrase,
       de: faker.company.catchPhrase,
       zh: faker.company.catchPhrase,
-    }
+    },
   },
   async (app, deps, params) => {
-    return app().get(PrismaService).normalize.assoWeekly.create({
-      data: {
-        id: params.id,
-        titleTranslation: { create: params.title },
-        bodyTranslation: { create: params.message },
-        asso: { connect: { id: deps.asso.id } },
-        date: params.date,
-      },
-    })
-  }
+    return app()
+      .get(PrismaService)
+      .normalize.assoWeekly.create({
+        data: {
+          id: params.id,
+          titleTranslation: { create: params.title },
+          bodyTranslation: { create: params.message },
+          asso: { connect: { id: deps.asso.id } },
+          date: params.date,
+        },
+      });
+  },
 );
 
 export type CreateTimetableGroupParams = { users?: Array<{ user: FakeUser; priority: number }> };

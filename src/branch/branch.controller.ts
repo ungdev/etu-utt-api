@@ -1,9 +1,9 @@
 import { Controller, Get } from '@nestjs/common';
-import { BranchService } from '@/branch/branch.service';
-import { IsPublic } from '@/auth/decorator';
-import { Branch } from '@/branch/interface/branch.interface';
+import { BranchService } from '@/branch/branch.service.js';
+import { IsPublic } from '@/auth/decorator/index.js';
+import { Branch } from '@/branch/interface/branch.interface.js';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import BranchResDto from '@/branch/dto/res/branch-res.dto';
+import { BranchResDto } from '@/branch/dto/res/branch-res.dto.js';
 
 @Controller('branch')
 @ApiTags('Branch')
