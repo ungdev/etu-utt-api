@@ -5,7 +5,7 @@ import { CommentReplyReqDto } from '@/ue/comments/dto/req/ue-comment-reply-req.d
 import { UeCommentUpdateReqDto } from '@/ue/comments/dto/req/ue-comment-update-req.dto.js';
 import { GetUeCommentsReqDto } from '@/ue/comments/dto/req/ue-get-comments-req.dto.js';
 import { UeCommentReply } from '@/ue/comments/interfaces/comment-reply.interface.js';
-import { UeComment } from '@/ue/comments/interfaces/comment.interface.js';
+import { UeComment, UeCommentReport } from '@/ue/comments/interfaces/comment.interface.js';
 import { ConfigService } from '@/config/config.service.js';
 import { Prisma } from '@/prisma/build/client.js';
 import { omit, pick } from '@/utils.js';
@@ -13,6 +13,7 @@ import { UeCommentReportReqDto } from '@/ue/comments/dto/req/ue-comment-report-r
 import { GetReportedCommentsReqDto } from '@/ue/comments/dto/req/ue-get-reported-comments-req.dto.js';
 import { UeCommentReportResDto } from '@/ue/comments/dto/res/ue-comment-report-res.dto.js';
 import { UeService } from '@/ue/ue.service.js';
+import { RawUeCommentReplyReport, RawUeCommentReport } from '@/prisma/types.js';
 
 @Injectable()
 export class CommentsService {
@@ -386,22 +387,30 @@ export class CommentsService {
   }
 
   /**
-   * Checks whether a comment exists
-   * @param commentId the id of the comment to check
-   * @param isModerator if true the user is a moderator
+   * Checks whether a comment exists.
+   * @param commentId The id of the comment to check.
+   * @param userId Works the same as isModerator=true for comments written by this user.
+   * @param isModerator If true, it considers the comments that have non-mitigated reports to exist.
    * @returns whether the {@link commentId | comment} exists
    */
-  async doesCommentExist(commentId: string, userId: string, isModerator: boolean = false) {
+  async doesCommentExist(commentId: string, userId: string, isModerator: boolean = false): Promise<boolean> {
     const where: Prisma.UeCommentWhereInput = {
       id: commentId,
+      deletedAt: null,
     };
     if (!isModerator) {
-      where.deletedAt = null;
-      where.reports = {
-        none: {
-          mitigated: false,
-        },
-      };
+      if (userId) {
+        where.OR = [
+          { reports: { none: { mitigated: false } } },
+          { authorId: userId },
+        ]
+      } else {
+        where.reports = {
+          none: {
+            mitigated: false,
+          },
+        };
+      }
     }
     return (await this.prisma.ueComment.count({ where })) != 0;
   }
@@ -541,7 +550,6 @@ export class CommentsService {
     const report = await this.prisma.ueCommentReplyReport.create({
       data: {
         body: body.body,
-        mitigated: false,
         reason: {
           connect: {
             name: body.reason,
@@ -571,8 +579,8 @@ export class CommentsService {
     };
   }
 
-  async mitigateCommentReport(commentId: string, reportId: string) {
-    return await this.prisma.ueCommentReport.update({
+  async mitigateCommentReport(commentId: string, reportId: string): Promise<RawUeCommentReport> {
+    return this.prisma.ueCommentReport.update({
       where: {
         commentId,
         id: reportId,
@@ -583,8 +591,8 @@ export class CommentsService {
     });
   }
 
-  async mitigateCommentReplyReport(replyId: string, reportId: string) {
-    return await this.prisma.ueCommentReplyReport.update({
+  async mitigateCommentReplyReport(replyId: string, reportId: string): Promise<RawUeCommentReplyReport> {
+    return this.prisma.ueCommentReplyReport.update({
       where: {
         reply: {
           id: replyId,

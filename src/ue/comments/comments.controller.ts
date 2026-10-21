@@ -333,7 +333,7 @@ export class CommentsController {
     return this.commentsService.reportCommentReply(user.id, body, replyId);
   }
 
-  @Patch(':commentId/:reportId')
+  @Post(':commentId/:reportId/mitigate')
   @RequireApiPermission('API_MODERATE_COMMENTS')
   @ApiOperation({ description: 'Mitigate a report' })
   @ApiOkResponse({ type: UeCommentReportResDto })
@@ -349,7 +349,7 @@ export class CommentsController {
     return this.commentsService.mitigateCommentReport(commentId, reportId);
   }
 
-  @Patch('/reply/:replyId/:reportId')
+  @Post('/reply/:replyId/:reportId/mitigate')
   @RequireApiPermission('API_MODERATE_COMMENTS')
   @ApiOperation({ description: 'Mitigate a comment reply report' })
   @ApiOkResponse({ type: UeCommentReportResDto })
