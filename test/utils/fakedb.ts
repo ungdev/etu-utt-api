@@ -151,7 +151,7 @@ export interface FakeEntityMap {
     entity: FakeAssoWeekly;
     params: CreateAssoWeeklyParameters;
     deps: { asso: FakeAsso };
-  }
+  };
   timetableEntryOverride: {
     entity: Partial<FakeTimetableEntryOverride>;
     params: CreateTimetableEntryOverrideParameters;
@@ -531,20 +531,6 @@ export const createAsso = entityFaker(
               isPresident: true,
             },
           },
-          assoAccount: {
-            create: {
-              login: params.name,
-              firstName: '',
-              lastName: '',
-              userType: UserType.ASSOCIATION,
-              socialNetwork: { create: {} },
-              mailsPhones: { create: {} },
-              rgpd: { create: {} },
-              preference: { create: {} },
-              infos: { create: {} },
-              privacy: { create: {} },
-            },
-          },
         },
       });
     const presidentRole = await app()
@@ -558,7 +544,7 @@ export type CreateAssoWeeklyParameters = FakeAssoWeekly;
 export const createAssoWeekly = entityFaker(
   'assoWeekly',
   {
-    date: new Date,
+    date: new Date(),
     title: {
       fr: faker.company.catchPhrase,
       en: faker.company.catchPhrase,
@@ -572,19 +558,21 @@ export const createAssoWeekly = entityFaker(
       es: faker.company.catchPhrase,
       de: faker.company.catchPhrase,
       zh: faker.company.catchPhrase,
-    }
+    },
   },
   async (app, deps, params) => {
-    return app().get(PrismaService).normalize.assoWeekly.create({
-      data: {
-        id: params.id,
-        titleTranslation: { create: params.title },
-        bodyTranslation: { create: params.message },
-        asso: { connect: { id: deps.asso.id } },
-        date: params.date,
-      },
-    })
-  }
+    return app()
+      .get(PrismaService)
+      .normalize.assoWeekly.create({
+        data: {
+          id: params.id,
+          titleTranslation: { create: params.title },
+          bodyTranslation: { create: params.message },
+          asso: { connect: { id: deps.asso.id } },
+          date: params.date,
+        },
+      });
+  },
 );
 
 export type CreateTimetableGroupParams = { users?: Array<{ user: FakeUser; priority: number }> };

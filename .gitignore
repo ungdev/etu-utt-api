@@ -121,3 +121,6 @@ scripts/**/*.csv
 
 # Dev files
 dev
+
+# VS Code files
+.vscode/

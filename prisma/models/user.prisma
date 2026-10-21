@@ -22,6 +22,7 @@ model User {
   bans                  UserBan[]
   bdeContributions      UserBDEContribution[]
   assoMembership        AssoMembership[]
+  assoAccessAttempts    AssoAccessAttempt[]
   branchSubscriptions   UserBranchSubscription[]
   formation             UserFormation?
   addresses             UserAddress[]
@@ -48,7 +49,6 @@ model User {
   apiKeys               ApiKey[]
   apiPermissionsTarget  ApiKeyPermission[]       @relation(name: "target")
   apiPermissionsGrants  ApiKeyPermission[]       @relation(name: "granter")
-  asso                  Asso?
   uploadedImages        ImageMedia[]
 }
 

@@ -42,12 +42,12 @@ export {
   AssoMembershipRole as RawAssoMembershipRole,
   AssoMembership as RawAssoMembership,
   AssoMembershipPermission as RawAssoMembershipPermission,
+  AssoSympa as RawAssoSympa,
   UserHomepageWidget as RawHomepageWidget,
   UserPrivacy as RawUserPrivacy,
   ApiApplication as RawApiApplication,
   ApiKey as RawApiKey,
   ImageMedia as RawImageMedia,
-
 } from './build/client';
 
 export { RawTranslation };

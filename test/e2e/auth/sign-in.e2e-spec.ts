@@ -64,6 +64,21 @@ const SignInE2eSpec = e2eSuite('POST /auth/signin', (app) => {
       .get(PrismaService)
       .user.delete({ where: { id: user.id } });
   });
+
+  it('should reject CAS sign-in for association accounts', async () => {
+    const user = await fakedb.createUser(app, { login: cas.user.login, userType: 'ASSOCIATION' }, false);
+    await pactum
+      .spec()
+      .post('/auth/signin')
+      .withBody(body)
+      .expectStatus(401)
+      .expect((res) => {
+        expect(res.res.statusCode).toBe(401);
+      });
+    await app()
+      .get(PrismaService)
+      .user.delete({ where: { id: user.id } });
+  });
 });
 
 export default SignInE2eSpec;

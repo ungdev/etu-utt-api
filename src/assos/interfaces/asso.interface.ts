@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from '../../prisma/types';
+import { Prisma, PrismaClient, RawAssoMembership, RawAsso } from '../../prisma/types';
 import { generateCustomModel } from '../../prisma/prisma.service';
 import { translationSelect } from '../../utils';
 
@@ -12,7 +12,6 @@ const ASSO_SELECT_FILTER = {
     logo: true,
     descriptionTranslation: translationSelect,
     descriptionShortTranslation: translationSelect,
-    assoAccountId: true,
   },
   orderBy: {
     name: 'asc',
@@ -46,3 +45,39 @@ export async function formatAsso(prisma: PrismaClient, asso: UnformattedAsso): P
     },
   };
 }
+
+export enum AssoAccessAction {
+  CREATE = 'CREATE',
+  CLAIM = 'CLAIM',
+}
+
+export type AssoAccessActionAndAssoId =
+  | { action: AssoAccessAction.CREATE; assoId: null }
+  | { action: AssoAccessAction.CLAIM; assoId: string };
+
+export enum AssoAccessAttemptStatus {
+  REQUESTED = 'REQUESTED',
+  REJECTED = 'REJECTED',
+  CONFIRMED = 'CONFIRMED',
+  CONFIRM_FAILED = 'CONFIRM_FAILED',
+}
+
+export type AssoAccessTokenData = {
+  userId: string;
+  assoEmail: string;
+  assoId?: string;
+  action: AssoAccessAction;
+  jti: string;
+  iat: number;
+  exp: number;
+};
+
+export type AssoAccessConfirmation =
+  | { action: AssoAccessAction.CREATE; asso: RawAsso }
+  | { action: AssoAccessAction.CLAIM; asso: Asso; membership: RawAssoMembership };
+
+export type AssoInfo = {
+  action: AssoAccessAction;
+  email: string;
+  name: string | null;
+};
