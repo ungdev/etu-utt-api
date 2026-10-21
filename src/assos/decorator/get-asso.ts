@@ -1,6 +1,6 @@
 import { Injectable, Param, ParseUUIDPipe, PipeTransform } from '@nestjs/common';
-import { AppException, ERROR_CODE } from '../../exceptions';
-import { AssosService } from '../assos.service';
+import { AppException, ERROR_CODE } from '@/exceptions';
+import { AssosService } from '@/assos/assos.service';
 
 export const ParamAsso = (paramName = 'assoId') =>
   Param(

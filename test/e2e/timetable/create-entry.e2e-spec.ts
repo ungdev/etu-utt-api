@@ -1,7 +1,7 @@
-import { Dummies, e2eSuite, JsonLike } from '../../utils/test_utils';
-import * as fakedb from '../../utils/fakedb';
+import { Dummies, JsonLike, e2eSuite } from '#/utils/test_utils';
+import * as fakedb from '#/utils/fakedb';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '../../../src/exceptions';
+import { ERROR_CODE } from '@/exceptions';
 
 const CreateEntryE2ESpec = e2eSuite('POST /timetable/current', (app) => {
   const user = fakedb.createUser(app);

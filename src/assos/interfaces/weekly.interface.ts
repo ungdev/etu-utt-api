@@ -1,7 +1,6 @@
-import { Prisma, PrismaClient } from '../../prisma/types';
-import { generateCustomModel } from '../../prisma/prisma.service';
-import { pick, translationSelect } from '../../utils';
-import { Translation } from '../../prisma/types';
+import { Prisma, PrismaClient , Translation } from '@/prisma/types';
+import { generateCustomModel } from '@/prisma/prisma.service';
+import { pick, translationSelect } from '@/utils';
 
 const ASSO_WEEKLY_SELECT_FILTER = {
   select: {

@@ -1,5 +1,5 @@
 import { PrismaMariaDb } from '@prisma/adapter-mariadb';
-import { PrismaClient } from '../../src/prisma/types';
+import { PrismaClient } from '@/prisma/types';
 import ueSeed from './modules/ue.seed';
 import { userSeed } from './modules/user.seed';
 import { faker } from '@faker-js/faker';
@@ -7,7 +7,7 @@ import semesterSeed from './modules/semester.seed';
 import branchSeed from './modules/branch.seed';
 import branchOptionSeed from './modules/branchOption.seed';
 import creditCategorySeed from './modules/creditCategory.seed';
-import { cleanDb } from '../../test/utils/test_utils';
+import { cleanDb } from '#/utils/test_utils';
 import ueCommentSeed from './modules/ueComment.seed';
 import ueStarCriterionSeed from './modules/ueStarCriterion.seed';
 import ueStarVotesSeed from './modules/ueStarVotes.seed';

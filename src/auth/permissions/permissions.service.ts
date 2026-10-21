@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
-import { UserPermission } from '../interfaces/permissions.interface';
-import { PermissionManager } from '../../utils';
+import { PrismaService } from '@/prisma/prisma.service';
+import { UserPermission } from '@/auth/interfaces/permissions.interface';
+import { PermissionManager } from '@/utils';
 
 @Injectable()
 export default class PermissionsService {

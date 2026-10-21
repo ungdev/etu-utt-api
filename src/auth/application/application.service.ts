@@ -1,7 +1,7 @@
-import { PrismaService } from '../../prisma/prisma.service';
-import { Application } from './interfaces/application.interface';
+import { PrismaService } from '@/prisma/prisma.service';
+import { Application } from '@/auth/application/interfaces/application.interface';
 import { Injectable } from '@nestjs/common';
-import { AuthService } from '../auth.service';
+import { AuthService } from '@/auth/auth.service';
 
 @Injectable()
 export default class ApplicationService {

@@ -1,10 +1,10 @@
-import { ImageMediaPreset } from '../../../../src/prisma/types';
+import { ImageMediaPreset } from '@/prisma/types';
 import { mkdirSync, rmSync } from 'fs';
-import { ERROR_CODE } from '../../../../src/exceptions';
-import { createUser } from '../../../utils/fakedb';
-import { e2eSuite, JsonLike } from '../../../utils/test_utils';
-import { ConfigService } from '../../../../src/config/config.service';
-import { PermissionManager } from '../../../../src/utils';
+import { ERROR_CODE } from '@/exceptions';
+import { createUser } from '#/utils/fakedb';
+import { JsonLike, e2eSuite } from '#/utils/test_utils';
+import { ConfigService } from '@/config/config.service';
+import { PermissionManager } from '@/utils';
 import * as pactum from 'pactum';
 
 export const UploadMediaE2ESpec = e2eSuite('POST /media/image', (app) => {

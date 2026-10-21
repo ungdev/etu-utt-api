@@ -4,14 +4,14 @@ import {
   createCriterion,
   createSemester,
   createUe,
-  createUeof,
   createUeRating,
+  createUeof,
   createUser,
-} from '../../utils/fakedb';
+} from '#/utils/fakedb';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from 'src/exceptions';
-import { e2eSuite } from '../../utils/test_utils';
-import { PermissionManager } from '../../../src/utils';
+import { ERROR_CODE } from '@/exceptions';
+import { e2eSuite } from '#/utils/test_utils';
+import { PermissionManager } from '@/utils';
 
 const GetRateE2ESpec = e2eSuite('GET /ue/:ueCode/rate', (app) => {
   const userNoPermission = createUser(app);

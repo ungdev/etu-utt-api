@@ -1,9 +1,9 @@
-import { e2eSuite } from '../../../utils/test_utils';
+import { e2eSuite } from '#/utils/test_utils';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '../../../../src/exceptions';
-import * as fakedb from '../../../utils/fakedb';
+import { ERROR_CODE } from '@/exceptions';
+import * as fakedb from '#/utils/fakedb';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from '../../../../src/prisma/prisma.service';
+import { PrismaService } from '@/prisma/prisma.service';
 
 const UpdateApplicationTokenE2ESpec = e2eSuite('PATCH /auth/application/:applicationId/token', (app) => {
   const user = fakedb.createUser(app);

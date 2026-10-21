@@ -1,13 +1,13 @@
-import DebugSignUpE2ESpec from './debug-sign-up-e2e-spec';
-import DebugSignInE2ESpec from './debug-sign-in-e2e-spec';
-import VerifyE2ESpec from './verify-e2e-spec';
-import { E2EAppProvider } from '../../utils/test_utils';
-import SignInE2ESpec from './sign-in.e2e-spec';
-import SignUpE2ESpec from './sign-up.e2e-spec';
-import CreateApiKeyE2ESpec from './create-api-key.e2e-spec';
-import ApplicationE2ESpec from './application';
-import ValidateLoginE2ESpec from './validate-login.e2e-spec';
-import PermissionsE2ESpec from './permissions';
+import DebugSignUpE2ESpec from '#/e2e/auth/debug-sign-up-e2e-spec';
+import DebugSignInE2ESpec from '#/e2e/auth/debug-sign-in-e2e-spec';
+import VerifyE2ESpec from '#/e2e/auth/verify-e2e-spec';
+import { E2EAppProvider } from '#/utils/test_utils';
+import SignInE2ESpec from '#/e2e/auth/sign-in.e2e-spec';
+import SignUpE2ESpec from '#/e2e/auth/sign-up.e2e-spec';
+import CreateApiKeyE2ESpec from '#/e2e/auth/create-api-key.e2e-spec';
+import ApplicationE2ESpec from '#/e2e/auth/application';
+import ValidateLoginE2ESpec from '#/e2e/auth/validate-login.e2e-spec';
+import PermissionsE2ESpec from '#/e2e/auth/permissions';
 
 export default function AuthE2ESpec(app: E2EAppProvider) {
   describe('Auth', () => {

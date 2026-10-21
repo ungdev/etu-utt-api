@@ -1,8 +1,8 @@
-import { omit, PermissionManager } from '../../../src/utils';
-import { createUser, createCriterion, FakeUeStarCriterion } from '../../utils/fakedb';
-import { e2eSuite } from '../../utils/test_utils';
+import { PermissionManager, omit } from '@/utils';
+import { FakeUeStarCriterion, createCriterion, createUser } from '#/utils/fakedb';
+import { e2eSuite } from '#/utils/test_utils';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '../../../src/exceptions';
+import { ERROR_CODE } from '@/exceptions';
 
 const GetRateCriteria = e2eSuite('GET /ue/rate/criteria', (app) => {
   const userNoPermission = createUser(app);

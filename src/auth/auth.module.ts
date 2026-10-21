@@ -1,17 +1,17 @@
 import { DynamicModule } from '@nestjs/common';
-import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
+import { AuthController } from '@/auth/auth.controller';
+import { AuthService } from '@/auth/auth.service';
 import { JwtModule } from '@nestjs/jwt';
-import { JwtStrategy } from './strategy/jwt.strategy';
-import { UsersModule } from '../users/users.module';
-import { LdapModule } from '../ldap/ldap.module';
-import { UeService } from '../ue/ue.service';
-import ApplicationController from './application/application.controller';
-import ApplicationService from './application/application.service';
-import PermissionsController from './permissions/permissions.controller';
-import PermissionsService from './permissions/permissions.service';
-import { AuthDebugController } from './auth-debug.controller';
-import { isProdEnv } from '../config/config.service';
+import { JwtStrategy } from '@/auth/strategy/jwt.strategy';
+import { UsersModule } from '@/users/users.module';
+import { LdapModule } from '@/ldap/ldap.module';
+import { UeService } from '@/ue/ue.service';
+import ApplicationController from '@/auth/application/application.controller';
+import ApplicationService from '@/auth/application/application.service';
+import PermissionsController from '@/auth/permissions/permissions.controller';
+import PermissionsService from '@/auth/permissions/permissions.service';
+import { AuthDebugController } from '@/auth/auth-debug.controller';
+import { isProdEnv } from '@/config/config.service';
 
 export class AuthModule {
   static register(): DynamicModule {

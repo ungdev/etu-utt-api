@@ -1,8 +1,8 @@
 import * as pactum from 'pactum';
-import { e2eSuite } from '../../utils/test_utils';
-import * as fakedb from '../../utils/fakedb';
-import { ERROR_CODE } from '../../../src/exceptions';
-import { ConfigService } from '../../../src/config/config.service';
+import { e2eSuite } from '#/utils/test_utils';
+import * as fakedb from '#/utils/fakedb';
+import { ERROR_CODE } from '@/exceptions';
+import { ConfigService } from '@/config/config.service';
 
 const SearchE2ESpec = e2eSuite('GET /users', (app) => {
   const user = fakedb.createUser(app, {

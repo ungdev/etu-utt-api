@@ -1,7 +1,7 @@
-import { e2eSuite } from '../../../utils/test_utils';
+import { e2eSuite } from '#/utils/test_utils';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '../../../../src/exceptions';
-import * as fakedb from '../../../utils/fakedb';
+import { ERROR_CODE } from '@/exceptions';
+import * as fakedb from '#/utils/fakedb';
 
 const GetApplicationE2ESpec = e2eSuite('GET /auth/application/:applicationId', (app) => {
   const user = fakedb.createUser(app);

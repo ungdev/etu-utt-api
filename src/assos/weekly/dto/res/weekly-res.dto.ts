@@ -1,4 +1,4 @@
-import { Translation } from '../../../../prisma/types';
+import { Translation } from '@/prisma/types';
 
 export default class WeeklyResDto {
   id: string;

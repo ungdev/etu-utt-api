@@ -1,4 +1,4 @@
-import { AddressPrivacy, Language } from '../../../prisma/types';
+import { AddressPrivacy, Language } from '@/prisma/types';
 import { IsArray, IsBoolean, IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class UserUpdateReqDto {

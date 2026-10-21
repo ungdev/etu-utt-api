@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { User, UserAssoMembership } from './interfaces/user.interface';
-import UsersSearchReqDto from './dto/req/users-search-req.dto';
-import { UserUpdateReqDto } from './dto/req/users-update-req.dto';
-import { omit, translationSelect } from '../utils';
-import { ConfigService } from '../config/config.service';
-import { Prisma } from '../prisma/types';
+import { PrismaService } from '@/prisma/prisma.service';
+import { User, UserAssoMembership } from '@/users/interfaces/user.interface';
+import UsersSearchReqDto from '@/users/dto/req/users-search-req.dto';
+import { UserUpdateReqDto } from '@/users/dto/req/users-update-req.dto';
+import { omit, translationSelect } from '@/utils';
+import { ConfigService } from '@/config/config.service';
+import { Prisma } from '@/prisma/types';
 
 @Injectable()
 export default class UsersService {

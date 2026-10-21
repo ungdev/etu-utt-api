@@ -1,5 +1,5 @@
 import { Global, Module } from '@nestjs/common';
-import { SemesterService } from './semester.service';
+import { SemesterService } from '@/semester/semester.service';
 
 @Global()
 @Module({

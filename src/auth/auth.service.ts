@@ -1,17 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { Prisma, UserType, Permission } from '../prisma/types';
+import { PrismaService } from '@/prisma/prisma.service';
+import { Prisma, RawApiKey, UserType, Permission } from '@/prisma/types';
 import { JwtService } from '@nestjs/jwt';
-import { AppException, ERROR_CODE } from '../exceptions';
-import { ConfigService } from '../config/config.service';
+import { AppException, ERROR_CODE } from '@/exceptions';
+import { ConfigService } from '@/config/config.service';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import { XMLParser } from 'fast-xml-parser';
-import { doesEntryIncludeSome, omit } from '../utils';
-import { LdapModule } from '../ldap/ldap.module';
-import { LdapAccountGroup } from '../ldap/ldap.interface';
-import { SemesterService } from '../semester/semester.service';
-import { RawApiKey } from '../prisma/types';
+import { doesEntryIncludeSome, omit } from '@/utils';
+import { LdapModule } from '@/ldap/ldap.module';
+import { LdapAccountGroup } from '@/ldap/ldap.interface';
+import { SemesterService } from '@/semester/semester.service';
 import crypto from 'crypto';
 
 export type RegisterUserData = {
