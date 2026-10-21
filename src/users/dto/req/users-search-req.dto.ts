@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsOptional, IsString, IsNumber, IsPositive, IsInt } from 'class-validator';
+import { IsInt, IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
 
 /**
  * Query parameters of the request to search users.
@@ -17,7 +17,7 @@ import { IsOptional, IsString, IsNumber, IsPositive, IsInt } from 'class-validat
  * @property {string} mail - The mail of the user. Optional.
  * @property {number} page - The page of the results. Optional. Must be a positive number.
  */
-export default class UsersSearchReqDto {
+export class UsersSearchReqDto {
   @IsString()
   @IsOptional()
   q?: string;

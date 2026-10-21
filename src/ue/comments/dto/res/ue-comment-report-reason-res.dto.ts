@@ -1,4 +1,4 @@
-export default class UeCommentReportReasonResDto {
+export class UeCommentReportReasonResDto {
   name: string;
   description: {
     fr: string;

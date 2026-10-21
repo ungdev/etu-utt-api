@@ -1,14 +1,15 @@
-import { e2eSuite, JsonLike } from '../../utils/test_utils';
-import * as cas from '../../external_services/cas';
-import * as fakedb from '../../utils/fakedb';
+import { JsonLike, e2eSuite } from '#/utils/test_utils.js';
+import * as cas from '#/external_services/cas.js';
+import * as fakedb from '#/utils/fakedb.js';
 import * as pactum from 'pactum';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from '../../../src/prisma/prisma.service';
-import AuthCasSignInReqDto from '../../../src/auth/dto/req/auth-cas-sign-in-req.dto';
-import { DEFAULT_APPLICATION } from '../../../prisma/seed/utils';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { AuthSignInReqDto } from '@/auth/dto/req/auth-sign-in-req.dto.js';
+import { DEFAULT_APPLICATION } from '&/prisma/seed/utils.js';
+import { expect, it } from 'vitest';
 
-const CasSignInE2ESpec = e2eSuite('POST /auth/signin/cas', (app) => {
-  const body: AuthCasSignInReqDto = {
+const SignInE2eSpec = e2eSuite('POST /auth/signin', (app) => {
+  const body: AuthSignInReqDto = {
     ticket: cas.validTicket,
     tokenExpiresIn: cas.user.tokenExpiresIn,
   };
@@ -16,7 +17,7 @@ const CasSignInE2ESpec = e2eSuite('POST /auth/signin/cas', (app) => {
   it('should successfully return a user-register code', () =>
     pactum
       .spec()
-      .post('/auth/signin/cas')
+      .post('/auth/signin')
       .withBody(body)
       .$expectRegexableJson({ status: 'no_account', token: JsonLike.STRING, redirectUrl: null })
       .expect((res) => {
@@ -32,7 +33,7 @@ const CasSignInE2ESpec = e2eSuite('POST /auth/signin/cas', (app) => {
       .apiKey.delete({ where: { id: user.apiKey.id } });
     await pactum
       .spec()
-      .post('/auth/signin/cas')
+      .post('/auth/signin')
       .withBody(body)
       .$expectRegexableJson({ status: 'no_api_key', token: JsonLike.STRING, redirectUrl: null })
       .expect((res) => {
@@ -49,7 +50,7 @@ const CasSignInE2ESpec = e2eSuite('POST /auth/signin/cas', (app) => {
     const user = await fakedb.createUser(app, { login: cas.user.login }, true);
     await pactum
       .spec()
-      .post('/auth/signin/cas')
+      .post('/auth/signin')
       .withBody(body)
       .$expectRegexableJson({ status: 'ok', token: JsonLike.STRING, redirectUrl: null })
       .expect(async (res) => {
@@ -66,4 +67,4 @@ const CasSignInE2ESpec = e2eSuite('POST /auth/signin/cas', (app) => {
   });
 });
 
-export default CasSignInE2ESpec;
+export default SignInE2eSpec;

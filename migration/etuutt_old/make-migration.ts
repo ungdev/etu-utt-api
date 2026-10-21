@@ -1,12 +1,3 @@
-import { PrismaClient as _PrismaClient } from '../../src/prisma/types';
-import { PrismaMariaDb } from '@prisma/adapter-mariadb';
-import { createConnection } from 'mysql';
-import { cleanDb } from '../../test/utils/test_utils';
-import { findLegacyUeofName, migrateUEs } from './modules/ue';
-import { createCreditCategories } from './modules/creditCategory';
-import { createSemesters } from './modules/semester';
-import { migrateUeComments } from './modules/ueComment';
-import { createBranches } from './modules/branch';
 import {
   RawBranch,
   RawBranchOption,
@@ -14,9 +5,18 @@ import {
   RawSemester,
   RawUe,
   RawUeComment,
-} from '../../src/prisma/types';
-import { stringToTranslation } from './utils';
-import { omit } from '../../src/utils';
+  PrismaClient as _PrismaClient,
+} from '@/prisma/types.js';
+import { PrismaMariaDb } from '@prisma/adapter-mariadb';
+import { createConnection } from 'mysql';
+import { cleanDb } from '#/utils/test_utils.js';
+import { findLegacyUeofName, migrateUEs } from './modules/ue.js';
+import { createCreditCategories } from './modules/creditCategory.js';
+import { createSemesters } from './modules/semester.js';
+import { migrateUeComments } from './modules/ueComment.js';
+import { createBranches } from './modules/branch.js';
+import { stringToTranslation } from './utils.js';
+import { omit } from '@/utils.js';
 
 type MayBePromise<T> = Promise<T> | T;
 

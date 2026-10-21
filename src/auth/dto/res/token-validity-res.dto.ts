@@ -1,3 +1,3 @@
-export default class TokenValidityResDto {
+export class TokenValidityResDto {
   valid: boolean;
 }

@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from 'src/exceptions';
-import { PrismaService } from '../../../../src/prisma/prisma.service';
+import { ERROR_CODE } from '@/exceptions.js';
+import { PrismaService } from '@/prisma/prisma.service.js';
 import {
   createBranch,
   createBranchOption,
@@ -15,11 +15,12 @@ import {
   createUeof,
   createUser,
   FakeComment,
-} from '../../../utils/fakedb';
-import { e2eSuite } from '../../../utils/test_utils';
-import { Prisma } from '../../../../src/prisma/build/client';
-import { PermissionManager } from '../../../../src/utils';
-import { ConfigService } from '../../../../src/config/config.service';
+} from '#/utils/fakedb.js';
+import { e2eSuite } from '#/utils/test_utils.js';
+import { Prisma } from '@/prisma/build/client.js';
+import { PermissionManager } from '@/utils.js';
+import { ConfigService } from '@/config/config.service.js';
+import { it, expect } from 'vitest';
 
 const GetReportedComments = e2eSuite('GET /ue/comments/reports', (app) => {
   const userModerator = createUser(app, {

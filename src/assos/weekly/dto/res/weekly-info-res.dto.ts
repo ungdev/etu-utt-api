@@ -1,4 +1,4 @@
-export default class WeeklyInfoResDto {
+export class WeeklyInfoResDto {
   sendDay: number;
   sendHour: number;
 }

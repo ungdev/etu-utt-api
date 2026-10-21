@@ -1,9 +1,10 @@
-import TimetableService from '../../../src/timetable/timetable.service';
-import { PrismaService } from '../../../src/prisma/prisma.service';
-import { unitSuite } from '../../utils/test_utils';
-import * as fakedb from '../../utils/fakedb';
-import { createTimetableEntry, createTimetableEntryOverride } from '../../utils/fakedb';
+import { TimetableService } from '@/timetable/timetable.service.js';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { unitSuite } from '#/utils/test_utils.js';
+import * as fakedb from '#/utils/fakedb.js';
+import { createTimetableEntry, createTimetableEntryOverride } from '#/utils/fakedb.js';
 import { faker } from '@faker-js/faker';
+import { beforeAll, expect, it } from 'vitest';
 
 // This check is skipped, please remove the last argument to enable tests
 const TimetableServiceUnitSpec = unitSuite.skip('Timetable.service', (app) => {

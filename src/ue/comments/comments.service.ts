@@ -1,19 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '../../prisma/build/client';
-import { ConfigModule } from '../../config/config.module';
-import { PrismaService } from '../../prisma/prisma.service';
-import { omit, pick } from '../../utils';
-import UeCommentPostReqDto from './dto/req/ue-comment-post-req.dto';
-import UeCommentReplyReqDto from './dto/req/ue-comment-reply-req.dto';
-import UeCommentReportReqDto from './dto/req/ue-comment-report-req.dto';
-import UeCommentUpdateReqDto from './dto/req/ue-comment-update-req.dto';
-import GetUeCommentsReqDto from './dto/req/ue-get-comments-req.dto';
-import GetReportedCommentsReqDto from './dto/req/ue-get-reported-comments-req.dto';
-import UeCommentReportResDto from './dto/res/ue-comment-report-res.dto';
-import { UeCommentReply } from './interfaces/comment-reply.interface';
-import { CommentStatus, UeComment } from './interfaces/comment.interface';
-import { ConfigService } from '../../config/config.service';
-import { UeService } from '../ue.service';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { UeCommentPostReqDto } from '@/ue/comments/dto/req/ue-comment-post-req.dto.js';
+import { CommentReplyReqDto } from '@/ue/comments/dto/req/ue-comment-reply-req.dto.js';
+import { UeCommentUpdateReqDto } from '@/ue/comments/dto/req/ue-comment-update-req.dto.js';
+import { GetUeCommentsReqDto } from '@/ue/comments/dto/req/ue-get-comments-req.dto.js';
+import { UeCommentReply } from '@/ue/comments/interfaces/comment-reply.interface.js';
+import { UeComment } from '@/ue/comments/interfaces/comment.interface.js';
+import { ConfigService } from '@/config/config.service.js';
+import { Prisma } from '@/prisma/build/client.js';
+import { omit, pick } from '@/utils.js';
+import { UeCommentReportReqDto } from '@/ue/comments/dto/req/ue-comment-report-req.dto.js';
+import { GetReportedCommentsReqDto } from '@/ue/comments/dto/req/ue-get-reported-comments-req.dto.js';
+import { UeCommentReportResDto } from '@/ue/comments/dto/res/ue-comment-report-res.dto.js';
+import { UeService } from '@/ue/ue.service.js';
 
 @Injectable()
 export class CommentsService {
@@ -288,7 +287,7 @@ export class CommentsService {
    * @param reply the reply to post
    * @returns the created {@link UeCommentReply}
    */
-  async replyComment(userId: string, commentId: string, reply: UeCommentReplyReqDto): Promise<UeCommentReply> {
+  async replyComment(userId: string, commentId: string, reply: CommentReplyReqDto): Promise<UeCommentReply> {
     return this.prisma.normalize.ueCommentReply.create({
       data: {
         body: reply.body,
@@ -305,7 +304,7 @@ export class CommentsService {
    * @param reply the modifications to apply to the reply
    * @returns the updated {@link UeCommentReply}
    */
-  async editReply(replyId: string, reply: UeCommentReplyReqDto): Promise<UeCommentReply> {
+  async editReply(replyId: string, reply: CommentReplyReqDto): Promise<UeCommentReply> {
     return this.prisma.normalize.ueCommentReply.update({
       data: {
         body: reply.body,

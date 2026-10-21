@@ -1,5 +1,5 @@
-import { getOperationResults, PrismaClient, PrismaOperationResult } from '../make-migration';
-import { RawBranch, RawBranchOption } from '../../../src/prisma/types';
+import { PrismaClient, PrismaOperationResult, getOperationResults } from '&/migration/etuutt_old/make-migration.js';
+import { RawBranch, RawBranchOption } from '@/prisma/types.js';
 
 export async function createBranches(prisma: PrismaClient) {
   const operations: Promise<{

@@ -1,6 +1,6 @@
 import { ArrayNotEmpty, IsArray, IsInt, IsNotEmpty, IsPositive, IsString, IsUUID } from 'class-validator';
 
-export default class TimetableDeleteOccurrencesReqDto {
+export class TimetableDeleteOccurrencesReqDto {
   @IsInt()
   @IsNotEmpty()
   from: number;

@@ -1,19 +1,20 @@
 import * as pactum from 'pactum';
 import {
-  createUser,
+  createAnnal,
+  createAnnalType,
   createBranch,
   createBranchOption,
   createSemester,
   createUe,
   createUeSubscription,
-  createAnnalType,
-  createAnnal,
   createUeof,
-} from '../../../utils/fakedb';
-import { Dummies, JsonLike, e2eSuite } from '../../../utils/test_utils';
-import { ERROR_CODE } from '../../../../src/exceptions';
-import { PermissionManager, pick } from '../../../../src/utils';
-import { AnnalStatus } from 'src/ue/annals/interfaces/annal.interface';
+  createUser,
+} from '#/utils/fakedb.js';
+import { Dummies, JsonLike, e2eSuite } from '#/utils/test_utils.js';
+import { ERROR_CODE } from '@/exceptions.js';
+import { PermissionManager, pick } from '@/utils.js';
+import { AnnalStatus } from '@/ue/annals/interfaces/annal.interface.js';
+import { it } from 'vitest';
 
 const EditAnnal = e2eSuite('PATCH /ue/annals/{annalId}', (app) => {
   const senderUser = createUser(app, { permissions: new PermissionManager().with('API_UPLOAD_ANNALS') });

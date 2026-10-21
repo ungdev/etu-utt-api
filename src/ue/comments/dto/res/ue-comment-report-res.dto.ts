@@ -1,6 +1,6 @@
-import UeCommentAuthorResDto from './ue-comment-author-res.dto';
+import { UeCommentAuthorResDto } from './ue-comment-author-res.dto.js';
 
-export default class UeCommentReportResDto {
+export class UeCommentReportResDto {
   id: string;
   body: string;
   createdAt: Date;

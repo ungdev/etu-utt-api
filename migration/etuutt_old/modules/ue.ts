@@ -1,6 +1,5 @@
-import { getOperationResults, PrismaOperationResult, QueryFunction } from '../make-migration';
-import { PrismaClient } from '../make-migration';
-import { RawUe } from '../../../src/prisma/types';
+import { PrismaClient, PrismaOperationResult, QueryFunction, getOperationResults } from '&/migration/etuutt_old/make-migration.js';
+import { RawUe } from '@/prisma/types.js';
 
 export function findLegacyUeofName(ueCode: string, comment: string) {
   let LOCATION = 'TRO';

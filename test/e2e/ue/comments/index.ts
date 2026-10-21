@@ -1,22 +1,23 @@
-import { INestApplication } from '@nestjs/common';
-import DeleteComment from './delete-comment.e2e-spec';
-import DeleteCommentReply from './delete-reply.e2e-spec';
-import DeleteUpvote from './delete-upvote.e2e-spec';
-import GetCommentFromIdE2ESpec from './get-comment-from-id.e2e-spec';
-import GetCommentReportReason from './get-comment-report-reasons.e2e-spec';
-import GetCommentsE2ESpec from './get-comment.e2e-spec';
-import GetReportedComments from './get-reported-comments.e2e-spec';
-import PostReportCommentReply from './post-comment-reply-report.e2e-spec';
-import PostReportComment from './post-comment-report.e2e-spec';
-import PostCommment from './post-comment.e2e-spec';
-import PostCommmentReply from './post-reply.e2e-spec';
-import PostUpvote from './post-upvote.e2e-spec';
-import UpdateCommentReplyReport from './update-comment-reply-report.e2e-spec';
-import UpdateCommentReport from './update-comment-report.e2e-spec';
-import UpdateComment from './update-comment.e2e-spec';
-import UpdateCommentReply from './update-reply.e2e-spec';
+import GetCommentsE2ESpec from '#/e2e/ue/comments/get-comment.e2e-spec.js';
+import DeleteComment from '#/e2e/ue/comments/delete-comment.e2e-spec.js';
+import DeleteCommentReply from '#/e2e/ue/comments/delete-reply.e2e-spec.js';
+import DeleteUpvote from '#/e2e/ue/comments/delete-upvote.e2e-spec.js';
+import PostCommment from '#/e2e/ue/comments/post-comment.e2e-spec.js';
+import PostCommmentReply from '#/e2e/ue/comments/post-reply.e2e-spec.js';
+import PostUpvote from '#/e2e/ue/comments/post-upvote.e2e-spec.js';
+import UpdateComment from '#/e2e/ue/comments/update-comment.e2e-spec.js';
+import UpdateCommentReply from '#/e2e/ue/comments/update-reply.e2e-spec.js';
+import GetCommentFromIdE2ESpec from '#/e2e/ue/comments/get-comment-from-id.e2e-spec.js';
+import { E2EAppProvider } from '#/utils/test_utils.js';
+import GetCommentReportReason from '#/e2e/ue/comments/get-comment-report-reasons.e2e-spec.js';
+import GetReportedComments from '#/e2e/ue/comments/get-reported-comments.e2e-spec.js';
+import PostReportCommentReply from '#/e2e/ue/comments/post-comment-reply-report.e2e-spec.js';
+import PostReportComment from '#/e2e/ue/comments/post-comment-report.e2e-spec.js';
+import UpdateCommentReplyReport from '#/e2e/ue/comments/update-comment-reply-report.e2e-spec.js';
+import UpdateCommentReport from '#/e2e/ue/comments/update-comment-report.e2e-spec.js';
+import { describe } from 'vitest';
 
-export default function CommentsE2ESpec(app: () => INestApplication) {
+export default function CommentsE2ESpec(app: E2EAppProvider) {
   describe('Comments', () => {
     GetCommentsE2ESpec(app);
     GetCommentFromIdE2ESpec(app);

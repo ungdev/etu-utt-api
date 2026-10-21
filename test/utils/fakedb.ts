@@ -1,58 +1,59 @@
 import {
+  ImageMediaPreset,
+  Permission,
+  RawAnnalType,
+  RawApiApplication,
+  RawApiKey,
   RawAsso,
   RawAssoMembership,
-  RawAssoMembershipRole,
   RawAssoMembershipPermission,
+  RawAssoMembershipRole,
   RawBranch,
   RawBranchOption,
   RawCreditCategory,
   RawHomepageWidget,
+  RawImageMedia,
   RawSemester,
   RawTimetableEntry,
   RawTimetableEntryOverride,
   RawTimetableGroup,
   RawUe,
-  RawUeof,
-  RawAnnalType,
   RawUeComment,
   RawUeCommentReply,
   RawUeCommentUpvote,
   RawUeCredit,
-  RawUeofInfo,
   RawUeStarCriterion,
   RawUeStarVote,
   RawUeWorkTime,
+  RawUeof,
+  RawUeofInfo,
   RawUser,
   RawUserAddress,
   RawUserBranchSubscription,
   RawUserInfos,
   RawUserMailsPhones,
   RawUserPreference,
+  RawUserPrivacy,
   RawUserSocialNetwork,
   RawUserUeSubscription,
+  Sex,
+  TimetableEntryType,
   Translation,
-  RawUserPrivacy,
-  RawApiKey,
-  RawApiApplication,
-  RawImageMedia,
   RawUeCommentReport,
   RawUeCommentReplyReport,
   RawUeCommentReportReason,
-  ImageMediaPreset,
-  Permission,
-  Sex,
-  TimetableEntryType,
   UserType,
-} from '../../src/prisma/types';
+} from '@/prisma/types.js';
 import { faker } from '@faker-js/faker';
-import { AuthService } from '../../src/auth/auth.service';
-import { PrismaService } from '../../src/prisma/prisma.service';
-import { AppProvider } from './test_utils';
-import { CommentStatus } from '../../src/ue/comments/interfaces/comment.interface';
-import { AnnalStatus, UeAnnalFile } from '../../src/ue/annals/interfaces/annal.interface';
-import { omit, PermissionManager, pick, translationSelect } from '../../src/utils';
-import { DEFAULT_APPLICATION } from '../../prisma/seed/utils';
-import { AssoWeekly } from '../../src/assos/interfaces/weekly.interface';
+import { AuthService } from '@/auth/auth.service.js';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { AppProvider } from '#/utils/test_utils.js';
+import { CommentStatus } from '@/ue/comments/interfaces/comment.interface.js';
+import { AnnalStatus, UeAnnalFile } from '@/ue/annals/interfaces/annal.interface.js';
+import { PermissionManager, omit, pick, translationSelect } from '@/utils.js';
+import { DEFAULT_APPLICATION } from '&/prisma/seed/utils.js';
+import { AssoWeekly } from '@/assos/interfaces/weekly.interface.js';
+import { beforeAll } from 'vitest';
 
 /**
  * The fake entities can be used like normal entities in the <code>it(string, () => void)</code> functions.
@@ -164,7 +165,7 @@ export interface FakeEntityMap {
     entity: FakeAssoWeekly;
     params: CreateAssoWeeklyParameters;
     deps: { asso: FakeAsso };
-  }
+  };
   timetableEntryOverride: {
     entity: Partial<FakeTimetableEntryOverride>;
     params: CreateTimetableEntryOverrideParameters;
@@ -287,7 +288,7 @@ export interface FakeEntityMap {
   };
 }
 
-export type CreateUserParameters = FakeUser & { password: string };
+export type CreateUserParameters = FakeUser;
 /**
  * Creates a user in the database.
  * @param app The function that returns the app.
@@ -302,7 +303,6 @@ export const createUser = entityFaker(
     lastName: faker.person.lastName,
     firstName: faker.person.firstName,
     userType: 'STUDENT' as UserType,
-    password: faker.internet.password,
     infos: {
       sex: 'OTHER' as Sex,
       birthday: new Date(0),
@@ -325,7 +325,6 @@ export const createUser = entityFaker(
       .get(PrismaService)
       .user.create({
         data: {
-          hash: params.hash ?? (await app().get(AuthService).getHash(params.password)),
           ...pick(params, 'id', 'login', 'studentId', 'firstName', 'lastName', 'userType'),
           infos: {
             create: {
@@ -587,7 +586,7 @@ export type CreateAssoWeeklyParameters = FakeAssoWeekly;
 export const createAssoWeekly = entityFaker(
   'assoWeekly',
   {
-    date: new Date,
+    date: new Date(),
     title: {
       fr: faker.company.catchPhrase,
       en: faker.company.catchPhrase,
@@ -601,19 +600,21 @@ export const createAssoWeekly = entityFaker(
       es: faker.company.catchPhrase,
       de: faker.company.catchPhrase,
       zh: faker.company.catchPhrase,
-    }
+    },
   },
   async (app, deps, params) => {
-    return app().get(PrismaService).normalize.assoWeekly.create({
-      data: {
-        id: params.id,
-        titleTranslation: { create: params.title },
-        bodyTranslation: { create: params.message },
-        asso: { connect: { id: deps.asso.id } },
-        date: params.date,
-      },
-    })
-  }
+    return app()
+      .get(PrismaService)
+      .normalize.assoWeekly.create({
+        data: {
+          id: params.id,
+          titleTranslation: { create: params.title },
+          bodyTranslation: { create: params.message },
+          asso: { connect: { id: deps.asso.id } },
+          date: params.date,
+        },
+      });
+  },
 );
 
 export type CreateTimetableGroupParams = { users?: Array<{ user: FakeUser; priority: number }> };

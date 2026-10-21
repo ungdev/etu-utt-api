@@ -56,7 +56,7 @@ Si une route renvoie un type de la forme `{ outerField: { innerField: string } }
 semblable à `AResDto` pour décrire ce type :
 
 ```ts
-export default class AResDto {
+export class AResDto {
   outerField: AResDto_OuterField;
 }
 
@@ -70,10 +70,10 @@ Les traductions se faisant automatiquement **une fois la réponse du contrôleur
 `Translation` :
 
 ```ts
-import {ApiProperty} from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 
 class AResDto {
-  @ApiProperty({type: String})
+  @ApiProperty({ type: String })
   translationField: Translation;
 }
 ```

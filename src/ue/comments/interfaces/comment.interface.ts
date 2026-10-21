@@ -1,8 +1,7 @@
-import { Prisma, PrismaClient } from '../../../prisma/types';
-import { RequestType, generateCustomModel } from '../../../prisma/prisma.service';
-import { REPLY_SELECT_FILTER, UeCommentReply, formatReply } from './comment-reply.interface';
-import { omit } from '../../../utils';
-import { RawUeCommentReport } from 'src/prisma/types';
+import { Prisma, PrismaClient , RawUeCommentReport } from '@/prisma/types.js';
+import { RequestType, generateCustomModel } from '@/prisma/prisma.service.js';
+import { REPLY_SELECT_FILTER, UeCommentReply, formatReply } from '@/ue/comments/interfaces/comment-reply.interface.js';
+import { omit } from '@/utils.js';
 
 const COMMENT_SELECT_FILTER = {
   select: {

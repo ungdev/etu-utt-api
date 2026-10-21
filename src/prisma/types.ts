@@ -1,4 +1,4 @@
-import { Language, Translation as RawTranslation } from './build/client';
+import { Language, Translation as RawTranslation } from '@/prisma/build/client.js';
 
 export {
   Prisma,
@@ -50,7 +50,7 @@ export {
   ApiKey as RawApiKey,
   ImageMedia as RawImageMedia,
   UeCommentReportReason as RawUeCommentReportReason
-} from './build/client';
+} from '@/prisma/build/client.js';
 
 export { RawTranslation };
 export type Translation = Pick<Partial<RawTranslation>, Language>;

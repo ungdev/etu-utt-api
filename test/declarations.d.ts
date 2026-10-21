@@ -1,24 +1,27 @@
-import { ERROR_CODE, ErrorData, ExtrasTypeBuilder } from '../src/exceptions';
-import { UeComment, UeCommentReport } from 'src/ue/comments/interfaces/comment.interface';
-import { UeCommentReply } from 'src/ue/comments/interfaces/comment-reply.interface';
-import { UeRating } from 'src/ue/interfaces/rate.interface';
+import { ERROR_CODE, ErrorData, ExtrasTypeBuilder } from '@/exceptions.js';
+import { UeComment, UeCommentReport } from '@/ue/comments/interfaces/comment.interface.js';
+import { UeCommentReply } from '@/ue/comments/interfaces/comment-reply.interface.js';
+import { UeRating } from '@/ue/interfaces/rate.interface.js';
 import {
   FakeApiApplication,
-  FakeAssoWeekly,
+  FakeAsso,
   FakeAssoMembership,
   FakeAssoMembershipPermission,
   FakeAssoMembershipRole,
+  FakeAssoWeekly,
+  FakeHomepageWidget,
   FakeImageMedia,
+  FakeUe,
   FakeUeAnnalType,
-  FakeUeof,
   FakeUeCreditCategory,
-} from './utils/fakedb';
-import { UeAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
-import { Criterion } from 'src/ue/interfaces/criterion.interface';
-import { FakeUe, FakeUser, FakeHomepageWidget, FakeAsso } from './utils/fakedb';
-import { AppProvider } from './utils/test_utils';
-import { Language } from '../src/prisma/types';
-import { PermissionManager } from '../src/utils';
+  FakeUeof,
+  FakeUser,
+} from '#/utils/fakedb.js';
+import { UeAnnalFile } from '@/ue/annals/interfaces/annal.interface.js';
+import { Criterion } from '@/ue/interfaces/criterion.interface.js';
+import { AppProvider } from '#/utils/test_utils.js';
+import { Language } from '@/prisma/types.js';
+import { PermissionManager } from '@/utils.js';
 
 type JsonLikeVariant<T> = Partial<{
   [K in keyof T]: T[K] extends string | Date
@@ -45,7 +48,7 @@ type FakeAssoMembers = {
  *
  * This way, the Spec class can be extended with custom methods (actually added in ./declarations.ts)
  */
-declare module './declarations' {
+declare module './declarations.js' {
   interface Spec {
     /** Checks for HTTP 201 Status. If omitted, status check will be 200 */
     created(): this;
@@ -121,6 +124,10 @@ declare module './declarations' {
     language: Language;
     withApplication(application: string): this;
     application: string;
+    withVersion(version: string): this;
+    version: string;
+    withBaseUrl(withBaseUrl: string): this;
+    baseUrl: string;
 
     /** Does NOT check HTTP status */
     $expectRegexableJson<T>(obj: JsonLikeVariant<T>): this;

@@ -1,8 +1,9 @@
 import * as pactum from 'pactum';
-import { ERROR_CODE } from 'src/exceptions';
-import { createCommentReportReason, createUser } from '../../../../test/utils/fakedb';
-import { e2eSuite } from '../../../../test/utils/test_utils';
-import { PermissionManager } from '../../../../src/utils';
+import { ERROR_CODE } from '@/exceptions.js';
+import { createCommentReportReason, createUser } from '#/utils/fakedb.js';
+import { e2eSuite } from '#/utils/test_utils.js';
+import { PermissionManager } from '@/utils.js';
+import { it } from 'vitest';
 
 const GetCommentReportReason = e2eSuite('GET /ue/comments/reports/reasons', (app) => {
   const user = createUser(app, { permissions: new PermissionManager().with('API_SEE_OPINIONS_UE') });

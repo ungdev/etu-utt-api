@@ -1,6 +1,5 @@
-import { PrismaClient, UserType } from '../../../src/prisma/types';
-import { QueryFunction } from '../make-migration';
-import { RawSemester, RawUe, RawUser } from '../../../src/prisma/types';
+import { PrismaClient, RawSemester, RawUe, RawUser, UserType } from '@/prisma/types.js';
+import { QueryFunction } from '&/migration/etuutt_old/make-migration.js';
 
 export async function migrateUsers(
   query: QueryFunction,
@@ -15,7 +14,6 @@ export async function migrateUsers(
       prisma.user.create({
         data: {
           login: user.login,
-          hash: '', // it is not possible to migrate the password, it's not possible to hash a password to an empty string
           studentId: user.studentId,
           firstName: user.firstName,
           lastName: user.lastName,

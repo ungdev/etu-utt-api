@@ -1,26 +1,29 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Patch, Post, Query } from '@nestjs/common';
+import { UUIDParam } from '@/app.pipe.js';
+import { GetUser, RequireApiPermission } from '@/auth/decorator/index.js';
+import { AppException, ERROR_CODE } from '@/exceptions.js';
+import { UeCommentPostReqDto } from '@/ue/comments/dto/req/ue-comment-post-req.dto.js';
+import { CommentReplyReqDto } from '@/ue/comments/dto/req/ue-comment-reply-req.dto.js';
+import { UeCommentUpdateReqDto } from '@/ue/comments/dto/req/ue-comment-update-req.dto.js';
+import { GetUeCommentsReqDto } from '@/ue/comments/dto/req/ue-get-comments-req.dto.js';
+import { UeService } from '@/ue/ue.service.js';
+import { User } from '@/users/interfaces/user.interface.js';
+import { CommentsService } from '@/ue/comments/comments.service.js';
+import { UeCommentResDto } from '@/ue/comments/dto/res/ue-comment-res.dto.js';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Permission } from '../../prisma/types';
-import { ApiAppErrorResponse, paginatedResponseDto } from '../../app.dto';
-import { UUIDParam } from '../../app.pipe';
-import { GetUser, RequireApiPermission } from '../../auth/decorator';
-import { GetPermissions } from '../../auth/decorator/get-permissions.decorator';
-import { AppException, ERROR_CODE } from '../../exceptions';
-import { User } from '../../users/interfaces/user.interface';
-import { PermissionManager } from '../../utils';
-import { UeService } from '../ue.service';
-import { CommentsService } from './comments.service';
-import UeCommentPostReqDto from './dto/req/ue-comment-post-req.dto';
-import UeCommentReplyReqDto from './dto/req/ue-comment-reply-req.dto';
-import UeCommentReportReqDto from './dto/req/ue-comment-report-req.dto';
-import UeCommentUpdateReqDto from './dto/req/ue-comment-update-req.dto';
-import GetUeCommentsReqDto from './dto/req/ue-get-comments-req.dto';
-import GetReportedCommentsReqDto from './dto/req/ue-get-reported-comments-req.dto';
-import UeCommentReplyResDto from './dto/res/ue-comment-reply-res.dto';
-import UeCommentReportReasonResDto from './dto/res/ue-comment-report-reason-res.dto';
-import UeCommentReportResDto from './dto/res/ue-comment-report-res.dto';
-import UeCommentResDto from './dto/res/ue-comment-res.dto';
-import { UeCommentUpvoteResDto$False, UeCommentUpvoteResDto$True } from './dto/res/ue-comment-upvote-res.dto';
+import { ApiAppErrorResponse, paginatedResponseDto } from '@/app.dto.js';
+import {
+  UeCommentUpvoteResDto$False,
+  UeCommentUpvoteResDto$True,
+} from '@/ue/comments/dto/res/ue-comment-upvote-res.dto.js';
+import { UeCommentReplyResDto } from '@/ue/comments/dto/res/ue-comment-reply-res.dto.js';
+import { Permission } from '@/prisma/types.js';
+import { GetPermissions } from '@/auth/decorator/get-permissions.decorator.js';
+import { PermissionManager } from '@/utils.js';
+import { UeCommentReportReqDto } from '@/ue/comments/dto/req/ue-comment-report-req.dto.js';
+import { GetReportedCommentsReqDto } from '@/ue/comments/dto/req/ue-get-reported-comments-req.dto.js';
+import { UeCommentReportReasonResDto } from '@/ue/comments/dto/res/ue-comment-report-reason-res.dto.js';
+import { UeCommentReportResDto } from '@/ue/comments/dto/res/ue-comment-report-res.dto.js';
 
 @Controller('ue/comments')
 @ApiTags('UE Comment')
@@ -231,7 +234,7 @@ export class CommentsController {
   async createReplyComment(
     @GetUser() user: User,
     @UUIDParam('commentId') commentId: string,
-    @Body() body: UeCommentReplyReqDto,
+    @Body() body: CommentReplyReqDto,
     @GetPermissions() permissions: PermissionManager,
   ): Promise<UeCommentReplyResDto> {
     const isCommentModerator = permissions.can(Permission.API_MODERATE_COMMENTS);
@@ -252,7 +255,7 @@ export class CommentsController {
   async editReplyComment(
     @GetUser() user: User,
     @UUIDParam('replyId') replyId: string,
-    @Body() body: UeCommentReplyReqDto,
+    @Body() body: CommentReplyReqDto,
     @GetPermissions() permissions: PermissionManager,
   ): Promise<UeCommentReplyResDto> {
     if (!(await this.commentsService.doesReplyExist(replyId))) throw new AppException(ERROR_CODE.NO_SUCH_REPLY);

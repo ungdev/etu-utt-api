@@ -1,6 +1,6 @@
 import * as pactum from 'pactum';
-import { ERROR_CODE } from 'src/exceptions';
-import { PrismaService } from '../../../../src/prisma/prisma.service';
+import { ERROR_CODE } from '@/exceptions.js';
+import { PrismaService } from '@/prisma/prisma.service.js';
 import {
   createBranch,
   createBranchOption,
@@ -11,9 +11,10 @@ import {
   createUe,
   createUeof,
   createUser,
-} from '../../../utils/fakedb';
-import { Dummies, e2eSuite } from '../../../utils/test_utils';
-import { PermissionManager } from '../../../../src/utils';
+} from '#/utils/fakedb.js';
+import { Dummies, e2eSuite } from '#/utils/test_utils.js';
+import { PermissionManager } from '@/utils.js';
+import { it } from 'vitest';
 
 const UpdateCommentReport = e2eSuite('PATCH /ue/comments/:commentId/:reportId', (app) => {
   const user = createUser(app, { permissions: new PermissionManager().with('API_MODERATE_COMMENTS') });

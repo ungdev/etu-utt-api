@@ -1,8 +1,9 @@
-import { e2eSuite } from '../../utils/test_utils';
+import { e2eSuite } from '#/utils/test_utils.js';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '../../../src/exceptions';
-import * as fakedb from '../../utils/fakedb';
-import { regex } from '../../../src/app.pipe';
+import { ERROR_CODE } from '@/exceptions.js';
+import * as fakedb from '#/utils/fakedb.js';
+import { regex } from '@/app.pipe.js';
+import { beforeAll, it } from 'vitest';
 
 const GetEntryDetailsE2ESpec = e2eSuite('GET /timetable/:entryId', (app) => {
   const user1 = fakedb.createUser(app);

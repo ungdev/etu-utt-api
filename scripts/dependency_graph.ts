@@ -1,11 +1,11 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from '../src/app.module';
+import { AppModule } from '@/app.module.js';
 import { INestApplication } from '@nestjs/common';
 import { SpelunkerModule } from 'nestjs-spelunker';
 import * as fs from 'fs';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule.register());
   await generateDependencyGraph(app);
 }
 bootstrap();

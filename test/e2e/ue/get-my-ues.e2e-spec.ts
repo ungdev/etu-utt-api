@@ -1,15 +1,16 @@
-import { e2eSuite } from '../../utils/test_utils';
+import { e2eSuite } from '#/utils/test_utils.js';
 import * as pactum from 'pactum';
 import {
   createBranch,
   createBranchOption,
   createSemester,
   createUe,
-  createUeof,
   createUeSubscription,
+  createUeof,
   createUser,
-} from '../../utils/fakedb';
-import { ERROR_CODE } from '../../../src/exceptions';
+} from '#/utils/fakedb.js';
+import { ERROR_CODE } from '@/exceptions.js';
+import { it } from 'vitest';
 
 const GetMyUesE2ESpec = e2eSuite('GET ue/of/me', (app) => {
   const user = createUser(app);

@@ -1,9 +1,9 @@
 # Test
 
-Pour les tests, nous utilisons Jest.
+Pour les tests, nous utilisons Vitest.
 
-Dans la CLI, quand on exécute les tests, il faut absolument passer le paramètre `--runInBand`, pour éviter que les tests
-ne s’exécutent en parallèle. Le paramètre est passé par défaut dans les commandes `package.json`
+Dans la CLI, quand on exécute les tests, il faut absolument passer le paramètre `fileParallelism: false`, pour éviter que les tests
+ne s’exécutent en parallèle. Le paramètre est passé par défaut via le fichier de config `vitest.config.ts`
 
 Les tests sont divisés en 2 parties :
 
@@ -29,9 +29,9 @@ Pour lancer tous les tests ayant le pattern souhaité. Cette syntaxe peut être 
 suivent.
 
 ```bash
-pnpm test <pattern>
+pnpm test:grep <pattern>
 # Par exemple, pour lancer les tests de la route GET /users/:userId :
-pnpm test "GET /users/:userId"
+pnpm test:grep "GET /users/:userId"
 ```
 
 Pour lancer les tests E2E ou unitaires :
@@ -53,7 +53,7 @@ pnpm test:watch
 pnpm test:cov
 ```
 
-Le résultat sera un site web : `src/coverage/lcov-report/index.html`.
+Le résultat sera un site web : `coverage/lcov-report/index.html`.
 
 ### Pour arrêter les tests dès le premier fail
 
@@ -74,7 +74,8 @@ E2E / `E2EAppProvider`, et les suites unitaires / `UnitAppProvider`. Voici donc 
 tester la route `GET /users/:id` :
 
 ```ts
-import { e2eSuite, E2EAppProvider } from '../../utils/test_utils';
+import { describe, beforeAll } from 'vitest';
+import { e2eSuite, E2EAppProvider } from '#/utils/test_utils';
 
 const GetUserFromIdE2ESpec = e2eSuite('GET /users/:userId', (app: E2EAppProvider) => {
   // Insérez les tests ici : initialisation, it(), ...
@@ -87,7 +88,7 @@ describe('E2E Spec', () => {
   let app: INestApplication;
   beforeAll(async () => {
     // Création de l'app
-    app = (await Test.createTestingModule({ imports: [AppModule] }).compile()).createNestApplication();
+    app = (await Test.createTestingModule({ imports: [AppModule.register()] }).compile()).createNestApplication();
     // ... Reste de l'initialisation de l'app.
   });
   GetUserFromIdE2ESpec(() => app);
@@ -172,19 +173,17 @@ Les fake functions sont toutes définies de la même façon :
   valeurs sont définies plus tard). Ce paramètre est optionnel, si vous n’avez pas besoin de passer d’argument,
   omettez-le.
 - Le quatrième argument (`onTheFly`) permet de définir le comportement de la fonction :
-
   - S’il vaut `true`, on crée l’entité directement.
   - S’il vaut `false`, l’entité sera créée dans un bloc `beforeAll`.
 
   L’argument est optionnel, et vaut par défaut `false`. Donc :
-
   - Si vous appelez la fonction dans un `describe` (ou équivalent), ne passez pas cet argument.
   - Si vous appelez la fonction dans un `it`, donnez la valeur `true` au paramètre.
 
 Voici plusieurs exemples d’utilisation de ces fonctions :
 
 ```ts
-import * as fakedb from '../../utils/fakedb';
+import * as fakedb from '#/utils/fakedb';
 
 e2eSuite('Foo', (app) => {
   // Vous pouvez aussi utiliser unitSuite, ou n'importe quoi d'autre, tant que c'est équivalent à un describe() et que vous pouvez avoir l'app.
@@ -289,9 +288,7 @@ const createBranchOption = <OnTheFly extends boolean = false>(
     } as Params<'branchOption'>;
     // Création de l'entité
     const entity = await app().get(PrismaService).uTTBranchOption.create({
-      data: {
-        /* Paramètres de création */
-      },
+      data: {/* Paramètres de création */},
     });
     // On injecte la valeur en entity dans lazyEntity, de manière à modifier la valeur de la référence
     // Si on avait directement fait lazyEntity = entity, on aurait modifié la valeur pointée par la variable
@@ -323,9 +320,7 @@ export const createBranchOption = entityFaker(
   },
   async (app, dependencies, params) =>
     app().get(PrismaService).uTTBranchOption.create({
-      data: {
-        /* Paramètres de création */
-      },
+      data: {/* Paramètres de création */},
     }),
 );
 ```

@@ -1,6 +1,6 @@
 import { IsString, IsUrl } from 'class-validator';
 
-export default class CreateApplicationReqDto {
+export class CreateApplicationReqDto {
   @IsString()
   name: string;
 

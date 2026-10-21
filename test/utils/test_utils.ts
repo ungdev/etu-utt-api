@@ -1,10 +1,29 @@
-import { PrismaService } from '../../src/prisma/prisma.service';
-import { PrismaClient } from '../../src/prisma/types';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { PrismaClient } from '@/prisma/types.js';
 import { INestApplication } from '@nestjs/common';
-import { TestingModule } from '@nestjs/testing';
+import { Test, TestingModule } from '@nestjs/testing';
 import { faker } from '@faker-js/faker';
-import { ConfigService } from '../../src/config/config.service';
-import { clearUniqueValues, generateDefaultApplication } from '../../prisma/seed/utils';
+import { ConfigService } from '@/config/config.service.js';
+import { clearUniqueValues, generateDefaultApplication } from '&/prisma/seed/utils.js';
+import { beforeAll, describe } from 'vitest';
+import Spec from 'pactum/src/models/Spec.js';
+import { AppModule } from '@/app.module.js';
+import * as pactum from 'pactum';
+import '#/declarations.d.ts'
+
+export async function buildTestApp(port: number): Promise<E2EApp> {
+  const moduleRef = await Test.createTestingModule({
+    imports: [AppModule.register()],
+  }).compile();
+  const nestApp = moduleRef.createNestApplication();
+  AppModule.initApp(nestApp);
+  await nestApp.listen(port);
+
+  nestApp['spec'] = () => pactum.spec().withBaseUrl(
+    `http://localhost:${port}${process.env.API_PREFIX.startsWith('/') ? '' : '/'}${process.env.API_PREFIX.endsWith('/') ? process.env.API_PREFIX.slice(0, -1) : process.env.API_PREFIX}`,
+  );
+  return nestApp as unknown as E2EApp;
+}
 
 /**
  * Initializes this file.
@@ -16,9 +35,14 @@ export function init(app: AppProvider) {
 }
 
 /**
+ * Extended INestApplication, with utility function spec() which sets up a {@link Spec} object for calling a route of the app.
+ */
+export type E2EApp = INestApplication & { spec(): Spec }
+
+/**
  * A function returning the app, for e2e testing ({@link INestApplication}).
  */
-export type E2EAppProvider = () => INestApplication;
+export type E2EAppProvider = () => E2EApp;
 /**
  * A function returning the app, for e2e testing ({@link TestingModule}).
  */

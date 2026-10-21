@@ -5,7 +5,7 @@ import { IsNotEmpty, IsString, MinLength } from 'class-validator';
  * @property body The user message associated with the report. Must be at least 5 characters long
  * @property reason The report reason
  */
-export default class UeCommentReportReqDto {
+export class UeCommentReportReqDto {
   @IsString()
   @IsNotEmpty()
   @MinLength(5)

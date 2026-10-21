@@ -1,10 +1,10 @@
-import { PrismaService } from '../../prisma/prisma.service';
-import { Application } from './interfaces/application.interface';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { Application } from '@/auth/application/interfaces/application.interface.js';
 import { Injectable } from '@nestjs/common';
-import { AuthService } from '../auth.service';
+import { AuthService } from '@/auth/auth.service.js';
 
 @Injectable()
-export default class ApplicationService {
+export class ApplicationService {
   constructor(
     private prisma: PrismaService,
     private authService: AuthService,
@@ -48,5 +48,9 @@ export default class ApplicationService {
       create: { userId, applicationId, token: AuthService.generateToken() },
     });
     return this.authService.signAuthenticationToken(updatedApiKey.token, tokenExpiresIn);
+  }
+
+  formatRedirectUrl(application: Application, validationToken: string): string {
+    return `${application.redirectUrl}?${new URLSearchParams({ token: validationToken }).toString()}`;
   }
 }

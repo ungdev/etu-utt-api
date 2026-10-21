@@ -1,12 +1,12 @@
-import { createReadStream, ReadStream } from 'fs';
+import { ReadStream, createReadStream } from 'fs';
 import { rm, writeFile } from 'fs/promises';
 import { Injectable } from '@nestjs/common';
-import { RawImageMedia, ImageMediaPreset } from '../../prisma/types';
-import { ConfigService, isTestEnv } from '../../config/config.service';
-import { PrismaService } from '../../prisma/prisma.service';
-import { MulterWithMime } from '../../upload.interceptor';
-import { User } from '../../users/interfaces/user.interface';
-import ImageMediaUploadReqDto from './dto/req/imagemedia-upload-req.dto';
+import { ImageMediaPreset, RawImageMedia } from '@/prisma/types.js';
+import { ConfigService, isTestEnv } from '@/config/config.service.js';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { MulterWithMime } from '@/upload.interceptor.js';
+import { User } from '@/users/interfaces/user.interface.js';
+import { ImageMediaUploadReqDto } from '@/media/image/dto/req/imagemedia-upload-req.dto.js';
 import sharp from 'sharp';
 
 export type ConversionOptions = Omit<ImageMediaUploadReqDto, 'public'>;
@@ -70,7 +70,7 @@ export class ImageMediaService {
 
   async rollbackMedia(media: RawImageMedia): Promise<void> {
     const promise = this.prisma.imageMedia.create({ data: media });
-    // Don't let a hanging promise with Jest
+    // Don't let a hanging promise with Vitest
     if (isTestEnv) await promise;
   }
 
@@ -84,7 +84,7 @@ export class ImageMediaService {
 
   async writeMediaToDisk(mediaId: string, buffer: Buffer): Promise<void> {
     const promise = writeFile(`${this.config.MEDIA_UPLOAD_DIR}/image/${mediaId}.webp`, buffer);
-    // Don't let a hanging promise with Jest
+    // Don't let a hanging promise with Vitest
     if (isTestEnv) await promise;
   }
 
@@ -97,7 +97,7 @@ export class ImageMediaService {
     const deletionsPromises = media.map((m) => this.deleteMediaFromDisk(m.id).catch(() => m)); // return media on failure
     const deletions = await Promise.all(deletionsPromises);
     const failedDeletions = deletions.filter((r): r is RawImageMedia => r !== undefined);
-    failedDeletions.map(this.rollbackMedia); // Restore failed media, no need to wait for completion
+    await Promise.all(failedDeletions.map(this.rollbackMedia));
   }
 
   /**
@@ -121,8 +121,6 @@ export class ImageMediaService {
   }
 
   private async deleteMediaFromDisk(mediaId: string): Promise<void> {
-    const promise = rm(`${this.config.MEDIA_UPLOAD_DIR}/image/${mediaId}.webp`, { force: true });
-    // Don't let a hanging promise with Jest
-    if (isTestEnv) await promise;
+    await rm(`${this.config.MEDIA_UPLOAD_DIR}/image/${mediaId}.webp`, { force: true });
   }
 }

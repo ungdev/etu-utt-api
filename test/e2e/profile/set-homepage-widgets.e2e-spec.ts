@@ -1,9 +1,10 @@
-import { e2eSuite } from '../../utils/test_utils';
+import { e2eSuite } from '#/utils/test_utils.js';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '../../../src/exceptions';
-import { HomepageWidgetsUpdateElement } from '../../../src/profile/dto/req/homepage-widgets-update-req.dto';
-import * as fakedb from '../../utils/fakedb';
-import { PrismaService } from '../../../src/prisma/prisma.service';
+import { ERROR_CODE } from '@/exceptions.js';
+import { HomepageWidgetsUpdateElement } from '@/profile/dto/req/homepage-widgets-update-req.dto.js';
+import * as fakedb from '#/utils/fakedb.js';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { expect, it, vi } from 'vitest';
 
 const SetHomepageWidgetsE2ESpec = e2eSuite('PUT /profile/homepage', (app) => {
   const user = fakedb.createUser(app);
@@ -30,13 +31,14 @@ const SetHomepageWidgetsE2ESpec = e2eSuite('PUT /profile/homepage', (app) => {
     pactum.spec().put('/profile/homepage').withJson(body).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
 
   it('should fail as body is not valid', async () => {
-    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {
+    });
     await pactum
       .spec()
       .put('/profile/homepage')
       .withBearerToken(user.token)
       .withJson({ widget: 'a_widget', height: 1, width: 1, x: 0, y: 0 })
-      .expectAppError(ERROR_CODE.PARAM_MALFORMED, 'items');
+      .expectAppError(ERROR_CODE.PARAM_NOT_ARRAY, 'items');
     consoleErrorSpy.mockRestore();
   });
 
