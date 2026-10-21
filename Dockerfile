@@ -8,7 +8,7 @@ WORKDIR /usr/src/app
 # Add alpine dependencies for 'sharp'
 RUN apk add --upgrade --no-cache vips-dev build-base openssl
 
-COPY --chown=node:node package.json pnpm-lock.yaml ./
+COPY --chown=node:node package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 RUN npm i -g pnpm && pnpm config set "//npm.pkg.github.com/:_authToken" ${NODE_AUTH_TOKEN} && pnpm install --no-optional --frozen-lockfile --prod=false
 

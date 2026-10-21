@@ -5,3 +5,13 @@ docker-compose.*yml
 node_modules
 npm-debug.log
 dist
+docs
+.vscode
+.github
+test
+.prettierrc
+.readthedocs.yaml
+codecov.yml
+docker-compose.*yml
+eslint.config.mjs
+LICENSE
