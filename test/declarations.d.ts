@@ -113,7 +113,7 @@ declare module './declarations.js' {
     expectImageMedia(media: JsonLikeVariant<FakeImageMedia>): this;
 
     expectPermissions(permissions: PermissionManager): this;
-    expectAssoWeekly(weekly: JsonLikeVariant<FakeAssoWeekly>, created: boolean): this;
+    expectAssoWeekly(weekly: JsonLikeVariant<FakeAssoWeekly>, created?: boolean): this;
     expectAssoWeeklies(app: AppProvider, weeklies: JsonLikeVariant<FakeAssoWeekly>[], count: number): this;
 
     withLanguage(language: Language): this;
