@@ -5,7 +5,7 @@ import { CommentReplyReqDto } from '@/ue/comments/dto/req/ue-comment-reply-req.d
 import { UeCommentUpdateReqDto } from '@/ue/comments/dto/req/ue-comment-update-req.dto.js';
 import { GetUeCommentsReqDto } from '@/ue/comments/dto/req/ue-get-comments-req.dto.js';
 import { UeCommentReply } from '@/ue/comments/interfaces/comment-reply.interface.js';
-import { UeComment, UeCommentReport } from '@/ue/comments/interfaces/comment.interface.js';
+import { UeComment } from '@/ue/comments/interfaces/comment.interface.js';
 import { ConfigService } from '@/config/config.service.js';
 import { Prisma } from '@/prisma/build/client.js';
 import { omit, pick } from '@/utils.js';
