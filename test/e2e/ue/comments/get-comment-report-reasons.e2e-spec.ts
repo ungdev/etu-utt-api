@@ -5,7 +5,7 @@ import { e2eSuite } from '#/utils/test_utils.js';
 import { PermissionManager } from '@/utils.js';
 import { it } from 'vitest';
 
-const GetCommentReportReason = e2eSuite('GET /ue/comments/reports/reasons', (app) => {
+const GetCommentReportReasonE2ESpec = e2eSuite('GET /ue/comments/reports/reasons', (app) => {
   const user = createUser(app, { permissions: new PermissionManager().with('API_SEE_OPINIONS_UE') });
   const userNoPermission = createUser(app);
   createCommentReportReason(app, { name: 'meh' });
@@ -38,4 +38,4 @@ const GetCommentReportReason = e2eSuite('GET /ue/comments/reports/reasons', (app
         },
       ]));
 });
-export default GetCommentReportReason;
+export default GetCommentReportReasonE2ESpec;

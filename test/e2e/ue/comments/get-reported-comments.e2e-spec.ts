@@ -22,7 +22,7 @@ import { PermissionManager } from '@/utils.js';
 import { ConfigService } from '@/config/config.service.js';
 import { it, expect } from 'vitest';
 
-const GetReportedComments = e2eSuite('GET /ue/comments/reports', (app) => {
+const GetReportedCommentsE2ESpec = e2eSuite('GET /ue/comments/reports', (app) => {
   const userModerator = createUser(app, {
     login: 'user2',
     permissions: new PermissionManager()
@@ -197,4 +197,4 @@ const GetReportedComments = e2eSuite('GET /ue/comments/reports', (app) => {
   });
 });
 
-export default GetReportedComments;
+export default GetReportedCommentsE2ESpec;

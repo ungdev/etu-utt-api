@@ -10,7 +10,7 @@ import { UeService } from '@/ue/ue.service.js';
 import { User } from '@/users/interfaces/user.interface.js';
 import { CommentsService } from '@/ue/comments/comments.service.js';
 import { UeCommentResDto } from '@/ue/comments/dto/res/ue-comment-res.dto.js';
-import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiAppErrorResponse, paginatedResponseDto } from '@/app.dto.js';
 import {
   UeCommentUpvoteResDto$False,
@@ -334,9 +334,10 @@ export class CommentsController {
   }
 
   @Post(':commentId/:reportId/mitigate')
+  @HttpCode(HttpStatus.OK)
   @RequireApiPermission('API_MODERATE_COMMENTS')
   @ApiOperation({ description: 'Mitigate a report' })
-  @ApiOkResponse({ type: UeCommentReportResDto })
+  @ApiNoContentResponse({ type: UeCommentReportResDto })
   async mitigateCommentReport(
     @GetUser() user: User,
     @UUIDParam('commentId') commentId: string,
@@ -350,6 +351,7 @@ export class CommentsController {
   }
 
   @Post('/reply/:replyId/:reportId/mitigate')
+  @HttpCode(HttpStatus.OK)
   @RequireApiPermission('API_MODERATE_COMMENTS')
   @ApiOperation({ description: 'Mitigate a comment reply report' })
   @ApiOkResponse({ type: UeCommentReportResDto })

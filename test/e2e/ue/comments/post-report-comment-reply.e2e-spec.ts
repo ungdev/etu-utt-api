@@ -3,6 +3,7 @@ import {
   createBranch,
   createBranchOption,
   createComment,
+  createCommentReply,
   createCommentReportReason,
   createSemester,
   createUe,
@@ -14,8 +15,11 @@ import * as pactum from 'pactum';
 import { ERROR_CODE } from '@/exceptions.js';
 import { it } from 'vitest';
 
-const ReportComment = e2eSuite('POST /ue/comments/{commentId}/report', (app) => {
-  const user = createUser(app, {
+const PostReportCommentReplyE2ESpec = e2eSuite('POST /ue/comments/reply/{replyId}/report', (app) => {
+  const commentAuthor = createUser(app, {
+    permissions: new PermissionManager().with('API_SEE_OPINIONS_UE').with('API_GIVE_OPINIONS_UE'),
+  });
+  const replyAuthor = createUser(app, {
     permissions: new PermissionManager().with('API_SEE_OPINIONS_UE').with('API_GIVE_OPINIONS_UE'),
   });
   const userNotAuthor = createUser(app, {
@@ -28,50 +32,51 @@ const ReportComment = e2eSuite('POST /ue/comments/{commentId}/report', (app) => 
   const branchOption = createBranchOption(app, { branch });
   const ue = createUe(app);
   const ueof = createUeof(app, { branchOptions: [branchOption], semesters: [semester], ue });
-  const comment = createComment(app, { ueof, user, semester });
+  const comment = createComment(app, { ueof, user: commentAuthor, semester });
+  const reply = createCommentReply(app, { user: replyAuthor, comment });
   const reportReason = createCommentReportReason(app, { name: 'meh' });
 
   it('should return a 401 as user is not authenticated', () =>
-    pactum.spec().post(`/ue/comments/${comment.id}/report`).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
+    pactum.spec().post(`/ue/comments/reply/${reply.id}/report`).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
 
   it('should fail as the user does not have the required permissions', () =>
     pactum
       .spec()
       .withBearerToken(userNoPermission.token)
-      .post(`/ue/comments/${comment.id}/report`)
+      .post(`/ue/comments/reply/${reply.id}/report`)
       .withBody({
         body: "it's offensive",
         reason: reportReason.name,
       })
       .expectAppError(ERROR_CODE.FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS, 'API_SEE_OPINIONS_UE'));
 
-  it('should return 400 because comment id is not a valid UUID', () =>
+  it('should return 400 because reply id is not a valid UUID', async () =>
     pactum
       .spec()
       .withBearerToken(userNotAuthor.token)
-      .post(`/ue/comments/notauuid/report`)
+      .post(`/ue/comments/reply/notauuid/report`)
       .withBody({
         body: "it's offensive",
         reason: reportReason.name,
       })
-      .expectAppError(ERROR_CODE.PARAM_NOT_UUID, 'commentId'));
+      .expectAppError(ERROR_CODE.PARAM_NOT_UUID, 'replyId'));
 
-  it('should return 404 because comment does not exist', () =>
+  it('should return 404 because reply does not exist', () =>
     pactum
       .spec()
       .withBearerToken(userNotAuthor.token)
-      .post(`/ue/comments/${Dummies.UUID}/report`)
+      .post(`/ue/comments/reply/${Dummies.UUID}/report`)
       .withBody({
         body: "it's offensive",
         reason: reportReason.name,
       })
-      .expectAppError(ERROR_CODE.NO_SUCH_COMMENT));
+      .expectAppError(ERROR_CODE.NO_SUCH_REPLY));
 
-  it('should return 403 because user is comment author', () =>
+  it('should return 403 because user is reply author', () =>
     pactum
       .spec()
-      .withBearerToken(user.token)
-      .post(`/ue/comments/${comment.id}/report`)
+      .withBearerToken(replyAuthor.token)
+      .post(`/ue/comments/reply/${reply.id}/report`)
       .withBody({
         body: "it's offensive",
         reason: reportReason.name,
@@ -82,7 +87,7 @@ const ReportComment = e2eSuite('POST /ue/comments/{commentId}/report', (app) => 
     pactum
       .spec()
       .withBearerToken(userNotAuthor.token)
-      .post(`/ue/comments/${comment.id}/report`)
+      .post(`/ue/comments/reply/${reply.id}/report`)
       .withBody({
         body: "it's offensive",
         reason: 'idontexist',
@@ -93,7 +98,7 @@ const ReportComment = e2eSuite('POST /ue/comments/{commentId}/report', (app) => 
     pactum
       .spec()
       .withBearerToken(userNotAuthor.token)
-      .post(`/ue/comments/${comment.id}/report`)
+      .post(`/ue/comments/reply/${reply.id}/report`)
       .withBody({
         body: "it's offensive",
         reason: reportReason.name,
@@ -103,8 +108,8 @@ const ReportComment = e2eSuite('POST /ue/comments/{commentId}/report', (app) => 
         id: JsonLike.UUID,
         body: "it's offensive",
         reason: reportReason.name,
-        reportedBody: comment.body,
         createdAt: JsonLike.DATE,
+        reportedBody: reply.body,
         mitigated: false,
         user: {
           id: userNotAuthor.id,
@@ -114,4 +119,4 @@ const ReportComment = e2eSuite('POST /ue/comments/{commentId}/report', (app) => 
       }));
 });
 
-export default ReportComment;
+export default PostReportCommentReplyE2ESpec;

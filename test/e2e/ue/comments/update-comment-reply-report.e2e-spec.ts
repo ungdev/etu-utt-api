@@ -17,7 +17,7 @@ import { Dummies, e2eSuite } from '#/utils/test_utils.js';
 import { PermissionManager } from '@/utils.js';
 import { it } from 'vitest';
 
-const UpdateCommentReplyReport = e2eSuite('PATCH /ue/comments/reply/{replyId}/{reportId}', (app) => {
+const UpdateCommentReplyReportE2ESpec = e2eSuite('POST /ue/comments/reply/{replyId}/{reportId}/mitigate', (app) => {
   const commentAuthor = createUser(app, {
     permissions: new PermissionManager().with('API_SEE_OPINIONS_UE').with('API_GIVE_OPINIONS_UE'),
   });
@@ -36,7 +36,7 @@ const UpdateCommentReplyReport = e2eSuite('PATCH /ue/comments/reply/{replyId}/{r
   const report = createCommentReplyReport(app, { reply, reason, user: commentAuthor });
 
   it('should return a 401 as user is not authenticated', () =>
-    pactum.spec().patch(`/ue/comments/reply/${reply.id}/${report.id}`).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
+    pactum.spec().post(`/ue/comments/reply/${reply.id}/${report.id}/mitigate`).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
 
   it('should return a 403 as user does not have permission to moderate comments', async () => {
     const userNoPermission = await createUser(app, {}, true);
@@ -48,12 +48,12 @@ const UpdateCommentReplyReport = e2eSuite('PATCH /ue/comments/reply/{replyId}/{r
     await pactum
       .spec()
       .withBearerToken(userNoPermission.token)
-      .patch(`/ue/comments/reply/${reply.id}/${report.id}`)
+      .post(`/ue/comments/reply/${reply.id}/${report.id}/mitigate`)
       .expectAppError(ERROR_CODE.FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS, 'API_MODERATE_COMMENTS');
     await pactum
       .spec()
       .withBearerToken(userNotModerator.token)
-      .patch(`/ue/comments/reply/${reply.id}/${report.id}`)
+      .post(`/ue/comments/reply/${reply.id}/${report.id}/mitigate`)
       .expectAppError(ERROR_CODE.FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS, 'API_MODERATE_COMMENTS');
   });
 
@@ -61,21 +61,21 @@ const UpdateCommentReplyReport = e2eSuite('PATCH /ue/comments/reply/{replyId}/{r
     pactum
       .spec()
       .withBearerToken(moderator.token)
-      .patch(`/ue/comments/reply/${Dummies.UUID}/${report.id}`)
+      .post(`/ue/comments/reply/${Dummies.UUID}/${report.id}/mitigate`)
       .expectAppError(ERROR_CODE.NO_SUCH_REPLY));
 
   it('should return 404 as reportId is invalid', () =>
     pactum
       .spec()
       .withBearerToken(moderator.token)
-      .patch(`/ue/comments/reply/${reply.id}/${Dummies.UUID}`)
+      .post(`/ue/comments/reply/${reply.id}/${Dummies.UUID}/mitigate`)
       .expectAppError(ERROR_CODE.NO_SUCH_REPORT));
 
   it('should return the updated report', async () => {
     await pactum
       .spec()
       .withBearerToken(moderator.token)
-      .patch(`/ue/comments/reply/${reply.id}/${report.id}`)
+      .post(`/ue/comments/reply/${reply.id}/${report.id}/mitigate`)
       .expectUeCommentReport({
         ...report,
         mitigated: true,
@@ -94,4 +94,4 @@ const UpdateCommentReplyReport = e2eSuite('PATCH /ue/comments/reply/{replyId}/{r
   });
 });
 
-export default UpdateCommentReplyReport;
+export default UpdateCommentReplyReportE2ESpec;
