@@ -28,6 +28,7 @@ export default function ueSeed(
               code: `${code}${OF_SUFFIX}`,
               siepId: faker.number.int({ min: 100000, max: 999999 }),
               name: generateTranslation(faker.person.jobTitle),
+              available: true,
               createdAt: date,
               updatedAt: date,
               info: {

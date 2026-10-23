@@ -150,7 +150,7 @@ export class UeController {
     );
     // Chooses an UEOF : the only ueof if there is only one; the one with the preferred language if there is one; the first one otherwise
     const chosenOf = availableOf.length
-      ? availableOf.find((ueof) => lowerCasePref.includes(ueof.info.language))
+      ? availableOf.find((ueof) => lowerCasePref.includes(ueof.info.language) ?? availableOf[0])
       : (ue.ueofs.find((ueof) => lowerCasePref.includes(ueof.info.language)) ?? ue.ueofs[0]);
     return {
       code: ue.code,
