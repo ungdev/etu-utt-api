@@ -10,7 +10,7 @@ import { UeService } from '@/ue/ue.service.js';
 import { User } from '@/users/interfaces/user.interface.js';
 import { CommentsService } from '@/ue/comments/comments.service.js';
 import { UeCommentResDto } from '@/ue/comments/dto/res/ue-comment-res.dto.js';
-import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiAppErrorResponse, paginatedResponseDto } from '@/app.dto.js';
 import {
   UeCommentUpvoteResDto$False,
@@ -20,6 +20,10 @@ import { UeCommentReplyResDto } from '@/ue/comments/dto/res/ue-comment-reply-res
 import { Permission } from '@/prisma/types.js';
 import { GetPermissions } from '@/auth/decorator/get-permissions.decorator.js';
 import { PermissionManager } from '@/utils.js';
+import { UeCommentReportReqDto } from '@/ue/comments/dto/req/ue-comment-report-req.dto.js';
+import { GetReportedCommentsReqDto } from '@/ue/comments/dto/req/ue-get-reported-comments-req.dto.js';
+import { UeCommentReportReasonResDto } from '@/ue/comments/dto/res/ue-comment-report-reason-res.dto.js';
+import { UeCommentReportResDto } from '@/ue/comments/dto/res/ue-comment-report-res.dto.js';
 
 @Controller('ue/comments')
 @ApiTags('UE Comment')
@@ -72,6 +76,33 @@ export class CommentsController {
     return this.commentsService.createComment(body, user.id);
   }
 
+  @Get('/reports')
+  @RequireApiPermission('API_MODERATE_COMMENTS')
+  @ApiOperation({ description: 'Get all reported comments or comments with reported replies. This route is paginated' })
+  @ApiOkResponse({ type: paginatedResponseDto(UeCommentResDto) })
+  @ApiAppErrorResponse(
+    ERROR_CODE.FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS,
+    "Thrown when the user doesn't have enough permissions",
+  )
+  getReportedComments(
+    @GetUser() user: User,
+    @Query() dto: GetReportedCommentsReqDto,
+  ): Promise<Pagination<UeCommentResDto>> {
+    return this.commentsService.getCommentsWithReports(user.id, dto);
+  }
+
+  @Get('/reports/reasons')
+  @RequireApiPermission('API_SEE_OPINIONS_UE')
+  @ApiOperation({ description: 'Get the list of all possible report reasons' })
+  @ApiOkResponse({ type: UeCommentReportReasonResDto, isArray: true })
+  @ApiAppErrorResponse(
+    ERROR_CODE.FORBIDDEN_NOT_ENOUGH_API_PERMISSIONS,
+    "Thrown when the user doesn't have enough permissions",
+  )
+  getReportReasons(): Promise<UeCommentReportReasonResDto[]> {
+    return this.commentsService.getCommentReportReason();
+  }
+
   // TODO : en vrai la route GET /ue/comments renvoie les mêmes infos nan ? :sweat_smile:
   @Get(':commentId')
   @RequireApiPermission('API_SEE_OPINIONS_UE')
@@ -108,7 +139,7 @@ export class CommentsController {
     @GetPermissions() permissions: PermissionManager,
   ): Promise<UeCommentResDto> {
     const isCommentModerator = permissions.can(Permission.API_MODERATE_COMMENTS);
-    if (!(await this.commentsService.doesCommentExist(commentId, user.id, isCommentModerator, isCommentModerator)))
+    if (!(await this.commentsService.doesCommentExist(commentId, user.id, isCommentModerator)))
       throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
     if (isCommentModerator || (await this.commentsService.isUserCommentAuthor(user.id, commentId)))
       return this.commentsService.updateComment(body, commentId, user.id, isCommentModerator);
@@ -158,7 +189,7 @@ export class CommentsController {
     @GetPermissions() permissions: PermissionManager,
   ): Promise<UeCommentUpvoteResDto$True> {
     const commentModerator = permissions.can(Permission.API_MODERATE_COMMENTS);
-    if (!(await this.commentsService.doesCommentExist(commentId, user.id, commentModerator, commentModerator)))
+    if (!(await this.commentsService.doesCommentExist(commentId, user.id, commentModerator)))
       throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
     if (await this.commentsService.isUserCommentAuthor(user.id, commentId))
       throw new AppException(ERROR_CODE.IS_COMMENT_AUTHOR);
@@ -184,7 +215,7 @@ export class CommentsController {
     @GetPermissions() permissions: PermissionManager,
   ): Promise<UeCommentUpvoteResDto$False> {
     const commentModerator = permissions.can(Permission.API_MODERATE_COMMENTS);
-    if (!(await this.commentsService.doesCommentExist(commentId, user.id, commentModerator, commentModerator)))
+    if (!(await this.commentsService.doesCommentExist(commentId, user.id, commentModerator)))
       throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
     // TODO : on est d'accord qu'on peut virer cette condition ? Puisque de toutes manières l'utilisateur ne peut pas mettre un upvote.
     if (await this.commentsService.isUserCommentAuthor(user.id, commentId))
@@ -207,7 +238,7 @@ export class CommentsController {
     @GetPermissions() permissions: PermissionManager,
   ): Promise<UeCommentReplyResDto> {
     const isCommentModerator = permissions.can(Permission.API_MODERATE_COMMENTS);
-    if (!(await this.commentsService.doesCommentExist(commentId, user.id, isCommentModerator, isCommentModerator)))
+    if (!(await this.commentsService.doesCommentExist(commentId, user.id, isCommentModerator)))
       throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
     return this.commentsService.replyComment(user.id, commentId, body);
   }
@@ -257,5 +288,79 @@ export class CommentsController {
     )
       return this.commentsService.deleteReply(replyId);
     throw new AppException(ERROR_CODE.NOT_REPLY_AUTHOR);
+  }
+
+  @Post(':commentId/report')
+  @RequireApiPermission('API_SEE_OPINIONS_UE')
+  @ApiOperation({ description: 'Report a comment' })
+  @ApiOkResponse({ type: UeCommentReportResDto })
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_COMMENT, 'there is no comment with the provided commentId')
+  @ApiAppErrorResponse(ERROR_CODE.IS_COMMENT_AUTHOR, 'thrown when the user is the comment author')
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_REPORT_REASON, 'the provided reason does not exist')
+  async reportComment(
+    @GetUser() user: User,
+    @UUIDParam('commentId') commentId: string,
+    @Body() body: UeCommentReportReqDto,
+    @GetPermissions() permissions: PermissionManager,
+  ) {
+    const commentModerator = permissions.can('API_MODERATE_COMMENTS');
+    if (!(await this.commentsService.doesCommentExist(commentId, user.id, commentModerator)))
+      throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
+    if (await this.commentsService.isUserCommentAuthor(user.id, commentId))
+      throw new AppException(ERROR_CODE.IS_COMMENT_AUTHOR);
+    if (!(await this.commentsService.doesReportReasonExist(body.reason)))
+      throw new AppException(ERROR_CODE.NO_SUCH_REPORT_REASON);
+    return this.commentsService.reportComment(user.id, body, commentId, commentModerator);
+  }
+
+  @Post('reply/:replyId/report')
+  @RequireApiPermission('API_SEE_OPINIONS_UE')
+  @ApiOperation({ description: 'Report a comment reply' })
+  @ApiOkResponse({ type: UeCommentReportResDto })
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_REPLY, 'there is no comment reply with the provided replyId')
+  @ApiAppErrorResponse(ERROR_CODE.IS_COMMENT_AUTHOR, 'thrown when the user is the comment author')
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_REPORT_REASON, 'the provided reason does not exist')
+  async reportCommentReply(
+    @GetUser() user: User,
+    @UUIDParam('replyId') replyId: string,
+    @Body() body: UeCommentReportReqDto,
+  ) {
+    if (!(await this.commentsService.doesReplyExist(replyId))) throw new AppException(ERROR_CODE.NO_SUCH_REPLY);
+    if (await this.commentsService.isUserCommentReplyAuthor(user.id, replyId))
+      throw new AppException(ERROR_CODE.IS_COMMENT_AUTHOR);
+    if (!(await this.commentsService.doesReportReasonExist(body.reason)))
+      throw new AppException(ERROR_CODE.NO_SUCH_REPORT_REASON);
+    return this.commentsService.reportCommentReply(user.id, body, replyId);
+  }
+
+  @Post(':commentId/:reportId/mitigate')
+  @HttpCode(HttpStatus.OK)
+  @RequireApiPermission('API_MODERATE_COMMENTS')
+  @ApiOperation({ description: 'Mitigate a report' })
+  @ApiNoContentResponse({ type: UeCommentReportResDto })
+  async mitigateCommentReport(
+    @GetUser() user: User,
+    @UUIDParam('commentId') commentId: string,
+    @UUIDParam('reportId') reportId: string,
+  ) {
+    if (!(await this.commentsService.doesCommentExist(commentId, user.id, true)))
+      throw new AppException(ERROR_CODE.NO_SUCH_COMMENT);
+    if (!(await this.commentsService.doesCommentReportExist(reportId)))
+      throw new AppException(ERROR_CODE.NO_SUCH_REPORT);
+    return this.commentsService.mitigateCommentReport(commentId, reportId);
+  }
+
+  @Post('/reply/:replyId/:reportId/mitigate')
+  @HttpCode(HttpStatus.OK)
+  @RequireApiPermission('API_MODERATE_COMMENTS')
+  @ApiOperation({ description: 'Mitigate a comment reply report' })
+  @ApiOkResponse({ type: UeCommentReportResDto })
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_REPLY, 'Thrown when the comment reply does not exist')
+  @ApiAppErrorResponse(ERROR_CODE.NO_SUCH_REPORT, 'Thrown when the report does not exist')
+  async mitigateCommentReplyReport(@UUIDParam('replyId') replyId: string, @UUIDParam('reportId') reportId: string) {
+    if (!(await this.commentsService.doesReplyExist(replyId))) throw new AppException(ERROR_CODE.NO_SUCH_REPLY);
+    if (!(await this.commentsService.doesCommentReplyReportExist(reportId)))
+      throw new AppException(ERROR_CODE.NO_SUCH_REPORT);
+    return this.commentsService.mitigateCommentReplyReport(replyId, reportId);
   }
 }

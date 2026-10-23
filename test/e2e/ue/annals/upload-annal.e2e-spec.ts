@@ -12,9 +12,9 @@ import {
 import { JsonLike, e2eSuite } from '#/utils/test_utils.js';
 import { ERROR_CODE } from '@/exceptions.js';
 import { ConfigService } from '@/config/config.service.js';
-import { CommentStatus } from '@/ue/comments/interfaces/comment.interface.js';
 import { PermissionManager, pick } from '@/utils.js';
 import { mkdirSync, rmSync } from 'fs';
+import { AnnalStatus } from '@/ue/annals/interfaces/annal.interface.js';
 import { afterAll, beforeAll, describe, it } from 'vitest';
 
 const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
@@ -143,7 +143,7 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
               updatedAt: JsonLike.DATE,
               semesterId: semester.code,
               type: annalType,
-              status: CommentStatus.PROCESSING,
+              status: AnnalStatus.PROCESSING,
               sender: pick(senderUser, 'id', 'firstName', 'lastName'),
             })
         ).body;
@@ -179,7 +179,7 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
             updatedAt: JsonLike.DATE,
             semesterId: semester.code,
             type: annalType,
-            status: CommentStatus.PROCESSING,
+            status: AnnalStatus.PROCESSING,
             sender: pick(senderUser, 'id', 'firstName', 'lastName'),
           })
       ).body;
@@ -211,7 +211,7 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
             updatedAt: JsonLike.DATE,
             semesterId: semester.code,
             type: annalType,
-            status: CommentStatus.PROCESSING,
+            status: AnnalStatus.PROCESSING,
             sender: pick(senderUser, 'id', 'firstName', 'lastName'),
           })
       ).body;
@@ -243,7 +243,7 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
             updatedAt: JsonLike.DATE,
             semesterId: semester.code,
             type: annalType,
-            status: CommentStatus.PROCESSING,
+            status: AnnalStatus.PROCESSING,
             sender: pick(senderUser, 'id', 'firstName', 'lastName'),
           })
       ).body;
@@ -271,7 +271,7 @@ const PostAnnal = e2eSuite('POST-PUT /ue/annals', (app) => {
             updatedAt: JsonLike.DATE,
             semesterId: semester.code,
             type: annalType,
-            status: CommentStatus.PROCESSING,
+            status: AnnalStatus.PROCESSING,
             sender: pick(senderUser, 'id', 'firstName', 'lastName'),
           })
       ).body;

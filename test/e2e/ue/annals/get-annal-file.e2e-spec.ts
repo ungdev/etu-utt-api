@@ -12,8 +12,8 @@ import {
 } from '#/utils/fakedb.js';
 import { Dummies, e2eSuite } from '#/utils/test_utils.js';
 import { ERROR_CODE } from '@/exceptions.js';
-import { CommentStatus } from '@/ue/comments/interfaces/comment.interface.js';
 import { PermissionManager } from '@/utils.js';
+import { AnnalStatus } from '@/ue/annals/interfaces/annal.interface.js';
 import { it } from 'vitest';
 
 const GetAnnalFile = e2eSuite('GET /ue/annals/{annalId}', (app) => {
@@ -35,18 +35,18 @@ const GetAnnalFile = e2eSuite('GET /ue/annals/{annalId}', (app) => {
   const annal_not_validated = createAnnal(
     app,
     { semester, sender: senderUser, type: annalType, ueof },
-    { status: CommentStatus.UNVERIFIED },
+    { status: AnnalStatus.UNVERIFIED },
   );
   const annal_validated = createAnnal(app, { semester, sender: senderUser, type: annalType, ueof });
   const annal_not_uploaded = createAnnal(
     app,
     { semester, sender: senderUser, type: annalType, ueof },
-    { status: CommentStatus.UNVERIFIED | CommentStatus.PROCESSING },
+    { status: AnnalStatus.UNVERIFIED | AnnalStatus.PROCESSING },
   );
   const annal_deleted = createAnnal(
     app,
     { semester, sender: senderUser, type: annalType, ueof },
-    { status: CommentStatus.VALIDATED | CommentStatus.DELETED },
+    { status: AnnalStatus.VALIDATED | AnnalStatus.DELETED },
   );
 
   it('should return a 401 as user is not authenticated', () => {

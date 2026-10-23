@@ -6,7 +6,7 @@ import { Ue } from '@/ue/interfaces/ue.interface.js';
 import { Criterion } from '@/ue/interfaces/criterion.interface.js';
 import { UeRating } from '@/ue/interfaces/rate.interface.js';
 import { ConfigService } from '@/config/config.service.js';
-import { Language, Prisma } from '@/prisma/types.js';
+import { Language, Prisma , RawUserUeSubscription } from '@/prisma/types.js';
 import { SemesterService } from '@/semester/semester.service.js';
 
 @Injectable()
@@ -219,6 +219,29 @@ export class UeService {
         semesterId: semester || undefined, // This filter should be applied only if semester is not null
         ueof: {
           OR: [{ code: ueCodeOrUeofCode }, { ueId: ueCodeOrUeofCode }],
+        },
+      },
+    });
+  }
+
+  /**
+   * Retrieves the last semester done by a user for a given ue
+   * @remarks The user must not be null
+   * @param userId the user to retrieve semesters of
+   * @param ueCode the code of the UE
+   * @returns the last semester done by the {@link user} for the {@link ueCode | ue}
+   */
+  async getLastUserSubscription(userId: string, ueCode: string): Promise<RawUserUeSubscription> {
+    return this.prisma.userUeSubscription.findFirst({
+      where: {
+        ueof: {
+          ueId: ueCode,
+        },
+        userId,
+      },
+      orderBy: {
+        semester: {
+          end: 'desc',
         },
       },
     });

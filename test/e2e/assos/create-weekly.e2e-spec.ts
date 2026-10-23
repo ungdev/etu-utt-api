@@ -9,7 +9,7 @@ import {
 } from '#/utils/fakedb.js';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '@/exceptions.js';
-import AssosPostWeeklyReqDto from '@/assos/weekly/dto/req/weekly-req.dto.js';
+import { AssosPostWeeklyReqDto } from '@/assos/weekly/dto/req/weekly-req.dto.js';
 import { PrismaService } from '@/prisma/prisma.service.js';
 import { it } from 'vitest';
 

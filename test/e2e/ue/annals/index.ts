@@ -4,7 +4,7 @@ import GetAnnalMetadata from '#/e2e/ue/annals/get-annal-metadata.e2e-spec.js';
 import GetAnnal from '#/e2e/ue/annals/get-annals.e2e-spec.js';
 import EditAnnal from '#/e2e/ue/annals/patch-annal.e2e-spec.js';
 import PostAnnal from '#/e2e/ue/annals/upload-annal.e2e-spec.js';
-import { E2EAppProvider } from '#/utils/test_utils';
+import { E2EAppProvider } from '#/utils/test_utils.js';
 import { describe } from 'vitest';
 
 export default function AnnalsE2ESpec(app: E2EAppProvider) {

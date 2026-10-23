@@ -88,7 +88,7 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .get(`/ue/comments`)
+      .get('/ue/comments')
       .withQueryParams({
         ueCode: ue.code.slice(0, ue.code.length - 1),
       })
@@ -96,20 +96,11 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
   });
 
   it('should return the first page of comments', async () => {
-    await app()
-      .get(PrismaService)
-      .ueComment.updateMany({
-        data: {
-          lastValidatedBody: 'I like to spread fake news in my comments !',
-        },
-      });
     const extendedComments = await app()
       .get(PrismaService)
       .normalize.ueComment.findMany({
         args: {
           userId: user.id,
-          includeDeletedReplied: false,
-          includeLastValidatedBody: false,
         },
       });
     const commentsFiltered = {
@@ -127,7 +118,7 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .get(`/ue/comments`)
+      .get('/ue/comments')
       .withQueryParams({
         ueCode: ue.code,
       })
@@ -140,14 +131,12 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
       .normalize.ueComment.findMany({
         args: {
           userId: user.id,
-          includeDeletedReplied: false,
-          includeLastValidatedBody: false,
         },
       });
     return pactum
       .spec()
       .withBearerToken(user.token)
-      .get(`/ue/comments`)
+      .get('/ue/comments')
       .withQueryParams({
         page: 2,
         ueCode: ue.code,
@@ -166,21 +155,16 @@ const GetCommentsE2ESpec = e2eSuite('GET /ue/comments', (app) => {
       });
   });
 
-  it('should return comments with lastValidatedBodies', async () => {
-    await app()
-      .get(PrismaService)
-      .ueComment.updateMany({
-        data: {
-          lastValidatedBody: 'I like to spread fake news in my comments !',
-        },
-      });
+  it('should return comments with moderator data', async () => {
     const extendedComments = await app()
       .get(PrismaService)
       .normalize.ueComment.findMany({
         args: {
           userId: user.id,
-          includeDeletedReplied: true,
-          includeLastValidatedBody: true,
+          includeDeleted: true,
+          includeHiddenComments: true,
+          includeReports: true,
+          bypassAnonymousData: true,
         },
       });
     const commentsFiltered = {

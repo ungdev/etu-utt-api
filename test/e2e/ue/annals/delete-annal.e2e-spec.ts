@@ -12,9 +12,9 @@ import {
 } from '#/utils/fakedb.js';
 import { Dummies, JsonLike, e2eSuite } from '#/utils/test_utils.js';
 import { ERROR_CODE } from '@/exceptions.js';
-import { CommentStatus } from '@/ue/comments/interfaces/comment.interface.js';
 import { PermissionManager, pick } from '@/utils.js';
 import { PrismaService } from '@/prisma/prisma.service.js';
+import { AnnalStatus } from '@/ue/annals/interfaces/annal.interface.js';
 import { it } from 'vitest';
 
 const DeleteAnnal = e2eSuite('DELETE /ue/annals/{annalId}', (app) => {
@@ -69,7 +69,7 @@ const DeleteAnnal = e2eSuite('DELETE /ue/annals/{annalId}', (app) => {
       .expectUeAnnal({
         ...pick(annal_validated, 'id', 'semesterId'),
         type: annalType,
-        status: CommentStatus.DELETED | CommentStatus.VALIDATED,
+        status: AnnalStatus.DELETED | AnnalStatus.VALIDATED,
         sender: pick(senderUser, 'id', 'firstName', 'lastName'),
         createdAt: annal_validated.createdAt,
         updatedAt: JsonLike.DATE,

@@ -1,7 +1,7 @@
-import { ERROR_CODE, ErrorData, ExtrasTypeBuilder } from '@/exceptions';
-import { UeComment } from '@/ue/comments/interfaces/comment.interface';
-import { UeCommentReply } from '@/ue/comments/interfaces/comment-reply.interface';
-import { UeRating } from '@/ue/interfaces/rate.interface';
+import { ERROR_CODE, ErrorData, ExtrasTypeBuilder } from '@/exceptions.js';
+import { UeComment, UeCommentReport } from '@/ue/comments/interfaces/comment.interface.js';
+import { UeCommentReply } from '@/ue/comments/interfaces/comment-reply.interface.js';
+import { UeRating } from '@/ue/interfaces/rate.interface.js';
 import {
   FakeApiApplication,
   FakeAsso,
@@ -16,12 +16,12 @@ import {
   FakeUeCreditCategory,
   FakeUeof,
   FakeUser,
-} from '#/utils/fakedb';
-import { UeAnnalFile } from '@/ue/annals/interfaces/annal.interface';
-import { Criterion } from '@/ue/interfaces/criterion.interface';
-import { AppProvider } from '#/utils/test_utils';
-import { Language } from '@/prisma/types';
-import { PermissionManager } from '@/utils';
+} from '#/utils/fakedb.js';
+import { UeAnnalFile } from '@/ue/annals/interfaces/annal.interface.js';
+import { Criterion } from '@/ue/interfaces/criterion.interface.js';
+import { AppProvider } from '#/utils/test_utils.js';
+import { Language } from '@/prisma/types.js';
+import { PermissionManager } from '@/utils.js';
 
 type JsonLikeVariant<T> = Partial<{
   [K in keyof T]: T[K] extends string | Date
@@ -83,6 +83,8 @@ declare module './declarations.js' {
     expectUeComments(commentPage: Pagination<UeComment & { ue: FakeUe }>): this;
     /** expects to return the given {@link reply} */
     expectUeCommentReply(reply: JsonLikeVariant<UeCommentReply>): this;
+    /** expects to return the given {@link UeCommentReport} */
+    expectUeCommentReport(report: JsonLikeVariant<UeCommentReport>): this;
     /** expects to return the given {@link criterion} list */
     expectUeCriteria(criterion: JsonLikeVariant<Criterion[]>): this;
     /** expects to return the given {@link rate} */
@@ -115,6 +117,8 @@ declare module './declarations.js' {
     expectPermissions(permissions: PermissionManager): this;
     expectAssoWeekly(weekly: JsonLikeVariant<FakeAssoWeekly>, created = false): this;
     expectAssoWeeklies(app: AppProvider, weeklies: JsonLikeVariant<FakeAssoWeekly>[], count: number): this;
+
+    expectPermissions(permissions: PermissionManager): this;
 
     withLanguage(language: Language): this;
     language: Language;

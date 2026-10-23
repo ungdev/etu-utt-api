@@ -18,6 +18,7 @@ class WeekDate implements ValidatorConstraintInterface {
 @ValidatorConstraint({ name: 'hasEither', async: false })
 class HasEither implements ValidatorConstraintInterface {
   validate(_: string, args: ValidationArguments) {
+    args.targetName = args.constraints.join(', ');
     return args.constraints.some((prop) => args.object[prop]);
   }
 

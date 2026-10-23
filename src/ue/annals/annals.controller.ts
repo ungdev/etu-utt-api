@@ -6,7 +6,6 @@ import { UUIDParam } from '@/app.pipe.js';
 import { GetUser, RequireApiPermission } from '@/auth/decorator/index.js';
 import { AppException, ERROR_CODE } from '@/exceptions.js';
 import { FileSize, MulterWithMime, UploadRoute, UserFile } from '@/upload.interceptor.js';
-import { CommentStatus } from '@/ue/comments/interfaces/comment.interface.js';
 import { CreateAnnalReqDto } from '@/ue/annals/dto/req/create-annal-req.dto.js';
 import { UpdateAnnalReqDto } from '@/ue/annals/dto/req/update-annal-req.dto.js';
 import { User } from '@/users/interfaces/user.interface.js';
@@ -19,6 +18,7 @@ import { UeAnnalMetadataResDto } from '@/ue/annals/dto/res/ue-annal-metadata-res
 import { GetPermissions } from '@/auth/decorator/get-permissions.decorator.js';
 import { Permission } from '@/prisma/types.js';
 import { PermissionManager, omit } from '@/utils.js';
+import { AnnalStatus } from '@/ue/annals/interfaces/annal.interface.js';
 
 @Controller('ue/annals')
 @ApiTags('Annal')
@@ -131,7 +131,7 @@ export class AnnalsController {
       throw new AppException(ERROR_CODE.NOT_ANNAL_SENDER);
     if (
       (await this.annalsService.getUeAnnal(annalId, user.id, permissions.can(Permission.API_MODERATE_ANNALS)))
-        .status !== CommentStatus.PROCESSING
+        .status !== AnnalStatus.PROCESSING
     )
       throw new AppException(ERROR_CODE.ANNAL_ALREADY_UPLOADED);
     return omit(await this.annalsService.uploadAnnalFile(await file, annalId, rotate), 'ueof');

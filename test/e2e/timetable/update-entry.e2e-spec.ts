@@ -4,7 +4,7 @@ import * as pactum from 'pactum';
 import { uuid } from 'pactum-matchers';
 import { faker } from '@faker-js/faker';
 import { PrismaService } from '@/prisma/prisma.service.js';
-import TimetableUpdateEntryReqDto from '@/timetable/dto/req/timetable-update-entry-req.dto.js';
+import { TimetableUpdateEntryReqDto } from '@/timetable/dto/req/timetable-update-entry-req.dto.js';
 import { ERROR_CODE } from '@/exceptions.js';
 import { it } from 'vitest';
 

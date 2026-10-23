@@ -4,7 +4,7 @@ import { ERROR_CODE } from '@/exceptions.js';
 import { HomepageWidgetsUpdateElement } from '@/profile/dto/req/homepage-widgets-update-req.dto.js';
 import * as fakedb from '#/utils/fakedb.js';
 import { PrismaService } from '@/prisma/prisma.service.js';
-import { expect, it } from 'vitest';
+import { expect, it, vi } from 'vitest';
 
 const SetHomepageWidgetsE2ESpec = e2eSuite('PUT /profile/homepage', (app) => {
   const user = fakedb.createUser(app);
@@ -30,13 +30,17 @@ const SetHomepageWidgetsE2ESpec = e2eSuite('PUT /profile/homepage', (app) => {
   it('should fail as user is not connected', () =>
     pactum.spec().put('/profile/homepage').withJson(body).expectAppError(ERROR_CODE.NOT_LOGGED_IN));
 
-  it('should fail as body is not valid', () =>
-    pactum
+  it('should fail as body is not valid', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {
+    });
+    await pactum
       .spec()
       .put('/profile/homepage')
       .withBearerToken(user.token)
       .withJson({ widget: 'a_widget', height: 1, width: 1, x: 0, y: 0 })
-      .expectAppError(ERROR_CODE.PARAM_NOT_ARRAY, 'items'));
+      .expectAppError(ERROR_CODE.PARAM_NOT_ARRAY, 'items');
+    consoleErrorSpy.mockRestore();
+  });
 
   it('should fail for each value of the body as they are not allowed (too small, wrong type, ...)', async () => {
     await pactum
@@ -89,14 +93,13 @@ const SetHomepageWidgetsE2ESpec = e2eSuite('PUT /profile/homepage', (app) => {
       .expectAppError(ERROR_CODE.PARAM_NOT_POSITIVE, 'height');
   });
 
-  it('should fail as the widgets are overlapping', () => {
+  it('should fail as the widgets are overlapping', () =>
     pactum
       .spec()
       .put('/profile/homepage')
       .withBearerToken(user.token)
       .withJson([body[0], { ...body[1], x: 0, y: 0 }])
-      .expectAppError(ERROR_CODE.WIDGET_OVERLAPPING, '0', '1');
-  });
+      .expectAppError(ERROR_CODE.WIDGET_OVERLAPPING, '0', '1'));
 
   it('should successfully set the homepage widgets', async () => {
     await pactum

@@ -4,7 +4,7 @@ import * as fakedb from '#/utils/fakedb.js';
 import * as pactum from 'pactum';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '@/prisma/prisma.service.js';
-import AuthSignInReqDto from '@/auth/dto/req/auth-sign-in-req.dto.js';
+import { AuthSignInReqDto } from '@/auth/dto/req/auth-sign-in-req.dto.js';
 import { DEFAULT_APPLICATION } from '&/prisma/seed/utils.js';
 import { expect, it } from 'vitest';
 

@@ -1,4 +1,6 @@
 import { UeCommentAuthorResDto } from '@/ue/comments/dto/res/ue-comment-author-res.dto.js';
+import { UeCommentReportResDto } from '@/ue/comments/dto/res/ue-comment-report-res.dto.js';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class UeCommentResDto {
   id: string;
@@ -12,7 +14,8 @@ export class UeCommentResDto {
   upvoted: boolean;
   status: number;
   answers: CommentResDto_Answer[];
-  lastValidatedBody?: string;
+  @ApiProperty({ description: "This value is not present whenever the api key making the request doesn't have the right to see comment reports" })
+  reports?: UeCommentReportResDto[];
 }
 
 class CommentResDto_Answer {
@@ -22,4 +25,5 @@ class CommentResDto_Answer {
   createdAt: Date;
   updatedAt: Date;
   status: number;
+  reports: UeCommentReportResDto[];
 }

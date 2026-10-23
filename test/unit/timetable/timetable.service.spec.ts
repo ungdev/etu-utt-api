@@ -1,4 +1,4 @@
-import TimetableService from '@/timetable/timetable.service.js';
+import { TimetableService } from '@/timetable/timetable.service.js';
 import { PrismaService } from '@/prisma/prisma.service.js';
 import { unitSuite } from '#/utils/test_utils.js';
 import * as fakedb from '#/utils/fakedb.js';
