@@ -6,7 +6,7 @@ import { ApiAppErrorResponse } from '@/app.dto.js';
 import { AppException, ERROR_CODE } from '@/exceptions.js';
 import { UeSyncResDto } from '@/webhooks/dto/ue-sync-res.dto.js';
 import { WebhooksService } from '@/webhooks/webhooks.service.js';
-import { UeSyncStats } from '@/webhooks/interfaces/eu.interface.js';
+import { UeSyncStats } from '@/webhooks/interfaces/ue.interface.js';
 
 @Controller('')
 @ApiTags('Webhooks')

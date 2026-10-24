@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@/config/config.service.js';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
-import { OffreUECollection, UesListWithNext } from '@/webhooks/interfaces/eu.interface.js';
+import { OffreUECollection, UesListWithNext } from '@/dnum/interfaces/ue.interface.js';
 
 @Injectable()
 export class DnumService {

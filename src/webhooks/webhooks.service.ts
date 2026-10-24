@@ -3,7 +3,8 @@ import { ConfigService } from '@/config/config.service.js';
 import { AppException, ERROR_CODE } from '@/exceptions.js';
 import { PrismaService } from '@/prisma/prisma.service.js';
 import { DnumService } from '@/dnum/dnum.service.js';
-import { OffreUE, UeSyncStats } from '@/webhooks/interfaces/eu.interface.js';
+import { UeSyncStats } from '@/webhooks/interfaces/ue.interface.js';
+import { OffreUE } from '@/dnum/interfaces/ue.interface.js';
 
 @Injectable()
 export class WebhooksService {
