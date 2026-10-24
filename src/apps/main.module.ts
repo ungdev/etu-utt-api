@@ -59,7 +59,7 @@ export class AppModule {
           useClass: TranslationInterceptor,
         },
       ],
-    }
+    };
   }
   static initApp(app: INestApplication) {
     app.enableVersioning({
@@ -69,7 +69,8 @@ export class AppModule {
     // This env variable is not set in ConfigModule because we use it before modules are loaded
     app.setGlobalPrefix(process.env.API_PREFIX);
     app.useGlobalPipes(new AppValidationPipe());
-    app.useGlobalFilters(new NotFoundFilter())
+    app.useGlobalFilters(new NotFoundFilter());
     app.enableCors({ origin: '*' });
+    app.enableShutdownHooks();
   }
 }

@@ -61,11 +61,13 @@ export const enum ERROR_CODE {
   INVALID_CREDENTIALS = 3005,
   FORBIDDEN_INVALID_ROLE = 3006,
   INVALID_CAS_TICKET = 3007,
+  INVALID_WEBHOOK_TOKEN = 3008,
   FORBIDDEN_ALREADY_COMMENTED = 3101,
   FORBIDDEN_ALREADY_UPVOTED = 3102,
   FORBIDDEN_NOT_UPVOTED = 3103,
   FORBIDDEN_ASSOS_PERMISSIONS = 3201,
   FORBIDDEN_ASSOS_ROLE_PERMANENT = 3202,
+  WEBHOOK_NOT_IMPLEMENTED_YET = 4101,
   NOT_COMMENT_AUTHOR = 4221,
   NOT_ALREADY_DONE_UE = 4222,
   NOT_REPLY_AUTHOR = 4223,
@@ -300,6 +302,10 @@ export const ErrorData = Object.freeze({
     message: 'The ticket is invalid',
     httpCode: HttpStatus.UNAUTHORIZED,
   },
+  [ERROR_CODE.INVALID_WEBHOOK_TOKEN]: {
+    message: 'The webhook token is invalid',
+    httpCode: HttpStatus.UNAUTHORIZED,
+  },
   [ERROR_CODE.FORBIDDEN_ALREADY_COMMENTED]: {
     message: 'You have already posted a comment for this UE',
     httpCode: HttpStatus.FORBIDDEN,
@@ -319,6 +325,10 @@ export const ErrorData = Object.freeze({
   [ERROR_CODE.FORBIDDEN_ASSOS_ROLE_PERMANENT]: {
     message: 'The following role is not deletable: %',
     httpCode: HttpStatus.FORBIDDEN,
+  },
+  [ERROR_CODE.WEBHOOK_NOT_IMPLEMENTED_YET]: {
+    message: 'This webhook is not implemented yet',
+    httpCode: HttpStatus.NOT_IMPLEMENTED,
   },
   [ERROR_CODE.NOT_COMMENT_AUTHOR]: {
     message: 'You are not the author of this comment',
@@ -551,7 +561,7 @@ const mappedErrors = {
   [constraint: string]: ERROR_CODE;
 };
 
-const errorsOnMultipleFields: string[] = ['hasEither']
+const errorsOnMultipleFields: string[] = ['hasEither'];
 
 export const validationExceptionFactory = (errors: ValidationError[]) => {
   // Map errors by constraint name
@@ -561,7 +571,9 @@ export const validationExceptionFactory = (errors: ValidationError[]) => {
       return validationExceptionFactory(error.children);
     }
     for (const constraint of Object.keys(error.constraints)) {
-      const field = errorsOnMultipleFields.includes(constraint as string) ? error.constraints[constraint] : error.property
+      const field = errorsOnMultipleFields.includes(constraint as string)
+        ? error.constraints[constraint]
+        : error.property;
       if (constraint in errorsByType) {
         errorsByType[constraint].push(field);
       } else {

@@ -32,6 +32,7 @@ export class ConfigService {
   public readonly SMTP_SERVER_NAME: string;
   public readonly SMTP_SENDING_NAME: string;
   public readonly SMTP_SENDING_EMAIL: string;
+  public readonly WEBHOOK_TOKEN: string;
   public readonly WEEKLY_SEND_DAY: number;
   public readonly WEEKLY_SEND_HOUR: number;
   // DEV ENVIRONMENT ONLY
@@ -67,6 +68,7 @@ export class ConfigService {
     this.SMTP_SERVER_NAME = config.get<string>('SMTP_SERVER_NAME');
     this.SMTP_SENDING_NAME = config.get<string>('SMTP_SENDING_NAME');
     this.SMTP_SENDING_EMAIL = config.get<string>('SMTP_SENDING_EMAIL');
+    this.WEBHOOK_TOKEN = config.get<string>('WEBHOOK_TOKEN');
     this.WEEKLY_SEND_DAY = Number.parseInt(config.get('WEEKLY_SEND_DAY'));
     this.WEEKLY_SEND_HOUR = Number.parseInt(config.get('WEEKLY_SEND_HOUR'));
 

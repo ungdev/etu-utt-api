@@ -7,7 +7,7 @@ import { ConfigService } from '@/config/config.service.js';
 import { clearUniqueValues, generateDefaultApplication } from '&/prisma/seed/utils.js';
 import { beforeAll, describe } from 'vitest';
 import Spec from 'pactum/src/models/Spec.js';
-import { AppModule } from '@/app.module.js';
+import { AppModule } from '@/apps/main.module.js';
 import * as pactum from 'pactum';
 import '#/declarations.d.ts'
 
