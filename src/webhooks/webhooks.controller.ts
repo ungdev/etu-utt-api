@@ -1,10 +1,12 @@
 import { Controller, Post } from '@nestjs/common';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiOkResponse } from '@nestjs/swagger';
 import { ConfigService } from '@/config/config.service.js';
 
 import { ApiAppErrorResponse } from '@/app.dto.js';
 import { AppException, ERROR_CODE } from '@/exceptions.js';
+import { UeSyncResDto } from '@/webhooks/dto/ue-sync-res.dto.js';
 import { WebhooksService } from '@/webhooks/webhooks.service.js';
+import { UeSyncStats } from '@/webhooks/interfaces/eu.interface.js';
 
 @Controller('')
 @ApiTags('Webhooks')
@@ -36,9 +38,10 @@ export class WebhooksController {
   @ApiOperation({
     description: "Triggers the synchronisation of the UEs from the UTT's SIEP API.",
   })
-  @ApiAppErrorResponse(ERROR_CODE.WEBHOOK_NOT_IMPLEMENTED_YET, 'This webhook is not implemented yet')
-  async syncUesFromSIEP() {
-    throw new AppException(ERROR_CODE.WEBHOOK_NOT_IMPLEMENTED_YET);
+  @ApiOkResponse({ type: UeSyncResDto })
+  @ApiAppErrorResponse(ERROR_CODE.WEBHOOK_SYNC_UE_FAILED, 'The DNUM UE synchronization could not be completed')
+  async syncUesFromDnumAPI(): Promise<UeSyncStats> {
+    return this.webhooksService.syncUesFromDnumAPI();
   }
 
   @Post('/media/purge')

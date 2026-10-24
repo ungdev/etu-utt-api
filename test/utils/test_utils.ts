@@ -9,7 +9,7 @@ import { beforeAll, describe } from 'vitest';
 import Spec from 'pactum/src/models/Spec.js';
 import { AppModule } from '@/apps/main.module.js';
 import * as pactum from 'pactum';
-import '#/declarations.d.ts'
+import '#/declarations.d.ts';
 
 export async function buildTestApp(port: number): Promise<E2EApp> {
   const moduleRef = await Test.createTestingModule({
@@ -19,9 +19,12 @@ export async function buildTestApp(port: number): Promise<E2EApp> {
   AppModule.initApp(nestApp);
   await nestApp.listen(port);
 
-  nestApp['spec'] = () => pactum.spec().withBaseUrl(
-    `http://localhost:${port}${process.env.API_PREFIX.startsWith('/') ? '' : '/'}${process.env.API_PREFIX.endsWith('/') ? process.env.API_PREFIX.slice(0, -1) : process.env.API_PREFIX}`,
-  );
+  nestApp['spec'] = () =>
+    pactum
+      .spec()
+      .withBaseUrl(
+        `http://localhost:${port}${process.env.API_PREFIX.startsWith('/') ? '' : '/'}${process.env.API_PREFIX.endsWith('/') ? process.env.API_PREFIX.slice(0, -1) : process.env.API_PREFIX}`,
+      );
   return nestApp as unknown as E2EApp;
 }
 
@@ -37,7 +40,7 @@ export function init(app: AppProvider) {
 /**
  * Extended INestApplication, with utility function spec() which sets up a {@link Spec} object for calling a route of the app.
  */
-export type E2EApp = INestApplication & { spec(): Spec }
+export type E2EApp = INestApplication & { spec(): Spec };
 
 /**
  * A function returning the app, for e2e testing ({@link INestApplication}).

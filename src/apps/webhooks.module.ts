@@ -9,12 +9,13 @@ import { WebhooksModule } from '@/webhooks/webhooks.module.js';
 import { AppValidationPipe } from '@/app.pipe.js';
 import { NotFoundFilter } from '@/exceptions.js';
 import { WebhooksTokenGuard } from '@/webhooks/guard/webhooksToken.guard.js';
+import { DnumModule } from '@/dnum/dnum.module.js';
 
 export class WebhooksAppModule {
   static register(): DynamicModule {
     return {
       module: WebhooksAppModule,
-      imports: [ConfigModule, HttpModule, PrismaModule, MailModule, WebhooksModule],
+      imports: [ConfigModule, HttpModule, PrismaModule, MailModule, WebhooksModule, DnumModule],
       providers: [{ provide: APP_GUARD, useClass: WebhooksTokenGuard }],
     };
   }

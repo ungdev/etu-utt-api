@@ -68,6 +68,7 @@ export const enum ERROR_CODE {
   FORBIDDEN_ASSOS_PERMISSIONS = 3201,
   FORBIDDEN_ASSOS_ROLE_PERMANENT = 3202,
   WEBHOOK_NOT_IMPLEMENTED_YET = 4101,
+  WEBHOOK_SYNC_UE_FAILED = 4102,
   NOT_COMMENT_AUTHOR = 4221,
   NOT_ALREADY_DONE_UE = 4222,
   NOT_REPLY_AUTHOR = 4223,
@@ -329,6 +330,10 @@ export const ErrorData = Object.freeze({
   [ERROR_CODE.WEBHOOK_NOT_IMPLEMENTED_YET]: {
     message: 'This webhook is not implemented yet',
     httpCode: HttpStatus.NOT_IMPLEMENTED,
+  },
+  [ERROR_CODE.WEBHOOK_SYNC_UE_FAILED]: {
+    message: 'The UE synchronization failed: %',
+    httpCode: HttpStatus.BAD_GATEWAY,
   },
   [ERROR_CODE.NOT_COMMENT_AUTHOR]: {
     message: 'You are not the author of this comment',
