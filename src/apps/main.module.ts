@@ -19,6 +19,7 @@ import { ImageMediaModule } from '@/media/image/imagemedia.module.js';
 import { MailModule } from '@/mail/mail.module.js';
 import { AppValidationPipe } from '@/app.pipe.js';
 import { NotFoundFilter } from '@/exceptions.js';
+import { DnumModule } from '@/dnum/dnum.module.js';
 
 export class AppModule {
   static register(): DynamicModule {
@@ -38,6 +39,7 @@ export class AppModule {
         TimetableModule,
         BranchModule,
         AssosModule,
+        DnumModule,
       ],
       // The providers below are used for all the routes of the api.
       // For example, the JwtGuard is used for all the routes and checks whether the user is authenticated.
@@ -59,7 +61,7 @@ export class AppModule {
           useClass: TranslationInterceptor,
         },
       ],
-    }
+    };
   }
   static initApp(app: INestApplication) {
     app.enableVersioning({
@@ -69,7 +71,8 @@ export class AppModule {
     // This env variable is not set in ConfigModule because we use it before modules are loaded
     app.setGlobalPrefix(process.env.API_PREFIX);
     app.useGlobalPipes(new AppValidationPipe());
-    app.useGlobalFilters(new NotFoundFilter())
+    app.useGlobalFilters(new NotFoundFilter());
     app.enableCors({ origin: '*' });
+    app.enableShutdownHooks();
   }
 }

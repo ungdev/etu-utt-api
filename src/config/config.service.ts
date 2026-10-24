@@ -32,8 +32,14 @@ export class ConfigService {
   public readonly SMTP_SERVER_NAME: string;
   public readonly SMTP_SENDING_NAME: string;
   public readonly SMTP_SENDING_EMAIL: string;
+  public readonly WEBHOOK_TOKEN: string;
   public readonly WEEKLY_SEND_DAY: number;
   public readonly WEEKLY_SEND_HOUR: number;
+  public readonly API_DNUM_LOGIN: string;
+  public readonly API_DNUM_PASSWORD: string;
+  public readonly API_DNUM_AUTH_URL: string;
+  public readonly API_DNUM_UES_URL: string;
+  public readonly API_DNUM_ETU_URL: string;
   // DEV ENVIRONMENT ONLY
 
   // TEST ENVIRONMENT ONLY
@@ -67,8 +73,14 @@ export class ConfigService {
     this.SMTP_SERVER_NAME = config.get<string>('SMTP_SERVER_NAME');
     this.SMTP_SENDING_NAME = config.get<string>('SMTP_SENDING_NAME');
     this.SMTP_SENDING_EMAIL = config.get<string>('SMTP_SENDING_EMAIL');
+    this.WEBHOOK_TOKEN = config.get<string>('WEBHOOK_TOKEN');
     this.WEEKLY_SEND_DAY = Number.parseInt(config.get('WEEKLY_SEND_DAY'));
     this.WEEKLY_SEND_HOUR = Number.parseInt(config.get('WEEKLY_SEND_HOUR'));
+    this.API_DNUM_LOGIN = config.get<string>('API_DNUM_LOGIN');
+    this.API_DNUM_PASSWORD = config.get<string>('API_DNUM_PASSWORD');
+    this.API_DNUM_AUTH_URL = config.get<string>('API_DNUM_AUTH_URL');
+    this.API_DNUM_UES_URL = config.get<string>('API_DNUM_UES_URL');
+    this.API_DNUM_ETU_URL = config.get<string>('API_DNUM_ETU_URL');
 
     this._FAKER_SEED = isTestEnv() ? Number(config.get('FAKER_SEED')) : undefined;
   }
