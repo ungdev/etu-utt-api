@@ -1,9 +1,10 @@
-import { e2eSuite } from '../../utils/test_utils';
-import * as fakedb from '../../utils/fakedb';
+import { e2eSuite } from '#/utils/test_utils.js';
+import * as fakedb from '#/utils/fakedb.js';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from 'src/exceptions';
-import { setTimetable } from '../../external_services/timetable';
-import { PrismaService } from '../../../src/prisma/prisma.service';
+import { ERROR_CODE } from '@/exceptions.js';
+import { setTimetable } from '#/external_services/timetable.js';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { expect, it } from 'vitest';
 
 const ImportTimetableE2ESpec = e2eSuite('POST /timetable/import', (app) => {
   const users = Array.from({ length: 10 }, () => fakedb.createUser(app));

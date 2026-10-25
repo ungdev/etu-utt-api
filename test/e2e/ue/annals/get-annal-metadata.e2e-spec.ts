@@ -1,18 +1,19 @@
 import * as pactum from 'pactum';
 import {
-  createUser,
+  createAnnalType,
   createBranch,
   createBranchOption,
   createSemester,
   createUe,
   createUeSubscription,
-  createAnnalType,
   createUeof,
-} from '../../../utils/fakedb';
-import { e2eSuite } from '../../../utils/test_utils';
-import { ERROR_CODE } from '../../../../src/exceptions';
-import { Permission } from '../../../../src/prisma/types';
-import { PermissionManager } from '../../../../src/utils';
+  createUser,
+} from '#/utils/fakedb.js';
+import { e2eSuite } from '#/utils/test_utils.js';
+import { ERROR_CODE } from '@/exceptions.js';
+import { Permission } from '@/prisma/types.js';
+import { PermissionManager } from '@/utils.js';
+import { it } from 'vitest';
 
 const GetAnnalMetadata = e2eSuite('GET /ue/annals/metadata', (app) => {
   const ueUser = createUser(app, { permissions: new PermissionManager().with(Permission.API_SEE_ANNALS) });

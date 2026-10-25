@@ -1,4 +1,4 @@
-export default class HomepageWidgetResDto {
+export class HomepageWidgetResDto {
   x: number;
   y: number;
   width: number;

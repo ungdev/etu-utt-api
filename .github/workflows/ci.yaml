@@ -11,20 +11,28 @@ jobs:
     strategy:
       matrix:
         node-version: [22]
-        pnpm-version: [10]
+        pnpm-version: [11]
+    permissions:
+      packages: read
     steps:
-      - uses: actions/checkout@v5
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v7
         with:
-          version: ${{ matrix.pnpm-version }}
-      - name: Use Node.js
-        uses: actions/setup-node@v6
+          persist-credentials: false
+      - name: Install NodeJS
+        uses: pnpm/setup@v3
         with:
-          package-manager-cache: false
-          node-version: ${{ matrix.node-version }}
-          cache: 'pnpm'
-      - run: pnpm install --frozen-lockfile
+          runtime: node@${{ matrix.node-version }}
+          require-lockfile: true
+          version: ^${{ matrix.pnpm-version }}
+        env:
+          pnpm_config__auth: |
+            {
+              "https://npm.pkg.github.com": {
+                "@ungdev": {
+                  "authToken": "${{ secrets.GITHUB_TOKEN }}"
+                }
+              }
+            }
       - run: pnpm prisma generate
       - run: pnpm lint
 
@@ -34,20 +42,28 @@ jobs:
     strategy:
       matrix:
         node-version: [22]
-        pnpm-version: [10]
+        pnpm-version: [11]
+    permissions:
+      packages: read
     steps:
-      - uses: actions/checkout@v5
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v7
         with:
-          version: ${{ matrix.pnpm-version }}
-      - name: Use Node.js
-        uses: actions/setup-node@v6
+          persist-credentials: false
+      - name: Install NodeJS
+        uses: pnpm/setup@v3
         with:
-          package-manager-cache: false
-          node-version: ${{ matrix.node-version }}
-          cache: 'pnpm'
-      - run: pnpm install --frozen-lockfile
+          runtime: node@${{ matrix.node-version }}
+          require-lockfile: true
+          version: ^${{ matrix.pnpm-version }}
+        env:
+          pnpm_config__auth: |
+            {
+              "https://npm.pkg.github.com": {
+                "@ungdev": {
+                  "authToken": "${{ secrets.GITHUB_TOKEN }}"
+                }
+              }
+            }
       - run: pnpm prisma generate
       - run: pnpm build
 
@@ -57,33 +73,39 @@ jobs:
     strategy:
       matrix:
         node-version: [22]
-        pnpm-version: [10]
+        pnpm-version: [11]
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           version: ${{ matrix.pnpm-version }}
       - name: Use Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           package-manager-cache: false
           node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
       - name: Use Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: '3.14'
       - run: pnpm build:docs:configure
       - run: pnpm build:docs
 
   test:
-    runs-on: self-hosted
+    runs-on: sia-static-runners
     needs: build
     strategy:
       matrix:
         node-version: [22]
-        pnpm-version: [10]
+        pnpm-version: [11]
+    permissions:
+      packages: read
     env:
       DATABASE_URL: mysql://dev:dev@localhost:3306/etuutt_test
     services:
@@ -105,19 +127,26 @@ jobs:
           --tmpfs /var/lib/mysql:rw
 
     steps:
-      - uses: actions/checkout@v5
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v7
         with:
-          version: ${{ matrix.pnpm-version }}
-      - name: Use Node.js
-        uses: actions/setup-node@v6
+          persist-credentials: false
+      - name: Install NodeJS
+        uses: pnpm/setup@v3
         with:
-          package-manager-cache: false
-          node-version: ${{ matrix.node-version }}
-          cache: 'pnpm'
-      - run: pnpm install --frozen-lockfile
-      - run: cp .env.test.dist .env.test
+          runtime: node@${{ matrix.node-version }}
+          require-lockfile: true
+          version: ^${{ matrix.pnpm-version }}
+        env:
+          pnpm_config__auth: |
+            {
+              "https://npm.pkg.github.com": {
+                "@ungdev": {
+                  "authToken": "${{ secrets.GITHUB_TOKEN }}"
+                }
+              }
+            }
+      - name: Apply CI environment
+        run: sed 's/DATABASE_TEXT_PROTOCOL=false/DATABASE_TEXT_PROTOCOL=true/g' .env.test.dist > .env.test
       - run: pnpm test:db:reset
       - run: pnpm test:cov
       - uses: codecov/codecov-action@v4
@@ -126,23 +155,29 @@ jobs:
 
   deploy:
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
-    runs-on: self-hosted
+    runs-on: sia-static-runners
     needs:
       - test
       - docs
+    permissions:
+      packages: read
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: Install docker
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
       - name: Login to registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ secrets.REGISTRY_URL }}
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_TOKEN }}
       - name: Build and push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           push: true
+          build-args: |
+            NODE_AUTH_TOKEN=${{ secrets.GITHUB_TOKEN }}
           tags: |
             ${{ secrets.REGISTRY_URL }}/etuutt/api:${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}

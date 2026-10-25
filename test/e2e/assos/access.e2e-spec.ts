@@ -1,12 +1,13 @@
-import { e2eSuite } from '../../utils/test_utils';
-import { createAsso, createAssoMembership, createAssoMembershipRole, createUser } from '../../utils/fakedb';
+import { e2eSuite } from '#/utils/test_utils.js';
+import { createAsso, createAssoMembership, createAssoMembershipRole, createUser } from '#/utils/fakedb.js';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '../../../src/exceptions';
-import { PrismaService } from '../../../src/prisma/prisma.service';
-import { MailService } from '../../../src/mail/mail.service';
+import { ERROR_CODE } from '@/exceptions.js';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { MailService } from '@/mail/mail.service.js';
+import { beforeAll, it, expect, vi, Mock } from 'vitest';
 
 function tokenFromValidationEmail(mailService: MailService): string {
-  const calls = (mailService.send as jest.Mock).mock.calls;
+  const calls = (mailService.send as Mock).mock.calls;
   const text = calls.at(-1)?.[4] as string;
   const link = text.match(/https?:\/\/\S+/)?.[0];
   return new URL(link).searchParams.get('token');
@@ -57,7 +58,7 @@ const AssoAccessE2ESpec = e2eSuite('POST/GET /assos/access', (app) => {
 
   it('requests CREATE access and returns CREATE information from the validation token', async () => {
     const mailService = app().get(MailService);
-    const sendSpy = jest.spyOn(mailService, 'send');
+    const sendSpy = vi.spyOn(mailService, 'send');
 
     await pactum
       .spec()
@@ -82,7 +83,7 @@ const AssoAccessE2ESpec = e2eSuite('POST/GET /assos/access', (app) => {
 
   it('creates an association after confirming CREATE access', async () => {
     const mailService = app().get(MailService);
-    const sendSpy = jest.spyOn(mailService, 'send');
+    const sendSpy = vi.spyOn(mailService, 'send');
     await pactum
       .spec()
       .withBearerToken(createUserForAccess.token)
@@ -126,7 +127,7 @@ const AssoAccessE2ESpec = e2eSuite('POST/GET /assos/access', (app) => {
 
   it('rejects CREATE when the requested name already exists', async () => {
     const mailService = app().get(MailService);
-    const sendSpy = jest.spyOn(mailService, 'send');
+    const sendSpy = vi.spyOn(mailService, 'send');
     await pactum
       .spec()
       .withBearerToken(duplicateNameUser.token)
@@ -146,7 +147,7 @@ const AssoAccessE2ESpec = e2eSuite('POST/GET /assos/access', (app) => {
 
   it('requests and confirms CLAIM access for an existing association', async () => {
     const mailService = app().get(MailService);
-    const sendSpy = jest.spyOn(mailService, 'send');
+    const sendSpy = vi.spyOn(mailService, 'send');
     await pactum
       .spec()
       .withBearerToken(claimUser.token)
@@ -204,7 +205,7 @@ const AssoAccessE2ESpec = e2eSuite('POST/GET /assos/access', (app) => {
 
   it('rejects access information requested by another user', async () => {
     const mailService = app().get(MailService);
-    const sendSpy = jest.spyOn(mailService, 'send');
+    const sendSpy = vi.spyOn(mailService, 'send');
     await pactum
       .spec()
       .withBearerToken(duplicateNameUser.token)

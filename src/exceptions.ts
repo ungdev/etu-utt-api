@@ -547,18 +547,18 @@ export type ExtrasTypeBuilder<S extends string> = S extends `${infer Part1}%${in
  */
 export class AppException<ErrorCode extends ERROR_CODE> extends HttpException {
   constructor(
-    public readonly errorCode: ErrorCode,
+    public readonly code: ErrorCode,
     ...extraMessages: ExtrasTypeBuilder<(typeof ErrorData)[ErrorCode]['message']>
   ) {
     super(
       {
-        errorCode,
+        errorCode: code,
         error: (extraMessages as string[]).reduce(
           (message, extra) => message.replace('%', extra),
-          ErrorData[errorCode].message,
+          ErrorData[code].message,
         ),
       },
-      ErrorData[errorCode].httpCode,
+      ErrorData[code].httpCode,
     );
   }
 }

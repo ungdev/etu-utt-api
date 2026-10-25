@@ -1,4 +1,5 @@
 import { LdapServerMock, LdapUser } from 'ldap-server-mock';
+import { afterAll, beforeAll } from 'vitest';
 
 export function mockLdapServer(list: LdapUser[]) {
   const ldapServer = new LdapServerMock(

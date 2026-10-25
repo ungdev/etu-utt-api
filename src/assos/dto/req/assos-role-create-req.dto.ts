@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export default class AssosRoleCreateReqDto {
+export class AssosRoleCreateReqDto {
   @IsString()
   @IsNotEmpty()
   name: string;

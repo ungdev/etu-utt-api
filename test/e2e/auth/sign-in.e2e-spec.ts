@@ -1,11 +1,12 @@
-import { e2eSuite, JsonLike } from '../../utils/test_utils';
-import * as cas from '../../external_services/cas';
-import * as fakedb from '../../utils/fakedb';
+import { JsonLike, e2eSuite } from '#/utils/test_utils.js';
+import * as cas from '#/external_services/cas.js';
+import * as fakedb from '#/utils/fakedb.js';
 import * as pactum from 'pactum';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from '../../../src/prisma/prisma.service';
-import AuthSignInReqDto from '../../../src/auth/dto/req/auth-sign-in-req.dto';
-import { DEFAULT_APPLICATION } from '../../../prisma/seed/utils';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import AuthSignInReqDto from '@/auth/dto/req/auth-sign-in-req.dto.js';
+import { DEFAULT_APPLICATION } from '&/prisma/seed/utils.js';
+import { expect, it } from 'vitest';
 
 const SignInE2eSpec = e2eSuite('POST /auth/signin', (app) => {
   const body: AuthSignInReqDto = {

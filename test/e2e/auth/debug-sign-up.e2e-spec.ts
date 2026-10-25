@@ -1,11 +1,12 @@
-import AuthSignUpDebugReqDto from '../../../src/auth/dto/req/auth-sign-up-debug-req.dto';
-import { PrismaService } from '../../../src/prisma/prisma.service';
-import { buildTestApp, E2EApp, e2eSuite } from '../../utils/test_utils';
-import { ERROR_CODE } from '../../../src/exceptions';
-import { UserType } from '../../../src/prisma/types';
-import { createUser } from '../../utils/fakedb';
+import AuthSignUpDebugReqDto from '@/auth/dto/req/auth-sign-up-debug-req.dto.js';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { buildTestApp, E2EApp, e2eSuite } from '#/utils/test_utils.js';
+import { ERROR_CODE } from '@/exceptions.js';
+import { UserType } from '@/prisma/types.js';
+import { createUser } from '#/utils/fakedb.js';
 import { JwtService } from '@nestjs/jwt';
-import { DEFAULT_APPLICATION } from '../../../prisma/seed/utils';
+import { DEFAULT_APPLICATION } from '&/prisma/seed/utils.js';
+import { expect, it } from 'vitest';
 
 const DebugSignUpE2ESpec = e2eSuite('POST (/vdev)/auth/signup', (app) => {
   const dto = {
@@ -44,7 +45,7 @@ const DebugSignUpE2ESpec = e2eSuite('POST (/vdev)/auth/signup', (app) => {
       .spec()
       .withVersion('dev')
       .post('/auth/signup')
-      .withBody({ ...dto, login: 'my/login_1' })
+      .withBody({ ...dto, login: '#/login_1' })
       .expectAppError(ERROR_CODE.PARAM_NOT_ALPHANUMERIC, 'login');
   });
   it('should return a 400 if lastName is missing', async () => {
@@ -88,9 +89,11 @@ const DebugSignUpE2ESpec = e2eSuite('POST (/vdev)/auth/signup', (app) => {
     expect(user.login).toEqual(dto.login);
     expect(user.firstName).toEqual(dto.firstName);
     expect(user.lastName).toEqual(dto.lastName);
-    expect(user.userType).toEqual(UserType.OTHER);
+    expect(user.userType).toEqual(UserType.STUDENT);
     expect(user.id).toMatch(/[a-z0-9-]{36}/);
-    const apiKeyPermissions = await app().get(PrismaService).apiKeyPermission.findMany({ where: { apiKey: { userId: user.id, applicationId: DEFAULT_APPLICATION.id } } });
+    const apiKeyPermissions = await app()
+      .get(PrismaService)
+      .apiKeyPermission.findMany({ where: { apiKey: { userId: user.id, applicationId: DEFAULT_APPLICATION.id } } });
     expect(apiKeyPermissions).toEqual([]);
     await app()
       .get(PrismaService)

@@ -11,7 +11,7 @@ export class AssosAccessConfirmedAssoDto {
   email: string;
 }
 
-export default class AssosAccessConfirmResDto {
+export class AssosAccessConfirmResDto {
   @ApiProperty({ enum: ['CREATE', 'CLAIM'] })
   action: 'CREATE' | 'CLAIM';
 

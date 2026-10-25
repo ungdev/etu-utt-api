@@ -9,6 +9,7 @@ export class ConfigService {
   // BOTH DEV AND TEST ENVIRONMENTS
   public readonly PAGINATION_PAGE_SIZE: number;
   public readonly DATABASE_URL: string;
+  public readonly DATABASE_TEXT_PROTOCOL: boolean;
   public readonly JWT_SECRET: string;
   public readonly JWT_EXPIRES_IN: string;
   public readonly SALT_ROUNDS: number;
@@ -45,6 +46,7 @@ export class ConfigService {
   constructor(config: NestConfigService) {
     this.PAGINATION_PAGE_SIZE = Number(config.get('PAGINATION_PAGE_SIZE'));
     this.DATABASE_URL = config.get('DATABASE_URL');
+    this.DATABASE_TEXT_PROTOCOL = this.getBoolean(config, 'DATABASE_TEXT_PROTOCOL');
     this.JWT_SECRET = config.get('JWT_SECRET');
     this.JWT_EXPIRES_IN = config.get('JWT_EXPIRES_IN');
     this.SALT_ROUNDS = Number(config.get('SALT_ROUNDS'));
@@ -56,16 +58,16 @@ export class ConfigService {
     this.IS_PROD_ENV = isProdEnv();
     this.TIMETABLE_URL = config.get<string>('TIMETABLE_URL');
     this.ANNAL_UPLOAD_DIR = config.get<string>('ANNAL_UPLOAD_DIR');
-    if (this.ANNAL_UPLOAD_DIR.endsWith('/')) this.ANNAL_UPLOAD_DIR = this.ANNAL_UPLOAD_DIR.slice(0, -1);
+    if (this.ANNAL_UPLOAD_DIR.endsWith('@/')) this.ANNAL_UPLOAD_DIR = this.ANNAL_UPLOAD_DIR.slice(0, -1);
     this.MEDIA_UPLOAD_DIR = config.get<string>('MEDIA_UPLOAD_DIR');
-    if (this.MEDIA_UPLOAD_DIR.endsWith('/')) this.MEDIA_UPLOAD_DIR = this.MEDIA_UPLOAD_DIR.slice(0, -1);
+    if (this.MEDIA_UPLOAD_DIR.endsWith('@/')) this.MEDIA_UPLOAD_DIR = this.MEDIA_UPLOAD_DIR.slice(0, -1);
     this.MEDIA_DETACHED_LIFESPAN = Number(config.get('MEDIA_DETACHED_LIFESPAN'));
     this.ETUUTT_WEBSITE_APPLICATION_ID = config.get('ETUUTT_WEBSITE_APPLICATION_ID');
     this.SMTP_HOST = config.get<string>('SMTP_HOST');
     this.SMTP_PORT = config.get<number>('SMTP_PORT');
     this.SMTP_USER = config.get<string>('SMTP_USER');
     this.SMTP_PASSWORD = config.get<string>('SMTP_PASSWORD');
-    this.SMTP_REJECT_UNAUTHORIZED = this.getBoolean(config.get('SMTP_REJECT_UNAUTHORIZED'));
+    this.SMTP_REJECT_UNAUTHORIZED = this.getBoolean(config, 'SMTP_REJECT_UNAUTHORIZED');
     this.SMTP_SERVER_NAME = config.get<string>('SMTP_SERVER_NAME');
     this.SMTP_SENDING_NAME = config.get<string>('SMTP_SENDING_NAME');
     this.SMTP_SENDING_EMAIL = config.get<string>('SMTP_SENDING_EMAIL');
@@ -88,13 +90,14 @@ export class ConfigService {
     return this[key];
   }
 
-  private getBoolean(value: string): boolean {
-    if (value == 'true') {
+  private getBoolean(config: NestConfigService, name: string): boolean {
+    const value = config.get(name);
+    if (value === 'true') {
       return true;
-    } else if (value == 'false') {
+    } else if (value === 'false') {
       return false;
     } else {
-      throw new Error('Environment variable SMTP_REJECT_UNAUTHORIZED must be "true" or "false"');
+      throw new Error(`Environment variable ${name} must be "true" or "false", got "${value}" instead`);
     }
   }
 }

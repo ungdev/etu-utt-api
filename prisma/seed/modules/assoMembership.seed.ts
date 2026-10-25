@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
-import { PrismaClient, RawAssoMembershipRole, RawUser } from '../../../src/prisma/types';
-import { Asso } from '../../../src/assos/interfaces/asso.interface';
+import { PrismaClient, RawAssoMembershipRole, RawUser } from '@/prisma/types.js';
+import { Asso } from '@/assos/interfaces/asso.interface.js';
 
 export default function assoMembershipSeed(
   prisma: PrismaClient,

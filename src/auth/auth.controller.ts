@@ -1,22 +1,22 @@
 import { Body, Controller, Get, Headers, HttpCode, HttpStatus, Injectable, Post } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { IsPublic } from './decorator';
-import { AppException, ERROR_CODE } from '../exceptions';
-import AuthSignInReqDto from './dto/req/auth-sign-in-req.dto';
-import AuthSignUpReqDto from './dto/req/auth-sign-up-req.dto';
-import UsersService from '../users/users.service';
+import { AuthService } from '@/auth/auth.service.js';
+import { AuthSignInReqDto } from '@/auth/dto/req/auth-sign-in-req.dto.js';
+import { AuthSignUpReqDto } from '@/auth/dto/req/auth-sign-up-req.dto.js';
+import { IsPublic } from '@/auth/decorator/index.js';
+import { AppException, ERROR_CODE } from '@/exceptions.js';
+import { UsersService } from '@/users/users.service.js';
 import { ApiCreatedResponse, ApiHeader, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import TokenValidityResDto from './dto/res/token-validity-res.dto';
-import CasSignInResDto from './dto/res/cas-sign-in-res.dto';
-import { ApiAppErrorResponse } from '../app.dto';
-import { GetApplication } from './decorator/get-application.decorator';
-import CreateApiKeyReqDto from './dto/req/create-api-key-req.dto';
-import ApplicationService from './application/application.service';
-import { Application } from './application/interfaces/application.interface';
-import AuthValidateReqDto from './dto/req/auth-validate-req.dto';
-import { ConfigService } from '../config/config.service';
-import AuthTokenResDto from './dto/res/auth-token-res.dto';
-import AuthRedirectionResDto from './dto/res/auth-redirection-res.dto';
+import { TokenValidityResDto } from '@/auth/dto/res/token-validity-res.dto.js';
+import { CasSignInResDto } from '@/auth/dto/res/cas-sign-in-res.dto.js';
+import { ApiAppErrorResponse } from '@/app.dto.js';
+import { GetApplication } from '@/auth/decorator/get-application.decorator.js';
+import { CreateApiKeyReqDto } from '@/auth/dto/req/create-api-key-req.dto.js';
+import { ApplicationService } from '@/auth/application/application.service.js';
+import { Application } from '@/auth/application/interfaces/application.interface.js';
+import { AuthValidateReqDto } from '@/auth/dto/req/auth-validate-req.dto.js';
+import { ConfigService } from '@/config/config.service.js';
+import { AuthTokenResDto } from '@/auth/dto/res/auth-token-res.dto.js';
+import { AuthRedirectionResDto } from '@/auth/dto/res/auth-redirection-res.dto.js';
 
 @Injectable()
 @Controller('auth')
@@ -136,7 +136,7 @@ export class AuthController {
     if (!data) throw new AppException(ERROR_CODE.INVALID_TOKEN_FORMAT);
     if (await this.usersService.doesUserExist({ login: data.login }))
       throw new AppException(ERROR_CODE.CREDENTIALS_ALREADY_TAKEN);
-    const token = await this.authService.signUp(data, application, true, data.tokenExpiresIn);
+    const { token } = await this.authService.signUp(data, application, true, data.tokenExpiresIn);
     return { token };
   }
 

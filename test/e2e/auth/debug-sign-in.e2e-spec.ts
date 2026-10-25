@@ -1,12 +1,13 @@
-import AuthSignInDebugReqDto from '../../../src/auth/dto/req/auth-sign-in-debug-req.dto';
+import { AuthSignInDebugReqDto } from '@/auth/dto/req/auth-sign-in-debug-req.dto.js';
 import * as pactum from 'pactum';
-import { buildTestApp, E2EApp, e2eSuite, JsonLike } from '../../utils/test_utils';
-import * as fakedb from '../../utils/fakedb';
-import { ERROR_CODE } from '../../../src/exceptions';
+import { buildTestApp, E2EApp, e2eSuite, JsonLike } from '#/utils/test_utils.js';
+import * as fakedb from '#/utils/fakedb.js';
+import { ERROR_CODE } from '@/exceptions.js';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from '../../../src/prisma/prisma.service';
-import { DEFAULT_APPLICATION } from '../../../prisma/seed/utils';
-import { AuthService } from '../../../src/auth/auth.service';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { DEFAULT_APPLICATION } from '&/prisma/seed/utils.js';
+import { AuthService } from '@/auth/auth.service.js';
+import { expect, it } from 'vitest';
 
 const DebugSignInE2ESpec = e2eSuite('POST (/vdev)/auth/signin', (app) => {
   const dto = {
@@ -47,7 +48,7 @@ const DebugSignInE2ESpec = e2eSuite('POST (/vdev)/auth/signin', (app) => {
       .spec()
       .withVersion('dev')
       .post('/auth/signin')
-      .withBody({ ...dto, login: 'my/login_1' })
+      .withBody({ ...dto, login: '#/login_1' })
       .expectAppError(ERROR_CODE.PARAM_NOT_ALPHANUMERIC, 'login'));
 
   it('should return a 400 if no body is provided', async () =>

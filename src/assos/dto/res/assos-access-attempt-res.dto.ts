@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { AssoAccessAttemptStatus } from '../../interfaces/asso.interface';
+import { AssoAccessAttemptStatus } from '@/assos/interfaces/asso.interface.js';
 
-export default class AssosAccessAttemptResDto {
+export class AssosAccessAttemptResDto {
   @ApiProperty()
   id: string;
 

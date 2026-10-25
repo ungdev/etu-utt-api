@@ -1,24 +1,27 @@
-import { ERROR_CODE, ErrorData, ExtrasTypeBuilder } from '../src/exceptions';
-import { UeComment } from 'src/ue/comments/interfaces/comment.interface';
-import { UeCommentReply } from 'src/ue/comments/interfaces/comment-reply.interface';
-import { UeRating } from 'src/ue/interfaces/rate.interface';
+import { ERROR_CODE, ErrorData, ExtrasTypeBuilder } from '@/exceptions';
+import { UeComment } from '@/ue/comments/interfaces/comment.interface';
+import { UeCommentReply } from '@/ue/comments/interfaces/comment-reply.interface';
+import { UeRating } from '@/ue/interfaces/rate.interface';
 import {
   FakeApiApplication,
-  FakeAssoWeekly,
+  FakeAsso,
   FakeAssoMembership,
   FakeAssoMembershipPermission,
   FakeAssoMembershipRole,
+  FakeAssoWeekly,
+  FakeHomepageWidget,
   FakeImageMedia,
+  FakeUe,
   FakeUeAnnalType,
-  FakeUeof,
   FakeUeCreditCategory,
-} from './utils/fakedb';
-import { UeAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
-import { Criterion } from 'src/ue/interfaces/criterion.interface';
-import { FakeUe, FakeUser, FakeHomepageWidget, FakeAsso } from './utils/fakedb';
-import { AppProvider } from './utils/test_utils';
-import { Language } from '../src/prisma/types';
-import { PermissionManager } from '../src/utils';
+  FakeUeof,
+  FakeUser,
+} from '#/utils/fakedb';
+import { UeAnnalFile } from '@/ue/annals/interfaces/annal.interface';
+import { Criterion } from '@/ue/interfaces/criterion.interface';
+import { AppProvider } from '#/utils/test_utils';
+import { Language } from '@/prisma/types';
+import { PermissionManager } from '@/utils';
 
 type JsonLikeVariant<T> = Partial<{
   [K in keyof T]: T[K] extends string | Date
@@ -45,7 +48,7 @@ type FakeAssoMembers = {
  *
  * This way, the Spec class can be extended with custom methods (actually added in ./declarations.ts)
  */
-declare module './declarations' {
+declare module './declarations.js' {
   interface Spec {
     /** Checks for HTTP 201 Status. If omitted, status check will be 200 */
     created(): this;
@@ -110,7 +113,7 @@ declare module './declarations' {
     expectImageMedia(media: JsonLikeVariant<FakeImageMedia>): this;
 
     expectPermissions(permissions: PermissionManager): this;
-    expectAssoWeekly(weekly: JsonLikeVariant<FakeAssoWeekly>, created = false): this;
+    expectAssoWeekly(weekly: JsonLikeVariant<FakeAssoWeekly>, created?: boolean): this;
     expectAssoWeeklies(app: AppProvider, weeklies: JsonLikeVariant<FakeAssoWeekly>[], count: number): this;
 
     withLanguage(language: Language): this;

@@ -1,5 +1,5 @@
-import { RawSemester } from '../../../src/prisma/types';
-import { getOperationResults, PrismaClient, PrismaOperationResult } from '../make-migration';
+import { RawSemester } from '@/prisma/types.js';
+import { PrismaClient, PrismaOperationResult, getOperationResults } from '&/migration/etuutt_old/make-migration.js';
 
 export async function createSemesters(prisma: PrismaClient) {
   const operations: Promise<PrismaOperationResult<RawSemester>>[] = [];

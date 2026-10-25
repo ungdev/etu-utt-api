@@ -1,19 +1,20 @@
 import {
-  createUser,
-  createUe,
-  createUeof,
-  createCriterion,
-  createBranchOption,
   createBranch,
+  createBranchOption,
+  createCriterion,
   createSemester,
-  createUeSubscription,
+  createUe,
   createUeRating,
-} from '../../utils/fakedb';
+  createUeSubscription,
+  createUeof,
+  createUser,
+} from '#/utils/fakedb.js';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from 'src/exceptions';
-import { Dummies, e2eSuite } from '../../utils/test_utils';
+import { ERROR_CODE } from '@/exceptions.js';
+import { Dummies, e2eSuite } from '#/utils/test_utils.js';
 import { faker } from '@faker-js/faker';
-import { PermissionManager } from '../../../src/utils';
+import { PermissionManager } from '@/utils.js';
+import { it } from 'vitest';
 
 const DeleteRate = e2eSuite('DELETE /ue/ueof/{ueofCode}/rate/{critetionId}', (app) => {
   const user = createUser(app, { permissions: new PermissionManager().with('API_GIVE_OPINIONS_UE') });

@@ -1,3 +1,3 @@
-export default class ApplicationClientSecretResDto {
+export class ApplicationClientSecretResDto {
   clientSecret: string;
 }

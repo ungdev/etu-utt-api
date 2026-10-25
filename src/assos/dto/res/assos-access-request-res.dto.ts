@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail } from 'class-validator';
 
-export default class AssosAccessRequestResDto {
+export class AssosAccessRequestResDto {
   @ApiProperty({ enum: ['CREATE', 'CLAIM'] })
   action: 'CREATE' | 'CLAIM';
 

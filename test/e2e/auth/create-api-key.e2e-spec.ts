@@ -1,10 +1,11 @@
 import * as pactum from 'pactum';
-import { e2eSuite, JsonLike } from '../../utils/test_utils';
-import { AuthService } from '../../../src/auth/auth.service';
-import { ERROR_CODE } from '../../../src/exceptions';
-import * as fakedb from '../../utils/fakedb';
-import { pick } from '../../../src/utils';
-import { PrismaService } from '../../../src/prisma/prisma.service';
+import { JsonLike, e2eSuite } from '#/utils/test_utils.js';
+import { AuthService } from '@/auth/auth.service.js';
+import { ERROR_CODE } from '@/exceptions.js';
+import * as fakedb from '#/utils/fakedb.js';
+import { pick } from '@/utils.js';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { expect, it } from 'vitest';
 
 const CreateApiKeyE2ESpec = e2eSuite('POST /auth/api-key', (app) => {
   const authService = () => app().get(AuthService);

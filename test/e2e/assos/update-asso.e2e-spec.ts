@@ -1,4 +1,4 @@
-import { Dummies, e2eSuite } from '../../utils/test_utils';
+import { Dummies, e2eSuite } from '#/utils/test_utils.js';
 import {
   createAsso,
   createAssoMembership,
@@ -6,11 +6,12 @@ import {
   createAssoMembershipRole,
   createImageMedia,
   createUser,
-} from '../../utils/fakedb';
+} from '#/utils/fakedb.js';
 import * as pactum from 'pactum';
-import { ERROR_CODE } from '../../../src/exceptions';
-import { PrismaService } from '../../../src/prisma/prisma.service';
-import { pick } from '../../../src/utils';
+import { ERROR_CODE } from '@/exceptions.js';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { pick } from '@/utils.js';
+import { expect, it } from 'vitest';
 
 const UpdateAssoE2ESpec = e2eSuite('PATCH /assos/:id', (app) => {
   const userNotAllowed = createUser(app);
@@ -28,7 +29,7 @@ const UpdateAssoE2ESpec = e2eSuite('PATCH /assos/:id', (app) => {
   const nonAvatarMedia = createImageMedia(app, { isPublic: true, preset: 'CUSTOM' });
   const publicMedia = createImageMedia(app, { isPublic: true, preset: 'AVATAR' });
 
-  const lexicalText = `{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"I want you as a ","type":"color-text","version":1},{"detail":0,"format":1,"mode":"normal","style":"","text":"lexical","type":"color-text","version":1},{"detail":0,"format":0,"mode":"normal","style":"","text":" text that passes the ","type":"color-text","version":1},{"detail":0,"format":0,"mode":"normal","style":"","text":"tests","type":"color-text","version":1,"color":"blue"},{"detail":0,"format":0,"mode":"normal","style":"","text":".","type":"color-text","version":1}],"direction":null,"format":"","indent":0,"type":"paragraph","version":1,"textFormat":0,"textStyle":""}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`;
+  const lexicalText = `{"root":{"type":"root","children":[{"type":"paragraph","children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"I want you as a ","type":"color-text","version":1},{"detail":0,"format":1,"mode":"normal","style":"","text":"lexical","type":"color-text","version":1},{"detail":0,"format":0,"mode":"normal","style":"","text":" text that passes the ","type":"color-text","version":1},{"detail":0,"format":0,"mode":"normal","style":"","text":"tests","type":"color-text","version":1,"color":"blue"},{"detail":0,"format":0,"mode":"normal","style":"","text":".","type":"color-text","version":1}]}],"direction":"ltr"}}`;
   const nonLexicalText = 'I want you as a non-lexical text that does not pass the tests.';
   const validBody = {
     name: 'New name',
@@ -126,7 +127,7 @@ const UpdateAssoE2ESpec = e2eSuite('PATCH /assos/:id', (app) => {
   });
 
   it('should update the asso and link media to description and ignore invalid media', async () => {
-    const lexicalTextWithImage = `{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"I want you as a ","type":"color-text","version":1},{"detail":0,"format":1,"mode":"normal","style":"","text":"lexical","type":"color-text","version":1},{"detail":0,"format":0,"mode":"normal","style":"","text":" text that passes the ","type":"color-text","version":1},{"detail":0,"format":0,"mode":"normal","style":"","text":"tests","type":"color-text","version":1,"color":"blue"},{"detail":0,"format":0,"mode":"normal","style":"","text":".","type":"color-text","version":1}],"direction":null,"format":"","indent":0,"type":"paragraph","version":1,"textFormat":0,"textStyle":""},{"children":[{"type":"image","version":1,"src":"https://etu.utt.fr/api/v1/media/image/${publicMedia.id}.webp","altText":"","width":1920,"height":1080}],"direction":null,"format":"","indent":0,"type":"paragraph","version":1,"textFormat":0,"textStyle":""},{"children":[{"type":"image","version":1,"src":"https://etu.utt.fr/api/v1/media/image/${Dummies.UUID}.webp","altText":"","width":1920,"height":1080}],"direction":null,"format":"","indent":0,"type":"paragraph","version":1,"textFormat":0,"textStyle":""}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`;
+    const lexicalTextWithImage = `{"root":{"type":"root","children":[{"type":"paragraph","children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"I want you as a ","type":"color-text","version":1},{"detail":0,"format":1,"mode":"normal","style":"","text":"lexical","type":"color-text","version":1},{"detail":0,"format":0,"mode":"normal","style":"","text":" text that passes the ","type":"color-text","version":1},{"detail":0,"format":0,"mode":"normal","style":"","text":"tests","type":"color-text","version":1,"color":"blue"},{"detail":0,"format":0,"mode":"normal","style":"","text":".","type":"color-text","version":1}]},{"type":"paragraph","children":[{"type":"image","version":1,"src":"https://etu.utt.fr/api/v1/media/image/${publicMedia.id}.webp","altText":"","width":1920,"height":1080}]},{"type":"paragraph","children":[{"type":"image","version":1,"src":"https://etu.utt.fr/api/v1/media/image/${Dummies.UUID}.webp","altText":"","width":1920,"height":1080}]}],"direction":"ltr"}}`;
     await pactum
       .spec()
       .withBearerToken(userAllowed.token)

@@ -1,55 +1,32 @@
-// eslint-disable-next-line @typescript-eslint/triple-slash-reference
-/// <reference path="./declarations.d.ts" />
-
 import { HttpStatus } from '@nestjs/common';
-import Spec from 'pactum/src/models/Spec';
-import { ERROR_CODE, ErrorData, ExtrasTypeBuilder } from '../src/exceptions';
-import { UeComment } from '../src/ue/comments/interfaces/comment.interface';
-import { UeCommentReply } from '../src/ue/comments/interfaces/comment-reply.interface';
-import { Criterion } from 'src/ue/interfaces/criterion.interface';
-import { UeRating } from 'src/ue/interfaces/rate.interface';
+import Spec from 'pactum/src/models/Spec.js';
+import { FakeAssoMembers, FakeUeWithOfs, JsonLikeVariant } from '#/declarations.d.js';
+import { ERROR_CODE, ErrorData, ExtrasTypeBuilder } from '@/exceptions.js';
+import { UeComment } from '@/ue/comments/interfaces/comment.interface.js';
+import { UeCommentReply } from '@/ue/comments/interfaces/comment-reply.interface.js';
+import { Criterion } from '@/ue/interfaces/criterion.interface.js';
+import { UeRating } from '@/ue/interfaces/rate.interface.js';
 import {
-  FakeUeAnnalType,
-  FakeUser,
-  FakeHomepageWidget,
-  FakeAsso,
-  FakeUeCreditCategory,
   FakeApiApplication,
-  FakeAssoMembershipRole,
+  FakeAsso,
   FakeAssoMembership,
-  FakeAssoMembershipPermission,
-  FakeImageMedia,
+  FakeAssoMembershipRole,
   FakeAssoWeekly,
-  FakeUe,
-  FakeUeof,
-} from './utils/fakedb';
-import { UeAnnalFile } from 'src/ue/annals/interfaces/annal.interface';
-import { ConfigService } from '../src/config/config.service';
-import { AppProvider, JsonLike } from './utils/test_utils';
-import { getTranslation, omit, PermissionManager, pick } from '../src/utils';
-import { regex, string, uuid, int } from 'pactum-matchers';
-import { Language } from '../src/prisma/types';
-import { DEFAULT_APPLICATION } from '../prisma/seed/utils';
-import ApplicationResDto from '../src/auth/application/dto/res/application-res.dto';
-import PermissionsResDto from '../src/auth/permissions/dto/res/permissions.dto';
-
-type JsonLikeVariant<T> = Partial<{
-  [K in keyof T]: T[K] extends string | Date
-    ? symbol | RegExp | T[K]
-    : T[K] extends number
-      ? symbol | number
-      : T[K] extends (infer R)[]
-        ? JsonLikeVariant<R>[]
-        : JsonLikeVariant<T[K]>;
-}>;
-type FakeUeWithOfs = FakeUe & { ueofs: FakeUeof[] };
-type FakeAssoMembers = {
-  role: FakeAssoMembershipRole;
-  users: {
-    user: FakeUser;
-    permissions: FakeAssoMembershipPermission[];
-  }[];
-}[];
+  FakeHomepageWidget,
+  FakeImageMedia,
+  FakeUeAnnalType,
+  FakeUeCreditCategory,
+  FakeUser,
+} from '#/utils/fakedb.js';
+import { UeAnnalFile } from '@/ue/annals/interfaces/annal.interface.js';
+import { ConfigService } from '@/config/config.service.js';
+import { AppProvider, JsonLike } from '#/utils/test_utils.js';
+import { PermissionManager, getTranslation, omit, pick } from '@/utils.js';
+import { int, regex, string, uuid } from 'pactum-matchers';
+import { Language } from '@/prisma/types.js';
+import { DEFAULT_APPLICATION } from '&/prisma/seed/utils.js';
+import { ApplicationResDto } from '@/auth/application/dto/res/application-res.dto.js';
+import { PermissionsResDto } from '@/auth/permissions/dto/res/permissions.dto.js';
 
 function ueOverviewExpectation(ue: FakeUeWithOfs, spec: Spec) {
   return {

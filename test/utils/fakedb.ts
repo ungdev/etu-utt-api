@@ -1,51 +1,56 @@
 import {
+  ImageMediaPreset,
+  Permission,
+  RawAnnalType,
+  RawApiApplication,
+  RawApiKey,
   RawAsso,
   RawAssoMembership,
-  RawAssoMembershipRole,
   RawAssoMembershipPermission,
+  RawAssoMembershipRole,
   RawBranch,
   RawBranchOption,
   RawCreditCategory,
   RawHomepageWidget,
+  RawImageMedia,
   RawSemester,
   RawTimetableEntry,
   RawTimetableEntryOverride,
   RawTimetableGroup,
   RawUe,
-  RawUeof,
-  RawAnnalType,
   RawUeComment,
   RawUeCommentReply,
   RawUeCommentUpvote,
   RawUeCredit,
-  RawUeofInfo,
   RawUeStarCriterion,
   RawUeStarVote,
   RawUeWorkTime,
+  RawUeof,
+  RawUeofInfo,
   RawUser,
   RawUserAddress,
   RawUserBranchSubscription,
   RawUserInfos,
   RawUserMailsPhones,
   RawUserPreference,
+  RawUserPrivacy,
   RawUserSocialNetwork,
   RawUserUeSubscription,
+  Sex,
+  TimetableEntryType,
   Translation,
-  RawUserPrivacy,
-  RawApiKey,
-  RawApiApplication,
-  RawImageMedia,
-} from '../../src/prisma/types';
+  UserType,
+} from '@/prisma/types.js';
 import { faker } from '@faker-js/faker';
-import { AuthService } from '../../src/auth/auth.service';
-import { PrismaService } from '../../src/prisma/prisma.service';
-import { AppProvider } from './test_utils';
-import { ImageMediaPreset, Permission, Sex, TimetableEntryType, UserType } from '../../src/prisma/types';
-import { CommentStatus } from '../../src/ue/comments/interfaces/comment.interface';
-import { UeAnnalFile } from '../../src/ue/annals/interfaces/annal.interface';
-import { omit, PermissionManager, pick, translationSelect } from '../../src/utils';
-import { DEFAULT_APPLICATION } from '../../prisma/seed/utils';
-import { AssoWeekly } from '../../src/assos/interfaces/weekly.interface';
+import { AuthService } from '@/auth/auth.service.js';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { AppProvider } from '#/utils/test_utils.js';
+import { CommentStatus } from '@/ue/comments/interfaces/comment.interface.js';
+import { UeAnnalFile } from '@/ue/annals/interfaces/annal.interface.js';
+import { PermissionManager, omit, pick, translationSelect } from '@/utils.js';
+import { DEFAULT_APPLICATION } from '&/prisma/seed/utils.js';
+import { AssoWeekly } from '@/assos/interfaces/weekly.interface.js';
+import { beforeAll } from 'vitest';
 
 /**
  * The fake entities can be used like normal entities in the <code>it(string, () => void)</code> functions.

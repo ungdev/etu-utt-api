@@ -1,20 +1,21 @@
 import * as pactum from 'pactum';
 import {
-  createUser,
+  createAnnal,
+  createAnnalType,
   createBranch,
   createBranchOption,
   createSemester,
   createUe,
   createUeSubscription,
-  createAnnalType,
-  createAnnal,
   createUeof,
-} from '../../../utils/fakedb';
-import { Dummies, JsonLike, e2eSuite } from '../../../utils/test_utils';
-import { ERROR_CODE } from '../../../../src/exceptions';
-import { CommentStatus } from 'src/ue/comments/interfaces/comment.interface';
-import { PermissionManager, pick } from '../../../../src/utils';
-import { PrismaService } from '../../../../src/prisma/prisma.service';
+  createUser,
+} from '#/utils/fakedb.js';
+import { Dummies, JsonLike, e2eSuite } from '#/utils/test_utils.js';
+import { ERROR_CODE } from '@/exceptions.js';
+import { CommentStatus } from '@/ue/comments/interfaces/comment.interface.js';
+import { PermissionManager, pick } from '@/utils.js';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { it } from 'vitest';
 
 const DeleteAnnal = e2eSuite('DELETE /ue/annals/{annalId}', (app) => {
   const senderUser = createUser(app, { permissions: new PermissionManager().with('API_UPLOAD_ANNALS') });

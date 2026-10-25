@@ -1,6 +1,5 @@
-import { PrismaClient, UserType } from '../../../src/prisma/types';
-import { QueryFunction } from '../make-migration';
-import { RawSemester, RawUe, RawUser } from '../../../src/prisma/types';
+import { PrismaClient, RawSemester, RawUe, RawUser, UserType } from '@/prisma/types.js';
+import { QueryFunction } from '&/migration/etuutt_old/make-migration.js';
 
 export async function migrateUsers(
   query: QueryFunction,

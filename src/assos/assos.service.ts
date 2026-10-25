@@ -1,26 +1,24 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { randomUUID } from 'crypto';
-import { ConfigService } from '../config/config.service';
-import { PrismaService } from '../prisma/prisma.service';
-import { Prisma, RawAssoMembershipRole, RawAssoSympa } from '../prisma/types';
-import {
-  Asso,
+import { Prisma, RawAssoMembershipRole, RawAssoSympa } from '@/prisma/types.js';
+import { ConfigService } from '@/config/config.service.js';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { Asso,
   AssoAccessAction,
   AssoAccessAttemptStatus,
   AssoAccessTokenData,
   AssoAccessConfirmation,
   AssoInfo,
-  AssoAccessActionAndAssoId,
-} from './interfaces/asso.interface';
-import { AssoMembership } from './interfaces/membership.interface';
-import { AssoMembershipRole } from './interfaces/membership-role.interface';
-import { User } from '../users/interfaces/user.interface';
-import AssosSearchReqDto from './dto/req/assos-search-req.dto';
-import AssosMemberUpdateReqDto from './dto/req/assos-member-update-req.dto';
-import { AppException, ERROR_CODE } from '../exceptions';
-import AssosUpdateReqDto from './dto/req/assos-update-req.dto';
-import AssosAccessAttemptResDto from './dto/res/assos-access-attempt-res.dto';
+  AssoAccessActionAndAssoId } from '@/assos/interfaces/asso.interface.js';
+import { AssoMembership } from '@/assos/interfaces/membership.interface.js';
+import { AssoMembershipRole } from '@/assos/interfaces/membership-role.interface.js';
+import { User } from '@/users/interfaces/user.interface.js';
+import { AssosSearchReqDto } from '@/assos/dto/req/assos-search-req.dto.js';
+import { AssosMemberUpdateReqDto } from '@/assos/dto/req/assos-member-update-req.dto.js';
+import { AppException, ERROR_CODE } from '@/exceptions.js';
+import { AssosUpdateReqDto } from '@/assos/dto/req/assos-update-req.dto.js';
+import { AssosAccessAttemptResDto } from '@/assos/dto/res/assos-access-attempt-res.dto.js';
 
 @Injectable()
 export class AssosService {
@@ -176,7 +174,7 @@ export class AssosService {
         assoEmail,
         false,
         action,
-        error instanceof AppException ? error.errorCode : null,
+        error instanceof AppException ? error.code : null,
         tokenId,
         assoId,
         AssoAccessAttemptStatus.REJECTED,
@@ -287,7 +285,7 @@ export class AssosService {
     try {
       return await this.confirmAssoAccessAfterValidation(user, data, name);
     } catch (error) {
-      await this.markAccessAttemptConfirmationFailed(data.jti, error instanceof AppException ? error.errorCode : null);
+      await this.markAccessAttemptConfirmationFailed(data.jti, error instanceof AppException ? Number.parseInt(error.code) : null);
       throw error;
     }
   }
@@ -336,7 +334,7 @@ export class AssosService {
             userId: user.id,
             roleId: role.id,
             startAt: new Date(),
-            endAt: new Date(new Date().getTime() + this.config.ASSOS_CLAIM_ROLE_EXPIRATION),
+            endAt: new Date(Date.now() + this.config.ASSOS_CLAIM_TOKEN_EXPIRATION * 1000),
             permissions: {
               connect: [{ id: 'manage_infos' }, { id: 'manage_members' }, { id: 'manage_roles' }, { id: 'weekly' }],
             },

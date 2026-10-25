@@ -1,17 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { Prisma, UserType, Permission } from '../prisma/types';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { Prisma, RawApiKey, UserType, Permission } from '@/prisma/types.js';
 import { JwtService } from '@nestjs/jwt';
-import { AppException, ERROR_CODE } from '../exceptions';
-import { ConfigService } from '../config/config.service';
+import { AppException, ERROR_CODE } from '@/exceptions.js';
+import { ConfigService } from '@/config/config.service.js';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import { XMLParser } from 'fast-xml-parser';
-import { doesEntryIncludeSome, omit } from '../utils';
-import { LdapModule } from '../ldap/ldap.module';
-import { LdapAccountGroup } from '../ldap/ldap.interface';
-import { SemesterService } from '../semester/semester.service';
-import { RawApiKey } from '../prisma/types';
+import { doesEntryIncludeSome, omit } from '@/utils.js';
+import { LdapModule } from '@/ldap/ldap.module.js';
+import { LdapAccountGroup } from '@/ldap/ldap.interface.js';
+import { SemesterService } from '@/semester/semester.service.js';
 import crypto from 'crypto';
 
 export type RegisterUserData = {
@@ -56,13 +55,13 @@ export class AuthService {
     applicationId: string,
     fetchLdap = false,
     tokenExpiresIn?: number,
-  ): Promise<string> {
+  ): Promise<{ userId: string; token: string }> {
     let phoneNumber: string = undefined;
     let formation: string = undefined;
     const branch: string[] = [];
     const branchOption: string[] = [];
     const ues: string[] = [];
-    let type: UserType = UserType.STUDENT;
+    let type: UserType = UserType.OTHER;
     let studentId: number | undefined;
     const currentSemester = await this.semesterService.getCurrentSemester();
 
@@ -90,9 +89,9 @@ export class AuthService {
         }
       }
     }
-    if (!this.isAllowedCasUserType(type)) {
-      throw new AppException(ERROR_CODE.INVALID_CAS_TICKET);
-    }
+    // if (!this.isAllowedCasUserType(type)) {
+    //   throw new AppException(ERROR_CODE.INVALID_CAS_TICKET);
+    // }
     try {
       const isUTTMail = dto.mail?.endsWith('@utt.fr');
       const user = await this.prisma.user.create({
@@ -230,7 +229,7 @@ export class AuthService {
           },
         });
       }
-      return this.signAuthenticationToken(user.apiKeys[0].token, tokenExpiresIn);
+      return { userId: user.id, token: await this.signAuthenticationToken(user.apiKeys[0].token, tokenExpiresIn) };
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
@@ -266,6 +265,13 @@ export class AuthService {
     }
 
     return { userId: user.id, apiKey: user.apiKeys[0] };
+  }
+
+  async modifyUserType(userId: string, userType: UserType) {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { userType },
+    })
   }
 
   /**
@@ -342,18 +348,23 @@ export class AuthService {
    * @param registerToken {@link RegisterUserData} that permits creating a user account, or null if the token format is invalid in any way.
    */
   decodeRegisterUserToken(registerToken: string): RegisterUserData | null {
-    const data = this.jwt.verify(registerToken, { secret: this.config.JWT_SECRET });
-    if (
-      !data ||
-      !('login' in data) ||
-      !('mail' in data) ||
-      !('firstName' in data) ||
-      !('lastName' in data) ||
-      !('tokenExpiresIn' in data)
-    ) {
+    try {
+      const data = this.jwt.verify(registerToken, { secret: this.config.JWT_SECRET });
+      if (
+        !data ||
+        !('login' in data) ||
+        !('mail' in data) ||
+        !('firstName' in data) ||
+        !('lastName' in data) ||
+        !('tokenExpiresIn' in data)
+      ) {
+        return null;
+      }
+      return omit(data, 'iat', 'exp') as RegisterUserData;
+    } catch {
       return null;
     }
-    return omit(data, 'iat', 'exp') as RegisterUserData;
+
   }
 
   /**
@@ -361,11 +372,15 @@ export class AuthService {
    * @param registerToken {@link RegisterApiKeyData} that permits creating the Api Key linking the user and the given application.
    */
   decodeRegisterApiKeyToken(registerToken: string): RegisterApiKeyData | null {
-    const data = this.jwt.verify(registerToken, { secret: this.config.JWT_SECRET });
-    if (!data || !('userId' in data) || !('applicationId' in data) || !('tokenExpiresIn' in data)) {
+    try {
+      const data = this.jwt.verify(registerToken, { secret: this.config.JWT_SECRET });
+      if (!data || !('userId' in data) || !('applicationId' in data) || !('tokenExpiresIn' in data)) {
+        return null;
+      }
+      return omit(data, 'iat', 'exp') as RegisterApiKeyData;
+    } catch {
       return null;
     }
-    return omit(data, 'iat', 'exp') as RegisterApiKeyData;
   }
 
   /**
@@ -373,11 +388,15 @@ export class AuthService {
    * @param token {@link ValidationTokenData} that permits validating the
    */
   decodeValidationToken(token: string): ValidationTokenData | null {
-    const data = this.jwt.verify(token, { secret: this.config.JWT_SECRET });
-    if (!data || !('apiKeyId' in data) || !('tokenExpiresIn' in data) || !('applicationId' in data)) {
+    try {
+      const data = this.jwt.verify(token, { secret: this.config.JWT_SECRET });
+      if (!data || !('apiKeyId' in data) || !('tokenExpiresIn' in data) || !('applicationId' in data)) {
+        return null;
+      }
+      return omit(data, 'iat', 'exp') as ValidationTokenData;
+    } catch {
       return null;
     }
-    return omit(data, 'iat', 'exp') as ValidationTokenData;
   }
 
   /**

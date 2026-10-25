@@ -1,52 +1,51 @@
-import { AssosService } from '../../../src/assos/assos.service';
-import { AssosController } from '../../../src/assos/assos.controller';
-import { ERROR_CODE } from '../../../src/exceptions';
-import { MailService } from '../../../src/mail/mail.service';
-import { User } from '../../../src/users/interfaces/user.interface';
-import { Asso } from '../../../src/assos/interfaces/asso.interface';
-import { PrismaService } from '../../../src/prisma/prisma.service';
-import { ConfigService } from '../../../src/config/config.service';
+import { AssosService } from '@/assos/assos.service.js';
+import { AssosController } from '@/assos/assos.controller.js';
+import { ERROR_CODE } from '@/exceptions.js';
+import { MailService } from '@/mail/mail.service.js';
+import { User } from '@/users/interfaces/user.interface.js';
+import { Asso, AssoAccessAction, AssoAccessAttemptStatus } from '@/assos/interfaces/asso.interface.js';
+import { PrismaService } from '@/prisma/prisma.service.js';
+import { ConfigService } from '@/config/config.service.js';
 import { JwtService } from '@nestjs/jwt';
-import UsersService from '../../../src/users/users.service';
-import { ImageMediaService } from '../../../src/media/image/imagemedia.service';
-import { LexicalModule } from '../../../src/lexical/lexical.module';
+import { UsersService } from '@/users/users.service.js';
+import { ImageMediaService } from '@/media/image/imagemedia.service.js';
 import { MailerService } from '@nestjs-modules/mailer';
-import { AssoAccessAction, AssoAccessAttemptStatus } from '../../../src/assos/interfaces/asso.interface';
-import { unitSuite } from '../../utils/test_utils';
+import { unitSuite } from '#/utils/test_utils.js';
+import { it, expect, describe, vi, Mock } from 'vitest';
 
 const user = { id: 'user-id' } as unknown as User;
 const assoEmail = 'asso@utt.fr';
 
 type AccessTransaction = {
-  asso?: { create: jest.Mock };
-  assoMembershipRole: { create?: jest.Mock; findFirst?: jest.Mock };
-  assoMembership: { create: jest.Mock };
+  asso?: { create: Mock };
+  assoMembershipRole: { create?: Mock; findFirst?: Mock };
+  assoMembership: { create: Mock };
 };
 
 type MockPrisma = {
-  normalize: { asso: { findUnique: jest.Mock } };
-  assoSympa: { findUnique: jest.Mock };
-  assoMembership: { count: jest.Mock };
-  assoAccessAttempt: { create: jest.Mock; update: jest.Mock };
-  $transaction: jest.Mock;
+  normalize: { asso: { findUnique: Mock } };
+  assoSympa: { findUnique: Mock };
+  assoMembership: { count: Mock };
+  assoAccessAttempt: { create: Mock; update: Mock };
+  $transaction: Mock;
 };
 
 type MockJwt = {
-  signAsync: jest.Mock;
-  verify: jest.Mock;
+  signAsync: Mock;
+  verify: Mock;
 };
 
 function createService() {
   const prisma: MockPrisma = {
-    normalize: { asso: { findUnique: jest.fn() } },
-    assoSympa: { findUnique: jest.fn() },
-    assoMembership: { count: jest.fn() },
-    assoAccessAttempt: { create: jest.fn().mockResolvedValue({}), update: jest.fn().mockResolvedValue({}) },
-    $transaction: jest.fn(),
+    normalize: { asso: { findUnique: vi.fn() } },
+    assoSympa: { findUnique: vi.fn() },
+    assoMembership: { count: vi.fn() },
+    assoAccessAttempt: { create: vi.fn().mockResolvedValue({}), update: vi.fn().mockResolvedValue({}) },
+    $transaction: vi.fn(),
   };
   const jwt: MockJwt = {
-    signAsync: jest.fn().mockResolvedValue('signed-token'),
-    verify: jest.fn(),
+    signAsync: vi.fn().mockResolvedValue('signed-token'),
+    verify: vi.fn(),
   };
   const service = new AssosService(
     prisma as unknown as PrismaService,
@@ -314,7 +313,7 @@ const AssosAccessUnitSpec = unitSuite('Association access', () => {
 
   it('creates an association with the AssoSympa default name when omitted', async () => {
     const { service, prisma } = createService();
-    jest.spyOn(service, 'decodeAssoAccessToken').mockReturnValue({
+    vi.spyOn(service, 'decodeAssoAccessToken').mockReturnValue({
       userId: user.id,
       assoEmail,
       action: AssoAccessAction.CREATE,
@@ -322,14 +321,14 @@ const AssosAccessUnitSpec = unitSuite('Association access', () => {
       iat: 1,
       exp: 2,
     });
-    jest.spyOn(service, 'resolveAssoAccessAction').mockResolvedValue(AssoAccessAction.CREATE);
-    jest.spyOn(service, 'getAssoByEmail').mockResolvedValue(null);
-    jest.spyOn(service, 'getAssoSympaByEmail').mockResolvedValue({ id: 'sympa-id', name: 'Club UTT', mail: assoEmail });
+    vi.spyOn(service, 'resolveAssoAccessAction').mockResolvedValue(AssoAccessAction.CREATE);
+    vi.spyOn(service, 'getAssoByEmail').mockResolvedValue(null);
+    vi.spyOn(service, 'getAssoSympaByEmail').mockResolvedValue({ id: 'sympa-id', name: 'Club UTT', mail: assoEmail });
 
     const tx: AccessTransaction = {
-      asso: { create: jest.fn().mockResolvedValue({ id: 'asso-id', name: 'Club UTT', mail: assoEmail }) },
-      assoMembershipRole: { create: jest.fn().mockResolvedValue({ id: 'role-id' }) },
-      assoMembership: { create: jest.fn().mockResolvedValue({ id: 'membership-id' }) },
+      asso: { create: vi.fn().mockResolvedValue({ id: 'asso-id', name: 'Club UTT', mail: assoEmail }) },
+      assoMembershipRole: { create: vi.fn().mockResolvedValue({ id: 'role-id' }) },
+      assoMembership: { create: vi.fn().mockResolvedValue({ id: 'membership-id' }) },
     };
     prisma.$transaction.mockImplementation((callback: (transaction: AccessTransaction) => unknown) => callback(tx));
 
@@ -346,7 +345,7 @@ const AssosAccessUnitSpec = unitSuite('Association access', () => {
 
   it('rejects CREATE when the association name already exists', async () => {
     const { service, prisma } = createService();
-    jest.spyOn(service, 'decodeAssoAccessToken').mockReturnValue({
+    vi.spyOn(service, 'decodeAssoAccessToken').mockReturnValue({
       userId: user.id,
       assoEmail,
       action: AssoAccessAction.CREATE,
@@ -354,9 +353,9 @@ const AssosAccessUnitSpec = unitSuite('Association access', () => {
       iat: 1,
       exp: 2,
     });
-    jest.spyOn(service, 'resolveAssoAccessAction').mockResolvedValue(AssoAccessAction.CREATE);
-    jest.spyOn(service, 'getAssoByEmail').mockResolvedValue(null);
-    jest.spyOn(service, 'getAssoSympaByEmail').mockResolvedValue({ id: 'sympa-id', name: 'Club UTT', mail: assoEmail });
+    vi.spyOn(service, 'resolveAssoAccessAction').mockResolvedValue(AssoAccessAction.CREATE);
+    vi.spyOn(service, 'getAssoByEmail').mockResolvedValue(null);
+    vi.spyOn(service, 'getAssoSympaByEmail').mockResolvedValue({ id: 'sympa-id', name: 'Club UTT', mail: assoEmail });
     prisma.normalize.asso.findUnique.mockImplementation(({ where }: { where: { name?: string; mail?: string } }) =>
       where.name ? Promise.resolve({ id: 'existing-asso-id', name: where.name }) : Promise.resolve(null),
     );
@@ -367,7 +366,7 @@ const AssosAccessUnitSpec = unitSuite('Association access', () => {
 
   it('marks a CREATE attempt as failed when its name is missing', async () => {
     const { service, prisma } = createService();
-    jest.spyOn(service, 'decodeAssoAccessToken').mockReturnValue({
+    vi.spyOn(service, 'decodeAssoAccessToken').mockReturnValue({
       userId: user.id,
       assoEmail,
       action: AssoAccessAction.CREATE,
@@ -375,9 +374,9 @@ const AssosAccessUnitSpec = unitSuite('Association access', () => {
       iat: 1,
       exp: 2,
     });
-    jest.spyOn(service, 'resolveAssoAccessAction').mockResolvedValue(AssoAccessAction.CREATE);
-    jest.spyOn(service, 'getAssoByEmail').mockResolvedValue(null);
-    jest.spyOn(service, 'getAssoSympaByEmail').mockResolvedValue(null);
+    vi.spyOn(service, 'resolveAssoAccessAction').mockResolvedValue(AssoAccessAction.CREATE);
+    vi.spyOn(service, 'getAssoByEmail').mockResolvedValue(null);
+    vi.spyOn(service, 'getAssoSympaByEmail').mockResolvedValue(null);
 
     await expectAppError(service.confirmAssoAccess(user, 'token'), ERROR_CODE.PARAM_MISSING);
     expect(prisma.assoAccessAttempt.update).toHaveBeenCalledWith({
@@ -398,7 +397,7 @@ const AssosAccessUnitSpec = unitSuite('Association access', () => {
       mail: assoEmail,
       descriptionTranslation: existingDescription,
     } as unknown as Asso;
-    jest.spyOn(service, 'decodeAssoAccessToken').mockReturnValue({
+    vi.spyOn(service, 'decodeAssoAccessToken').mockReturnValue({
       userId: user.id,
       assoEmail,
       assoId: existingAsso.id,
@@ -407,13 +406,13 @@ const AssosAccessUnitSpec = unitSuite('Association access', () => {
       iat: 1,
       exp: 2,
     });
-    jest.spyOn(service, 'resolveAssoAccessAction').mockResolvedValue(AssoAccessAction.CLAIM);
-    jest.spyOn(service, 'getAssoByEmail').mockResolvedValue(existingAsso);
+    vi.spyOn(service, 'resolveAssoAccessAction').mockResolvedValue(AssoAccessAction.CLAIM);
+    vi.spyOn(service, 'getAssoByEmail').mockResolvedValue(existingAsso);
 
     const tx: AccessTransaction = {
       asso: undefined,
-      assoMembershipRole: { findFirst: jest.fn().mockResolvedValue({ id: 'role-id', isPresident: true }) },
-      assoMembership: { create: jest.fn().mockResolvedValue({ id: 'membership-id' }) },
+      assoMembershipRole: { findFirst: vi.fn().mockResolvedValue({ id: 'role-id', isPresident: true }) },
+      assoMembership: { create: vi.fn().mockResolvedValue({ id: 'membership-id' }) },
     };
     prisma.$transaction.mockImplementation((callback: (transaction: AccessTransaction) => unknown) => callback(tx));
 
@@ -430,7 +429,7 @@ const AssosAccessUnitSpec = unitSuite('Association access', () => {
   it('creates the president role when claiming an association without one', async () => {
     const { service, prisma } = createService();
     const existingAsso = { id: 'asso-id', name: 'Existing Club', mail: assoEmail } as unknown as Asso;
-    jest.spyOn(service, 'decodeAssoAccessToken').mockReturnValue({
+    vi.spyOn(service, 'decodeAssoAccessToken').mockReturnValue({
       userId: user.id,
       assoEmail,
       assoId: existingAsso.id,
@@ -439,17 +438,17 @@ const AssosAccessUnitSpec = unitSuite('Association access', () => {
       iat: 1,
       exp: 2,
     });
-    jest.spyOn(service, 'resolveAssoAccessAction').mockResolvedValue(AssoAccessAction.CLAIM);
-    jest.spyOn(service, 'getAssoByEmail').mockResolvedValue(existingAsso);
+    vi.spyOn(service, 'resolveAssoAccessAction').mockResolvedValue(AssoAccessAction.CLAIM);
+    vi.spyOn(service, 'getAssoByEmail').mockResolvedValue(existingAsso);
     prisma.assoMembership.count.mockResolvedValue(0);
 
     const tx: AccessTransaction = {
       asso: undefined,
       assoMembershipRole: {
-        findFirst: jest.fn().mockResolvedValue(null),
-        create: jest.fn().mockResolvedValue({ id: 'role-id' }),
+        findFirst: vi.fn().mockResolvedValue(null),
+        create: vi.fn().mockResolvedValue({ id: 'role-id' }),
       },
-      assoMembership: { create: jest.fn().mockResolvedValue({ id: 'membership-id' }) },
+      assoMembership: { create: vi.fn().mockResolvedValue({ id: 'membership-id' }) },
     };
     prisma.$transaction.mockImplementation((callback: (transaction: AccessTransaction) => unknown) => callback(tx));
 
@@ -466,21 +465,20 @@ const AssosAccessUnitSpec = unitSuite('Association access', () => {
   describe('AssosController association access', () => {
     it('sends the validation link to the association email', async () => {
       const assosService = {
-        requestAssoAccess: jest.fn().mockResolvedValue({ action: 'CREATE', token: 'token', email: assoEmail }),
+        requestAssoAccess: vi.fn().mockResolvedValue({ action: 'CREATE', token: 'token', email: assoEmail }),
       };
       const prisma = {
         apiApplication: {
-          findUnique: jest.fn().mockResolvedValue({ redirectUrl: 'https://etu.utt.fr/' }),
+          findUnique: vi.fn().mockResolvedValue({ redirectUrl: 'https://etu.utt.fr/' }),
         },
       };
-      const mailService = { send: jest.fn().mockResolvedValue(undefined) };
+      const mailService = { send: vi.fn().mockResolvedValue(undefined) };
       const controller = new AssosController(
         assosService as unknown as AssosService,
         undefined as unknown as UsersService,
         { ETUUTT_WEBSITE_APPLICATION_ID: 'website-application-id' } as unknown as ConfigService,
         prisma as unknown as PrismaService,
         undefined as unknown as ImageMediaService,
-        undefined as unknown as LexicalModule,
         mailService as unknown as MailService,
       );
 
@@ -503,19 +501,18 @@ const AssosAccessUnitSpec = unitSuite('Association access', () => {
 
     it('notifies the association after a successful claim', async () => {
       const assosService = {
-        confirmAssoAccess: jest.fn().mockResolvedValue({
+        confirmAssoAccess: vi.fn().mockResolvedValue({
           action: 'CLAIM',
           asso: { id: 'asso-id', name: 'Club UTT', mail: assoEmail },
         }),
       };
-      const mailService = { send: jest.fn().mockResolvedValue(undefined) };
+      const mailService = { send: vi.fn().mockResolvedValue(undefined) };
       const controller = new AssosController(
         assosService as unknown as AssosService,
         undefined as unknown as UsersService,
         undefined as unknown as ConfigService,
         undefined as unknown as PrismaService,
         undefined as unknown as ImageMediaService,
-        undefined as unknown as LexicalModule,
         mailService as unknown as MailService,
       );
       const confirmingUser = { id: user.id, firstName: 'Ada', lastName: 'Lovelace' } as User;
@@ -534,7 +531,7 @@ const AssosAccessUnitSpec = unitSuite('Association access', () => {
 
   describe('MailService validation email', () => {
     it('swallows mail delivery failures', async () => {
-      const mailerService = { sendMail: jest.fn().mockRejectedValue(new Error('SMTP unavailable')) };
+      const mailerService = { sendMail: vi.fn().mockRejectedValue(new Error('SMTP unavailable')) };
       const service = new MailService(mailerService as unknown as MailerService);
 
       await expect(service.send('asso@utt.fr', 'Validation')).resolves.toBeUndefined();
