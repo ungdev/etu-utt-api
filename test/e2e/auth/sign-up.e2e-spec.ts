@@ -136,27 +136,6 @@ const SignUpE2eSpec = e2eSuite('POST /auth/signup', (app) => {
   });
   // Can this happen ? If it does, should we throw an error instead ?
   // it('should successfully create the user and return a token (as other)', () => executeValidSignupRequest(getPersonAttributes('other')));
-
-  it('should successfully create an asso user, along with an Asso', async () => {
-    const login = faker.internet.displayName().replaceAll(/[^A-Za-z1-9]/g, '');
-    const mail = faker.internet.email();
-    const assoName = faker.company.name();
-    await executeValidSignupRequest(
-      {
-        uid: login,
-        displayName: assoName,
-        mail,
-        gidNumber: '6000',
-      },
-      [],
-    );
-    expect(
-      await app()
-        .get(PrismaService)
-        .asso.count({ where: { name: assoName } }),
-    ).toEqual(1);
-    await app().get(PrismaService).user.deleteMany({ where: { login } });
-  });
 });
 
 export default SignUpE2eSpec;

@@ -10,7 +10,8 @@ import importPlugin from 'eslint-plugin-import'
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export default defineConfig([globalIgnores(['eslint.config.mjs']),
+export default defineConfig([
+  globalIgnores(['eslint.config.mjs']),
   {
     extends: [
       typescriptPlugin.configs.recommended, eslintConfigPrettier, importPlugin.flatConfigs.recommended, importPlugin.flatConfigs.typescript,

@@ -34,6 +34,10 @@ export class ConfigService {
   public readonly SMTP_SENDING_EMAIL: string;
   public readonly WEEKLY_SEND_DAY: number;
   public readonly WEEKLY_SEND_HOUR: number;
+  public readonly ASSOS_MAX_CLAIMS_PER_ASSO: number;
+  public readonly ASSOS_MAX_CLAIMS_PER_USER: number;
+  public readonly ASSOS_CLAIM_TOKEN_EXPIRATION: number;
+  public readonly ASSOS_CLAIM_ROLE_EXPIRATION: number;
   // DEV ENVIRONMENT ONLY
 
   // TEST ENVIRONMENT ONLY
@@ -69,6 +73,10 @@ export class ConfigService {
     this.SMTP_SENDING_EMAIL = config.get<string>('SMTP_SENDING_EMAIL');
     this.WEEKLY_SEND_DAY = Number.parseInt(config.get('WEEKLY_SEND_DAY'));
     this.WEEKLY_SEND_HOUR = Number.parseInt(config.get('WEEKLY_SEND_HOUR'));
+    this.ASSOS_MAX_CLAIMS_PER_ASSO = Number.parseInt(config.get('ASSOS_MAX_CLAIMS_PER_ASSO'));
+    this.ASSOS_MAX_CLAIMS_PER_USER = Number.parseInt(config.get('ASSOS_MAX_CLAIMS_PER_USER'));
+    this.ASSOS_CLAIM_TOKEN_EXPIRATION = Number.parseInt(config.get('ASSOS_CLAIM_TOKEN_EXPIRATION'));
+    this.ASSOS_CLAIM_ROLE_EXPIRATION = Number.parseInt(config.get('ASSOS_CLAIM_ROLE_EXPIRATION'));
 
     this._FAKER_SEED = isTestEnv() ? Number(config.get('FAKER_SEED')) : undefined;
   }

@@ -4,21 +4,28 @@ import { Injectable, Logger } from '@nestjs/common';
 @Injectable()
 export class MailService {
   private readonly logger = new Logger(MailService.name);
+
   constructor(private readonly mailerService: MailerService) {}
 
-  private async send(to: string, subject: string, template: string, templateVariables: Record<string, any>) {
+  async send(
+    to: string,
+    subject: string,
+    template?: string,
+    templateVariables: Record<string, any> = {},
+    text?: string,
+  ) {
     const sendMailParams: ISendMailOptions = {
       to,
       subject,
-      template,
-      context: templateVariables,
+      ...(template ? { template, context: templateVariables } : { text }),
     };
+
     try {
       await this.mailerService.sendMail(sendMailParams);
       this.logger.log('Email sent successfully to recipient');
     } catch (error) {
       this.logger.error(
-        `Error while sending mail with the following parameters : ${JSON.stringify(sendMailParams)}`,
+        `Error while sending mail with the following parameters: ${JSON.stringify(sendMailParams)}`,
         error,
       );
     }

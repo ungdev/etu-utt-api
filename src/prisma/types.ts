@@ -42,6 +42,7 @@ export {
   type AssoMembershipRole as RawAssoMembershipRole,
   type AssoMembership as RawAssoMembership,
   type AssoMembershipPermission as RawAssoMembershipPermission,
+  type AssoSympa as RawAssoSympa,
   type UserHomepageWidget as RawHomepageWidget,
   type UserPrivacy as RawUserPrivacy,
   type ApiApplication as RawApiApplication,

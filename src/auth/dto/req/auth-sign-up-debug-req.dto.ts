@@ -1,5 +1,6 @@
-import { IsAlphanumeric, IsNotEmpty, IsOptional, IsString , IsPositive } from 'class-validator';
+import { IsAlphanumeric, IsNotEmpty, IsOptional, IsString, IsPositive, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
+import { UserType } from '@/prisma/types.js';
 
 export default class AuthSignUpDebugReqDto {
   @IsNotEmpty()
@@ -21,4 +22,8 @@ export default class AuthSignUpDebugReqDto {
   @IsPositive()
   @Type(() => Number)
   tokenExpiresIn: number;
+
+  @IsEnum(UserType)
+  @IsOptional()
+  userType: UserType = UserType.STUDENT;
 }

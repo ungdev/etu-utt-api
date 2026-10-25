@@ -154,40 +154,6 @@ const AddAssoMemberE2ESpec = e2eSuite('POST /assos/:id/members', (app) => {
         startAt: JsonLike.DATE,
         endAt: JsonLike.DATE,
       }));
-
-  it('should add the user to the AssoRole with asso account', async () => {
-    const assoUser = await app()
-      .get(PrismaService)
-      .user.findUnique({ where: { login: asso.name } });
-    const apiKey = await app()
-      .get(PrismaService)
-      .apiKey.create({
-        data: {
-          token: faker.string.alphanumeric(30),
-          user: { connect: { id: assoUser.id } },
-          application: { connect: { id: DEFAULT_APPLICATION.id } },
-        },
-      });
-    const token = await app().get(AuthService).signAuthenticationToken(apiKey.token);
-    return pactum
-      .spec()
-      .withBearerToken(token)
-      .post(`/assos/${asso.id}/members`)
-      .withBody({
-        userId: userTargetFromAssoAccount.id,
-        roleId: assoMembershipRole.id,
-        permissions: [manageMembersPermission.id, otherPermission.id],
-      })
-      .created()
-      .expectAssoMembership({
-        id: JsonLike.UUID,
-        assoId: asso.id,
-        userId: userTargetFromAssoAccount.id,
-        roleId: assoMembershipRole.id,
-        startAt: JsonLike.DATE,
-        endAt: JsonLike.DATE,
-      });
-  });
 });
 
 export default AddAssoMemberE2ESpec;

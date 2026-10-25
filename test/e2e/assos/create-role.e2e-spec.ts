@@ -66,35 +66,6 @@ const CreateAssoRoleE2ESpec = e2eSuite('POST /assos/:id/roles', (app) => {
         position: 2, // position 0 is by default the president role and we already have created a role at position 1
         assoId: asso.id,
       }));
-
-  it('should create the role with asso account', async () => {
-    const assoUser = await app()
-      .get(PrismaService)
-      .user.findUnique({ where: { login: asso.name } });
-    const apiKey = await app()
-      .get(PrismaService)
-      .apiKey.create({
-        data: {
-          token: faker.string.alphanumeric(30),
-          user: { connect: { id: assoUser.id } },
-          application: { connect: { id: DEFAULT_APPLICATION.id } },
-        },
-      });
-    const token = await app().get(AuthService).signAuthenticationToken(apiKey.token);
-    return pactum
-      .spec()
-      .withBearerToken(token)
-      .post(`/assos/${asso.id}/roles`)
-      .withBody(validBody)
-      .created()
-      .expectAssoMembershipRole({
-        id: JsonLike.UUID,
-        isPresident: false,
-        name: validBody.name,
-        position: 3,
-        assoId: asso.id,
-      });
-  });
 });
 
 export default CreateAssoRoleE2ESpec;

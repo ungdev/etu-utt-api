@@ -17,7 +17,7 @@ const GetHomepageWidgetsE2ESpec = e2eSuite('GET /profile/homepage', (app) => {
       .spec()
       .withBearerToken(user.token)
       .get('/profile/homepage')
-      .expectHomepageWidgets(widgets.mappedSort((w) => w.x));
+      .expectHomepageWidgets(widgets.mappedSort((w) => [w.x, w.y]));
   });
 });
 

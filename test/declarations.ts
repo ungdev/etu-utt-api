@@ -90,14 +90,12 @@ Spec.prototype.baseUrl = '';
 Spec.prototype.withBaseUrl = function (this: Spec, baseUrl: string) {
   this.baseUrl = baseUrl;
   return this;
-}
+};
 // Spec.prototype.toss is the function called to execute the request.
 // Here, we modify it to include the special headers just before sending the request.
 Spec.prototype.toss = function (this: Spec) {
   this['_request'].url = this.baseUrl + `/v${this.version}` + this['_request'].url;
-  this.withHeaders('X-Language', this.language)
-    .withHeaders('X-Application', this.application)
-    .expectStatus();
+  this.withHeaders('X-Language', this.language).withHeaders('X-Application', this.application).expectStatus();
   return baseToss.call(this);
 };
 Spec.prototype.expectAppError = function <ErrorCode extends ERROR_CODE>(

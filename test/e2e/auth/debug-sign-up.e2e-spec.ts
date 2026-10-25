@@ -5,7 +5,7 @@ import { ERROR_CODE } from '@/exceptions.js';
 import { UserType } from '@/prisma/types.js';
 import { createUser } from '#/utils/fakedb.js';
 import { JwtService } from '@nestjs/jwt';
-import { DEFAULT_APPLICATION } from '&/prisma/seed/utils';
+import { DEFAULT_APPLICATION } from '&/prisma/seed/utils.js';
 import { expect, it } from 'vitest';
 
 const DebugSignUpE2ESpec = e2eSuite('POST (/vdev)/auth/signup', (app) => {
@@ -89,7 +89,7 @@ const DebugSignUpE2ESpec = e2eSuite('POST (/vdev)/auth/signup', (app) => {
     expect(user.login).toEqual(dto.login);
     expect(user.firstName).toEqual(dto.firstName);
     expect(user.lastName).toEqual(dto.lastName);
-    expect(user.userType).toEqual(UserType.OTHER);
+    expect(user.userType).toEqual(UserType.STUDENT);
     expect(user.id).toMatch(/[a-z0-9-]{36}/);
     const apiKeyPermissions = await app()
       .get(PrismaService)

@@ -85,34 +85,6 @@ const DeleteAssoRoleE2ESpec = e2eSuite('DELETE /assos/:id/roles/:id', (app) => {
         position: assoMembershipRole.position,
         assoId: asso.id,
       }));
-
-  it('should delete the role with asso account', async () => {
-    const assoMembershipRole3 = await createAssoMembershipRole(app, { asso }, assoMembershipRole, true);
-    const assoUser = await app()
-      .get(PrismaService)
-      .user.findUnique({ where: { login: asso.name } });
-    const apiKey = await app()
-      .get(PrismaService)
-      .apiKey.create({
-        data: {
-          token: faker.string.alphanumeric(30),
-          user: { connect: { id: assoUser.id } },
-          application: { connect: { id: DEFAULT_APPLICATION.id } },
-        },
-      });
-    const token = await app().get(AuthService).signAuthenticationToken(apiKey.token);
-    return pactum
-      .spec()
-      .withBearerToken(token)
-      .delete(`/assos/${asso.id}/roles/${assoMembershipRole3.id}`)
-      .expectAssoMembershipRole({
-        id: assoMembershipRole3.id,
-        isPresident: false,
-        name: assoMembershipRole3.name,
-        position: assoMembershipRole3.position,
-        assoId: asso.id,
-      });
-  });
 });
 
 export default DeleteAssoRoleE2ESpec;

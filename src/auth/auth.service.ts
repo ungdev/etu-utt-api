@@ -46,12 +46,16 @@ export class AuthService {
    * @param fetchLdap Whether user information should be imported from the UTT LDAP.
    * @param tokenExpiresIn The time the return token will be valid, in seconds. If not given, token will not expire.
    */
+  private isAllowedCasUserType(type?: UserType): boolean {
+    return type === UserType.STUDENT || type === UserType.TEACHER || type === UserType.EMPLOYEE;
+  }
+
   async signUp(
     dto: RegisterUserData,
     applicationId: string,
     fetchLdap = false,
     tokenExpiresIn?: number,
-  ): Promise<string> {
+  ): Promise<{ userId: string; token: string }> {
     let phoneNumber: string = undefined;
     let formation: string = undefined;
     const branch: string[] = [];
@@ -59,7 +63,6 @@ export class AuthService {
     const ues: string[] = [];
     let type: UserType = UserType.OTHER;
     let studentId: number | undefined;
-    let assoName: string = undefined;
     const currentSemester = await this.semesterService.getCurrentSemester();
 
     if (fetchLdap) {
@@ -81,12 +84,14 @@ export class AuthService {
             phoneNumber = ldapUser.telephoneNumber;
             break;
           case LdapAccountGroup.ASSOCIATIONS:
-            type = UserType.ASSOCIATION;
-            assoName = ldapUser.displayName;
-            break;
+          default:
+            throw new AppException(ERROR_CODE.INVALID_CAS_TICKET);
         }
       }
     }
+    // if (!this.isAllowedCasUserType(type)) {
+    //   throw new AppException(ERROR_CODE.INVALID_CAS_TICKET);
+    // }
     try {
       const isUTTMail = dto.mail?.endsWith('@utt.fr');
       const user = await this.prisma.user.create({
@@ -201,7 +206,6 @@ export class AuthService {
           rgpd: { create: {} },
           userType: type,
           privacy: { create: {} },
-          ...(assoName ? { asso: { create: { name: assoName, mail: dto.mail } } } : {}),
         },
         include: {
           apiKeys: true,
@@ -225,7 +229,7 @@ export class AuthService {
           },
         });
       }
-      return this.signAuthenticationToken(user.apiKeys[0].token, tokenExpiresIn);
+      return { userId: user.id, token: await this.signAuthenticationToken(user.apiKeys[0].token, tokenExpiresIn) };
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
@@ -244,10 +248,7 @@ export class AuthService {
    * @returns userId - The id of the logged-in user.
    * @returns apiKey - The api key that was used to log in.
    */
-  async signInFromLogin(
-    login: string,
-    applicationId: string,
-  ): Promise<{ userId: string; apiKey: RawApiKey } | null> {
+  async signInFromLogin(login: string, applicationId: string): Promise<{ userId: string; apiKey: RawApiKey } | null> {
     // find the user by login, if it does not exist, throw exception
     const user = await this.prisma.user.findUnique({
       where: { login },
@@ -255,15 +256,22 @@ export class AuthService {
         apiKeys: {
           where: {
             applicationId,
-          }
-        }
-      }
+          },
+        },
+      },
     });
     if (!user) {
       return null;
     }
 
     return { userId: user.id, apiKey: user.apiKeys[0] };
+  }
+
+  async modifyUserType(userId: string, userType: UserType) {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { userType },
+    })
   }
 
   /**
@@ -329,6 +337,9 @@ export class AuthService {
       where: { login: data.login },
       include: { apiKeys: { where: { application: { id: applicationId } } } },
     });
+    if (user && !this.isAllowedCasUserType(user.userType)) {
+      throw new AppException(ERROR_CODE.INVALID_CAS_TICKET);
+    }
     return { userId: user?.id, apiKeyId: user?.apiKeys?.[0]?.id, basicUserData: data };
   }
 
@@ -337,18 +348,23 @@ export class AuthService {
    * @param registerToken {@link RegisterUserData} that permits creating a user account, or null if the token format is invalid in any way.
    */
   decodeRegisterUserToken(registerToken: string): RegisterUserData | null {
-    const data = this.jwt.decode(registerToken);
-    if (
-      !data ||
-      !('login' in data) ||
-      !('mail' in data) ||
-      !('firstName' in data) ||
-      !('lastName' in data) ||
-      !('tokenExpiresIn' in data)
-    ) {
+    try {
+      const data = this.jwt.verify(registerToken, { secret: this.config.JWT_SECRET });
+      if (
+        !data ||
+        !('login' in data) ||
+        !('mail' in data) ||
+        !('firstName' in data) ||
+        !('lastName' in data) ||
+        !('tokenExpiresIn' in data)
+      ) {
+        return null;
+      }
+      return omit(data, 'iat', 'exp') as RegisterUserData;
+    } catch {
       return null;
     }
-    return omit(data, 'iat', 'exp') as RegisterUserData;
+
   }
 
   /**
@@ -356,11 +372,15 @@ export class AuthService {
    * @param registerToken {@link RegisterApiKeyData} that permits creating the Api Key linking the user and the given application.
    */
   decodeRegisterApiKeyToken(registerToken: string): RegisterApiKeyData | null {
-    const data = this.jwt.decode(registerToken);
-    if (!data || !('userId' in data) || !('applicationId' in data) || !('tokenExpiresIn' in data)) {
+    try {
+      const data = this.jwt.verify(registerToken, { secret: this.config.JWT_SECRET });
+      if (!data || !('userId' in data) || !('applicationId' in data) || !('tokenExpiresIn' in data)) {
+        return null;
+      }
+      return omit(data, 'iat', 'exp') as RegisterApiKeyData;
+    } catch {
       return null;
     }
-    return omit(data, 'iat', 'exp') as RegisterApiKeyData;
   }
 
   /**
@@ -368,11 +388,15 @@ export class AuthService {
    * @param token {@link ValidationTokenData} that permits validating the
    */
   decodeValidationToken(token: string): ValidationTokenData | null {
-    const data = this.jwt.decode(token);
-    if (!data || !('apiKeyId' in data) || !('tokenExpiresIn' in data) || !('applicationId' in data)) {
+    try {
+      const data = this.jwt.verify(token, { secret: this.config.JWT_SECRET });
+      if (!data || !('apiKeyId' in data) || !('tokenExpiresIn' in data) || !('applicationId' in data)) {
+        return null;
+      }
+      return omit(data, 'iat', 'exp') as ValidationTokenData;
+    } catch {
       return null;
     }
-    return omit(data, 'iat', 'exp') as ValidationTokenData;
   }
 
   /**

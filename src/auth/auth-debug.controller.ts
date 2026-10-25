@@ -31,7 +31,8 @@ export class AuthDebugController {
     'Login, email address or any field that should be unique is already taken',
   )
   async debugSignUp(@Body() dto: AuthSignUpDebugReqDto, @GetApplication() application: Application): Promise<AuthSignInDebugResDto> {
-    const token = await this.authService.signUp(dto, application.id, false, dto.tokenExpiresIn);
+    const { userId, token } = await this.authService.signUp(dto, application.id, false, dto.tokenExpiresIn);
+    await this.authService.modifyUserType(userId, dto.userType);
     const redirectUrl = `${application.redirectUrl}/${token}`;
     return { signedIn: true, token, redirectUrl };
   }

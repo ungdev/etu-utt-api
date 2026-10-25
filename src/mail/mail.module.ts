@@ -1,7 +1,7 @@
 import { Global, Module } from '@nestjs/common';
 import { MailService } from '@/mail/mail.service.js';
 import { MailerModule } from '@nestjs-modules/mailer';
-import { ConfigService } from '@/config/config.service.js';
+import { ConfigService, isTestEnv } from '@/config/config.service.js';
 import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
 
 @Global()
@@ -12,6 +12,7 @@ import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
       useFactory: (config: ConfigService) => {
         return {
           transport: {
+            ...(isTestEnv() ? { jsonTransport: true } : {}),
             requireTLS: true,
             tls: {
               rejectUnauthorized: config.SMTP_REJECT_UNAUTHORIZED,

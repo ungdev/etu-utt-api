@@ -9,6 +9,7 @@ vi.mock('@nestjs-modules/mailer/dist/adapters/ejs.adapter', () => ({
 }));
 
 import TimetableServiceUnitSpec from '#/unit/timetable/timetable.service.spec.js';
+import AssosAccessUnitSpec from '#/unit/assos/assos-access.spec.js';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '@/app.module.js';
 import '@/std.type.js';
@@ -22,4 +23,5 @@ describe('EtuUTT API unit testing', () => {
     await app.close();
   });
   TimetableServiceUnitSpec(() => app);
+  AssosAccessUnitSpec(() => app);
 });

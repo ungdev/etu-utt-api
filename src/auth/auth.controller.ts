@@ -76,10 +76,7 @@ export class AuthController {
       "If status is 'no_account', the user should use the token to sign up with `POST /auth/signup/cas`.",
     type: CasSignInResDto,
   })
-  async signIn(
-    @Body() dto: AuthSignInReqDto,
-    @GetApplication() application: Application,
-  ): Promise<CasSignInResDto> {
+  async signIn(@Body() dto: AuthSignInReqDto, @GetApplication() application: Application): Promise<CasSignInResDto> {
     const res = await this.authService.signIn(dto.ticket, application.id);
     if (!res) throw new AppException(ERROR_CODE.INVALID_CAS_TICKET);
     if (!res.userId)
@@ -134,15 +131,12 @@ export class AuthController {
     ERROR_CODE.CREDENTIALS_ALREADY_TAKEN,
     'Login, email, or any other field that should be unique about a user is already bound to another user',
   )
-  async signUp(
-    @Body() dto: AuthSignUpReqDto,
-    @GetApplication('id') application: string,
-  ): Promise<AuthTokenResDto> {
+  async signUp(@Body() dto: AuthSignUpReqDto, @GetApplication('id') application: string): Promise<AuthTokenResDto> {
     const data = this.authService.decodeRegisterUserToken(dto.registerToken);
     if (!data) throw new AppException(ERROR_CODE.INVALID_TOKEN_FORMAT);
     if (await this.usersService.doesUserExist({ login: data.login }))
       throw new AppException(ERROR_CODE.CREDENTIALS_ALREADY_TAKEN);
-    const token = await this.authService.signUp(data, application, true, data.tokenExpiresIn);
+    const { token } = await this.authService.signUp(data, application, true, data.tokenExpiresIn);
     return { token };
   }
 

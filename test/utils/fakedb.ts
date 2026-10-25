@@ -536,20 +536,6 @@ export const createAsso = entityFaker(
               isPresident: true,
             },
           },
-          assoAccount: {
-            create: {
-              login: params.name,
-              firstName: '',
-              lastName: '',
-              userType: UserType.ASSOCIATION,
-              socialNetwork: { create: {} },
-              mailsPhones: { create: {} },
-              rgpd: { create: {} },
-              preference: { create: {} },
-              infos: { create: {} },
-              privacy: { create: {} },
-            },
-          },
         },
       });
     const presidentRole = await app()

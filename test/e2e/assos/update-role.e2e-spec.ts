@@ -111,37 +111,6 @@ const UpdateAssoRoleE2ESpec = e2eSuite('PUT /assos/:id/roles/:id', (app) => {
       })
       .expectAssoMembershipRolesRaw([assoMembershipRole, presRole]);
   });
-
-  it('should update the role with asso account', async () => {
-    const assoUser = await app()
-      .get(PrismaService)
-      .user.findUnique({ where: { login: asso.name } });
-    const presRole = await app()
-      .get(PrismaService)
-      .assoMembershipRole.findFirstOrThrow({ where: { assoId: asso.id, isPresident: true } });
-    const apiKey = await app()
-      .get(PrismaService)
-      .apiKey.create({
-        data: {
-          token: faker.string.alphanumeric(30),
-          user: { connect: { id: assoUser.id } },
-          application: { connect: { id: DEFAULT_APPLICATION.id } },
-        },
-      });
-    const token = await app().get(AuthService).signAuthenticationToken(apiKey.token);
-    assoMembershipRole.position = 1;
-    assoMembershipRole.name = 'Reverted';
-    presRole.position = 0;
-    return pactum
-      .spec()
-      .withBearerToken(token)
-      .put(`/assos/${asso.id}/roles/${assoMembershipRole.id}`)
-      .withBody({
-        name: 'Reverted',
-        position: 1,
-      })
-      .expectAssoMembershipRolesRaw([presRole, assoMembershipRole]);
-  });
 });
 
 export default UpdateAssoRoleE2ESpec;

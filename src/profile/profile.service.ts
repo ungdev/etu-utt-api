@@ -12,9 +12,7 @@ export class ProfileService {
       where: {
         userId,
       },
-      orderBy: {
-        x: 'asc',
-      },
+      orderBy: [{ x: 'asc' }, { y: 'asc' }],
     });
   }
 

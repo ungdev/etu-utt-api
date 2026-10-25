@@ -202,39 +202,6 @@ const UpdateAssoMemberE2ESpec = e2eSuite('PATCH /assos/:id/members/:id', (app) =
         endAt: userInAssoMembershipInAsso.endAt,
       });
   });
-
-  it('should update the membership with asso account', async () => {
-    const assoUser = await app()
-      .get(PrismaService)
-      .user.findUnique({ where: { login: asso.name } });
-    const apiKey = await app()
-      .get(PrismaService)
-      .apiKey.create({
-        data: {
-          token: faker.string.alphanumeric(30),
-          user: { connect: { id: assoUser.id } },
-          application: { connect: { id: DEFAULT_APPLICATION.id } },
-        },
-      });
-    const token = await app().get(AuthService).signAuthenticationToken(apiKey.token);
-    otherUserInAssoMembershipInAsso.endAt = endAt;
-    return pactum
-      .spec()
-      .withBearerToken(token)
-      .patch(`/assos/${asso.id}/members/${otherUserInAssoMembershipInAsso.id}`)
-      .withBody({
-        permissions: [manageMembersPermission.id],
-        endAt,
-      })
-      .expectAssoMembership({
-        id: otherUserInAssoMembershipInAsso.id,
-        assoId: asso.id,
-        userId: otherUserInAsso.id,
-        roleId: assoMembershipRoleInAsso.id,
-        startAt: otherUserInAssoMembershipInAsso.startAt,
-        endAt: otherUserInAssoMembershipInAsso.endAt,
-      });
-  });
 });
 
 export default UpdateAssoMemberE2ESpec;
