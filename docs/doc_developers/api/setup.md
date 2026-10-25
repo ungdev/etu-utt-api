@@ -24,8 +24,7 @@ sudo apt install nodejs
 
 Vous pouvez remplacer `22` par la version de NodeJS que vous souhaitez installer.
 
-Si vous avez besoin de mettre à jour NodeJS vers une version spécifique, vous pouvez exécuter les commandes suivantes (
-pour utiliser Node 24 dans l'exemple donné) :
+Si vous avez besoin de mettre à jour NodeJS vers une version spécifique, vous pouvez exécuter les commandes suivantes (pour utiliser Node 24 dans l'exemple donné) :
 
 ```sh
 sudo npm i -g n
@@ -138,7 +137,7 @@ Si ta db ne répond plus à vos requêtes, ajoutez `?allowPublicKeyRetrieval=tru
 
 Une dépendance est hébergée sur le Github Registry ([@ungdev/rich-turbo-editor](https://github.com/ungdev/rich-turbo-editor)). Pour cela tu vas avoir besoin de te connecter avec un token github.
 
-Pour le créer, crée un [token (classic)](https://github.com/settings/tokens) lié à ton compte Github (choisis bien l'option _Generate new token (classic)_ !). Donne lui un nom évocateur et donne lui uniquement la permission `read:packages`. Tu peux choisir une date d'expiration ou ne le jamais le faire expirer si tu n'as pas de packages privés importants sur ton compte github (ou auxquels ton compte github a accès).
+Pour le créer, crée un [token (classic)](https://github.com/settings/tokens) lié à ton compte Github (choisis bien l'option _Generate new token (classic)_ !). Donne lui un nom évocateur et donne lui uniquement la permission `read:packages`. Tu peux choisir une date d'expiration ou ne jamais le faire expirer si tu n'as pas de packages privés importants sur ton compte github (ou auxquels ton compte github a accès).
 
 Configure maintenant pnpm pour qu'il utilise ton token sur le registry (remplace `{token}` par le token que tu viens de créer) :
 
