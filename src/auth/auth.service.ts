@@ -332,7 +332,7 @@ export class AuthService {
       include: { apiKeys: { where: { application: { id: applicationId } } } },
     });
     if (user && !this.isAllowedCasUserType(user.userType)) {
-      return null;
+      throw new AppException(ERROR_CODE.INVALID_CAS_TICKET);
     }
     return { userId: user?.id, apiKeyId: user?.apiKeys?.[0]?.id, basicUserData: data };
   }

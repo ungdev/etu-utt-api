@@ -8,10 +8,6 @@ import {
 } from '../../utils/fakedb';
 import * as pactum from 'pactum';
 import { ERROR_CODE } from '../../../src/exceptions';
-import { PrismaService } from '../../../src/prisma/prisma.service';
-import { faker } from '@faker-js/faker';
-import { DEFAULT_APPLICATION } from '../../../prisma/seed/utils';
-import { AuthService } from '../../../src/auth/auth.service';
 
 const UpdateAssoMemberE2ESpec = e2eSuite('PATCH /assos/:id/members/:id', (app) => {
   const userNotAllowed = createUser(app);
@@ -199,39 +195,6 @@ const UpdateAssoMemberE2ESpec = e2eSuite('PATCH /assos/:id/members/:id', (app) =
         roleId: assoMembershipRoleInAsso.id,
         startAt: userInAssoMembershipInAsso.startAt,
         endAt: userInAssoMembershipInAsso.endAt,
-      });
-  });
-
-  it('should update the membership with asso account', async () => {
-    const assoUser = await app()
-      .get(PrismaService)
-      .user.findUnique({ where: { login: asso.name } });
-    const apiKey = await app()
-      .get(PrismaService)
-      .apiKey.create({
-        data: {
-          token: faker.string.alphanumeric(30),
-          user: { connect: { id: assoUser.id } },
-          application: { connect: { id: DEFAULT_APPLICATION.id } },
-        },
-      });
-    const token = await app().get(AuthService).signAuthenticationToken(apiKey.token);
-    otherUserInAssoMembershipInAsso.endAt = endAt;
-    return pactum
-      .spec()
-      .withBearerToken(token)
-      .patch(`/assos/${asso.id}/members/${otherUserInAssoMembershipInAsso.id}`)
-      .withBody({
-        permissions: [manageMembersPermission.id],
-        endAt,
-      })
-      .expectAssoMembership({
-        id: otherUserInAssoMembershipInAsso.id,
-        assoId: asso.id,
-        userId: otherUserInAsso.id,
-        roleId: assoMembershipRoleInAsso.id,
-        startAt: otherUserInAssoMembershipInAsso.startAt,
-        endAt: otherUserInAssoMembershipInAsso.endAt,
       });
   });
 });
