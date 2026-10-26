@@ -1,10 +1,13 @@
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
-import { AppModule } from '@/apps/main.module.js';
+import { ShardingAwareLogger } from '@/sharding/sharding-logger.js';
+import { AppModule } from '@/app.module.js';
 import '@/std.type.js';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule.register());
+  const app = await NestFactory.create(AppModule.register(), {
+    logger: new ShardingAwareLogger(),
+  });
   AppModule.initApp(app);
 
   const config = new DocumentBuilder()
