@@ -18,18 +18,17 @@ NodeJS est le moteur qui permet de faire tourner le code JavaScript hors d'un na
 pouvez utiliser les commandes suivantes :
 
 ```bash
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 sudo apt install nodejs
 ```
 
-Vous pouvez remplacer `18` par la version de NodeJS que vous souhaitez installer.
+Vous pouvez remplacer `22` par la version de NodeJS que vous souhaitez installer.
 
-Si vous avez besoin de mettre à jour NodeJS vers une version spécifique, vous pouvez exécuter les commandes suivantes (
-pour utiliser Node 20 dans l'exemple donné) :
+Si vous avez besoin de mettre à jour NodeJS vers une version spécifique, vous pouvez exécuter les commandes suivantes (pour utiliser Node 24 dans l'exemple donné) :
 
 ```sh
 sudo npm i -g n
-sudo n 20
+sudo n 24
 ```
 
 Ces commande ne fonctionneront pas sous Windows (mais de toute façon, vous utilisez WSL, right ? :)).
@@ -136,21 +135,25 @@ Si ta db ne répond plus à vos requêtes, ajoutez `?allowPublicKeyRetrieval=tru
 
 ### Installer les dépendances
 
+Une dépendance est hébergée sur le Github Registry ([@ungdev/rich-turbo-editor](https://github.com/ungdev/rich-turbo-editor)). Pour cela tu vas avoir besoin de te connecter avec un token github.
+
+Pour le créer, crée un [token (classic)](https://github.com/settings/tokens) lié à ton compte Github (choisis bien l'option _Generate new token (classic)_ !). Donne lui un nom évocateur et donne lui uniquement la permission `read:packages`. Tu peux choisir une date d'expiration ou ne jamais le faire expirer si tu n'as pas de packages privés importants sur ton compte github (ou auxquels ton compte github a accès).
+
+Configure maintenant pnpm pour qu'il utilise ton token sur le registry (remplace `{token}` par le token que tu viens de créer) :
+
 ```bash
-pnpm install
+pnpm config set "//npm.pkg.github.com/:_authToken" {token}
+```
+
+On peut maintenant installer les dépendances !
+
+```bash
+pnpm install --no-optional
 # ou
-pnpm i
+pnpm i --no-optional
 ```
 
-Au bout de quelques minutes, les dépendances seront installées.
-
-### Lancer le serveur de développement
-
-```bash
-pnpm start:dev
-```
-
-Le serveur de développement est maintenant lancé. Vous pouvez accéder à l'API à l'adresse `http://localhost:3000`.
+Après téléchargement, les dépendances seront installées.
 
 ### Commandes pour la base de données
 
@@ -160,10 +163,20 @@ Les commandes suivantes sont utiles pour administrer la base de données :
 # Applique le schema.prisma aux bases de données dev et test. Attention, toutes les données actuellement présentes seront supprimées.
 pnpm db:reset
 # Lance l'interface de Prisma pour visualiser et interagir avec la base de données. Il est disponible à l'adresse http://localhost:5555.
-pnpm db:studio
+pnpm db:editor
 # Rempli la base de données avec des données de test. Les mots de passe seront tous "etuutt".
 pnpm db:seed
 ```
+
+Avant de lancer le serveur de développement, utilise `db:reset` puis `db:seed` ;)
+
+### Lancer le serveur de développement
+
+```bash
+pnpm dev
+```
+
+Le serveur de développement est maintenant lancé. Vous pouvez accéder à l'API à l'adresse `http://localhost:3000`.
 
 ### Lancer les tests
 
@@ -172,6 +185,8 @@ pnpm test
 ```
 
 Les tests sont tous lancés. Au bout de quelques secondes / minutes, tous les tests devraient correctement passer.
+
+Tu pourras trouver les différentes options des tests [dans la page dédiée](./test.md).
 
 ## Compiler la documentation
 
